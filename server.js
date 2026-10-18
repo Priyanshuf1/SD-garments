@@ -180,7 +180,7 @@ function sendJson(res, statusCode, data) {
   res.end(JSON.stringify(data));
 }
 
-const server = http.createServer(async (req, res) => {
+async function appHandler(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
 
@@ -192,6 +192,33 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     });
     return res.end();
+  }
+
+  // -------------------------------------------------------------
+  // Keep-Alive & Health Check (Vercel + Supabase Never-Sleep)
+  // -------------------------------------------------------------
+  if (pathname === '/api/health' || pathname === '/api/ping') {
+    let supabaseStatus = 'disconnected';
+    if (supabase.isConfigured) {
+      try {
+        await fetch(`${supabase.SUPABASE_URL}/rest/v1/products?select=id&limit=1`, {
+          headers: {
+            apikey: supabase.SUPABASE_SERVICE_KEY || supabase.SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${supabase.SUPABASE_SERVICE_KEY || supabase.SUPABASE_ANON_KEY}`
+          }
+        });
+        supabaseStatus = 'active';
+      } catch (e) {
+        supabaseStatus = 'error: ' + e.message;
+      }
+    }
+    return sendJson(res, 200, {
+      status: 'ok',
+      service: 'SD-garments',
+      supabase: supabaseStatus,
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString()
+    });
   }
 
   // -------------------------------------------------------------
@@ -1577,13 +1604,21 @@ const server = http.createServer(async (req, res) => {
 
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('404 Not Found');
-});
+}
 
-server.listen(PORT, () => {
-  console.log(`\n==================================================`);
-  console.log(`🔥 GENRAGE 1:1 DITTO Server Running!`);
-  console.log(`📍 Storefront: http://localhost:${PORT}`);
-  console.log(`⚡ Admin Portal: http://localhost:${PORT}/admin`);
-  console.log(`🎥 6 High-Definition Videos Ready & Streaming Locally`);
-  console.log(`==================================================\n`);
-});
+const server = http.createServer(appHandler);
+
+if (!process.env.VERCEL && require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`\n==================================================`);
+    console.log(`🔥 GENRAGE 1:1 DITTO Server Running!`);
+    console.log(`📍 Storefront: http://localhost:${PORT}`);
+    console.log(`⚡ Admin Portal: http://localhost:${PORT}/admin`);
+    console.log(`🎥 6 High-Definition Videos Ready & Streaming Locally`);
+    console.log(`==================================================\n`);
+  });
+}
+
+module.exports = appHandler;
+module.exports.server = server;
+

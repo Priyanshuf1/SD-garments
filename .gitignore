@@ -36,3 +36,6 @@ theme_temp.js
 capture_*.js
 add_zaraki.js
 optimize_images.js
+
+.vercel
+.env*
