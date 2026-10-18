@@ -42,24 +42,34 @@ assert(loaderJs.includes("sessionStorage.getItem('allyrich_loader_seen')"), 'all
 assert(loaderJs.includes("type === 'reload'"), 'allyrich-loader.js checks performance reload type');
 assert(!indexHtml.includes('<button type="submit" class="product-card__quick-add-button"'), 'index.html has zero raw submit buttons that reload page on quick-add');
 
-// 4. Footer modernization
+// 4. Footer modernization & reduction
 assert(!indexHtml.includes('forumcases'), 'index.html has NO forumcases links');
 assert(!indexHtml.includes('instagram.com/gen.rage'), 'index.html has NO old gen.rage instagram link');
 assert(indexHtml.includes('instagram.com/allyrich_'), 'index.html has official allyrich_ instagram link');
 assert(indexHtml.includes('JOIN THE INNER CIRCLE'), 'index.html footer has Inner Circle newsletter');
-assert(indexHtml.includes('COLLECTIONS'), 'index.html footer has Collections column');
-assert(indexHtml.includes('CLIENT CARE'), 'index.html footer has Client Care column');
-assert(indexHtml.includes('ALLYRICH VIP'), 'index.html footer has VIP column');
-assert(indexHtml.includes('LEGAL &amp; POLICIES'), 'index.html footer has Legal column');
+assert(!indexHtml.includes('COLLECTIONS</p>'), 'index.html footer does NOT have Collections column');
+assert(indexHtml.includes('CLIENT CARE</p>'), 'index.html footer has Client Care column');
+assert(!indexHtml.includes('ALLYRICH VIP</p>'), 'index.html footer does NOT have VIP column');
+assert(indexHtml.includes('LEGAL &amp; POLICIES</p>'), 'index.html footer has Legal column');
+assert(!indexHtml.includes('site-footer__payment-methods'), 'index.html footer does NOT have payment methods row (ss 1)');
 assert(indexHtml.includes('2026 ALLY RICH'), 'index.html footer has clean AllyRich copyright');
+
+// 5. Announcement bar removed from index.html (ss 2)
+assert(!indexHtml.includes('shopify-section-sections--23671272669422__announcement-bar'), 'Announcement bar section is REMOVED from index.html');
 
 // Also check collections.html and product.html
 const colHtml = fs.readFileSync('collections.html', 'utf8');
 assert(!colHtml.includes('forumcases'), 'collections.html has NO forumcases links');
+assert(!colHtml.includes('COLLECTIONS</p>'), 'collections.html footer does NOT have Collections column');
+assert(!colHtml.includes('ALLYRICH VIP</p>'), 'collections.html footer does NOT have VIP column');
+assert(!colHtml.includes('site-footer__payment-methods'), 'collections.html footer does NOT have payment badges');
 assert(colHtml.includes('JOIN THE INNER CIRCLE'), 'collections.html footer has Inner Circle newsletter');
 
 const prodHtml = fs.readFileSync('product.html', 'utf8');
 assert(!prodHtml.includes('forumcases'), 'product.html has NO forumcases links');
+assert(!prodHtml.includes('COLLECTIONS</p>'), 'product.html footer does NOT have Collections column');
+assert(!prodHtml.includes('ALLYRICH VIP</p>'), 'product.html footer does NOT have VIP column');
+assert(!prodHtml.includes('site-footer__payment-methods'), 'product.html footer does NOT have payment badges');
 assert(prodHtml.includes('JOIN THE INNER CIRCLE'), 'product.html footer has Inner Circle newsletter');
 
 // 5. Sections removed from index.html (Images 2, 3, 4)
