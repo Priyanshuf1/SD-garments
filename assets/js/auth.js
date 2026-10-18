@@ -1,6 +1,11 @@
 /**
  * GENRAGE - Global Storefront Authentication Engine
- * Manages JWT/session tokens, login/signup modals, profile state, and header integration
+ * Connected directly to Supabase Auth & PostgreSQL Profiles with Local JSON Fallback.
+ * Features:
+ * 1. Email + Password Sign In / Register (100% Free)
+ * 2. Passwordless Email OTP / Magic Link (100% Free - 50,000 MAUs)
+ * 3. PostgreSQL Profiles Storage & Multi-Device Wishlist Sync
+ * 4. Header Dynamic Avatar & Account Modal
  */
 
 const AuthEngine = {
@@ -59,11 +64,50 @@ const AuthEngine = {
         localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
         if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
         this.updateHeader();
+        if (window.WishlistEngine) {
+          window.WishlistEngine.syncWithServer();
+        }
         return { success: true, user: data.user };
       }
       return { success: false, message: data.message || 'Signup failed' };
     } catch (err) {
       return { success: false, message: 'Network error during registration' };
+    }
+  },
+
+  async sendMagicLink(email) {
+    try {
+      const res = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: 'Network error sending login code' };
+    }
+  },
+
+  async verifyOtp(email, token) {
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, token })
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
+        if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
+        this.updateHeader();
+        if (window.WishlistEngine) {
+          window.WishlistEngine.syncWithServer();
+        }
+        return { success: true, user: data.user };
+      }
+      return { success: false, message: data.message || 'Verification failed' };
+    } catch (err) {
+      return { success: false, message: 'Network error verifying code' };
     }
   },
 
@@ -83,7 +127,7 @@ const AuthEngine = {
     const user = this.getUser();
     document.querySelectorAll('.header-account-link, shopify-account, [data-account-trigger]').forEach(el => {
       if (user) {
-        const firstName = (user.name || 'Account').split(' ')[0];
+        const firstName = (user.name || user.full_name || 'Account').split(' ')[0];
         el.setAttribute('href', '/account');
         el.innerHTML = `
           <div style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit; font-weight:700; font-size:0.8rem; letter-spacing:0.04em; text-transform:uppercase;">
@@ -135,23 +179,28 @@ const AuthEngine = {
 
   switchTab(tab) {
     const loginForm = document.getElementById('auth-form-login');
+    const otpForm = document.getElementById('auth-form-otp');
     const signupForm = document.getElementById('auth-form-signup');
     const tabLogin = document.getElementById('auth-tab-login');
+    const tabOtp = document.getElementById('auth-tab-otp');
     const tabSignup = document.getElementById('auth-tab-signup');
     const errorBox = document.getElementById('auth-error-msg');
+    const successBox = document.getElementById('auth-success-msg');
     if (errorBox) errorBox.style.display = 'none';
+    if (successBox) successBox.style.display = 'none';
 
-    if (tab === 'login') {
-      if (loginForm) loginForm.style.display = 'block';
-      if (signupForm) signupForm.style.display = 'none';
-      if (tabLogin) tabLogin.style.borderBottom = '2px solid #000';
-      if (tabSignup) tabSignup.style.borderBottom = '2px solid transparent';
-    } else {
-      if (loginForm) loginForm.style.display = 'none';
-      if (signupForm) signupForm.style.display = 'block';
-      if (tabLogin) tabLogin.style.borderBottom = '2px solid transparent';
-      if (tabSignup) tabSignup.style.borderBottom = '2px solid #000';
-    }
+    if (loginForm) loginForm.style.display = tab === 'login' ? 'block' : 'none';
+    if (otpForm) otpForm.style.display = tab === 'otp' ? 'block' : 'none';
+    if (signupForm) signupForm.style.display = tab === 'signup' ? 'block' : 'none';
+
+    if (tabLogin) tabLogin.style.borderBottom = tab === 'login' ? '2px solid #000' : '2px solid transparent';
+    if (tabLogin) tabLogin.style.color = tab === 'login' ? '#000' : '#888';
+
+    if (tabOtp) tabOtp.style.borderBottom = tab === 'otp' ? '2px solid #000' : '2px solid transparent';
+    if (tabOtp) tabOtp.style.color = tab === 'otp' ? '#000' : '#888';
+
+    if (tabSignup) tabSignup.style.borderBottom = tab === 'signup' ? '2px solid #000' : '2px solid transparent';
+    if (tabSignup) tabSignup.style.color = tab === 'signup' ? '#000' : '#888';
   },
 
   injectModalDom() {
@@ -168,50 +217,66 @@ const AuthEngine = {
       <div style="background:#fff; color:#111; width:min(440px, 100%); border-radius:4px; padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.3); position:relative; font-family:inherit;">
         <button type="button" onclick="AuthEngine.closeAuthModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#777; line-height:1;">✕</button>
         
-        <div style="text-align:center; margin-bottom:1.5rem;">
-          <h2 style="font-size:1.4rem; font-weight:800; letter-spacing:-0.02em; text-transform:uppercase; margin:0 0 4px;">GENRAGE CLUB</h2>
-          <p style="color:#666; font-size:0.8rem; margin:0;">Access your VIP drops, orders, and wishlist</p>
+        <div style="text-align:center; margin-bottom:1.25rem;">
+          <h2 style="font-size:1.35rem; font-weight:800; letter-spacing:-0.02em; text-transform:uppercase; margin:0 0 4px;">GENRAGE CLUB</h2>
+          <p style="color:#666; font-size:0.8rem; margin:0;">100% Free Member Access • Supabase Secured</p>
         </div>
 
-        <div style="display:flex; border-bottom:1px solid #eee; margin-bottom:1.5rem;">
-          <button id="auth-tab-login" onclick="AuthEngine.switchTab('login')" style="flex:1; background:none; border:none; padding:10px; font-weight:700; font-size:0.85rem; text-transform:uppercase; cursor:pointer; border-bottom:2px solid #000;">Sign In</button>
-          <button id="auth-tab-signup" onclick="AuthEngine.switchTab('signup')" style="flex:1; background:none; border:none; padding:10px; font-weight:700; font-size:0.85rem; text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; color:#666;">Create Account</button>
+        <div style="display:flex; border-bottom:1px solid #eee; margin-bottom:1.25rem;">
+          <button id="auth-tab-login" onclick="AuthEngine.switchTab('login')" style="flex:1; background:none; border:none; padding:8px 4px; font-weight:700; font-size:0.75rem; text-transform:uppercase; cursor:pointer; border-bottom:2px solid #000; color:#000;">Sign In</button>
+          <button id="auth-tab-otp" onclick="AuthEngine.switchTab('otp')" style="flex:1; background:none; border:none; padding:8px 4px; font-weight:700; font-size:0.75rem; text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; color:#888;">Instant OTP</button>
+          <button id="auth-tab-signup" onclick="AuthEngine.switchTab('signup')" style="flex:1; background:none; border:none; padding:8px 4px; font-weight:700; font-size:0.75rem; text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; color:#888;">Register</button>
         </div>
 
         <div id="auth-error-msg" style="display:none; background:#fee; color:#c00; padding:8px 12px; border-radius:3px; font-size:0.8rem; margin-bottom:1rem; font-weight:600;"></div>
+        <div id="auth-success-msg" style="display:none; background:#e6f9ed; color:#0d7a3e; padding:8px 12px; border-radius:3px; font-size:0.8rem; margin-bottom:1rem; font-weight:600;"></div>
 
         <!-- Login Form -->
         <form id="auth-form-login" onsubmit="AuthEngine.handleLoginSubmit(event)">
           <div style="margin-bottom:1rem;">
-            <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Email Address</label>
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Email Address</label>
             <input type="email" id="login-email" required placeholder="name@example.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
           </div>
           <div style="margin-bottom:1.25rem;">
-            <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Password</label>
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Password</label>
             <input type="password" id="login-password" required placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
-            <div style="text-align:right; margin-top:4px;">
-              <span style="font-size:0.75rem; color:#888;">(Default: password123)</span>
+            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+              <span style="font-size:0.72rem; color:#888;">(Default: password123)</span>
+              <a href="#" onclick="event.preventDefault(); AuthEngine.switchTab('otp')" style="font-size:0.72rem; color:#000; font-weight:700; text-decoration:none;">Forgot password?</a>
             </div>
           </div>
           <button type="submit" id="btn-login-submit" style="width:100%; background:#000; color:#fff; border:none; padding:12px; font-weight:800; font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; border-radius:2px; cursor:pointer;">SIGN IN</button>
         </form>
 
+        <!-- OTP / Magic Link Form -->
+        <form id="auth-form-otp" style="display:none;" onsubmit="AuthEngine.handleOtpSubmit(event)">
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Email Address</label>
+            <input type="email" id="otp-email" required placeholder="name@example.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
+          </div>
+          <div id="otp-code-container" style="display:none; margin-bottom:1rem;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Verification Code (6 Digits)</label>
+            <input type="text" id="otp-code" placeholder="123456" maxlength="8" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:1.1rem; letter-spacing:0.2em; text-align:center; font-weight:800; outline:none;">
+          </div>
+          <button type="submit" id="btn-otp-submit" style="width:100%; background:#000; color:#fff; border:none; padding:12px; font-weight:800; font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; border-radius:2px; cursor:pointer;">SEND LOGIN CODE</button>
+        </form>
+
         <!-- Signup Form -->
         <form id="auth-form-signup" style="display:none;" onsubmit="AuthEngine.handleSignupSubmit(event)">
-          <div style="margin-bottom:0.85rem;">
-            <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Full Name</label>
+          <div style="margin-bottom:0.75rem;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Full Name</label>
             <input type="text" id="signup-name" required placeholder="Kabir Singhania" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
           </div>
-          <div style="margin-bottom:0.85rem;">
-            <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Email Address</label>
+          <div style="margin-bottom:0.75rem;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Email Address</label>
             <input type="email" id="signup-email" required placeholder="kabir@example.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
           </div>
-          <div style="margin-bottom:0.85rem;">
-            <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Phone Number</label>
+          <div style="margin-bottom:0.75rem;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Phone Number</label>
             <input type="tel" id="signup-phone" placeholder="+91 98200 00000" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
           </div>
-          <div style="margin-bottom:1.25rem;">
-            <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Password</label>
+          <div style="margin-bottom:1.15rem;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Password</label>
             <input type="password" id="signup-password" required placeholder="Choose a password" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
           </div>
           <button type="submit" id="btn-signup-submit" style="width:100%; background:#000; color:#fff; border:none; padding:12px; font-weight:800; font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; border-radius:2px; cursor:pointer;">CREATE ACCOUNT</button>
@@ -247,6 +312,59 @@ const AuthEngine = {
     } else {
       errBox.textContent = res.message || 'Login failed';
       errBox.style.display = 'block';
+    }
+  },
+
+  async handleOtpSubmit(e) {
+    e.preventDefault();
+    const emailInput = document.getElementById('otp-email');
+    const codeInput = document.getElementById('otp-code');
+    const codeContainer = document.getElementById('otp-code-container');
+    const submitBtn = document.getElementById('btn-otp-submit');
+    const errBox = document.getElementById('auth-error-msg');
+    const successBox = document.getElementById('auth-success-msg');
+
+    errBox.style.display = 'none';
+    successBox.style.display = 'none';
+
+    // Step 1: Send OTP
+    if (codeContainer.style.display === 'none') {
+      submitBtn.textContent = 'SENDING CODE...';
+      submitBtn.disabled = true;
+
+      const res = await this.sendMagicLink(emailInput.value);
+      submitBtn.disabled = false;
+
+      if (res.success) {
+        successBox.textContent = res.message || 'Verification code sent to your email!';
+        successBox.style.display = 'block';
+        codeContainer.style.display = 'block';
+        emailInput.readOnly = true;
+        submitBtn.textContent = 'VERIFY & SIGN IN';
+        codeInput.focus();
+      } else {
+        errBox.textContent = res.message || 'Failed to send verification code';
+        errBox.style.display = 'block';
+        submitBtn.textContent = 'SEND LOGIN CODE';
+      }
+    } else {
+      // Step 2: Verify OTP
+      submitBtn.textContent = 'VERIFYING...';
+      submitBtn.disabled = true;
+
+      const res = await this.verifyOtp(emailInput.value, codeInput.value);
+      submitBtn.textContent = 'VERIFY & SIGN IN';
+      submitBtn.disabled = false;
+
+      if (res.success) {
+        this.closeAuthModal();
+        if (window.location.pathname.includes('/login')) {
+          window.location.href = '/account';
+        }
+      } else {
+        errBox.textContent = res.message || 'Invalid or expired code';
+        errBox.style.display = 'block';
+      }
     }
   },
 

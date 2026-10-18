@@ -1009,7 +1009,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // Storefront Customer Auth & Profile APIs
+  // Storefront Customer Auth & Profile APIs (Supabase + Local Dual Engine)
   // -------------------------------------------------------------
   if (pathname.startsWith('/api/auth/')) {
     const authRoute = pathname.replace('/api/auth/', '');
@@ -1019,41 +1019,81 @@ const server = http.createServer(async (req, res) => {
     if (authRoute === 'signup' && req.method === 'POST') {
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
+      const password = payload.password || 'password123';
+      const name = payload.name || 'Storefront Member';
+      const phone = payload.phone || '+91 99999 00000';
+
       if (!email) {
         return sendJson(res, 400, { success: false, message: 'Email is required' });
       }
+
+      let userId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+      let authToken = `tok_${userId}_${Date.now()}`;
+      let supabaseProfile = null;
+
+      // 1. Supabase Auth Registration
+      if (supabase.isConfigured) {
+        try {
+          const supaRes = await supabase.auth.signUp({
+            email,
+            password,
+            full_name: name,
+            phone
+          });
+
+          if (!supaRes.success && supaRes.message && supaRes.message.toLowerCase().includes('already')) {
+            return sendJson(res, 400, { success: false, message: 'Account with this email already exists. Please log in.' });
+          }
+
+          if (supaRes.success && supaRes.user) {
+            userId = supaRes.user.id;
+            authToken = supaRes.token || authToken;
+            supabaseProfile = supaRes.user;
+          }
+        } catch (supaErr) {
+          console.warn('Supabase auth signup notice:', supaErr.message);
+        }
+      }
+
+      // Check local existing
       const existing = customers.find(c => (c.email || '').toLowerCase() === email);
-      if (existing) {
+      if (existing && !supabaseProfile) {
         return sendJson(res, 400, { success: false, message: 'Account with this email already exists. Please log in.' });
       }
 
-      const newId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
-      const newCustomer = {
-        id: newId,
-        name: payload.name || 'Storefront Member',
-        email: email,
-        phone: payload.phone || '+91 99999 00000',
-        password: payload.password || 'password123',
-        city: payload.city || 'Mumbai',
-        state: payload.state || 'Maharashtra',
-        address: payload.address || '',
-        pincode: payload.pincode || '',
-        ordersCount: 0,
-        totalSpent: 0,
-        lastOrderDate: new Date().toISOString(),
-        tags: ['Storefront Member', 'Verified'],
-        status: 'Active',
-        wishlist: Array.isArray(payload.wishlist) ? payload.wishlist : []
-      };
-
-      customers.unshift(newCustomer);
+      // 2. Local customer record sync
+      let customerRecord = existing;
+      if (!customerRecord) {
+        customerRecord = {
+          id: userId,
+          name: name,
+          email: email,
+          phone: phone,
+          password: password,
+          city: payload.city || 'Mumbai',
+          state: payload.state || 'Maharashtra',
+          address: payload.address || '',
+          pincode: payload.pincode || '',
+          ordersCount: 0,
+          totalSpent: 0,
+          lastOrderDate: new Date().toISOString(),
+          tags: ['Storefront Member', 'Supabase Verified'],
+          status: 'Active',
+          wishlist: Array.isArray(payload.wishlist) ? payload.wishlist : []
+        };
+        customers.unshift(customerRecord);
+      } else {
+        customerRecord.id = userId;
+        customerRecord.name = name;
+        customerRecord.phone = phone;
+        if (password) customerRecord.password = password;
+      }
       writeJsonFile('customers.json', customers);
 
-      const token = `tok_${newCustomer.id}_${Date.now()}`;
-      const safeUser = { ...newCustomer };
+      const safeUser = { ...customerRecord };
       delete safeUser.password;
 
-      return sendJson(res, 201, { success: true, user: safeUser, token });
+      return sendJson(res, 201, { success: true, user: safeUser, token: authToken });
     }
 
     // POST /api/auth/login
@@ -1062,25 +1102,122 @@ const server = http.createServer(async (req, res) => {
       const email = (payload.email || '').toLowerCase().trim();
       const password = payload.password || '';
 
-      const customer = customers.find(c => (c.email || '').toLowerCase() === email);
-      if (!customer) {
-        return sendJson(res, 401, { success: false, message: 'Account not found with this email' });
+      if (!email) {
+        return sendJson(res, 400, { success: false, message: 'Email is required' });
       }
 
-      if (customer.password && customer.password !== password) {
-        return sendJson(res, 401, { success: false, message: 'Invalid password' });
+      let authedUser = null;
+      let authToken = null;
+
+      // 1. Try Supabase Auth First
+      if (supabase.isConfigured && password) {
+        try {
+          const supaLogin = await supabase.auth.signInWithPassword({ email, password });
+          if (supaLogin.success && supaLogin.user) {
+            authedUser = supaLogin.user;
+            authToken = supaLogin.token;
+          }
+        } catch (supaErr) {
+          console.warn('Supabase auth login notice:', supaErr.message);
+        }
       }
 
-      if (!customer.password) {
-        customer.password = password || 'password123';
-        writeJsonFile('customers.json', customers);
+      // 2. Check Local Database / Fallback
+      let localCustomer = customers.find(c => (c.email || '').toLowerCase() === email);
+
+      if (!authedUser) {
+        if (!localCustomer) {
+          return sendJson(res, 401, { success: false, message: 'Account not found with this email' });
+        }
+        if (localCustomer.password && localCustomer.password !== password) {
+          return sendJson(res, 401, { success: false, message: 'Invalid password' });
+        }
+        if (!localCustomer.password) {
+          localCustomer.password = password || 'password123';
+          writeJsonFile('customers.json', customers);
+        }
+        authedUser = { ...localCustomer };
+        authToken = `tok_${localCustomer.id}_${Date.now()}`;
+      } else {
+        // Sync authed user with local customer
+        if (!localCustomer) {
+          localCustomer = {
+            id: authedUser.id,
+            name: authedUser.name || authedUser.full_name || 'Storefront Member',
+            email: email,
+            phone: authedUser.phone || '',
+            password: password,
+            ordersCount: 0,
+            totalSpent: 0,
+            tags: ['Storefront Member', 'Supabase Verified'],
+            status: 'Active',
+            wishlist: []
+          };
+          customers.unshift(localCustomer);
+          writeJsonFile('customers.json', customers);
+        }
+        authedUser = { ...localCustomer, ...authedUser };
       }
 
-      const token = `tok_${customer.id}_${Date.now()}`;
-      const safeUser = { ...customer };
+      const safeUser = { ...authedUser };
       delete safeUser.password;
 
-      return sendJson(res, 200, { success: true, user: safeUser, token });
+      return sendJson(res, 200, { success: true, user: safeUser, token: authToken });
+    }
+
+    // POST /api/auth/magic-link (100% Free passwordless login)
+    if (authRoute === 'magic-link' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const email = (payload.email || '').toLowerCase().trim();
+      if (!email) {
+        return sendJson(res, 400, { success: false, message: 'Email address is required' });
+      }
+
+      if (supabase.isConfigured) {
+        const result = await supabase.auth.sendMagicLink({ email });
+        return sendJson(res, result.success ? 200 : 400, result);
+      } else {
+        return sendJson(res, 200, { success: true, message: `Mock magic login link simulated for ${email}` });
+      }
+    }
+
+    // POST /api/auth/verify-otp
+    if (authRoute === 'verify-otp' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const email = (payload.email || '').toLowerCase().trim();
+      const token = payload.token || payload.otp;
+
+      if (!email || !token) {
+        return sendJson(res, 400, { success: false, message: 'Email and verification code are required' });
+      }
+
+      if (supabase.isConfigured) {
+        const verifyRes = await supabase.auth.verifyOtp({ email, token });
+        if (verifyRes.success && verifyRes.user) {
+          let localCust = customers.find(c => (c.email || '').toLowerCase() === email);
+          if (!localCust) {
+            localCust = {
+              id: verifyRes.user.id,
+              name: verifyRes.user.name || 'Storefront Member',
+              email: email,
+              phone: verifyRes.user.phone || '',
+              ordersCount: 0,
+              totalSpent: 0,
+              tags: ['Storefront Member', 'Email OTP Verified'],
+              status: 'Active',
+              wishlist: []
+            };
+            customers.unshift(localCust);
+            writeJsonFile('customers.json', customers);
+          }
+          const safeUser = { ...localCust, ...verifyRes.user };
+          delete safeUser.password;
+          return sendJson(res, 200, { success: true, user: safeUser, token: verifyRes.token });
+        }
+        return sendJson(res, 400, { success: false, message: verifyRes.message || 'Invalid or expired code' });
+      }
+
+      return sendJson(res, 400, { success: false, message: 'Supabase auth not configured' });
     }
 
     // GET /api/auth/me
@@ -1090,7 +1227,23 @@ const server = http.createServer(async (req, res) => {
       const userId = parsedUrl.searchParams.get('userId') || (token.startsWith('tok_') ? token.split('_')[1] : null);
 
       let customer = null;
-      if (userId) customer = customers.find(c => String(c.id) === String(userId));
+      if (userId) {
+        customer = customers.find(c => String(c.id) === String(userId));
+      }
+
+      // If token is a Supabase JWT and not resolved locally yet
+      if (!customer && token && !token.startsWith('tok_') && supabase.isConfigured) {
+        try {
+          const supaUser = await supabase.auth.getUser(token);
+          if (supaUser && supaUser.id) {
+            customer = customers.find(c => c.id === supaUser.id || (c.email && c.email.toLowerCase() === supaUser.email?.toLowerCase()));
+            if (!customer) {
+              const prof = await supabase.profiles.get(supaUser.id);
+              customer = prof || { id: supaUser.id, email: supaUser.email, name: supaUser.user_metadata?.full_name };
+            }
+          }
+        } catch (e) {}
+      }
 
       if (!customer) {
         return sendJson(res, 401, { success: false, message: 'Not authenticated' });
@@ -1117,9 +1270,48 @@ const server = http.createServer(async (req, res) => {
       if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
 
       writeJsonFile('customers.json', customers);
+
+      // Also sync to Supabase PostgreSQL profiles and wishlists
+      if (supabase.isConfigured) {
+        try {
+          if (customer.id && customer.id.includes('-')) {
+            await supabase.profiles.update(customer.id, {
+              name: customer.name,
+              phone: customer.phone
+            });
+            if (payload.wishlist !== undefined) {
+              await supabase.wishlists.sync(customer.id, customer.wishlist);
+            }
+          }
+        } catch (syncErr) {
+          console.warn('Supabase profile sync warning:', syncErr.message);
+        }
+      }
+
       const safeUser = { ...customer };
       delete safeUser.password;
       return sendJson(res, 200, { success: true, user: safeUser });
+    }
+
+    // GET /api/auth/wishlist
+    if (authRoute === 'wishlist' && req.method === 'GET') {
+      const userId = parsedUrl.searchParams.get('userId');
+      if (!userId) return sendJson(res, 400, { success: false, message: 'User ID required' });
+
+      let list = [];
+      const customer = customers.find(c => String(c.id) === String(userId));
+      if (customer && Array.isArray(customer.wishlist)) list = customer.wishlist;
+
+      if (supabase.isConfigured && userId.includes('-')) {
+        try {
+          const supaList = await supabase.wishlists.getByUserId(userId);
+          if (supaList && supaList.length > 0) {
+            list = Array.from(new Set([...list, ...supaList]));
+          }
+        } catch (e) {}
+      }
+
+      return sendJson(res, 200, { success: true, wishlist: list });
     }
 
     // GET /api/auth/orders

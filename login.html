@@ -31,7 +31,7 @@
       max-width: 440px;
       width: 100%;
       margin: 3rem auto;
-      padding: 2rem;
+      padding: 2.25rem;
       background: #fff;
       border: 1px solid #e5e5e5;
       border-radius: 4px;
@@ -86,17 +86,32 @@
       flex: 1;
       background: none;
       border: none;
-      padding: 10px;
+      padding: 10px 6px;
       font-family: 'Instrument Sans', sans-serif;
       font-weight: 800;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       cursor: pointer;
       color: #888;
+      border-bottom: 2px solid transparent;
     }
     .tab-item.active {
       color: #000;
       border-bottom: 2px solid #000;
+    }
+    .free-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #eef7ee;
+      color: #1a7a28;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
     }
   </style>
 </head>
@@ -109,18 +124,21 @@
   <main style="flex:1;">
     <div class="auth-container">
       <div style="text-align:center; margin-bottom:1.5rem;">
+        <span class="free-badge">✓ 100% Free Customer Account</span>
         <h1 style="font-family:'Instrument Sans', sans-serif; font-size:1.6rem; font-weight:800; text-transform:uppercase; margin:0 0 4px;">GENRAGE CLUB</h1>
-        <p style="color:#666; font-size:0.85rem; margin:0;">Sign in to track orders and save your wishlist</p>
+        <p style="color:#666; font-size:0.85rem; margin:0;">Sign in to track orders, manage addresses & sync wishlist</p>
       </div>
 
       <div class="tabs-bar">
         <button class="tab-item active" id="tab-login" onclick="setTab('login')">Sign In</button>
-        <button class="tab-item" id="tab-signup" onclick="setTab('signup')">Create Account</button>
+        <button class="tab-item" id="tab-otp" onclick="setTab('otp')">Instant OTP</button>
+        <button class="tab-item" id="tab-signup" onclick="setTab('signup')">Register</button>
       </div>
 
       <div id="error-alert" style="display:none; background:#fee; color:#c00; padding:10px 12px; border-radius:3px; font-size:0.8rem; margin-bottom:1rem; font-weight:700;"></div>
+      <div id="success-alert" style="display:none; background:#e6f9ed; color:#0d7a3e; padding:10px 12px; border-radius:3px; font-size:0.8rem; margin-bottom:1rem; font-weight:700;"></div>
 
-      <!-- Login Form -->
+      <!-- Password Login Form -->
       <form id="form-login" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label>Email Address</label>
@@ -129,9 +147,26 @@
         <div class="form-group">
           <label>Password</label>
           <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
-          <div style="font-size:0.75rem; color:#888; margin-top:4px;">(Default: password123)</div>
+          <div style="display:flex; justify-content:space-between; margin-top:4px;">
+            <span style="font-size:0.75rem; color:#888;">(Default: password123)</span>
+            <a href="#" onclick="event.preventDefault(); setTab('otp')" style="font-size:0.75rem; color:#000; font-weight:700; text-decoration:none;">Use Instant OTP instead</a>
+          </div>
         </div>
         <button type="submit" class="btn-submit" id="btn-login">SIGN IN</button>
+      </form>
+
+      <!-- Instant OTP / Magic Link Form (100% Free) -->
+      <form id="form-otp" style="display:none;" onsubmit="handleOtp(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="otp-email" class="form-control" placeholder="kabir.singhania@gmail.com" required>
+          <div style="font-size:0.72rem; color:#666; margin-top:4px;">We will email you a 6-digit login code. Zero passwords required.</div>
+        </div>
+        <div class="form-group" id="otp-code-group" style="display:none;">
+          <label>Verification Code</label>
+          <input type="text" id="otp-code" class="form-control" placeholder="123456" maxlength="8" style="font-size:1.1rem; letter-spacing:0.2em; text-align:center; font-weight:800;">
+        </div>
+        <button type="submit" class="btn-submit" id="btn-otp">SEND LOGIN CODE</button>
       </form>
 
       <!-- Signup Form -->
@@ -169,10 +204,15 @@
 
     function setTab(tab) {
       document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-otp').classList.toggle('active', tab === 'otp');
       document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+
       document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('form-otp').style.display = tab === 'otp' ? 'block' : 'none';
       document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+
       document.getElementById('error-alert').style.display = 'none';
+      document.getElementById('success-alert').style.display = 'none';
     }
 
     async function handleLogin(e) {
@@ -193,6 +233,54 @@
         const err = document.getElementById('error-alert');
         err.textContent = res.message || 'Login failed';
         err.style.display = 'block';
+      }
+    }
+
+    async function handleOtp(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('otp-email');
+      const codeGroup = document.getElementById('otp-code-group');
+      const codeInput = document.getElementById('otp-code');
+      const btn = document.getElementById('btn-otp');
+      const err = document.getElementById('error-alert');
+      const succ = document.getElementById('success-alert');
+
+      err.style.display = 'none';
+      succ.style.display = 'none';
+
+      if (codeGroup.style.display === 'none') {
+        btn.textContent = 'SENDING CODE...';
+        btn.disabled = true;
+
+        const res = await AuthEngine.sendMagicLink(emailInput.value);
+        btn.disabled = false;
+
+        if (res.success) {
+          succ.textContent = res.message || 'Verification code sent to your email!';
+          succ.style.display = 'block';
+          codeGroup.style.display = 'block';
+          emailInput.readOnly = true;
+          btn.textContent = 'VERIFY & SIGN IN';
+          codeInput.focus();
+        } else {
+          err.textContent = res.message || 'Failed to send login code';
+          err.style.display = 'block';
+          btn.textContent = 'SEND LOGIN CODE';
+        }
+      } else {
+        btn.textContent = 'VERIFYING...';
+        btn.disabled = true;
+
+        const res = await AuthEngine.verifyOtp(emailInput.value, codeInput.value);
+        btn.textContent = 'VERIFY & SIGN IN';
+        btn.disabled = false;
+
+        if (res.success) {
+          window.location.href = '/account';
+        } else {
+          err.textContent = res.message || 'Invalid or expired code';
+          err.style.display = 'block';
+        }
       }
     }
 
