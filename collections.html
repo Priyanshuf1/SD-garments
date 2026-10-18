@@ -833,73 +833,71 @@
     </div>
 
     <div class="site-footer__content">
-      <!-- 1. Top Brand Band -->
-      <div class="site-footer__band">
-        <a class="site-footer__logo" href="/" aria-label="AllyRich Home">
-          <img src="/assets/ar-logo.png" alt="AllyRich Crest" width="100" height="126">
-          <span class="site-footer__brand-name">ALLY RICH</span>
-        </a>
-        <p class="site-footer__brand-tagline">ARCHITECTURAL SILHOUETTES &bull; HOMEGROWN IN INDIA &bull; WORLDWIDE DELIVERY</p>
-      </div>
+      <!-- Main Grid: Brand & Newsletter on Left, Navigation Columns on Right -->
+      <div class="site-footer__main-grid">
+        <!-- Left: Brand Crest & Inner Circle Newsletter -->
+        <div class="site-footer__brand-block">
+          <a class="site-footer__logo" href="/" aria-label="AllyRich Home">
+            <img src="/assets/ar-logo.png" alt="AllyRich Crest" width="60" height="76">
+            <span class="site-footer__brand-name">ALLY RICH</span>
+          </a>
+          <p class="site-footer__brand-tagline">ARCHITECTURAL SILHOUETTES &bull; HOMEGROWN IN INDIA &bull; WORLDWIDE DELIVERY</p>
 
-      <!-- 2. Newsletter Signup Block -->
-      <div class="site-footer__newsletter">
-        <div class="site-footer__newsletter-inner">
-          <div class="site-footer__newsletter-text">
+          <div class="site-footer__newsletter">
             <h4 class="site-footer__newsletter-heading">JOIN THE INNER CIRCLE</h4>
             <p class="site-footer__newsletter-sub">Gain priority access to limited drops, archival releases, and invite-only showcases.</p>
+            <form class="site-footer__newsletter-form" onsubmit="event.preventDefault(); const inp = this.querySelector('input'); if(inp && inp.value){ alert('Thank you for joining the AllyRich Inner Circle.'); inp.value = ''; }">
+              <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
+              <button type="submit" class="site-footer__newsletter-btn">SUBSCRIBE</button>
+            </form>
           </div>
-          <form class="site-footer__newsletter-form" onsubmit="event.preventDefault(); const inp = this.querySelector('input'); if(inp && inp.value){ alert('Thank you for joining the AllyRich Inner Circle.'); inp.value = ''; }">
-            <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
-            <button type="submit" class="site-footer__newsletter-btn">SUBSCRIBE</button>
-          </form>
+        </div>
+
+        <!-- Right: 4 Navigation Columns -->
+        <div class="site-footer__columns">
+          <div class="site-footer__column">
+            <p class="site-footer__heading">COLLECTIONS</p>
+            <a href="/collections/shop">All Products</a>
+            <a href="/collections/baggy-pants">Baggy &amp; Parachute Pants</a>
+            <a href="/collections/boxy-oversized-tshirt">Boxy Oversized Tees</a>
+            <a href="/collections/hoodies-for-men">Heavyweight Hoodies</a>
+            <a href="/collections/shop?filter=new-in">New Drops</a>
+          </div>
+
+          <div class="site-footer__column">
+            <p class="site-footer__heading">CLIENT CARE</p>
+            <a href="/pages/contact.html">Track Order</a>
+            <a href="/pages/shipping-policy.html">Shipping Policy</a>
+            <a href="/pages/refund-policy.html">Returns &amp; Exchanges</a>
+            <a href="/pages/contact.html">Size Guide</a>
+            <a href="/pages/contact.html">Contact Concierge</a>
+          </div>
+
+          <div class="site-footer__column">
+            <p class="site-footer__heading">ALLYRICH VIP</p>
+            <a href="/account">My Account</a>
+            <a href="/account#orders">Order History</a>
+            <a href="/account#wishlist">Saved Wishlist</a>
+            <a href="/pages/reviews.html">Client Reviews</a>
+            <a href="/admin">Staff Portal</a>
+          </div>
+
+          <div class="site-footer__column">
+            <p class="site-footer__heading">LEGAL &amp; POLICIES</p>
+            <a href="/pages/terms-of-service.html">Terms &amp; Conditions</a>
+            <a href="/pages/privacy-policy.html">Privacy Policy</a>
+            <a href="/pages/refund-policy.html">Refund Policy</a>
+            <a href="/pages/shipping-policy.html">Shipping Guidelines</a>
+          </div>
         </div>
       </div>
 
-      <!-- 3. Navigation Columns Grid (4 columns) -->
-      <div class="site-footer__columns">
-        <div class="site-footer__column">
-          <p class="site-footer__heading">COLLECTIONS</p>
-          <a href="/collections/shop">All Products</a>
-          <a href="/collections/baggy-pants">Baggy &amp; Parachute Pants</a>
-          <a href="/collections/boxy-oversized-tshirt">Boxy Oversized Tees</a>
-          <a href="/collections/hoodies-for-men">Heavyweight Hoodies</a>
-          <a href="/collections/shop?filter=new-in">New Drops</a>
-        </div>
-
-        <div class="site-footer__column">
-          <p class="site-footer__heading">CLIENT CARE</p>
-          <a href="/pages/contact.html">Track Order</a>
-          <a href="/pages/shipping-policy.html">Shipping Policy</a>
-          <a href="/pages/refund-policy.html">Returns &amp; Exchanges</a>
-          <a href="/pages/contact.html">Size Guide</a>
-          <a href="/pages/contact.html">Contact Concierge</a>
-        </div>
-
-        <div class="site-footer__column">
-          <p class="site-footer__heading">ALLYRICH VIP</p>
-          <a href="/account">My Account</a>
-          <a href="/account#orders">Order History</a>
-          <a href="/account#wishlist">Saved Wishlist</a>
-          <a href="/pages/reviews.html">Client Reviews</a>
-          <a href="/admin">Staff Portal</a>
-        </div>
-
-        <div class="site-footer__column">
-          <p class="site-footer__heading">LEGAL &amp; POLICIES</p>
-          <a href="/pages/terms-of-service.html">Terms &amp; Conditions</a>
-          <a href="/pages/privacy-policy.html">Privacy Policy</a>
-          <a href="/pages/refund-policy.html">Refund Policy</a>
-          <a href="/pages/shipping-policy.html">Shipping Guidelines</a>
-        </div>
-      </div>
-
-      <!-- 4. Social Links & Security -->
+      <!-- Social Links & Payment Verification -->
       <div class="site-footer__meta">
         <div class="site-footer__social">
           <!-- Instagram -->
           <a href="https://www.instagram.com/allyrich_" aria-label="Instagram" target="_blank" rel="noopener me" title="Instagram">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
               <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -907,14 +905,14 @@
           </a>
           <!-- YouTube -->
           <a href="https://www.youtube.com/@allyrich" aria-label="YouTube" target="_blank" rel="noopener me" title="YouTube">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
               <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor"></polygon>
             </svg>
           </a>
           <!-- X (Twitter) -->
           <a href="https://x.com/allyrich" aria-label="X" target="_blank" rel="noopener me" title="X">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
             </svg>
           </a>
@@ -929,7 +927,7 @@
         </div>
       </div>
 
-      <!-- 5. Bottom Copyright & Legal -->
+      <!-- Bottom Copyright & Legal -->
       <div class="site-footer__bottom">
         <p class="site-footer__copyright">&copy; 2026 ALLY RICH &bull; ALL RIGHTS RESERVED &bull; CRAFTED FOR THE FEW</p>
         <div class="site-footer__legal">
