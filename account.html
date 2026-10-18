@@ -177,27 +177,103 @@
     let currentUser = null;
 
     async function initAccount() {
-      currentUser = AuthEngine.getUser();
-      if (!currentUser) {
-        window.location.href = '/login';
-        return;
+      try {
+        currentUser = window.AuthEngine?.getUser?.();
+        if (!currentUser) {
+          const raw = localStorage.getItem('genrage_user');
+          if (raw) {
+            try { currentUser = JSON.parse(raw); } catch (e) {}
+          }
+        }
+
+        const token = window.AuthEngine?.getToken?.() || localStorage.getItem('genrage_token');
+        if (!currentUser && token) {
+          try {
+            const res = await fetch('/api/auth/me', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success && data.user) {
+              currentUser = data.user;
+              localStorage.setItem('genrage_user', JSON.stringify(currentUser));
+            }
+          } catch (e) {}
+        }
+
+        if (!currentUser) {
+          const nameEl = document.getElementById('user-display-name');
+          if (nameEl) nameEl.textContent = 'Sign In to Access Account';
+          const container = document.getElementById('orders-list-container');
+          if (container) {
+            container.innerHTML = `
+              <div style="background:#fff; border:1px solid #e5e5e5; border-radius:4px; padding:3rem 1.5rem; text-align:center; color:#555;">
+                <h3 style="margin:0 0 8px; text-transform:uppercase;">Sign In Required</h3>
+                <p style="font-size:0.85rem; margin-bottom:1.5rem; color:#777;">Please log in or register to view your order history and saved items.</p>
+                <a href="/login" style="background:#000; color:#fff; text-decoration:none; padding:12px 24px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; display:inline-block;">GO TO LOGIN</a>
+              </div>
+            `;
+          }
+          setTimeout(() => {
+            if (!localStorage.getItem('genrage_user')) {
+              window.location.href = '/login';
+            }
+          }, 1500);
+          return;
+        }
+
+        const nameEl = document.getElementById('user-display-name');
+        if (nameEl) nameEl.textContent = currentUser.name || currentUser.full_name || 'Storefront Member';
+
+        const emailEl = document.getElementById('user-display-email');
+        if (emailEl) emailEl.textContent = currentUser.email || '';
+
+        const phoneEl = document.getElementById('user-display-phone');
+        if (phoneEl) phoneEl.textContent = currentUser.phone || '';
+
+        const addrEl = document.getElementById('user-display-address');
+        if (addrEl) {
+          const addrParts = [currentUser.address, currentUser.city, currentUser.state, currentUser.pincode].filter(Boolean);
+          addrEl.textContent = addrParts.length > 0 ? addrParts.join(', ') : 'Mumbai, Maharashtra, India';
+        }
+
+        await Promise.allSettled([loadOrders(), loadWishlist()]);
+      } catch (err) {
+        console.error('Account init error:', err);
+        const nameEl = document.getElementById('user-display-name');
+        if (nameEl) nameEl.textContent = 'Account Member';
       }
-
-      document.getElementById('user-display-name').textContent = currentUser.name || 'Storefront Member';
-      document.getElementById('user-display-email').textContent = currentUser.email || '';
-      document.getElementById('user-display-phone').textContent = currentUser.phone || '';
-      document.getElementById('user-display-address').textContent = `${currentUser.city || 'Mumbai'}, ${currentUser.state || 'Maharashtra'}, India`;
-
-      loadOrders();
-      loadWishlist();
     }
 
     async function loadOrders() {
       const container = document.getElementById('orders-list-container');
+      if (!container) return;
+
       try {
-        const res = await fetch(`/api/auth/orders?email=${encodeURIComponent(currentUser.email || '')}&phone=${encodeURIComponent(currentUser.phone || '')}`);
-        const data = await res.json();
-        const orders = data.orders || [];
+        const email = (currentUser?.email || '').trim();
+        const phone = (currentUser?.phone || '').trim();
+        const userId = (currentUser?.id || '').trim();
+
+        const queryParams = new URLSearchParams();
+        if (email) queryParams.set('email', email);
+        if (phone) queryParams.set('phone', phone);
+        if (userId) queryParams.set('userId', userId);
+
+        let orders = [];
+        try {
+          const res = await fetch(`/api/orders?${queryParams.toString()}`);
+          if (res.ok) {
+            const data = await res.json();
+            orders = Array.isArray(data.orders) ? data.orders : [];
+          }
+        } catch (e) {
+          try {
+            const res2 = await fetch(`/api/auth/orders?${queryParams.toString()}`);
+            if (res2.ok) {
+              const data2 = await res2.json();
+              orders = Array.isArray(data2.orders) ? data2.orders : [];
+            }
+          } catch (e2) {}
+        }
 
         if (orders.length === 0) {
           container.innerHTML = `
@@ -215,14 +291,21 @@
           if (o.orderStatus === 'Shipped') badgeClass = 'status-shipped';
           if (o.orderStatus === 'Delivered') badgeClass = 'status-delivered';
 
-          const itemsHtml = (o.items || []).map(i => `
+          const itemsList = Array.isArray(o.items) && o.items.length > 0 ? o.items : [{
+            title: 'Streetwear Apparel',
+            quantity: 1,
+            price: o.total || 1899,
+            image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+          }];
+
+          const itemsHtml = itemsList.map(i => `
             <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
               <img src="${i.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}" style="width:40px; height:50px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
               <div style="flex:1; font-size:0.85rem;">
                 <strong>${i.title}</strong>
                 <span style="color:#666;">(Qty: ${i.quantity || 1})</span>
               </div>
-              <div style="font-weight:700; font-size:0.85rem;">Rs. ${(i.price || 1899).toLocaleString('en-IN')}</div>
+              <div style="font-weight:700; font-size:0.85rem;">Rs. ${(Number(i.price) || 1899).toLocaleString('en-IN')}</div>
             </div>
           `).join('');
 
@@ -256,14 +339,16 @@
         }).join('');
 
       } catch (e) {
-        container.innerHTML = '<div style="color:#c00;">Failed to load orders.</div>';
+        container.innerHTML = '<div style="color:#c00; text-align:center; padding:2rem;">Could not load orders. Please refresh.</div>';
       }
     }
 
     async function loadWishlist() {
       const container = document.getElementById('wishlist-list-container');
-      const list = WishlistEngine.getWishlist();
-      document.getElementById('tab-wishlist-count').textContent = list.length;
+      if (!container) return;
+      const list = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
+      const badge = document.getElementById('tab-wishlist-count');
+      if (badge) badge.textContent = list.length;
 
       if (list.length === 0) {
         container.innerHTML = `
@@ -276,10 +361,9 @@
         return;
       }
 
-      // Fetch full catalog to resolve product details if only handles stored
       let products = [];
       try {
-        const res = await fetch('/api/admin/products');
+        const res = await fetch('/api/products');
         const data = await res.json();
         products = data.products || [];
       } catch (e) {}
@@ -309,7 +393,9 @@
     }
 
     function removeWishlistItem(handle) {
-      WishlistEngine.toggle(handle);
+      if (window.WishlistEngine) {
+        WishlistEngine.toggle(handle);
+      }
       loadWishlist();
     }
 
@@ -320,7 +406,11 @@
       document.getElementById('section-wishlist').style.display = tab === 'wishlist' ? 'block' : 'none';
     }
 
-    document.addEventListener('DOMContentLoaded', initAccount);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAccount);
+    } else {
+      initAccount();
+    }
   </script>
 </body>
 </html>

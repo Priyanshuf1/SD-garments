@@ -52,10 +52,22 @@ const GenrageApp = {
 
   async fetchData() {
     try {
-      const pRes = await fetch('/data/products.json');
-      if (pRes.ok) {
-        const pData = await pRes.json();
-        this.products = pData.products || [];
+      let loadedProds = false;
+      try {
+        const pRes = await fetch('/api/products');
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          this.products = pData.products || (Array.isArray(pData) ? pData : []);
+          if (this.products.length > 0) loadedProds = true;
+        }
+      } catch (e) {}
+
+      if (!loadedProds) {
+        const pRes2 = await fetch('/data/products.json');
+        if (pRes2.ok) {
+          const pData2 = await pRes2.json();
+          this.products = pData2.products || (Array.isArray(pData2) ? pData2 : []);
+        }
       }
       
       const cRes = await fetch('/data/collections.json');

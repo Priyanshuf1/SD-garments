@@ -180,6 +180,618 @@ function sendJson(res, statusCode, data) {
   res.end(JSON.stringify(data));
 }
 
+// =============================================================
+// Memory Cache & Supabase Dual-Sync Engine
+// =============================================================
+let memoryProducts = null;
+let memoryOrders = null;
+
+function filterOutGiftCards(products) {
+  if (!Array.isArray(products)) return [];
+  return products.filter(p => {
+    const handle = (p.handle || '').toLowerCase();
+    const title = (p.title || '').toLowerCase();
+    const cat = (p.category || p.product_type || '').toLowerCase();
+    return !handle.includes('gift-card') && !handle.includes('giftcard') && !title.includes('gift card') && !cat.includes('gift');
+  });
+}
+
+function getMemoryProducts() {
+  if (!memoryProducts) {
+    const pData = readJsonFile('products.json', { products: [] });
+    const list = Array.isArray(pData) ? pData : (pData.products || []);
+    memoryProducts = filterOutGiftCards(list);
+  }
+  return memoryProducts;
+}
+
+function getAllProducts() {
+  return getMemoryProducts();
+}
+
+function getMemoryOrders() {
+  if (!memoryOrders) {
+    memoryOrders = readJsonFile('orders.json', []);
+  }
+  return memoryOrders;
+}
+
+function formatSupabaseOrderToLocal(s) {
+  const addr = s.shipping_address || {};
+  return {
+    id: s.order_no || s.id,
+    supabaseId: s.id,
+    customer: {
+      name: addr.name || 'Storefront Customer',
+      email: s.guest_email || addr.email || '',
+      phone: s.guest_phone || addr.phone || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      address: addr.address || '',
+      pincode: addr.pincode || ''
+    },
+    items: Array.isArray(addr.items) && addr.items.length > 0 ? addr.items : [],
+    subtotal: Math.round((s.subtotal_paise || s.total_paise || 0) / 100),
+    discount: Math.round((s.discount_paise || 0) / 100),
+    shipping: Math.round((s.shipping_paise || 0) / 100),
+    total: Math.round((s.total_paise || 0) / 100),
+    paymentMethod: s.payment_method || 'Prepaid UPI',
+    paymentStatus: s.paid_at || s.status === 'paid' || s.status === 'shipped' || s.status === 'delivered' ? 'Paid' : 'Pending',
+    orderStatus: s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1)) : 'Processing',
+    trackingNumber: s.delhivery_waybill || '',
+    delhiveryWaybill: s.delhivery_waybill || '',
+    trackingUrl: s.tracking_url || '',
+    createdAt: s.created_at || new Date().toISOString(),
+    updatedAt: s.updated_at || new Date().toISOString()
+  };
+}
+
+async function getAllOrders() {
+  const localOrders = getMemoryOrders();
+  if (!supabase.isConfigured) return localOrders;
+  try {
+    const supaOrders = await supabase.from('orders').select('*').order('created_at', { ascending: false }).execute();
+    if (Array.isArray(supaOrders) && supaOrders.length > 0) {
+      const orderMap = new Map();
+      localOrders.forEach(o => orderMap.set(String(o.id), o));
+      supaOrders.forEach(s => {
+        const formatted = formatSupabaseOrderToLocal(s);
+        const existing = orderMap.get(String(formatted.id));
+        if (!existing) {
+          orderMap.set(String(formatted.id), formatted);
+        } else {
+          const isLocalNewer = new Date(existing.updatedAt || existing.createdAt || 0) >= new Date(formatted.updatedAt || formatted.createdAt || 0);
+          orderMap.set(String(formatted.id), isLocalNewer ? { ...formatted, ...existing } : { ...existing, ...formatted });
+        }
+      });
+      const merged = Array.from(orderMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      memoryOrders = merged;
+      return merged;
+    }
+  } catch (err) {
+    console.warn('Supabase orders fetch warning:', err.message);
+  }
+  return localOrders;
+}
+
+async function syncOrderToSupabase(order) {
+  if (!supabase.isConfigured) return;
+  try {
+    const orderNo = order.id;
+    const subtotalPaise = Math.round((Number(order.subtotal) || Number(order.total) || 0) * 100);
+    const discountPaise = Math.round((Number(order.discount) || 0) * 100);
+    const totalPaise = Math.round((Number(order.total) || 0) * 100);
+    const taxPaise = Math.round(totalPaise * 0.12);
+
+    let status = (order.orderStatus || 'processing').toLowerCase();
+    if (status === 'delivered') status = 'delivered';
+    else if (status === 'shipped') status = 'shipped';
+    else if (status === 'cancelled') status = 'cancelled';
+    else if (status === 'paid') status = 'paid';
+    else status = 'processing';
+
+    const shippingAddress = {
+      name: order.customer?.name || 'Customer',
+      email: order.customer?.email || '',
+      phone: order.customer?.phone || '',
+      city: order.customer?.city || '',
+      state: order.customer?.state || '',
+      address: order.customer?.address || '',
+      pincode: order.customer?.pincode || '',
+      items: order.items || []
+    };
+
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const payload = {
+      order_no: orderNo,
+      guest_email: order.customer?.email || '',
+      guest_phone: order.customer?.phone || '',
+      subtotal_paise: subtotalPaise,
+      discount_paise: discountPaise,
+      shipping_paise: 0,
+      tax_paise: taxPaise,
+      total_paise: totalPaise,
+      status: status,
+      payment_method: order.paymentMethod || 'Prepaid UPI',
+      cashfree_order_id: order.cashfreeOrderId || null,
+      cashfree_payment_id: order.cashfreePaymentId || null,
+      shipping_address: shippingAddress,
+      delhivery_waybill: order.trackingNumber || order.delhiveryWaybill || null,
+      tracking_url: order.trackingUrl || (order.trackingNumber ? `https://www.delhivery.com/track/package/${order.trackingNumber}` : null),
+      expires_at: expiresAt,
+      updated_at: new Date().toISOString()
+    };
+
+    const existing = await supabase.from('orders').select('id').eq('order_no', orderNo).execute().catch(() => []);
+    if (existing && existing.length > 0) {
+      await supabase.from('orders').eq('order_no', orderNo).update(payload).catch(e => console.warn('Supabase order update error:', e.message));
+    } else {
+      payload.created_at = order.createdAt || new Date().toISOString();
+      await supabase.from('orders').insert(payload).catch(e => console.warn('Supabase order insert error:', e.message));
+    }
+  } catch (err) {
+    console.warn('Supabase order sync warning:', err.message);
+  }
+}
+
+async function deleteOrderFromSupabase(orderId) {
+  if (!supabase.isConfigured) return;
+  try {
+    await supabase.from('orders').eq('order_no', orderId).delete().catch(() => {});
+  } catch (err) {
+    console.warn('Supabase order delete warning:', err.message);
+  }
+}
+
+async function syncProductToSupabase(product) {
+  if (!supabase.isConfigured) return;
+  try {
+    const prodPayload = {
+      handle: product.handle,
+      title: product.title,
+      description: product.body_html || product.description || '',
+      vendor: product.vendor || 'GENRAGE',
+      category: product.category || 'Apparel',
+      product_type: product.product_type || product.category || 'Streetwear',
+      homepage_section: product.homepage_section || 'none',
+      tags: product.tags || [],
+      is_published: true,
+      gst_rate_percent: 12
+    };
+
+    const existing = await supabase.from('products').select('id').eq('handle', product.handle).execute().catch(() => []);
+    let productId = null;
+    if (existing && existing.length > 0) {
+      productId = existing[0].id;
+      await supabase.from('products').eq('handle', product.handle).update(prodPayload).catch(() => {});
+    } else {
+      const ins = await supabase.from('products').insert(prodPayload).catch(() => []);
+      if (ins && ins[0]) productId = ins[0].id;
+    }
+
+    if (productId && product.variants && product.variants[0]) {
+      const v = product.variants[0];
+      const pricePaise = Math.round(Number(v.price || 1499) * 100);
+      const mrpPaise = Math.round(Number(v.compare_at_price || 2499) * 100);
+      const sku = v.sku || `GR-${product.handle}-${Date.now().toString().slice(-4)}`;
+
+      const varPayload = {
+        product_id: productId,
+        title: v.title || 'Default Title',
+        sku: sku,
+        size: v.size || 'Free Size',
+        color: v.color || 'Black',
+        price_paise: pricePaise,
+        mrp_paise: mrpPaise,
+        inventory_quantity: Number(v.inventory_quantity ?? 100),
+        available: v.available !== false
+      };
+      const exVar = await supabase.from('product_variants').select('id').eq('product_id', productId).execute().catch(() => []);
+      if (exVar && exVar.length > 0) {
+        await supabase.from('product_variants').eq('product_id', productId).update(varPayload).catch(() => {});
+      } else {
+        await supabase.from('product_variants').insert(varPayload).catch(() => {});
+      }
+    }
+
+    if (productId && product.images && product.images.length > 0) {
+      await supabase.from('product_images').eq('product_id', productId).delete().catch(() => {});
+      const imgPayloads = product.images.map((img, idx) => ({
+        product_id: productId,
+        src: typeof img === 'string' ? img : img.src,
+        position: idx + 1,
+        is_model_view: idx === 1
+      }));
+      await supabase.from('product_images').insert(imgPayloads).catch(() => {});
+    }
+  } catch (err) {
+    console.warn('Supabase product sync warning:', err.message);
+  }
+}
+
+async function deleteProductFromSupabase(handleOrId) {
+  if (!supabase.isConfigured) return;
+  try {
+    await supabase.from('products').eq('handle', String(handleOrId)).delete().catch(() => {});
+  } catch (err) {
+    console.warn('Supabase product delete warning:', err.message);
+  }
+}
+
+function handleGetProducts(req, res, parsedUrl) {
+  const products = getAllProducts();
+  const query = parsedUrl.searchParams.get('search')?.toLowerCase();
+  const collection = parsedUrl.searchParams.get('collection');
+  const category = parsedUrl.searchParams.get('category');
+  const stock = parsedUrl.searchParams.get('stock');
+  const homepage_section = parsedUrl.searchParams.get('homepage_section');
+  const sort = parsedUrl.searchParams.get('sort');
+
+  let filtered = products;
+  if (query) {
+    filtered = filtered.filter(p =>
+      p.title.toLowerCase().includes(query) ||
+      p.handle.toLowerCase().includes(query) ||
+      (p.category && p.category.toLowerCase().includes(query)) ||
+      (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+    );
+  }
+  if (category && category !== 'all') {
+    filtered = filtered.filter(p =>
+      (p.category && p.category.toLowerCase() === category.toLowerCase()) ||
+      (p.product_type && p.product_type.toLowerCase() === category.toLowerCase())
+    );
+  }
+  if (homepage_section && homepage_section !== 'all') {
+    filtered = filtered.filter(p => (p.homepage_section || 'none') === homepage_section);
+  }
+  if (collection && collection !== 'all') {
+    filtered = filtered.filter(p =>
+      p.tags && p.tags.some(t => t.toLowerCase() === collection.toLowerCase())
+    );
+  }
+  if (stock) {
+    if (stock === 'in_stock') filtered = filtered.filter(p => (p.variants?.[0]?.inventory_quantity ?? 100) > 10);
+    else if (stock === 'low_stock') filtered = filtered.filter(p => { const q = p.variants?.[0]?.inventory_quantity ?? 100; return q > 0 && q <= 10; });
+    else if (stock === 'out_of_stock') filtered = filtered.filter(p => (p.variants?.[0]?.inventory_quantity ?? 100) <= 0);
+  }
+  if (sort) {
+    if (sort === 'price_asc') filtered.sort((a, b) => Number(a.variants?.[0]?.price || 0) - Number(b.variants?.[0]?.price || 0));
+    else if (sort === 'price_desc') filtered.sort((a, b) => Number(b.variants?.[0]?.price || 0) - Number(a.variants?.[0]?.price || 0));
+    else if (sort === 'title_asc') filtered.sort((a, b) => a.title.localeCompare(b.title));
+    else if (sort === 'newest') filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  return sendJson(res, 200, {
+    success: true,
+    count: filtered.length,
+    products: filtered
+  });
+}
+
+async function handleCreateProduct(req, res) {
+  const payload = await parseBody(req);
+  const products = getAllProducts();
+  const prodCategory = payload.category || payload.product_type || 'T-Shirts & Boxy Tees';
+  const primaryImage = payload.image || (payload.images && payload.images[0]?.src) || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+  const hoverImage = payload.hoverImage || (payload.images && payload.images[1]?.src) || null;
+
+  let productImages = [];
+  if (payload.images && Array.isArray(payload.images) && payload.images.length > 0) {
+    productImages = payload.images.map((img, i) => ({
+      id: img.id || (Date.now() + i + 2),
+      src: typeof img === 'string' ? img : img.src,
+      position: i + 1
+    }));
+  } else {
+    productImages.push({ id: Date.now() + 2, src: primaryImage, position: 1 });
+    if (hoverImage) {
+      productImages.push({ id: Date.now() + 3, src: hoverImage, position: 2 });
+    }
+  }
+
+  const newProduct = {
+    id: Date.now(),
+    title: payload.title || 'Untitled Product',
+    handle: payload.handle || (payload.title ? payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`),
+    body_html: payload.description || '',
+    vendor: payload.vendor || 'GENRAGE',
+    category: prodCategory,
+    product_type: payload.product_type || prodCategory,
+    homepage_section: payload.homepage_section || 'none',
+    tags: Array.isArray(payload.tags) ? payload.tags : (payload.tags ? payload.tags.split(',').map(s => s.trim()) : ['Shop']),
+    published_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    variants: [
+      {
+        id: Date.now() + 1,
+        title: payload.size || 'Default',
+        price: String(payload.price || '1299.00'),
+        compare_at_price: String(payload.compare_at_price || '1999.00'),
+        sku: payload.sku || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
+        available: payload.available !== false,
+        inventory_quantity: Number(payload.stock) || 100
+      }
+    ],
+    images: productImages
+  };
+
+  products.unshift(newProduct);
+  memoryProducts = products;
+  writeJsonFile('products.json', { products });
+  syncProductToSupabase(newProduct);
+
+  return sendJson(res, 201, { success: true, product: newProduct });
+}
+
+async function handleUpdateProduct(req, res, id) {
+  const payload = await parseBody(req);
+  const products = getAllProducts();
+  const index = products.findIndex(p => String(p.id) === String(id) || p.handle === String(id));
+
+  if (index === -1) {
+    return sendJson(res, 404, { success: false, message: 'Product not found' });
+  }
+
+  const current = products[index];
+  if (payload.title) current.title = payload.title;
+  if (payload.category) current.category = payload.category;
+  if (payload.product_type) current.product_type = payload.product_type;
+  if (payload.homepage_section !== undefined) current.homepage_section = payload.homepage_section;
+  if (payload.price && current.variants?.[0]) current.variants[0].price = String(payload.price);
+  if (payload.compare_at_price && current.variants?.[0]) current.variants[0].compare_at_price = String(payload.compare_at_price);
+  if (payload.stock !== undefined && current.variants?.[0]) current.variants[0].inventory_quantity = Number(payload.stock);
+  if (payload.available !== undefined && current.variants?.[0]) current.variants[0].available = Boolean(payload.available);
+  if (payload.tags) current.tags = Array.isArray(payload.tags) ? payload.tags : payload.tags.split(',').map(s => s.trim());
+  
+  if (payload.images && Array.isArray(payload.images) && payload.images.length > 0) {
+    current.images = payload.images.map((img, i) => ({
+      id: img.id || (Date.now() + i + 2),
+      src: typeof img === 'string' ? img : img.src,
+      position: i + 1
+    }));
+  } else {
+    if (payload.image) {
+      if (!current.images || current.images.length === 0) {
+        current.images = [{ id: Date.now() + 2, src: payload.image, position: 1 }];
+      } else {
+        current.images[0].src = payload.image;
+      }
+    }
+    if (payload.hoverImage) {
+      if (!current.images) current.images = [];
+      if (current.images.length > 1) {
+        current.images[1].src = payload.hoverImage;
+      } else {
+        current.images.push({ id: Date.now() + 3, src: payload.hoverImage, position: 2 });
+      }
+    } else if (payload.hoverImage === '') {
+      if (current.images && current.images.length > 1) {
+        current.images = [current.images[0]];
+      }
+    }
+  }
+  current.updated_at = new Date().toISOString();
+
+  products[index] = current;
+  memoryProducts = products;
+  writeJsonFile('products.json', { products });
+  syncProductToSupabase(current);
+
+  return sendJson(res, 200, { success: true, product: current });
+}
+
+async function handleDeleteProduct(req, res, id) {
+  const products = getAllProducts();
+  const toDelete = products.find(p => String(p.id) === String(id) || p.handle === String(id));
+  const filtered = products.filter(p => String(p.id) !== String(id) && p.handle !== String(id));
+  if (filtered.length === products.length) {
+    return sendJson(res, 404, { success: false, message: 'Product not found' });
+  }
+  memoryProducts = filtered;
+  writeJsonFile('products.json', { products: filtered });
+  if (toDelete) {
+    deleteProductFromSupabase(toDelete.handle);
+  }
+
+  return sendJson(res, 200, { success: true, message: 'Product deleted' });
+}
+
+async function handleGetOrders(req, res, parsedUrl) {
+  const orders = await getAllOrders();
+  const status = parsedUrl.searchParams.get('status');
+  const email = parsedUrl.searchParams.get('email')?.toLowerCase();
+  const phone = parsedUrl.searchParams.get('phone');
+  const userId = parsedUrl.searchParams.get('userId');
+
+  let filtered = orders;
+  if (status && status !== 'all') {
+    filtered = filtered.filter(o => o.orderStatus?.toLowerCase() === status.toLowerCase());
+  }
+  if (email || phone || userId) {
+    filtered = filtered.filter(o => {
+      const cEmail = (o.customer?.email || '').toLowerCase();
+      const cPhone = (o.customer?.phone || '').replace(/\s+/g, '');
+      const searchPhone = phone ? phone.replace(/\s+/g, '') : null;
+      return (email && cEmail === email) ||
+             (searchPhone && cPhone === searchPhone) ||
+             (userId && (o.userId === userId || o.supabaseId === userId));
+    });
+  }
+
+  return sendJson(res, 200, {
+    success: true,
+    count: filtered.length,
+    orders: filtered
+  });
+}
+
+async function handleCreateOrder(req, res, isCheckout = false) {
+  const payload = await parseBody(req);
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  if (!items || items.length === 0) {
+    return sendJson(res, 400, {
+      success: false,
+      error: 'Cart is empty. Cannot place an empty order.',
+      message: 'Cart is empty. Cannot place an empty order.'
+    });
+  }
+
+  const allProducts = getAllProducts();
+  const processedItems = items.map(item => {
+    const match = allProducts.find(p =>
+      (item.id && String(p.id) === String(item.id)) ||
+      (item.title && p.title.toLowerCase() === String(item.title).toLowerCase()) ||
+      (item.handle && p.handle === item.handle)
+    );
+    return {
+      id: item.id || match?.id || Date.now(),
+      title: item.title || match?.title || 'Streetwear Apparel',
+      size: item.size || 'L',
+      price: Number(item.price) || Number(match?.variants?.[0]?.price) || 1499,
+      quantity: Number(item.quantity || item.qty) || 1,
+      image: item.image || match?.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+    };
+  });
+
+  const calculatedSubtotal = processedItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+  const subtotal = Number(payload.subtotal) || calculatedSubtotal || 1999;
+  const discount = Number(payload.discount) || 0;
+  const shipping = Number(payload.shipping) || 0;
+  const total = Number(payload.total) || Math.max(0, subtotal - discount + shipping);
+
+  const orderId = payload.id || `GR-${Math.floor(1000 + Math.random() * 9000)}`;
+  const isCashfree = payload.paymentMethod === 'cashfree' || payload.paymentMethod === 'Cashfree 1-Click UPI';
+
+  const newOrder = {
+    id: orderId,
+    customer: {
+      name: payload.customer?.name || 'Walk-in Customer',
+      email: payload.customer?.email || '',
+      phone: payload.customer?.phone || '+91 99999 99999',
+      city: payload.customer?.city || 'Mumbai',
+      state: payload.customer?.state || 'Maharashtra',
+      address: payload.customer?.address || '',
+      pincode: payload.customer?.pincode || ''
+    },
+    items: processedItems,
+    subtotal,
+    discount,
+    shipping,
+    total,
+    paymentMethod: payload.paymentMethod || (isCashfree ? 'Cashfree 1-Click UPI' : 'Cash on Delivery (COD)'),
+    paymentStatus: payload.paymentStatus || (isCashfree ? 'Pending' : 'Pending COD'),
+    orderStatus: payload.orderStatus || 'Processing',
+    trackingNumber: payload.trackingNumber || '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    cashfreeOrderId: isCashfree ? `cf_order_${orderId}_${Date.now()}` : (payload.cashfreeOrderId || null),
+    cashfreePaymentId: payload.cashfreePaymentId || null
+  };
+
+  const orders = getMemoryOrders();
+  orders.unshift(newOrder);
+  memoryOrders = orders;
+  writeJsonFile('orders.json', orders);
+  syncOrderToSupabase(newOrder);
+
+  return sendJson(res, 201, {
+    success: true,
+    order: newOrder,
+    orderId: newOrder.id,
+    cashfreeOrderId: newOrder.cashfreeOrderId
+  });
+}
+
+async function handleUpdateOrder(req, res, id) {
+  const payload = await parseBody(req);
+  const orders = await getAllOrders();
+  const order = orders.find(o => String(o.id) === String(id));
+  if (!order) {
+    return sendJson(res, 404, { success: false, message: 'Order not found' });
+  }
+
+  if (payload.orderStatus) order.orderStatus = payload.orderStatus;
+  if (payload.paymentStatus) order.paymentStatus = payload.paymentStatus;
+  if (payload.paymentMethod) order.paymentMethod = payload.paymentMethod;
+  if (payload.trackingNumber !== undefined) order.trackingNumber = payload.trackingNumber;
+  if (payload.cashfreeOrderId) order.cashfreeOrderId = payload.cashfreeOrderId;
+  if (payload.cashfreePaymentId) order.cashfreePaymentId = payload.cashfreePaymentId;
+  if (payload.customer) order.customer = { ...order.customer, ...payload.customer };
+  order.updatedAt = new Date().toISOString();
+
+  writeJsonFile('orders.json', orders);
+  memoryOrders = orders;
+  await syncOrderToSupabase(order);
+
+  return sendJson(res, 200, { success: true, order });
+}
+
+async function handleDelhiveryAwb(req, res, id) {
+  const orders = await getAllOrders();
+  const order = orders.find(o => String(o.id) === String(id));
+  if (!order) {
+    return sendJson(res, 404, { success: false, message: 'Order not found' });
+  }
+
+  const delhiveryAwb = '14092' + Math.floor(1000000 + Math.random() * 9000000);
+  order.trackingNumber = delhiveryAwb;
+  order.delhiveryWaybill = delhiveryAwb;
+  order.carrier = 'Delhivery Express Air';
+  order.orderStatus = 'Shipped';
+  order.trackingUrl = `https://www.delhivery.com/track/package/${delhiveryAwb}`;
+  order.updatedAt = new Date().toISOString();
+
+  writeJsonFile('orders.json', orders);
+  memoryOrders = orders;
+  await syncOrderToSupabase(order);
+
+  return sendJson(res, 200, {
+    success: true,
+    message: `Delhivery Waybill ${delhiveryAwb} generated successfully!`,
+    awb: delhiveryAwb,
+    order
+  });
+}
+
+async function handleCashfreeVerify(req, res, id) {
+  const orders = await getAllOrders();
+  const order = orders.find(o => String(o.id) === String(id));
+  if (!order) {
+    return sendJson(res, 404, { success: false, message: 'Order not found' });
+  }
+
+  order.paymentStatus = 'Paid';
+  order.paymentMethod = order.paymentMethod || 'Cashfree 1-Click UPI';
+  order.cashfreePaymentId = order.cashfreePaymentId || `cf_pay_${Date.now()}`;
+  order.updatedAt = new Date().toISOString();
+
+  writeJsonFile('orders.json', orders);
+  memoryOrders = orders;
+  await syncOrderToSupabase(order);
+
+  return sendJson(res, 200, {
+    success: true,
+    message: 'Cashfree payment verified and confirmed.',
+    order
+  });
+}
+
+async function handleDeleteOrder(req, res, id) {
+  const orders = await getAllOrders();
+  const filtered = orders.filter(o => String(o.id) !== String(id));
+  if (filtered.length === orders.length) {
+    return sendJson(res, 404, { success: false, message: 'Order not found' });
+  }
+  memoryOrders = filtered;
+  writeJsonFile('orders.json', filtered);
+  await deleteOrderFromSupabase(id);
+
+  return sendJson(res, 200, { success: true, message: 'Order deleted' });
+}
+
 async function appHandler(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
@@ -236,6 +848,53 @@ async function appHandler(req, res) {
   }
 
   // -------------------------------------------------------------
+  // Data JSON Endpoints (Intercepted to serve live in-memory & Supabase state)
+  // -------------------------------------------------------------
+  if (pathname === '/data/products.json') {
+    return sendJson(res, 200, { products: getAllProducts() });
+  }
+
+  if (pathname === '/data/orders.json') {
+    const ords = await getAllOrders();
+    return sendJson(res, 200, ords);
+  }
+
+  // -------------------------------------------------------------
+  // Storefront & Public REST APIs for Products & Orders
+  // -------------------------------------------------------------
+  if (pathname === '/api/products' || pathname.startsWith('/api/products/')) {
+    const prodId = pathname.replace('/api/products', '').replace(/^\//, '');
+    if (req.method === 'GET' && !prodId) {
+      return handleGetProducts(req, res, parsedUrl);
+    }
+    if (req.method === 'POST' && !prodId) {
+      return handleCreateProduct(req, res);
+    }
+    if (req.method === 'PUT' && prodId) {
+      return handleUpdateProduct(req, res, prodId);
+    }
+    if (req.method === 'DELETE' && prodId) {
+      return handleDeleteProduct(req, res, prodId);
+    }
+  }
+
+  if (pathname === '/api/orders' || pathname.startsWith('/api/orders/')) {
+    const orderId = pathname.replace('/api/orders', '').replace(/^\//, '');
+    if (req.method === 'GET' && !orderId) {
+      return handleGetOrders(req, res, parsedUrl);
+    }
+    if (req.method === 'POST' && !orderId) {
+      return handleCreateOrder(req, res, false);
+    }
+    if (req.method === 'PUT' && orderId) {
+      return handleUpdateOrder(req, res, orderId);
+    }
+    if (req.method === 'DELETE' && orderId) {
+      return handleDeleteOrder(req, res, orderId);
+    }
+  }
+
+  // -------------------------------------------------------------
   // REST API Endpoints for Admin Management Portal
   // -------------------------------------------------------------
   if (pathname.startsWith('/api/admin/')) {
@@ -243,14 +902,13 @@ async function appHandler(req, res) {
 
     // 1. Executive Dashboard Stats
     if (apiRoute === 'stats' && req.method === 'GET') {
-      const pData = readJsonFile('products.json', { products: [] });
+      const products = getAllProducts();
       const cData = readJsonFile('collections.json', { collections: [] });
-      const orders = readJsonFile('orders.json', []);
+      const orders = await getAllOrders();
       const discounts = readJsonFile('discounts.json', []);
       const customers = readJsonFile('customers.json', []);
       const reviews = readJsonFile('reviews.json', []);
 
-      const products = pData.products || [];
       const collections = cData.collections || [];
 
       const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
@@ -284,177 +942,18 @@ async function appHandler(req, res) {
 
     // 2. Products CRUD
     if (apiRoute.startsWith('products')) {
-      const pData = readJsonFile('products.json', { products: [] });
-      let products = pData.products || [];
-
-      // GET /api/admin/products
-      if (req.method === 'GET' && apiRoute === 'products') {
-        const query = parsedUrl.searchParams.get('search')?.toLowerCase();
-        const collection = parsedUrl.searchParams.get('collection');
-        const category = parsedUrl.searchParams.get('category');
-        const stock = parsedUrl.searchParams.get('stock');
-        const homepage_section = parsedUrl.searchParams.get('homepage_section');
-        const sort = parsedUrl.searchParams.get('sort');
-
-        let filtered = products;
-        if (query) {
-          filtered = filtered.filter(p =>
-            p.title.toLowerCase().includes(query) ||
-            p.handle.toLowerCase().includes(query) ||
-            (p.category && p.category.toLowerCase().includes(query)) ||
-            (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
-          );
-        }
-        if (category && category !== 'all') {
-          filtered = filtered.filter(p =>
-            (p.category && p.category.toLowerCase() === category.toLowerCase()) ||
-            (p.product_type && p.product_type.toLowerCase() === category.toLowerCase())
-          );
-        }
-        if (homepage_section && homepage_section !== 'all') {
-          filtered = filtered.filter(p => (p.homepage_section || 'none') === homepage_section);
-        }
-        if (collection && collection !== 'all') {
-          filtered = filtered.filter(p =>
-            p.tags && p.tags.some(t => t.toLowerCase() === collection.toLowerCase())
-          );
-        }
-        if (stock) {
-          if (stock === 'in_stock') filtered = filtered.filter(p => (p.variants?.[0]?.inventory_quantity ?? 100) > 10);
-          else if (stock === 'low_stock') filtered = filtered.filter(p => { const q = p.variants?.[0]?.inventory_quantity ?? 100; return q > 0 && q <= 10; });
-          else if (stock === 'out_of_stock') filtered = filtered.filter(p => (p.variants?.[0]?.inventory_quantity ?? 100) <= 0);
-        }
-        if (sort) {
-          if (sort === 'price_asc') filtered.sort((a, b) => Number(a.variants?.[0]?.price || 0) - Number(b.variants?.[0]?.price || 0));
-          else if (sort === 'price_desc') filtered.sort((a, b) => Number(b.variants?.[0]?.price || 0) - Number(a.variants?.[0]?.price || 0));
-          else if (sort === 'title_asc') filtered.sort((a, b) => a.title.localeCompare(b.title));
-          else if (sort === 'newest') filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-        }
-
-        return sendJson(res, 200, {
-          success: true,
-          count: filtered.length,
-          products: filtered
-        });
+      const prodId = apiRoute.replace('products', '').replace(/^\//, '');
+      if (req.method === 'GET' && !prodId) {
+        return handleGetProducts(req, res, parsedUrl);
       }
-
-      // POST /api/admin/products (Create Product)
-      if (req.method === 'POST' && apiRoute === 'products') {
-        const payload = await parseBody(req);
-        const prodCategory = payload.category || payload.product_type || 'T-Shirts & Boxy Tees';
-        const primaryImage = payload.image || (payload.images && payload.images[0]?.src) || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
-        const hoverImage = payload.hoverImage || (payload.images && payload.images[1]?.src) || null;
-
-        let productImages = [];
-        if (payload.images && Array.isArray(payload.images) && payload.images.length > 0) {
-          productImages = payload.images.map((img, i) => ({
-            id: img.id || (Date.now() + i + 2),
-            src: typeof img === 'string' ? img : img.src,
-            position: i + 1
-          }));
-        } else {
-          productImages.push({ id: Date.now() + 2, src: primaryImage, position: 1 });
-          if (hoverImage) {
-            productImages.push({ id: Date.now() + 3, src: hoverImage, position: 2 });
-          }
-        }
-
-        const newProduct = {
-          id: Date.now(),
-          title: payload.title || 'Untitled Product',
-          handle: payload.handle || (payload.title ? payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`),
-          body_html: payload.description || '',
-          vendor: payload.vendor || 'GENRAGE',
-          category: prodCategory,
-          product_type: payload.product_type || prodCategory,
-          homepage_section: payload.homepage_section || 'none',
-          tags: Array.isArray(payload.tags) ? payload.tags : (payload.tags ? payload.tags.split(',').map(s => s.trim()) : ['Shop']),
-          published_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          variants: [
-            {
-              id: Date.now() + 1,
-              title: payload.size || 'Default',
-              price: String(payload.price || '1299.00'),
-              compare_at_price: String(payload.compare_at_price || '1999.00'),
-              sku: payload.sku || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
-              available: payload.available !== false,
-              inventory_quantity: Number(payload.stock) || 100
-            }
-          ],
-          images: productImages
-        };
-
-        products.unshift(newProduct);
-        writeJsonFile('products.json', { products });
-        return sendJson(res, 201, { success: true, product: newProduct });
+      if (req.method === 'POST' && !prodId) {
+        return handleCreateProduct(req, res);
       }
-
-      // PUT /api/admin/products/:id (Update Product)
-      if (req.method === 'PUT') {
-        const id = apiRoute.replace('products/', '');
-        const payload = await parseBody(req);
-        const index = products.findIndex(p => String(p.id) === String(id));
-
-        if (index === -1) {
-          return sendJson(res, 404, { success: false, message: 'Product not found' });
-        }
-
-        const current = products[index];
-        if (payload.title) current.title = payload.title;
-        if (payload.category) current.category = payload.category;
-        if (payload.product_type) current.product_type = payload.product_type;
-        if (payload.homepage_section !== undefined) current.homepage_section = payload.homepage_section;
-        if (payload.price && current.variants[0]) current.variants[0].price = String(payload.price);
-        if (payload.compare_at_price && current.variants[0]) current.variants[0].compare_at_price = String(payload.compare_at_price);
-        if (payload.stock !== undefined && current.variants[0]) current.variants[0].inventory_quantity = Number(payload.stock);
-        if (payload.available !== undefined && current.variants[0]) current.variants[0].available = Boolean(payload.available);
-        if (payload.tags) current.tags = Array.isArray(payload.tags) ? payload.tags : payload.tags.split(',').map(s => s.trim());
-        
-        if (payload.images && Array.isArray(payload.images) && payload.images.length > 0) {
-          current.images = payload.images.map((img, i) => ({
-            id: img.id || (Date.now() + i + 2),
-            src: typeof img === 'string' ? img : img.src,
-            position: i + 1
-          }));
-        } else {
-          if (payload.image) {
-            if (!current.images || current.images.length === 0) {
-              current.images = [{ id: Date.now() + 2, src: payload.image, position: 1 }];
-            } else {
-              current.images[0].src = payload.image;
-            }
-          }
-          if (payload.hoverImage) {
-            if (!current.images) current.images = [];
-            if (current.images.length > 1) {
-              current.images[1].src = payload.hoverImage;
-            } else {
-              current.images.push({ id: Date.now() + 3, src: payload.hoverImage, position: 2 });
-            }
-          } else if (payload.hoverImage === '') {
-            if (current.images && current.images.length > 1) {
-              current.images = [current.images[0]];
-            }
-          }
-        }
-        current.updated_at = new Date().toISOString();
-
-        products[index] = current;
-        writeJsonFile('products.json', { products });
-        return sendJson(res, 200, { success: true, product: current });
+      if (req.method === 'PUT' && prodId) {
+        return handleUpdateProduct(req, res, prodId);
       }
-
-      // DELETE /api/admin/products/:id (Delete Product)
-      if (req.method === 'DELETE') {
-        const id = apiRoute.replace('products/', '');
-        const filtered = products.filter(p => String(p.id) !== String(id));
-        if (filtered.length === products.length) {
-          return sendJson(res, 404, { success: false, message: 'Product not found' });
-        }
-        writeJsonFile('products.json', { products: filtered });
-        return sendJson(res, 200, { success: true, message: 'Product deleted' });
+      if (req.method === 'DELETE' && prodId) {
+        return handleDeleteProduct(req, res, prodId);
       }
     }
 
@@ -526,149 +1025,29 @@ async function appHandler(req, res) {
 
     // 4. Orders CRUD
     if (apiRoute.startsWith('orders')) {
-      let orders = readJsonFile('orders.json', []);
-
-      // GET /api/admin/orders
-      if (req.method === 'GET' && apiRoute === 'orders') {
-        const status = parsedUrl.searchParams.get('status');
-        let filtered = orders;
-        if (status && status !== 'all') {
-          filtered = filtered.filter(o => o.orderStatus?.toLowerCase() === status.toLowerCase());
-        }
-        return sendJson(res, 200, { success: true, count: filtered.length, orders: filtered });
-      }
-
-      // POST /api/admin/orders
-      if (req.method === 'POST' && apiRoute === 'orders') {
-        const payload = await parseBody(req);
-        const pData = readJsonFile('products.json', { products: [] });
-        const allProducts = pData.products || [];
-
-        const incomingItems = (Array.isArray(payload.items) && payload.items.length > 0)
-          ? payload.items
-          : [{
-              title: payload.title || 'GENRAGE Heavyweight Streetwear Tee',
-              size: payload.size || 'L',
-              price: Number(payload.price || payload.total || 1499),
-              quantity: 1
-            }];
-
-        const processedItems = incomingItems.map(item => {
-          const match = allProducts.find(p =>
-            (item.id && String(p.id) === String(item.id)) ||
-            (item.title && p.title.toLowerCase() === String(item.title).toLowerCase())
-          );
-          return {
-            id: item.id || match?.id || Date.now(),
-            title: item.title || match?.title || 'Streetwear Apparel',
-            size: item.size || 'L',
-            price: Number(item.price) || Number(match?.variants?.[0]?.price) || 1499,
-            quantity: Number(item.quantity || item.qty) || 1,
-            image: item.image || match?.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
-          };
-        });
-
-        const calculatedSubtotal = processedItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
-        const subtotal = Number(payload.subtotal) || calculatedSubtotal || 1999;
-        const discount = Number(payload.discount) || 0;
-        const shipping = Number(payload.shipping) || 0;
-        const total = Number(payload.total) || Math.max(0, subtotal - discount + shipping);
-
-        const newOrder = {
-          id: payload.id || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
-          customer: payload.customer || { name: 'Walk-in Customer', city: 'Mumbai', phone: '+91 99999 99999' },
-          items: processedItems,
-          subtotal,
-          discount,
-          shipping,
-          total,
-          paymentMethod: payload.paymentMethod || 'Gokwik UPI',
-          paymentStatus: payload.paymentStatus || 'Paid',
-          orderStatus: payload.orderStatus || 'Processing',
-          trackingNumber: payload.trackingNumber || '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        orders.unshift(newOrder);
-        writeJsonFile('orders.json', orders);
-        return sendJson(res, 201, { success: true, order: newOrder });
-      }
-
-      // PUT /api/admin/orders/:id (Update Status)
-      if (req.method === 'PUT') {
-        const id = apiRoute.replace('orders/', '');
-        const payload = await parseBody(req);
-        const order = orders.find(o => String(o.id) === String(id));
-        if (!order) {
-          return sendJson(res, 404, { success: false, message: 'Order not found' });
-        }
-        if (payload.orderStatus) order.orderStatus = payload.orderStatus;
-        if (payload.paymentStatus) order.paymentStatus = payload.paymentStatus;
-        if (payload.paymentMethod) order.paymentMethod = payload.paymentMethod;
-        if (payload.trackingNumber !== undefined) order.trackingNumber = payload.trackingNumber;
-        if (payload.cashfreeOrderId) order.cashfreeOrderId = payload.cashfreeOrderId;
-        if (payload.cashfreePaymentId) order.cashfreePaymentId = payload.cashfreePaymentId;
-        if (payload.customer) order.customer = { ...order.customer, ...payload.customer };
-        order.updatedAt = new Date().toISOString();
-        writeJsonFile('orders.json', orders);
-        return sendJson(res, 200, { success: true, order });
-      }
-
-      // POST /api/admin/orders/:id/delhivery-awb (Generate Delhivery AWB & Dispatch)
+      // Delhivery AWB
       if (req.method === 'POST' && apiRoute.includes('/delhivery-awb')) {
         const id = apiRoute.replace('orders/', '').replace('/delhivery-awb', '');
-        const order = orders.find(o => String(o.id) === String(id));
-        if (!order) {
-          return sendJson(res, 404, { success: false, message: 'Order not found' });
-        }
-        
-        const delhiveryAwb = '14092' + Math.floor(1000000 + Math.random() * 9000000);
-        order.trackingNumber = delhiveryAwb;
-        order.delhiveryWaybill = delhiveryAwb;
-        order.carrier = 'Delhivery Express Air';
-        order.orderStatus = 'Shipped';
-        order.trackingUrl = `https://www.delhivery.com/track/package/${delhiveryAwb}`;
-        order.updatedAt = new Date().toISOString();
-
-        writeJsonFile('orders.json', orders);
-        return sendJson(res, 200, {
-          success: true,
-          message: `Delhivery Waybill ${delhiveryAwb} generated successfully!`,
-          awb: delhiveryAwb,
-          order
-        });
+        return handleDelhiveryAwb(req, res, id);
       }
-
-      // POST /api/admin/orders/:id/cashfree-verify (Verify Cashfree Payment)
+      // Cashfree verify
       if (req.method === 'POST' && apiRoute.includes('/cashfree-verify')) {
         const id = apiRoute.replace('orders/', '').replace('/cashfree-verify', '');
-        const order = orders.find(o => String(o.id) === String(id));
-        if (!order) {
-          return sendJson(res, 404, { success: false, message: 'Order not found' });
-        }
-
-        order.paymentStatus = 'Paid';
-        order.paymentMethod = order.paymentMethod || 'Cashfree 1-Click UPI';
-        order.cashfreePaymentId = order.cashfreePaymentId || `cf_pay_${Date.now()}`;
-        order.updatedAt = new Date().toISOString();
-
-        writeJsonFile('orders.json', orders);
-        return sendJson(res, 200, {
-          success: true,
-          message: 'Cashfree payment verified and confirmed.',
-          order
-        });
+        return handleCashfreeVerify(req, res, id);
       }
 
-      // DELETE /api/admin/orders/:id (Delete Order)
-      if (req.method === 'DELETE') {
-        const id = apiRoute.replace('orders/', '');
-        const filtered = orders.filter(o => String(o.id) !== String(id));
-        if (filtered.length === orders.length) {
-          return sendJson(res, 404, { success: false, message: 'Order not found' });
-        }
-        writeJsonFile('orders.json', filtered);
-        return sendJson(res, 200, { success: true, message: 'Order deleted' });
+      const orderId = apiRoute.replace('orders', '').replace(/^\//, '');
+      if (req.method === 'GET' && !orderId) {
+        return handleGetOrders(req, res, parsedUrl);
+      }
+      if (req.method === 'POST' && !orderId) {
+        return handleCreateOrder(req, res, false);
+      }
+      if (req.method === 'PUT' && orderId) {
+        return handleUpdateOrder(req, res, orderId);
+      }
+      if (req.method === 'DELETE' && orderId) {
+        return handleDeleteOrder(req, res, orderId);
       }
     }
 
@@ -1343,18 +1722,7 @@ async function appHandler(req, res) {
 
     // GET /api/auth/orders
     if (authRoute === 'orders' && req.method === 'GET') {
-      const email = parsedUrl.searchParams.get('email')?.toLowerCase();
-      const phone = parsedUrl.searchParams.get('phone');
-      const orders = readJsonFile('orders.json', []);
-
-      let userOrders = orders;
-      if (email || phone) {
-        userOrders = orders.filter(o =>
-          (email && o.customer?.email?.toLowerCase() === email) ||
-          (phone && o.customer?.phone?.replace(/\s+/g, '') === phone.replace(/\s+/g, ''))
-        );
-      }
-      return sendJson(res, 200, { success: true, count: userOrders.length, orders: userOrders });
+      return handleGetOrders(req, res, parsedUrl);
     }
 
     // POST /api/auth/logout
@@ -1370,55 +1738,17 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   if (pathname.startsWith('/api/checkout/')) {
     const checkoutRoute = pathname.replace('/api/checkout/', '');
-    let orders = readJsonFile('orders.json', []);
 
     // POST /api/checkout/create-order
     if (checkoutRoute === 'create-order' && req.method === 'POST') {
-      const payload = await parseBody(req);
-      const orderId = `GR-${Math.floor(1000 + Math.random() * 9000)}`;
-      const isCashfree = payload.paymentMethod === 'cashfree' || payload.paymentMethod === 'Cashfree 1-Click UPI';
-
-      const newOrder = {
-        id: orderId,
-        customer: {
-          name: payload.customer?.name || 'Customer',
-          email: payload.customer?.email || '',
-          phone: payload.customer?.phone || '+91 99999 00000',
-          city: payload.customer?.city || 'Mumbai',
-          state: payload.customer?.state || 'Maharashtra',
-          address: payload.customer?.address || '',
-          pincode: payload.customer?.pincode || ''
-        },
-        items: Array.isArray(payload.items) ? payload.items : [],
-        subtotal: Number(payload.subtotal) || Number(payload.total) || 1899,
-        discount: Number(payload.discount) || 0,
-        shipping: 0,
-        total: Number(payload.total) || 1899,
-        paymentMethod: isCashfree ? 'Cashfree 1-Click UPI' : 'Cash on Delivery (COD)',
-        paymentStatus: isCashfree ? 'Pending' : 'Pending COD',
-        orderStatus: 'Processing',
-        trackingNumber: '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        cashfreeOrderId: isCashfree ? `cf_order_${orderId}_${Date.now()}` : null,
-        cashfreePaymentId: null
-      };
-
-      orders.unshift(newOrder);
-      writeJsonFile('orders.json', orders);
-
-      return sendJson(res, 201, {
-        success: true,
-        order: newOrder,
-        orderId: newOrder.id,
-        cashfreeOrderId: newOrder.cashfreeOrderId
-      });
+      return handleCreateOrder(req, res, true);
     }
 
     // POST /api/checkout/verify-payment
     if (checkoutRoute === 'verify-payment' && req.method === 'POST') {
       const payload = await parseBody(req);
       const orderId = payload.orderId;
+      const orders = await getAllOrders();
       const order = orders.find(o => String(o.id) === String(orderId));
       if (!order) return sendJson(res, 404, { success: false, message: 'Order not found' });
 
@@ -1427,6 +1757,7 @@ async function appHandler(req, res) {
       order.updatedAt = new Date().toISOString();
 
       writeJsonFile('orders.json', orders);
+      syncOrderToSupabase(order);
       return sendJson(res, 200, { success: true, message: 'Payment confirmed & order marked Paid', order });
     }
 
@@ -1593,8 +1924,7 @@ async function appHandler(req, res) {
   }
 
   if (pathname === '/api/products') {
-    const pData = readJsonFile('products.json', { products: [] });
-    return sendJson(res, 200, { success: true, count: pData.products.length, products: pData.products });
+    return handleGetProducts(req, res, parsedUrl);
   }
 
   // Fallback 404 (JSON formatted for JSON endpoints to prevent SyntaxError)

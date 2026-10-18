@@ -344,19 +344,9 @@
       try {
         const raw = localStorage.getItem('genrage_cart');
         if (raw) checkoutItems = JSON.parse(raw);
-      } catch (e) {}
-
-      // Fallback sample product if cart is empty
-      if (!checkoutItems || checkoutItems.length === 0) {
-        checkoutItems = [{
-          id: 9238158967022,
-          title: 'Genrage Melange Balloon Baggy Pants',
-          price: 1899,
-          compare_at_price: 2999,
-          quantity: 1,
-          size: '32',
-          image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
-        }];
+        if (!Array.isArray(checkoutItems)) checkoutItems = [];
+      } catch (e) {
+        checkoutItems = [];
       }
 
       // Pre-fill user data if logged in
@@ -371,11 +361,62 @@
         if (user.pincode) document.getElementById('chk-pincode').value = user.pincode;
       }
 
+      // If cart is empty, show empty state notice
+      if (checkoutItems.length === 0) {
+        const firstBox = document.querySelector('.checkout-container > div:first-child');
+        if (firstBox && !document.getElementById('empty-cart-banner')) {
+          const banner = document.createElement('div');
+          banner.id = 'empty-cart-banner';
+          banner.className = 'card-box';
+          banner.style.textAlign = 'center';
+          banner.style.padding = '2.5rem 1.5rem';
+          banner.innerHTML = `
+            <div style="font-size:2.5rem; margin-bottom:0.75rem;">🛍️</div>
+            <h3 style="font-size:1.25rem; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Your Shopping Bag is Empty</h3>
+            <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem;">You need to add at least one product before placing an order.</p>
+            <a href="/collections/shop" style="display:inline-block; background:#000; color:#fff; text-decoration:none; padding:12px 28px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">EXPLORE LATEST DROPS</a>
+          `;
+          firstBox.prepend(banner);
+        }
+      }
+
       renderSummary();
     }
 
     function renderSummary() {
       const container = document.getElementById('checkout-items-list');
+      const submitBtn = document.getElementById('btn-submit-order');
+
+      if (!checkoutItems || checkoutItems.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:2.5rem 1rem; color:#888;">
+            <div style="font-weight:800; font-size:1rem; text-transform:uppercase; color:#111; margin-bottom:6px;">Your Bag is Empty</div>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:1.25rem;">Add some streetwear items to your cart before proceeding.</p>
+            <a href="/collections/shop" style="display:inline-block; background:#000; color:#fff; text-decoration:none; padding:10px 20px; font-weight:800; font-size:0.8rem; text-transform:uppercase; border-radius:2px;">SHOP NOW</a>
+          </div>
+        `;
+        document.getElementById('chk-subtotal').textContent = 'Rs. 0';
+        document.getElementById('row-discount').style.display = 'none';
+        document.getElementById('chk-total').textContent = 'Rs. 0';
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.4';
+          submitBtn.style.cursor = 'not-allowed';
+          submitBtn.textContent = 'CART IS EMPTY — SHOP NOW';
+          submitBtn.onclick = () => window.location.href = '/collections/shop';
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+        submitBtn.onclick = submitOrder;
+        submitBtn.textContent = selectedPayment === 'cashfree' ? 'COMPLETE ORDER & PAY' : 'CONFIRM CASH ON DELIVERY ORDER';
+      }
+
       let subtotal = 0;
 
       container.innerHTML = checkoutItems.map(item => {
@@ -401,7 +442,7 @@
         discount = Math.round(subtotal * 0.1);
       }
 
-      const total = subtotal - discount;
+      const total = Math.max(0, subtotal - discount);
 
       document.getElementById('chk-subtotal').textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
       if (discountApplied) {
@@ -425,6 +466,11 @@
     }
 
     async function submitOrder() {
+      if (!checkoutItems || !Array.isArray(checkoutItems) || checkoutItems.length === 0) {
+        alert('Your cart is empty! Please add items to your cart before placing an order.');
+        return;
+      }
+
       const name = document.getElementById('chk-name').value.trim();
       const phone = document.getElementById('chk-phone').value.trim();
       const email = document.getElementById('chk-email').value.trim();
@@ -441,7 +487,7 @@
       let subtotal = 0;
       checkoutItems.forEach(i => subtotal += Number(i.price || i.variants?.[0]?.price || 1899) * (i.quantity || 1));
       const discount = discountApplied ? Math.round(subtotal * 0.1) : 0;
-      const total = subtotal - discount;
+      const total = Math.max(0, subtotal - discount);
 
       const orderPayload = {
         customer: { name, phone, email, address, city, state, pincode },
@@ -458,6 +504,22 @@
         total,
         paymentMethod: selectedPayment === 'cashfree' ? 'Cashfree 1-Click UPI' : 'Cash on Delivery (COD)'
       };
+
+      // Also persist user contact into localStorage for seamless /account access
+      try {
+        const existingUser = window.AuthEngine?.getUser() || {};
+        const mergedUser = {
+          ...existingUser,
+          name: name,
+          email: email,
+          phone: phone,
+          city: city,
+          state: state,
+          address: address,
+          pincode: pincode
+        };
+        localStorage.setItem('genrage_user', JSON.stringify(mergedUser));
+      } catch (e) {}
 
       const submitBtn = document.getElementById('btn-submit-order');
       submitBtn.disabled = true;

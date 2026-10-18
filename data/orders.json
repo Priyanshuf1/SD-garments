@@ -1,19 +1,62 @@
 [
   {
+    "id": "GR-6933",
+    "supabaseId": "adf5c65e-7977-45d6-aa7c-f26394776a80",
+    "customer": {
+      "name": "Automated Test Shopper",
+      "email": "tester_1792331997083@sdgarments.in",
+      "phone": "+91 98888 77777",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "address": "42 Fashion Street, Indiranagar",
+      "pincode": "560038"
+    },
+    "items": [
+      {
+        "id": 1792331996852,
+        "size": "XL",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png",
+        "price": 2199,
+        "title": "Automated Test Gothic Cyber Oversized Tee (V2 Gold Edition)",
+        "quantity": 2
+      }
+    ],
+    "subtotal": 4398,
+    "discount": 0,
+    "shipping": 0,
+    "total": 4398,
+    "paymentMethod": "Cash on Delivery (COD)",
+    "paymentStatus": "Paid",
+    "orderStatus": "Shipped",
+    "trackingNumber": "140922761990",
+    "delhiveryWaybill": "140922761990",
+    "trackingUrl": "https://www.delhivery.com/track/package/140922761990",
+    "createdAt": "2026-10-18T13:59:57.085+00:00",
+    "updatedAt": "2026-10-18T13:59:59.177+00:00",
+    "cashfreeOrderId": null,
+    "cashfreePaymentId": null,
+    "carrier": "Delhivery Express Air"
+  },
+  {
     "id": "GR-1401",
+    "supabaseId": "b2ae07a0-b104-48ef-9071-f6d4eae6a468",
     "customer": {
       "name": "Rohan Varma",
+      "email": "",
       "phone": "+91 98200 12345",
-      "city": "Delhi"
+      "city": "Delhi",
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
         "id": 1792316101545,
-        "title": "Basic White Baggy Pants",
         "size": "34",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1899,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "title": "Basic White Baggy Pants",
+        "quantity": 1
       }
     ],
     "subtotal": 1899,
@@ -24,27 +67,32 @@
     "paymentStatus": "Paid",
     "orderStatus": "Shipped",
     "trackingNumber": "140927781295",
-    "createdAt": "2026-10-18T09:35:01.546Z",
-    "updatedAt": "2026-10-18T11:45:11.967Z",
     "delhiveryWaybill": "140927781295",
-    "carrier": "Delhivery Express Air",
-    "trackingUrl": "https://www.delhivery.com/track/package/140927781295"
+    "trackingUrl": "https://www.delhivery.com/track/package/140927781295",
+    "createdAt": "2026-10-18T09:35:01.546+00:00",
+    "updatedAt": "2026-10-18T11:45:11.967+00:00",
+    "carrier": "Delhivery Express Air"
   },
   {
     "id": "GR-3971",
+    "supabaseId": "b20499cb-9ebd-4775-b866-83d82b6b0fd7",
     "customer": {
       "name": "Auto Test Customer",
+      "email": "",
+      "phone": "+91 99999 11111",
       "city": "Pune",
-      "phone": "+91 99999 11111"
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
         "id": 1792312474030,
-        "title": "Auto Test Streetwear Tee",
         "size": "L",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1499,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "title": "Auto Test Streetwear Tee",
+        "quantity": 1
       }
     ],
     "subtotal": 1499,
@@ -55,28 +103,33 @@
     "paymentStatus": "Paid",
     "orderStatus": "Shipped",
     "trackingNumber": "140928202512",
-    "createdAt": "2026-10-18T08:34:34.030Z",
-    "updatedAt": "2026-10-18T09:18:21.335Z",
     "delhiveryWaybill": "140928202512",
-    "carrier": "Delhivery Express Air",
     "trackingUrl": "https://www.delhivery.com/track/package/140928202512",
+    "createdAt": "2026-10-18T08:34:34.03+00:00",
+    "updatedAt": "2026-10-18T09:18:21.335+00:00",
+    "carrier": "Delhivery Express Air",
     "cashfreePaymentId": "cf_pay_1792315101335"
   },
   {
     "id": "GR-2393",
+    "supabaseId": "a9a18b0c-8a71-41e8-a38e-330ac2fec314",
     "customer": {
       "name": "Auto Test Customer",
+      "email": "",
+      "phone": "+91 99999 11111",
       "city": "Pune",
-      "phone": "+91 99999 11111"
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
         "id": 1792312312997,
-        "title": "Auto Test Streetwear Tee",
         "size": "L",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1499,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "title": "Auto Test Streetwear Tee",
+        "quantity": 1
       }
     ],
     "subtotal": 1499,
@@ -84,27 +137,34 @@
     "shipping": 0,
     "total": 1499,
     "paymentMethod": "Gokwik UPI",
-    "paymentStatus": "Paid",
+    "paymentStatus": "Pending",
     "orderStatus": "Processing",
     "trackingNumber": "",
-    "createdAt": "2026-10-18T08:31:52.997Z",
-    "updatedAt": "2026-10-18T08:31:52.997Z"
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-18T08:31:52.997+00:00",
+    "updatedAt": "2026-10-18T08:31:52.997+00:00"
   },
   {
     "id": "GR-2868",
+    "supabaseId": "712b42ac-c90b-4876-a39f-d9c05b0fb604",
     "customer": {
       "name": "Auto Test Customer",
+      "email": "",
+      "phone": "+91 99999 11111",
       "city": "Pune",
-      "phone": "+91 99999 11111"
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
         "id": 1792312196797,
-        "title": "Auto Test Streetwear Tee",
         "size": "L",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1499,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "title": "Auto Test Streetwear Tee",
+        "quantity": 1
       }
     ],
     "subtotal": 1499,
@@ -112,27 +172,34 @@
     "shipping": 0,
     "total": 1499,
     "paymentMethod": "Gokwik UPI",
-    "paymentStatus": "Paid",
+    "paymentStatus": "Pending",
     "orderStatus": "Processing",
     "trackingNumber": "",
-    "createdAt": "2026-10-18T08:29:56.797Z",
-    "updatedAt": "2026-10-18T08:29:56.797Z"
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-18T08:29:56.797+00:00",
+    "updatedAt": "2026-10-18T08:29:56.797+00:00"
   },
   {
     "id": "GR-6673",
+    "supabaseId": "2e7ad35a-d46e-45d2-afe6-efde356aece9",
     "customer": {
       "name": "Auto Test Customer",
+      "email": "",
+      "phone": "+91 99999 11111",
       "city": "Pune",
-      "phone": "+91 99999 11111"
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
         "id": 1792312158821,
-        "title": "Auto Test Streetwear Tee",
         "size": "L",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1499,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "title": "Auto Test Streetwear Tee",
+        "quantity": 1
       }
     ],
     "subtotal": 1499,
@@ -140,26 +207,33 @@
     "shipping": 0,
     "total": 1499,
     "paymentMethod": "Gokwik UPI",
-    "paymentStatus": "Paid",
+    "paymentStatus": "Pending",
     "orderStatus": "Processing",
     "trackingNumber": "",
-    "createdAt": "2026-10-18T08:29:18.821Z",
-    "updatedAt": "2026-10-18T08:29:18.821Z"
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-18T08:29:18.821+00:00",
+    "updatedAt": "2026-10-18T08:29:18.821+00:00"
   },
   {
     "id": "GR-2139",
+    "supabaseId": "1df57de2-ae22-4237-8b43-bd9b6f8c514b",
     "customer": {
       "name": "Auto Test Customer",
+      "email": "",
+      "phone": "+91 99999 11111",
       "city": "Pune",
-      "phone": "+91 99999 11111"
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
-        "title": "Auto Test Streetwear Tee",
-        "price": 1499,
-        "quantity": 1,
+        "size": "L",
         "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-genrage-1.png?v=1788529843",
-        "size": "L"
+        "price": 1499,
+        "title": "Auto Test Streetwear Tee",
+        "quantity": 1
       }
     ],
     "subtotal": 1499,
@@ -167,26 +241,33 @@
     "shipping": 0,
     "total": 1499,
     "paymentMethod": "Gokwik UPI",
-    "paymentStatus": "Paid",
+    "paymentStatus": "Pending",
     "orderStatus": "Processing",
     "trackingNumber": "",
-    "createdAt": "2026-10-18T08:16:21.050Z",
-    "updatedAt": "2026-10-18T08:16:21.050Z"
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-18T08:16:21.05+00:00",
+    "updatedAt": "2026-10-18T08:16:21.05+00:00"
   },
   {
     "id": "GR-9869",
+    "supabaseId": "7ceaff95-8512-4697-8741-31cd2d10bc3b",
     "customer": {
       "name": "Auto Test Customer",
+      "email": "",
+      "phone": "+91 99999 11111",
       "city": "Pune",
-      "phone": "+91 99999 11111"
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
-        "title": "Auto Test Streetwear Tee",
-        "price": 1499,
-        "quantity": 1,
+        "size": "L",
         "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-genrage-1.png?v=1788529843",
-        "size": "L"
+        "price": 1499,
+        "title": "Auto Test Streetwear Tee",
+        "quantity": 1
       }
     ],
     "subtotal": 1499,
@@ -194,207 +275,234 @@
     "shipping": 0,
     "total": 1499,
     "paymentMethod": "Gokwik UPI",
-    "paymentStatus": "Paid",
+    "paymentStatus": "Pending",
     "orderStatus": "Processing",
     "trackingNumber": "",
-    "createdAt": "2026-10-17T21:04:38.698Z",
-    "updatedAt": "2026-10-17T21:04:38.698Z"
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-17T21:04:38.698+00:00",
+    "updatedAt": "2026-10-17T21:04:38.698+00:00"
   },
   {
     "id": "GR-5603",
+    "supabaseId": "b869dc55-09eb-4aaa-9275-1497ad1b3017",
     "customer": {
       "name": "Auto Test Customer",
+      "email": "",
+      "phone": "+91 99999 11111",
       "city": "Pune",
-      "phone": "+91 99999 11111"
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
-        "title": "Auto Test Streetwear Tee",
-        "price": 1499,
-        "quantity": 1,
+        "size": "L",
         "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-genrage-1.png?v=1788529843",
-        "size": "L"
+        "price": 1499,
+        "title": "Auto Test Streetwear Tee",
+        "quantity": 1
       }
     ],
     "subtotal": 1499,
     "discount": 0,
+    "shipping": 0,
     "total": 1499,
     "paymentMethod": "Gokwik UPI",
-    "paymentStatus": "Paid",
+    "paymentStatus": "Pending",
     "orderStatus": "Processing",
-    "createdAt": "2026-10-17T21:03:59.444Z"
+    "trackingNumber": "",
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-17T21:03:59.444+00:00",
+    "updatedAt": "2026-10-18T13:43:14.526+00:00"
   },
   {
-    "id": "GR-9842",
+    "id": "GR-9839",
+    "supabaseId": "4802ee53-2256-4e9e-b536-4dd64bffff2c",
     "customer": {
-      "name": "Aarav Sharma",
-      "email": "aarav.sharma@gmail.com",
-      "phone": "+91 98201 84920",
-      "address": "Flat 402, Skyline Residency, Bandra West",
-      "city": "Mumbai",
-      "state": "Maharashtra",
-      "pincode": "400050"
+      "name": "Meera Nair",
+      "email": "meera.nair@yahoo.com",
+      "phone": "+91 94471 20934",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "address": "Hill View Villa, Jubilee Hills",
+      "pincode": "500033"
+    },
+    "items": [
+      {
+        "id": 9581723900003,
+        "size": "30",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/dawn-unisex-straight-fit-baggy-pants-genrage-1_140x140.png?v=1788529016",
+        "price": 1999,
+        "title": "Dawn Unisex Straight Fit Baggy Pants",
+        "quantity": 1
+      }
+    ],
+    "subtotal": 1999,
+    "discount": 200,
+    "shipping": 0,
+    "total": 1799,
+    "paymentMethod": "Gokwik UPI",
+    "paymentStatus": "Pending",
+    "orderStatus": "Processing",
+    "trackingNumber": "",
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-17T14:35:00+00:00",
+    "updatedAt": "2026-10-17T14:35:00+00:00",
+    "discountCode": "RAGE10"
+  },
+  {
+    "id": "GR-9840",
+    "supabaseId": "6d506174-f999-44d9-b7cc-0993218114f3",
+    "customer": {
+      "name": "Ishaan Verma",
+      "email": "ishaan.v@gmail.com",
+      "phone": "+91 97410 88201",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "address": "24, 5th Cross, Indiranagar",
+      "pincode": "560038"
     },
     "items": [
       {
         "id": 9581723877614,
-        "title": "Zaraki Corduroy Full Sleeves",
-        "size": "L",
+        "size": "M",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1599,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
-      },
-      {
-        "id": 9581723900001,
-        "title": "Typhoon Black Straight Fit Baggy Pants",
-        "size": "32",
-        "price": 1899,
-        "quantity": 1,
-        "image": "https://genrage.com/cdn/shop/files/front_79f62e01-7f3f-468e-903c-959328f4d873.png?v=1758346828&width=400"
+        "title": "Zaraki Corduroy Full Sleeves",
+        "quantity": 1
       }
     ],
-    "subtotal": 3498,
-    "discount": 349.8,
+    "subtotal": 1599,
+    "discount": 240,
     "shipping": 0,
-    "total": 3148.2,
-    "discountCode": "RAGE10",
-    "paymentMethod": "Gokwik UPI",
-    "paymentStatus": "Paid",
-    "orderStatus": "Delivered",
-    "trackingNumber": "BLUEDART-8829104-VERIFIED",
-    "createdAt": "2026-10-17T14:22:10+05:30",
-    "updatedAt": "2026-10-18T08:34:33.978Z"
+    "total": 1359,
+    "paymentMethod": "Razorpay / Cards",
+    "paymentStatus": "Pending",
+    "orderStatus": "Processing",
+    "trackingNumber": "",
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-17T12:42:00+00:00",
+    "updatedAt": "2026-10-17T12:45:00+00:00",
+    "discountCode": "FIRSTBUY"
   },
   {
     "id": "GR-9841",
+    "supabaseId": "2b9e1dce-6b3f-4bf4-92de-3a5daa1d9cb7",
     "customer": {
       "name": "Rohan Kapoor",
       "email": "rohan.kapoor@outlook.com",
       "phone": "+91 98112 30491",
-      "address": "C-14, Hauz Khas Enclave",
       "city": "New Delhi",
       "state": "Delhi",
+      "address": "C-14, Hauz Khas Enclave",
       "pincode": "110016"
     },
     "items": [
       {
         "id": 9581723900002,
-        "title": "Sinutation Grey Boxy Oversized Tshirt",
         "size": "XL",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/sinutation-unisex-grey-boxy-oversized-tshirt-genrage-1_140x140.png?v=1788528958",
         "price": 1299,
-        "quantity": 2,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/sinutation-unisex-grey-boxy-oversized-tshirt-genrage-1_140x140.png?v=1788528958"
+        "title": "Sinutation Grey Boxy Oversized Tshirt",
+        "quantity": 2
       }
     ],
     "subtotal": 2598,
     "discount": 0,
     "shipping": 0,
     "total": 2598,
-    "discountCode": null,
     "paymentMethod": "Cash on Delivery",
-    "paymentStatus": "Pending",
+    "paymentStatus": "Paid",
     "orderStatus": "Shipped",
     "trackingNumber": "DELHIVERY-99104820",
-    "createdAt": "2026-10-17T16:45:00+05:30",
-    "updatedAt": "2026-10-17T19:30:00+05:30"
+    "delhiveryWaybill": "DELHIVERY-99104820",
+    "trackingUrl": "",
+    "createdAt": "2026-10-17T11:15:00+00:00",
+    "updatedAt": "2026-10-17T14:00:00+00:00",
+    "discountCode": null
   },
   {
-    "id": "GR-9840",
+    "id": "GR-9842",
+    "supabaseId": "c54804f3-2885-4434-8729-9638206a22d7",
     "customer": {
-      "name": "Ishaan Verma",
-      "email": "ishaan.v@gmail.com",
-      "phone": "+91 97410 88201",
-      "address": "24, 5th Cross, Indiranagar",
-      "city": "Bengaluru",
-      "state": "Karnataka",
-      "pincode": "560038"
+      "name": "Aarav Sharma",
+      "email": "aarav.sharma@gmail.com",
+      "phone": "+91 98201 84920",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "address": "Flat 402, Skyline Residency, Bandra West",
+      "pincode": "400050"
     },
     "items": [
       {
         "id": 9581723877614,
-        "title": "Zaraki Corduroy Full Sleeves",
-        "size": "M",
+        "size": "L",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1599,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
-      }
-    ],
-    "subtotal": 1599,
-    "discount": 239.85,
-    "shipping": 0,
-    "total": 1359.15,
-    "discountCode": "FIRSTBUY",
-    "paymentMethod": "Razorpay / Cards",
-    "paymentStatus": "Paid",
-    "orderStatus": "Processing",
-    "trackingNumber": null,
-    "createdAt": "2026-10-17T18:12:00+05:30",
-    "updatedAt": "2026-10-17T18:15:00+05:30"
-  },
-  {
-    "id": "GR-9839",
-    "customer": {
-      "name": "Meera Nair",
-      "email": "meera.nair@yahoo.com",
-      "phone": "+91 94471 20934",
-      "address": "Hill View Villa, Jubilee Hills",
-      "city": "Hyderabad",
-      "state": "Telangana",
-      "pincode": "500033"
-    },
-    "items": [
+        "title": "Zaraki Corduroy Full Sleeves",
+        "quantity": 1
+      },
       {
-        "id": 9581723900003,
-        "title": "Dawn Unisex Straight Fit Baggy Pants",
-        "size": "30",
-        "price": 1999,
-        "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/dawn-unisex-straight-fit-baggy-pants-genrage-1_140x140.png?v=1788529016"
+        "id": 9581723900001,
+        "size": "32",
+        "image": "https://genrage.com/cdn/shop/files/front_79f62e01-7f3f-468e-903c-959328f4d873.png?v=1758346828&width=400",
+        "price": 1899,
+        "title": "Typhoon Black Straight Fit Baggy Pants",
+        "quantity": 1
       }
     ],
-    "subtotal": 1999,
-    "discount": 199.9,
+    "subtotal": 3498,
+    "discount": 350,
     "shipping": 0,
-    "total": 1799.1,
-    "discountCode": "RAGE10",
+    "total": 3148,
     "paymentMethod": "Gokwik UPI",
     "paymentStatus": "Paid",
-    "orderStatus": "Pending",
-    "trackingNumber": null,
-    "createdAt": "2026-10-17T20:05:00+05:30",
-    "updatedAt": "2026-10-17T20:05:00+05:30"
+    "orderStatus": "Delivered",
+    "trackingNumber": "BLUEDART-8829104-VERIFIED",
+    "delhiveryWaybill": "BLUEDART-8829104-VERIFIED",
+    "trackingUrl": "",
+    "createdAt": "2026-10-17T08:52:10+00:00",
+    "updatedAt": "2026-10-18T08:34:33.978+00:00",
+    "discountCode": "RAGE10"
   },
   {
     "id": "GR-9838",
+    "supabaseId": "9e7aad69-5941-4720-a6cf-1fbcced58107",
     "customer": {
       "name": "Karan Malhotra",
       "email": "karan.malhotra@gmail.com",
       "phone": "+91 98720 11982",
-      "address": "Sector 18-B, House #402",
       "city": "Chandigarh",
       "state": "Punjab",
+      "address": "Sector 18-B, House #402",
       "pincode": "160018"
     },
     "items": [
       {
         "id": 9581723900004,
-        "title": "Heavyweight Boxy Drop-Shoulder Tee",
         "size": "L",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
         "price": 1199,
-        "quantity": 2,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "title": "Heavyweight Boxy Drop-Shoulder Tee",
+        "quantity": 2
       }
     ],
     "subtotal": 2398,
     "discount": 0,
     "shipping": 0,
     "total": 2398,
-    "discountCode": null,
     "paymentMethod": "Gokwik UPI",
     "paymentStatus": "Paid",
     "orderStatus": "Delivered",
     "trackingNumber": "BLUEDART-7729102",
-    "createdAt": "2026-10-16T11:20:00+05:30",
-    "updatedAt": "2026-10-17T15:00:00+05:30"
+    "delhiveryWaybill": "BLUEDART-7729102",
+    "trackingUrl": "",
+    "createdAt": "2026-10-16T05:50:00+00:00",
+    "updatedAt": "2026-10-17T09:30:00+00:00",
+    "discountCode": null
   }
 ]
