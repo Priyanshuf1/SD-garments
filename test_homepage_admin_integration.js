@@ -47,11 +47,11 @@ async function run() {
   assert(resNew.status === 200 && resNew.data.products.length === 40, `New Arrivals homepage section query returns 40 products (found: ${resNew.data?.products?.length})`);
 
   const resNone = await request({ hostname: 'localhost', port: 3000, path: '/api/admin/products?homepage_section=none', method: 'GET' });
-  assert(resNone.status === 200 && resNone.data.products.length === 175, `Catalog Only (none) homepage section query returns 175 products (found: ${resNone.data?.products?.length})`);
+  assert(resNone.status === 200 && resNone.data.products.length === 174, `Catalog Only (none) homepage section query returns 174 products (found: ${resNone.data?.products?.length})`);
 
-  // Total products
+  // Total products (Gift card removed: 244 total)
   const total = (resBasics.data.products.length + resDropped.data.products.length + resNew.data.products.length + resNone.data.products.length);
-  assert(total === 245, `Sum of homepage sections matches total catalog of 245 products (found: ${total})`);
+  assert(total === 244, `Sum of homepage sections matches total catalog of 244 products (found: ${total})`);
 
   // 2. Add New Product with homepage_section
   const testProdData = {

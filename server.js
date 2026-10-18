@@ -184,7 +184,12 @@ function sendJson(res, statusCode, data) {
 // Memory Cache & Supabase Dual-Sync Engine
 // =============================================================
 let memoryProducts = null;
+let memoryProductsLastFetch = 0;
+const PRODUCTS_CACHE_TTL_MS = 3000;
+
 let memoryOrders = null;
+let memoryOrdersLastFetch = 0;
+const ORDERS_CACHE_TTL_MS = 2000;
 
 function filterOutGiftCards(products) {
   if (!Array.isArray(products)) return [];
@@ -201,17 +206,87 @@ function getMemoryProducts() {
     const pData = readJsonFile('products.json', { products: [] });
     const list = Array.isArray(pData) ? pData : (pData.products || []);
     memoryProducts = filterOutGiftCards(list);
+    memoryProductsLastFetch = Date.now();
   }
   return memoryProducts;
 }
 
-function getAllProducts() {
-  return getMemoryProducts();
+function formatSupabaseProductToLocal(s) {
+  const variants = Array.isArray(s.product_variants) && s.product_variants.length > 0
+    ? s.product_variants.map((v, i) => ({
+        id: v.id || Date.now() + i,
+        title: v.title || 'Default Title',
+        price: String((v.price_paise || 129900) / 100),
+        compare_at_price: v.mrp_paise ? String(v.mrp_paise / 100) : null,
+        sku: v.sku || `GR-${s.handle}`,
+        available: v.available !== false,
+        inventory_quantity: v.inventory_quantity ?? 100
+      }))
+    : [{
+        id: Date.now(),
+        title: 'Default Title',
+        price: '1299.00',
+        compare_at_price: '1999.00',
+        sku: `GR-${s.handle}`,
+        available: true,
+        inventory_quantity: 100
+      }];
+
+  const images = Array.isArray(s.product_images) && s.product_images.length > 0
+    ? s.product_images.sort((a, b) => (a.position || 0) - (b.position || 0)).map((img, idx) => ({
+        id: img.id || idx + 1,
+        src: img.src,
+        position: img.position || idx + 1
+      }))
+    : [{ id: 1, src: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977', position: 1 }];
+
+  return {
+    id: s.id,
+    handle: s.handle,
+    title: s.title,
+    body_html: s.description || '',
+    vendor: s.vendor || 'GENRAGE',
+    category: s.category || 'T-Shirts & Boxy Tees',
+    product_type: s.product_type || s.category || 'Streetwear',
+    homepage_section: s.homepage_section || 'none',
+    tags: Array.isArray(s.tags) ? s.tags : [],
+    published_at: s.published_at || s.created_at,
+    created_at: s.created_at,
+    updated_at: s.updated_at,
+    variants,
+    images
+  };
+}
+
+async function getAllProducts() {
+  const now = Date.now();
+  if (memoryProducts && (now - memoryProductsLastFetch < PRODUCTS_CACHE_TTL_MS)) {
+    return memoryProducts;
+  }
+
+  const localList = getMemoryProducts();
+  if (!supabase.isConfigured) return localList;
+
+  try {
+    const supaProducts = await supabase.from('products').select('*,product_variants(*),product_images(*)').execute();
+    if (Array.isArray(supaProducts) && supaProducts.length > 0) {
+      const formatted = supaProducts.map(formatSupabaseProductToLocal);
+      const filtered = filterOutGiftCards(formatted);
+      memoryProducts = filtered;
+      memoryProductsLastFetch = Date.now();
+      return filtered;
+    }
+  } catch (err) {
+    console.warn('Supabase products fetch warning:', err.message);
+  }
+
+  return localList;
 }
 
 function getMemoryOrders() {
   if (!memoryOrders) {
     memoryOrders = readJsonFile('orders.json', []);
+    memoryOrdersLastFetch = Date.now();
   }
   return memoryOrders;
 }
@@ -247,30 +322,26 @@ function formatSupabaseOrderToLocal(s) {
 }
 
 async function getAllOrders() {
+  const now = Date.now();
+  if (memoryOrders && (now - memoryOrdersLastFetch < ORDERS_CACHE_TTL_MS)) {
+    return memoryOrders;
+  }
+
   const localOrders = getMemoryOrders();
   if (!supabase.isConfigured) return localOrders;
+
   try {
     const supaOrders = await supabase.from('orders').select('*').order('created_at', { ascending: false }).execute();
-    if (Array.isArray(supaOrders) && supaOrders.length > 0) {
-      const orderMap = new Map();
-      localOrders.forEach(o => orderMap.set(String(o.id), o));
-      supaOrders.forEach(s => {
-        const formatted = formatSupabaseOrderToLocal(s);
-        const existing = orderMap.get(String(formatted.id));
-        if (!existing) {
-          orderMap.set(String(formatted.id), formatted);
-        } else {
-          const isLocalNewer = new Date(existing.updatedAt || existing.createdAt || 0) >= new Date(formatted.updatedAt || formatted.createdAt || 0);
-          orderMap.set(String(formatted.id), isLocalNewer ? { ...formatted, ...existing } : { ...existing, ...formatted });
-        }
-      });
-      const merged = Array.from(orderMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-      memoryOrders = merged;
-      return merged;
+    if (Array.isArray(supaOrders)) {
+      const formatted = supaOrders.map(formatSupabaseOrderToLocal);
+      memoryOrders = formatted;
+      memoryOrdersLastFetch = Date.now();
+      return formatted;
     }
   } catch (err) {
     console.warn('Supabase orders fetch warning:', err.message);
   }
+
   return localOrders;
 }
 
@@ -338,14 +409,20 @@ async function syncOrderToSupabase(order) {
 async function deleteOrderFromSupabase(orderId) {
   if (!supabase.isConfigured) return;
   try {
-    await supabase.from('orders').eq('order_no', orderId).delete().catch(() => {});
+    const str = String(orderId);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    if (isUuid) {
+      await supabase.from('orders').eq('id', str).delete().catch(() => {});
+    } else {
+      await supabase.from('orders').eq('order_no', str).delete().catch(() => {});
+    }
   } catch (err) {
     console.warn('Supabase order delete warning:', err.message);
   }
 }
 
 async function syncProductToSupabase(product) {
-  if (!supabase.isConfigured) return;
+  if (!supabase.isConfigured) return null;
   try {
     const prodPayload = {
       handle: product.handle,
@@ -405,22 +482,82 @@ async function syncProductToSupabase(product) {
       }));
       await supabase.from('product_images').insert(imgPayloads).catch(() => {});
     }
+    return productId;
   } catch (err) {
     console.warn('Supabase product sync warning:', err.message);
+    return null;
   }
 }
 
-async function deleteProductFromSupabase(handleOrId) {
+async function deleteProductFromSupabase(productIdOrHandle, fallbackHandle) {
   if (!supabase.isConfigured) return;
   try {
-    await supabase.from('products').eq('handle', String(handleOrId)).delete().catch(() => {});
+    let targetId = null;
+    let targetHandle = fallbackHandle || null;
+
+    const str = String(productIdOrHandle);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    if (isUuid) {
+      targetId = str;
+    } else {
+      targetHandle = str;
+    }
+
+    if (!targetId && targetHandle) {
+      const existing = await supabase.from('products').select('id,handle').eq('handle', targetHandle).execute().catch(() => []);
+      if (existing && existing[0]) {
+        targetId = existing[0].id;
+      }
+    }
+
+    if (targetId) {
+      await supabase.from('product_variants').eq('product_id', targetId).delete().catch(() => {});
+      await supabase.from('product_images').eq('product_id', targetId).delete().catch(() => {});
+      await supabase.from('wishlist_items').eq('product_id', targetId).delete().catch(() => {});
+      await supabase.from('products').eq('id', targetId).delete().catch(() => {});
+    }
+    if (targetHandle) {
+      await supabase.from('products').eq('handle', targetHandle).delete().catch(() => {});
+    }
   } catch (err) {
     console.warn('Supabase product delete warning:', err.message);
   }
 }
 
-function handleGetProducts(req, res, parsedUrl) {
-  const products = getAllProducts();
+async function handleGetSingleProduct(req, res, idOrHandle) {
+  const products = await getAllProducts();
+  const queryStr = decodeURIComponent(idOrHandle).trim().toLowerCase();
+  const product = products.find(p =>
+    String(p.id).toLowerCase() === queryStr ||
+    (p.handle && p.handle.toLowerCase() === queryStr)
+  );
+
+  if (!product) {
+    return sendJson(res, 404, { success: false, message: `Product '${idOrHandle}' not found` });
+  }
+
+  return sendJson(res, 200, { success: true, product });
+}
+
+async function handleGetSingleOrder(req, res, orderId) {
+  const orders = await getAllOrders();
+  const queryStr = decodeURIComponent(orderId).trim().toLowerCase();
+  const order = orders.find(o =>
+    String(o.id).toLowerCase() === queryStr ||
+    (o.supabaseId && String(o.supabaseId).toLowerCase() === queryStr) ||
+    (o.trackingNumber && o.trackingNumber.toLowerCase() === queryStr) ||
+    (o.delhiveryWaybill && o.delhiveryWaybill.toLowerCase() === queryStr)
+  );
+
+  if (!order) {
+    return sendJson(res, 404, { success: false, message: `Order '${orderId}' not found` });
+  }
+
+  return sendJson(res, 200, { success: true, order });
+}
+
+async function handleGetProducts(req, res, parsedUrl) {
+  const products = await getAllProducts();
   const query = parsedUrl.searchParams.get('search')?.toLowerCase();
   const collection = parsedUrl.searchParams.get('collection');
   const category = parsedUrl.searchParams.get('category');
@@ -472,7 +609,7 @@ function handleGetProducts(req, res, parsedUrl) {
 
 async function handleCreateProduct(req, res) {
   const payload = await parseBody(req);
-  const products = getAllProducts();
+  const products = await getAllProducts();
   const prodCategory = payload.category || payload.product_type || 'T-Shirts & Boxy Tees';
   const primaryImage = payload.image || (payload.images && payload.images[0]?.src) || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
   const hoverImage = payload.hoverImage || (payload.images && payload.images[1]?.src) || null;
@@ -518,18 +655,27 @@ async function handleCreateProduct(req, res) {
     images: productImages
   };
 
+  const supaId = await syncProductToSupabase(newProduct);
+  if (supaId) {
+    newProduct.id = supaId;
+  }
+
   products.unshift(newProduct);
   memoryProducts = products;
+  memoryProductsLastFetch = Date.now();
   writeJsonFile('products.json', { products });
-  syncProductToSupabase(newProduct);
 
   return sendJson(res, 201, { success: true, product: newProduct });
 }
 
 async function handleUpdateProduct(req, res, id) {
   const payload = await parseBody(req);
-  const products = getAllProducts();
-  const index = products.findIndex(p => String(p.id) === String(id) || p.handle === String(id));
+  const products = await getAllProducts();
+  const queryStr = decodeURIComponent(id).trim().toLowerCase();
+  const index = products.findIndex(p =>
+    String(p.id).toLowerCase() === queryStr ||
+    (p.handle && p.handle.toLowerCase() === queryStr)
+  );
 
   if (index === -1) {
     return sendJson(res, 404, { success: false, message: 'Product not found' });
@@ -578,23 +724,31 @@ async function handleUpdateProduct(req, res, id) {
   products[index] = current;
   memoryProducts = products;
   writeJsonFile('products.json', { products });
-  syncProductToSupabase(current);
+  await syncProductToSupabase(current);
+  memoryProductsLastFetch = Date.now();
 
   return sendJson(res, 200, { success: true, product: current });
 }
 
 async function handleDeleteProduct(req, res, id) {
-  const products = getAllProducts();
-  const toDelete = products.find(p => String(p.id) === String(id) || p.handle === String(id));
-  const filtered = products.filter(p => String(p.id) !== String(id) && p.handle !== String(id));
-  if (filtered.length === products.length) {
+  const products = await getAllProducts();
+  const queryStr = decodeURIComponent(id).trim().toLowerCase();
+  const toDelete = products.find(p =>
+    String(p.id).toLowerCase() === queryStr ||
+    (p.handle && p.handle.toLowerCase() === queryStr)
+  );
+
+  if (!toDelete) {
     return sendJson(res, 404, { success: false, message: 'Product not found' });
   }
+
+  const filtered = products.filter(p => p !== toDelete);
   memoryProducts = filtered;
+  memoryProductsLastFetch = Date.now();
   writeJsonFile('products.json', { products: filtered });
-  if (toDelete) {
-    deleteProductFromSupabase(toDelete.handle);
-  }
+
+  await deleteProductFromSupabase(toDelete.id, toDelete.handle);
+  memoryProductsLastFetch = Date.now();
 
   return sendJson(res, 200, { success: true, message: 'Product deleted' });
 }
@@ -613,10 +767,16 @@ async function handleGetOrders(req, res, parsedUrl) {
   if (email || phone || userId) {
     filtered = filtered.filter(o => {
       const cEmail = (o.customer?.email || '').toLowerCase();
-      const cPhone = (o.customer?.phone || '').replace(/\s+/g, '');
-      const searchPhone = phone ? phone.replace(/\s+/g, '') : null;
+      const cPhone = (o.customer?.phone || '').replace(/\D+/g, '');
+      const searchPhone = phone ? phone.replace(/\D+/g, '') : null;
+      const phoneMatch = Boolean(
+        searchPhone && cPhone && (
+          cPhone === searchPhone ||
+          cPhone.slice(-10) === searchPhone.slice(-10)
+        )
+      );
       return (email && cEmail === email) ||
-             (searchPhone && cPhone === searchPhone) ||
+             phoneMatch ||
              (userId && (o.userId === userId || o.supabaseId === userId));
     });
   }
@@ -631,7 +791,8 @@ async function handleGetOrders(req, res, parsedUrl) {
 async function handleCreateOrder(req, res, isCheckout = false) {
   const payload = await parseBody(req);
   const items = Array.isArray(payload.items) ? payload.items : [];
-  if (!items || items.length === 0) {
+  const validItems = items.filter(it => (Number(it.quantity || it.qty) || 0) > 0);
+  if (validItems.length === 0) {
     return sendJson(res, 400, {
       success: false,
       error: 'Cart is empty. Cannot place an empty order.',
@@ -639,8 +800,8 @@ async function handleCreateOrder(req, res, isCheckout = false) {
     });
   }
 
-  const allProducts = getAllProducts();
-  const processedItems = items.map(item => {
+  const allProducts = await getAllProducts();
+  const processedItems = validItems.map(item => {
     const match = allProducts.find(p =>
       (item.id && String(p.id) === String(item.id)) ||
       (item.title && p.title.toLowerCase() === String(item.title).toLowerCase()) ||
@@ -691,11 +852,12 @@ async function handleCreateOrder(req, res, isCheckout = false) {
     cashfreePaymentId: payload.cashfreePaymentId || null
   };
 
-  const orders = getMemoryOrders();
+  const orders = await getAllOrders();
   orders.unshift(newOrder);
   memoryOrders = orders;
+  memoryOrdersLastFetch = Date.now();
   writeJsonFile('orders.json', orders);
-  syncOrderToSupabase(newOrder);
+  await syncOrderToSupabase(newOrder);
 
   return sendJson(res, 201, {
     success: true,
@@ -724,6 +886,7 @@ async function handleUpdateOrder(req, res, id) {
 
   writeJsonFile('orders.json', orders);
   memoryOrders = orders;
+  memoryOrdersLastFetch = Date.now();
   await syncOrderToSupabase(order);
 
   return sendJson(res, 200, { success: true, order });
@@ -746,6 +909,7 @@ async function handleDelhiveryAwb(req, res, id) {
 
   writeJsonFile('orders.json', orders);
   memoryOrders = orders;
+  memoryOrdersLastFetch = Date.now();
   await syncOrderToSupabase(order);
 
   return sendJson(res, 200, {
@@ -770,6 +934,7 @@ async function handleCashfreeVerify(req, res, id) {
 
   writeJsonFile('orders.json', orders);
   memoryOrders = orders;
+  memoryOrdersLastFetch = Date.now();
   await syncOrderToSupabase(order);
 
   return sendJson(res, 200, {
@@ -786,6 +951,7 @@ async function handleDeleteOrder(req, res, id) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
   }
   memoryOrders = filtered;
+  memoryOrdersLastFetch = Date.now();
   writeJsonFile('orders.json', filtered);
   await deleteOrderFromSupabase(id);
 
@@ -851,7 +1017,8 @@ async function appHandler(req, res) {
   // Data JSON Endpoints (Intercepted to serve live in-memory & Supabase state)
   // -------------------------------------------------------------
   if (pathname === '/data/products.json') {
-    return sendJson(res, 200, { products: getAllProducts() });
+    const products = await getAllProducts();
+    return sendJson(res, 200, { products });
   }
 
   if (pathname === '/data/orders.json') {
@@ -865,32 +1032,38 @@ async function appHandler(req, res) {
   if (pathname === '/api/products' || pathname.startsWith('/api/products/')) {
     const prodId = pathname.replace('/api/products', '').replace(/^\//, '');
     if (req.method === 'GET' && !prodId) {
-      return handleGetProducts(req, res, parsedUrl);
+      return await handleGetProducts(req, res, parsedUrl);
+    }
+    if (req.method === 'GET' && prodId) {
+      return await handleGetSingleProduct(req, res, prodId);
     }
     if (req.method === 'POST' && !prodId) {
-      return handleCreateProduct(req, res);
+      return await handleCreateProduct(req, res);
     }
     if (req.method === 'PUT' && prodId) {
-      return handleUpdateProduct(req, res, prodId);
+      return await handleUpdateProduct(req, res, prodId);
     }
     if (req.method === 'DELETE' && prodId) {
-      return handleDeleteProduct(req, res, prodId);
+      return await handleDeleteProduct(req, res, prodId);
     }
   }
 
   if (pathname === '/api/orders' || pathname.startsWith('/api/orders/')) {
     const orderId = pathname.replace('/api/orders', '').replace(/^\//, '');
     if (req.method === 'GET' && !orderId) {
-      return handleGetOrders(req, res, parsedUrl);
+      return await handleGetOrders(req, res, parsedUrl);
+    }
+    if (req.method === 'GET' && orderId) {
+      return await handleGetSingleOrder(req, res, orderId);
     }
     if (req.method === 'POST' && !orderId) {
-      return handleCreateOrder(req, res, false);
+      return await handleCreateOrder(req, res, false);
     }
     if (req.method === 'PUT' && orderId) {
-      return handleUpdateOrder(req, res, orderId);
+      return await handleUpdateOrder(req, res, orderId);
     }
     if (req.method === 'DELETE' && orderId) {
-      return handleDeleteOrder(req, res, orderId);
+      return await handleDeleteOrder(req, res, orderId);
     }
   }
 
@@ -902,7 +1075,7 @@ async function appHandler(req, res) {
 
     // 1. Executive Dashboard Stats
     if (apiRoute === 'stats' && req.method === 'GET') {
-      const products = getAllProducts();
+      const products = await getAllProducts();
       const cData = readJsonFile('collections.json', { collections: [] });
       const orders = await getAllOrders();
       const discounts = readJsonFile('discounts.json', []);
@@ -944,16 +1117,19 @@ async function appHandler(req, res) {
     if (apiRoute.startsWith('products')) {
       const prodId = apiRoute.replace('products', '').replace(/^\//, '');
       if (req.method === 'GET' && !prodId) {
-        return handleGetProducts(req, res, parsedUrl);
+        return await handleGetProducts(req, res, parsedUrl);
+      }
+      if (req.method === 'GET' && prodId) {
+        return await handleGetSingleProduct(req, res, prodId);
       }
       if (req.method === 'POST' && !prodId) {
-        return handleCreateProduct(req, res);
+        return await handleCreateProduct(req, res);
       }
       if (req.method === 'PUT' && prodId) {
-        return handleUpdateProduct(req, res, prodId);
+        return await handleUpdateProduct(req, res, prodId);
       }
       if (req.method === 'DELETE' && prodId) {
-        return handleDeleteProduct(req, res, prodId);
+        return await handleDeleteProduct(req, res, prodId);
       }
     }
 
@@ -1028,26 +1204,29 @@ async function appHandler(req, res) {
       // Delhivery AWB
       if (req.method === 'POST' && apiRoute.includes('/delhivery-awb')) {
         const id = apiRoute.replace('orders/', '').replace('/delhivery-awb', '');
-        return handleDelhiveryAwb(req, res, id);
+        return await handleDelhiveryAwb(req, res, id);
       }
       // Cashfree verify
       if (req.method === 'POST' && apiRoute.includes('/cashfree-verify')) {
         const id = apiRoute.replace('orders/', '').replace('/cashfree-verify', '');
-        return handleCashfreeVerify(req, res, id);
+        return await handleCashfreeVerify(req, res, id);
       }
 
       const orderId = apiRoute.replace('orders', '').replace(/^\//, '');
       if (req.method === 'GET' && !orderId) {
-        return handleGetOrders(req, res, parsedUrl);
+        return await handleGetOrders(req, res, parsedUrl);
+      }
+      if (req.method === 'GET' && orderId) {
+        return await handleGetSingleOrder(req, res, orderId);
       }
       if (req.method === 'POST' && !orderId) {
-        return handleCreateOrder(req, res, false);
+        return await handleCreateOrder(req, res, false);
       }
       if (req.method === 'PUT' && orderId) {
-        return handleUpdateOrder(req, res, orderId);
+        return await handleUpdateOrder(req, res, orderId);
       }
       if (req.method === 'DELETE' && orderId) {
-        return handleDeleteOrder(req, res, orderId);
+        return await handleDeleteOrder(req, res, orderId);
       }
     }
 
@@ -1722,7 +1901,7 @@ async function appHandler(req, res) {
 
     // GET /api/auth/orders
     if (authRoute === 'orders' && req.method === 'GET') {
-      return handleGetOrders(req, res, parsedUrl);
+      return await handleGetOrders(req, res, parsedUrl);
     }
 
     // POST /api/auth/logout
@@ -1741,7 +1920,7 @@ async function appHandler(req, res) {
 
     // POST /api/checkout/create-order
     if (checkoutRoute === 'create-order' && req.method === 'POST') {
-      return handleCreateOrder(req, res, true);
+      return await handleCreateOrder(req, res, true);
     }
 
     // POST /api/checkout/verify-payment
@@ -1757,7 +1936,9 @@ async function appHandler(req, res) {
       order.updatedAt = new Date().toISOString();
 
       writeJsonFile('orders.json', orders);
-      syncOrderToSupabase(order);
+      memoryOrders = orders;
+      memoryOrdersLastFetch = Date.now();
+      await syncOrderToSupabase(order);
       return sendJson(res, 200, { success: true, message: 'Payment confirmed & order marked Paid', order });
     }
 
@@ -1924,7 +2105,7 @@ async function appHandler(req, res) {
   }
 
   if (pathname === '/api/products') {
-    return handleGetProducts(req, res, parsedUrl);
+    return await handleGetProducts(req, res, parsedUrl);
   }
 
   // Fallback 404 (JSON formatted for JSON endpoints to prevent SyntaxError)

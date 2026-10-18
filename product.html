@@ -472,7 +472,7 @@
     <div class="cart-items-list" id="cart-items-list"></div>
     <div class="cart-footer">
       <div class="cart-subtotal"><span>SUBTOTAL</span><span id="cart-subtotal-price">Rs. 0</span></div>
-      <button class="checkout-btn" onclick="window.location.href='/checkout'">CHECKOUT</button>
+      <button class="checkout-btn" onclick="if (!GenrageApp.cart || GenrageApp.cart.length === 0) { alert('Your cart is empty. Please add items before checking out.'); } else { window.location.href='/checkout'; }">CHECKOUT</button>
     </div>
   </aside>
 
@@ -520,21 +520,62 @@
       }
 
       const params = new URLSearchParams(window.location.search);
-      const handle = params.get('handle');
-      const id = params.get('id');
+      let handle = params.get('handle');
+      let id = params.get('id');
+
+      // Check pathname if handle/id not in search params (e.g. /products/:handle)
+      if (!handle && !id) {
+        const path = window.location.pathname;
+        if (path.includes('/products/')) {
+          const raw = path.split('/products/')[1];
+          if (raw) {
+            handle = decodeURIComponent(raw.split('/')[0].split('?')[0]).trim();
+          }
+        }
+      }
 
       let currentProduct = null;
       if (handle) {
-        currentProduct = GenrageApp.products.find(p => p.handle === handle);
+        currentProduct = GenrageApp.products?.find(p => p.handle === handle || String(p.id) === handle);
       } else if (id) {
-        currentProduct = GenrageApp.products.find(p => p.id === parseInt(id));
+        currentProduct = GenrageApp.products?.find(p => p.id === parseInt(id) || String(p.id) === String(id));
       }
 
-      if (!currentProduct && GenrageApp.products.length > 0) {
+      // If not in preloaded GenrageApp.products, fetch directly from /api/products/:id
+      if (!currentProduct && (handle || id)) {
+        try {
+          const fetchTarget = encodeURIComponent(handle || id);
+          const res = await fetch(`/api/products/${fetchTarget}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.product) {
+              currentProduct = data.product;
+            }
+          }
+        } catch (e) {
+          console.warn('Direct product fetch error:', e);
+        }
+      }
+
+      // Fallback only if no specific product was requested in URL
+      if (!currentProduct && !handle && !id && GenrageApp.products?.length > 0) {
         currentProduct = GenrageApp.products[0];
       }
 
-      if (!currentProduct) return;
+      if (!currentProduct) {
+        document.title = 'Product Not Found | GENRAGE';
+        const pdpContainer = document.querySelector('.pdp-container');
+        if (pdpContainer) {
+          pdpContainer.innerHTML = `
+            <div style="text-align:center; padding: 5rem 1.5rem; max-width: 600px; margin: 0 auto;">
+              <h2 style="font-size: 2rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem;">Product Not Found</h2>
+              <p style="color: #666; margin-bottom: 2rem; font-size: 0.95rem;">The streetwear piece you are looking for may have been retired or moved.</p>
+              <a href="/collections/shop" class="btn-primary" style="display: inline-block; padding: 0.85rem 2rem; font-weight: 800; text-transform: uppercase; text-decoration: none; background: #000; color: #fff; border-radius: 2px;">BROWSE ALL DROPS</a>
+            </div>
+          `;
+        }
+        return;
+      }
 
       // Populate UI
       document.title = `${currentProduct.title} | GENRAGE`;

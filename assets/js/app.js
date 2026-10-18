@@ -272,10 +272,23 @@ const GenrageApp = {
     const subtotalEl = document.getElementById('cart-subtotal-price');
     const shippingProgress = document.getElementById('shipping-progress');
     const shippingMsg = document.getElementById('shipping-msg');
-
-    if (!list) return;
+    const checkoutBtns = document.querySelectorAll('.checkout-btn');
 
     if (this.cart.length === 0) {
+      checkoutBtns.forEach(btn => {
+        btn.disabled = true;
+        btn.setAttribute('aria-disabled', 'true');
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        btn.onclick = (e) => {
+          if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+          alert('Your cart is empty. Please add items before checking out.');
+          return false;
+        };
+      });
+
+      if (!list) return;
+
       list.innerHTML = `
         <div style="text-align: center; padding: 4rem 1rem; color: #888;">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; opacity: 0.5;">
@@ -292,6 +305,18 @@ const GenrageApp = {
       if (shippingMsg) shippingMsg.innerHTML = 'Add Rs. 999 for <strong>FREE DELIVERY</strong>';
       return;
     }
+
+    checkoutBtns.forEach(btn => {
+      btn.disabled = false;
+      btn.removeAttribute('aria-disabled');
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.onclick = () => {
+        window.location.href = '/checkout';
+      };
+    });
+
+    if (!list) return;
 
     const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     if (subtotalEl) subtotalEl.textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;

@@ -1,41 +1,38 @@
 [
   {
-    "id": "GR-6933",
-    "supabaseId": "adf5c65e-7977-45d6-aa7c-f26394776a80",
+    "id": "GR-5856",
+    "supabaseId": "05b73d5b-b430-4531-ac38-279ec4044b14",
     "customer": {
-      "name": "Automated Test Shopper",
-      "email": "tester_1792331997083@sdgarments.in",
-      "phone": "+91 98888 77777",
-      "city": "Bengaluru",
-      "state": "Karnataka",
-      "address": "42 Fashion Street, Indiranagar",
-      "pincode": "560038"
+      "name": "Reviewer Test",
+      "email": "reviewer_1792334754388@testgenrage.com",
+      "phone": "+91 99999 22222",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "address": "",
+      "pincode": ""
     },
     "items": [
       {
-        "id": 1792331996852,
-        "size": "XL",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png",
-        "price": 2199,
-        "title": "Automated Test Gothic Cyber Oversized Tee (V2 Gold Edition)",
-        "quantity": 2
+        "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
+        "size": "L",
+        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "price": 1599,
+        "title": "Zaraki Corduroy Full Sleeves",
+        "quantity": 1
       }
     ],
-    "subtotal": 4398,
+    "subtotal": 1599,
     "discount": 0,
     "shipping": 0,
-    "total": 4398,
-    "paymentMethod": "Cash on Delivery (COD)",
-    "paymentStatus": "Paid",
-    "orderStatus": "Shipped",
-    "trackingNumber": "140922761990",
-    "delhiveryWaybill": "140922761990",
-    "trackingUrl": "https://www.delhivery.com/track/package/140922761990",
-    "createdAt": "2026-10-18T13:59:57.085+00:00",
-    "updatedAt": "2026-10-18T13:59:59.177+00:00",
-    "cashfreeOrderId": null,
-    "cashfreePaymentId": null,
-    "carrier": "Delhivery Express Air"
+    "total": 1599,
+    "paymentMethod": "cashfree",
+    "paymentStatus": "Pending",
+    "orderStatus": "Processing",
+    "trackingNumber": "",
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-18T14:46:00.126+00:00",
+    "updatedAt": "2026-10-18T14:46:00.785+00:00"
   },
   {
     "id": "GR-1401",
@@ -70,8 +67,7 @@
     "delhiveryWaybill": "140927781295",
     "trackingUrl": "https://www.delhivery.com/track/package/140927781295",
     "createdAt": "2026-10-18T09:35:01.546+00:00",
-    "updatedAt": "2026-10-18T11:45:11.967+00:00",
-    "carrier": "Delhivery Express Air"
+    "updatedAt": "2026-10-18T11:45:11.967+00:00"
   },
   {
     "id": "GR-3971",
@@ -106,9 +102,7 @@
     "delhiveryWaybill": "140928202512",
     "trackingUrl": "https://www.delhivery.com/track/package/140928202512",
     "createdAt": "2026-10-18T08:34:34.03+00:00",
-    "updatedAt": "2026-10-18T09:18:21.335+00:00",
-    "carrier": "Delhivery Express Air",
-    "cashfreePaymentId": "cf_pay_1792315101335"
+    "updatedAt": "2026-10-18T09:18:21.335+00:00"
   },
   {
     "id": "GR-2393",
@@ -350,8 +344,7 @@
     "delhiveryWaybill": "",
     "trackingUrl": "",
     "createdAt": "2026-10-17T14:35:00+00:00",
-    "updatedAt": "2026-10-17T14:35:00+00:00",
-    "discountCode": "RAGE10"
+    "updatedAt": "2026-10-17T14:35:00+00:00"
   },
   {
     "id": "GR-9840",
@@ -386,8 +379,7 @@
     "delhiveryWaybill": "",
     "trackingUrl": "",
     "createdAt": "2026-10-17T12:42:00+00:00",
-    "updatedAt": "2026-10-17T12:45:00+00:00",
-    "discountCode": "FIRSTBUY"
+    "updatedAt": "2026-10-17T12:45:00+00:00"
   },
   {
     "id": "GR-9841",
@@ -422,8 +414,7 @@
     "delhiveryWaybill": "DELHIVERY-99104820",
     "trackingUrl": "",
     "createdAt": "2026-10-17T11:15:00+00:00",
-    "updatedAt": "2026-10-17T14:00:00+00:00",
-    "discountCode": null
+    "updatedAt": "2026-10-17T14:00:00+00:00"
   },
   {
     "id": "GR-9842",
@@ -466,8 +457,7 @@
     "delhiveryWaybill": "BLUEDART-8829104-VERIFIED",
     "trackingUrl": "",
     "createdAt": "2026-10-17T08:52:10+00:00",
-    "updatedAt": "2026-10-18T08:34:33.978+00:00",
-    "discountCode": "RAGE10"
+    "updatedAt": "2026-10-18T08:34:33.978+00:00"
   },
   {
     "id": "GR-9838",
@@ -502,7 +492,6 @@
     "delhiveryWaybill": "BLUEDART-7729102",
     "trackingUrl": "",
     "createdAt": "2026-10-16T05:50:00+00:00",
-    "updatedAt": "2026-10-17T09:30:00+00:00",
-    "discountCode": null
+    "updatedAt": "2026-10-17T09:30:00+00:00"
   }
 ]

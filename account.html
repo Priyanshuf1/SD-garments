@@ -138,14 +138,14 @@
     <!-- User Profile Header -->
     <div class="profile-card">
       <div>
-        <span style="background:#000; color:#fff; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:2px; text-transform:uppercase;">VIP MEMBER</span>
-        <h1 id="user-display-name" style="font-family:'Instrument Sans', sans-serif; font-size:1.85rem; font-weight:800; text-transform:uppercase; margin:8px 0 4px;">Loading Account...</h1>
+        <span id="user-tier-badge" style="background:#000; color:#fff; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:2px; text-transform:uppercase; display:none;">VIP MEMBER</span>
+        <h1 id="user-display-name" style="font-family:'Instrument Sans', sans-serif; font-size:1.85rem; font-weight:800; text-transform:uppercase; margin:8px 0 4px;">My Account</h1>
         <div id="user-display-email" style="color:#666; font-size:0.9rem;"></div>
         <div id="user-display-phone" style="color:#888; font-size:0.85rem; margin-top:2px;"></div>
       </div>
       <div>
         <div style="font-size:0.8rem; color:#666; text-transform:uppercase; font-weight:700;">Default Shipping Address</div>
-        <div id="user-display-address" style="font-size:0.9rem; font-weight:600; margin-top:2px; max-width:280px;">Mumbai, Maharashtra, India</div>
+        <div id="user-display-address" style="font-size:0.9rem; font-weight:600; margin-top:2px; max-width:280px; color:#555;">No address on file</div>
       </div>
     </div>
 
@@ -176,6 +176,108 @@
   <script>
     let currentUser = null;
 
+    function renderOrdersHtml(orders) {
+      if (!orders || orders.length === 0) {
+        return `
+          <div style="background:#fff; border:1px solid #e5e5e5; border-radius:4px; padding:3rem; text-align:center; color:#777;">
+            <h3 style="margin:0 0 8px; text-transform:uppercase;">No Orders Found</h3>
+            <p style="font-size:0.85rem; margin-bottom:1.5rem;">Explore our latest oversized drop to start your collection.</p>
+            <a href="/collections/shop" style="background:#000; color:#fff; text-decoration:none; padding:10px 20px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px;">SHOP NEW ARRIVALS</a>
+          </div>
+        `;
+      }
+
+      return orders.map(o => {
+        let badgeClass = 'status-processing';
+        if (o.orderStatus === 'Shipped') badgeClass = 'status-shipped';
+        if (o.orderStatus === 'Delivered') badgeClass = 'status-delivered';
+
+        const itemsList = Array.isArray(o.items) && o.items.length > 0 ? o.items : [{
+          title: 'Streetwear Apparel',
+          quantity: 1,
+          price: o.total || 1899,
+          image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+        }];
+
+        const itemsHtml = itemsList.map(i => `
+          <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+            <img src="${i.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}" style="width:40px; height:50px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
+            <div style="flex:1; font-size:0.85rem;">
+              <strong>${i.title}</strong>
+              <span style="color:#666;">(Qty: ${i.quantity || 1})</span>
+            </div>
+            <div style="font-weight:700; font-size:0.85rem;">Rs. ${(Number(i.price) || 1899).toLocaleString('en-IN')}</div>
+          </div>
+        `).join('');
+
+        return `
+          <div class="order-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <strong style="font-family:'Instrument Sans', sans-serif; font-size:1.05rem;">Order #${o.id}</strong>
+                <span style="font-size:0.75rem; color:#888; margin-left:8px;">${new Date(o.createdAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="status-badge ${badgeClass}">${o.orderStatus || 'Processing'}</span>
+                <strong style="font-size:1rem;">Rs. ${(Number(o.total) || 1899).toLocaleString('en-IN')}</strong>
+              </div>
+            </div>
+
+            ${itemsHtml}
+
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f0f0f0; padding-top:10px; margin-top:12px; font-size:0.8rem; color:#666; flex-wrap:wrap; gap:8px;">
+              <div>
+                Payment: <strong>${o.paymentMethod || 'Prepaid UPI'}</strong> (${o.paymentStatus || 'Paid'})
+              </div>
+              <div>
+                ${o.trackingNumber ? `
+                  Delhivery AWB: <a href="https://www.delhivery.com/track/package/${o.trackingNumber}" target="_blank" style="color:#1565c0; font-weight:700; text-decoration:none;">${o.trackingNumber} ↗</a>
+                ` : '<span style="color:#888;">Express dispatch in progress</span>'}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleGuestLookup() {
+      const input = document.getElementById('guest-lookup-input');
+      const val = input ? input.value.trim() : '';
+      if (!val) return;
+
+      const resContainer = document.getElementById('guest-orders-results');
+      const btn = document.getElementById('btn-guest-lookup');
+      if (btn) btn.textContent = 'SEARCHING...';
+      if (resContainer) resContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">Searching for your orders...</div>';
+
+      try {
+        let url = '/api/orders?';
+        if (val.includes('@')) {
+          url += `email=${encodeURIComponent(val.toLowerCase())}`;
+        } else if (/^\d+$/.test(val.replace(/\D/g, ''))) {
+          url += `phone=${encodeURIComponent(val)}`;
+        } else {
+          url = `/api/orders/${encodeURIComponent(val)}`;
+        }
+
+        const res = await fetch(url);
+        let orders = [];
+        if (res.ok) {
+          const data = await res.json();
+          if (data.order) orders = [data.order];
+          else if (Array.isArray(data.orders)) orders = data.orders;
+        }
+
+        if (btn) btn.textContent = 'SEARCH';
+        if (resContainer) {
+          resContainer.innerHTML = renderOrdersHtml(orders);
+        }
+      } catch (err) {
+        if (btn) btn.textContent = 'SEARCH';
+        if (resContainer) resContainer.innerHTML = '<div style="color:#c00; text-align:center; padding:1.5rem;">Error finding orders. Please try again.</div>';
+      }
+    }
+
     async function initAccount() {
       try {
         currentUser = window.AuthEngine?.getUser?.();
@@ -202,24 +304,42 @@
 
         if (!currentUser) {
           const nameEl = document.getElementById('user-display-name');
-          if (nameEl) nameEl.textContent = 'Sign In to Access Account';
+          if (nameEl) nameEl.textContent = 'Customer Account';
+          const tierBadge = document.getElementById('user-tier-badge');
+          if (tierBadge) tierBadge.style.display = 'none';
+          const addrEl = document.getElementById('user-display-address');
+          if (addrEl) addrEl.textContent = 'Guest / Unregistered';
+
           const container = document.getElementById('orders-list-container');
           if (container) {
             container.innerHTML = `
-              <div style="background:#fff; border:1px solid #e5e5e5; border-radius:4px; padding:3rem 1.5rem; text-align:center; color:#555;">
-                <h3 style="margin:0 0 8px; text-transform:uppercase;">Sign In Required</h3>
-                <p style="font-size:0.85rem; margin-bottom:1.5rem; color:#777;">Please log in or register to view your order history and saved items.</p>
-                <a href="/login" style="background:#000; color:#fff; text-decoration:none; padding:12px 24px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; display:inline-block;">GO TO LOGIN</a>
+              <div style="background:#fff; border:1px solid #e5e5e5; border-radius:4px; padding:2rem; margin-bottom:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; border-bottom:1px solid #eee; padding-bottom:1rem;">
+                  <div>
+                    <h3 style="margin:0 0 4px; text-transform:uppercase; font-size:1.1rem; font-family:'Instrument Sans', sans-serif;">Track Your Streetwear Orders</h3>
+                    <p style="font-size:0.85rem; color:#666; margin:0;">Enter your Phone Number, Email, or Order ID to instantly view order status and Delhivery dispatch.</p>
+                  </div>
+                  <div>
+                    <a href="/login" style="background:#000; color:#fff; text-decoration:none; padding:10px 18px; font-weight:800; font-size:0.8rem; text-transform:uppercase; border-radius:2px; display:inline-block;">SIGN IN / REGISTER</a>
+                  </div>
+                </div>
+
+                <form id="guest-lookup-form" onsubmit="event.preventDefault(); handleGuestLookup();" style="display:flex; gap:10px; max-width:550px;">
+                  <input type="text" id="guest-lookup-input" placeholder="Enter Phone (e.g. 9820012345) or Email..." style="flex:1; padding:10px 14px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;" required>
+                  <button type="submit" id="btn-guest-lookup" style="background:#000; color:#fff; border:none; padding:10px 20px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; cursor:pointer;">SEARCH</button>
+                </form>
               </div>
+
+              <div id="guest-orders-results"></div>
             `;
           }
-          setTimeout(() => {
-            if (!localStorage.getItem('genrage_user')) {
-              window.location.href = '/login';
-            }
-          }, 1500);
+
+          loadWishlist();
           return;
         }
+
+        const tierBadge = document.getElementById('user-tier-badge');
+        if (tierBadge) tierBadge.style.display = 'inline-block';
 
         const nameEl = document.getElementById('user-display-name');
         if (nameEl) nameEl.textContent = currentUser.name || currentUser.full_name || 'Storefront Member';
@@ -233,7 +353,7 @@
         const addrEl = document.getElementById('user-display-address');
         if (addrEl) {
           const addrParts = [currentUser.address, currentUser.city, currentUser.state, currentUser.pincode].filter(Boolean);
-          addrEl.textContent = addrParts.length > 0 ? addrParts.join(', ') : 'Mumbai, Maharashtra, India';
+          addrEl.textContent = addrParts.length > 0 ? addrParts.join(', ') : 'Not specified';
         }
 
         await Promise.allSettled([loadOrders(), loadWishlist()]);
@@ -275,69 +395,7 @@
           } catch (e2) {}
         }
 
-        if (orders.length === 0) {
-          container.innerHTML = `
-            <div style="background:#fff; border:1px solid #e5e5e5; border-radius:4px; padding:3rem; text-align:center; color:#777;">
-              <h3 style="margin:0 0 8px; text-transform:uppercase;">No Orders Yet</h3>
-              <p style="font-size:0.85rem; margin-bottom:1.5rem;">Explore our latest oversized drop to start your collection.</p>
-              <a href="/collections/shop" style="background:#000; color:#fff; text-decoration:none; padding:10px 20px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px;">SHOP NEW ARRIVALS</a>
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = orders.map(o => {
-          let badgeClass = 'status-processing';
-          if (o.orderStatus === 'Shipped') badgeClass = 'status-shipped';
-          if (o.orderStatus === 'Delivered') badgeClass = 'status-delivered';
-
-          const itemsList = Array.isArray(o.items) && o.items.length > 0 ? o.items : [{
-            title: 'Streetwear Apparel',
-            quantity: 1,
-            price: o.total || 1899,
-            image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
-          }];
-
-          const itemsHtml = itemsList.map(i => `
-            <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
-              <img src="${i.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}" style="width:40px; height:50px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
-              <div style="flex:1; font-size:0.85rem;">
-                <strong>${i.title}</strong>
-                <span style="color:#666;">(Qty: ${i.quantity || 1})</span>
-              </div>
-              <div style="font-weight:700; font-size:0.85rem;">Rs. ${(Number(i.price) || 1899).toLocaleString('en-IN')}</div>
-            </div>
-          `).join('');
-
-          return `
-            <div class="order-box">
-              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                <div>
-                  <strong style="font-family:'Instrument Sans', sans-serif; font-size:1.05rem;">Order #${o.id}</strong>
-                  <span style="font-size:0.75rem; color:#888; margin-left:8px;">${new Date(o.createdAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <span class="status-badge ${badgeClass}">${o.orderStatus || 'Processing'}</span>
-                  <strong style="font-size:1rem;">Rs. ${(Number(o.total) || 1899).toLocaleString('en-IN')}</strong>
-                </div>
-              </div>
-
-              ${itemsHtml}
-
-              <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f0f0f0; padding-top:10px; margin-top:12px; font-size:0.8rem; color:#666; flex-wrap:wrap; gap:8px;">
-                <div>
-                  Payment: <strong>${o.paymentMethod || 'Prepaid UPI'}</strong> (${o.paymentStatus || 'Paid'})
-                </div>
-                <div>
-                  ${o.trackingNumber ? `
-                    Delhivery AWB: <a href="https://www.delhivery.com/track/package/${o.trackingNumber}" target="_blank" style="color:#1565c0; font-weight:700; text-decoration:none;">${o.trackingNumber} ↗</a>
-                  ` : '<span style="color:#888;">Express dispatch in progress</span>'}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
+        container.innerHTML = renderOrdersHtml(orders);
       } catch (e) {
         container.innerHTML = '<div style="color:#c00; text-align:center; padding:2rem;">Could not load orders. Please refresh.</div>';
       }

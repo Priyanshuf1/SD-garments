@@ -984,10 +984,29 @@
 
       async loadCatalog() {
         try {
-          const res = await fetch('/api/admin/products');
-          const data = await res.json();
-          if (data.success && Array.isArray(data.products)) {
-            this.allProducts = data.products;
+          let products = [];
+          try {
+            const res = await fetch('/api/products');
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success && Array.isArray(data.products)) {
+                products = data.products;
+              }
+            }
+          } catch (e1) {}
+
+          if (!products || products.length === 0) {
+            const res2 = await fetch('/api/admin/products');
+            if (res2.ok) {
+              const data2 = await res2.json();
+              if (data2.success && Array.isArray(data2.products)) {
+                products = data2.products;
+              }
+            }
+          }
+
+          if (products && products.length > 0) {
+            this.allProducts = products;
             this.updateActiveChip();
             this.filterAndRender();
           }
@@ -1295,9 +1314,21 @@
         if (badge) badge.textContent = totalCount;
 
         const container = document.getElementById('cart-items-container');
+        const checkoutBtn = document.getElementById('btn-cart-checkout');
         if (!container) return;
 
         if (this.cart.length === 0) {
+          if (checkoutBtn) {
+            checkoutBtn.disabled = true;
+            checkoutBtn.setAttribute('aria-disabled', 'true');
+            checkoutBtn.style.opacity = '0.5';
+            checkoutBtn.style.cursor = 'not-allowed';
+            checkoutBtn.onclick = (e) => {
+              if (e) e.preventDefault();
+              alert('Your cart is empty. Please add items before checking out.');
+              return false;
+            };
+          }
           container.innerHTML = `
             <div id="cart-empty-msg" style="text-align:center; padding:3rem 1rem; color:#888;">
               Your bag is currently empty.<br>
@@ -1306,6 +1337,16 @@
           `;
           document.getElementById('cart-total-price').textContent = 'Rs. 0';
           return;
+        }
+
+        if (checkoutBtn) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.removeAttribute('aria-disabled');
+          checkoutBtn.style.opacity = '1';
+          checkoutBtn.style.cursor = 'pointer';
+          checkoutBtn.onclick = () => {
+            window.location.href = '/checkout';
+          };
         }
 
         let total = 0;

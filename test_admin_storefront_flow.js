@@ -98,7 +98,16 @@ async function runTests() {
       (p.title || '').toLowerCase().includes('gift card')
     );
     assert(!giftCardInDataJson, 'No gift card product found in /data/products.json');
-    console.log(`Catalog count: ${products.length} products (Gift card successfully excluded).\n`);
+    console.log(`Catalog count: ${products.length} products (Gift card successfully excluded).`);
+
+    // Verify index.html contains no third-party gift box / easy-bundle references
+    const fs = require('fs');
+    const path = require('path');
+    const indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+    assert(!indexHtml.includes('gift-box-builder'), 'No gift-box-builder in index.html');
+    assert(!indexHtml.includes('easy-bundle'), 'No easy-bundle in index.html');
+    assert(!indexHtml.includes('bundle-products-prefetch'), 'No bundle-products-prefetch in index.html');
+    console.log('index.html verified completely clean of third-party gift box scripts.\n');
 
     // -----------------------------------------------------------------
     // TEST 2: Empty Cart Checkout Rejection
@@ -153,6 +162,15 @@ async function runTests() {
     const storefrontDataRes = await makeRequest('GET', '/data/products.json');
     const foundInDataJson = storefrontDataRes.body.products.find(p => String(p.id) === String(testProdId));
     assert(Boolean(foundInDataJson), 'Newly added product reflects IMMEDIATELY on /data/products.json');
+
+    // Verify single product retrieval by ID and by handle
+    const singleByIdRes = await makeRequest('GET', `/api/products/${testProdId}`);
+    assert(singleByIdRes.status === 200, 'GET /api/products/:id returns HTTP 200');
+    assert(String(singleByIdRes.body.product.id) === String(testProdId), 'Single product by ID matches test product ID');
+
+    const singleByHandleRes = await makeRequest('GET', `/api/products/${testProdHandle}`);
+    assert(singleByHandleRes.status === 200, 'GET /api/products/:handle returns HTTP 200');
+    assert(singleByHandleRes.body.product.handle === testProdHandle, 'Single product by handle matches test product handle');
 
     // Update product via PUT /api/admin/products/:id
     const updatedTitle = 'Automated Test Gothic Cyber Oversized Tee (V2 Gold Edition)';
@@ -233,6 +251,21 @@ async function runTests() {
     assert(authOrdersRes.status === 200, 'GET /api/auth/orders?phone=... returns HTTP 200');
     const orderInAuth = authOrdersRes.body.orders.find(o => String(o.id) === String(createdOrderId));
     assert(Boolean(orderInAuth), 'Placed order reflects in /api/auth/orders fallback endpoint');
+
+    // Verify phone normalization: raw 10 digits matches +91 formatted customer phone
+    const normalizedPhoneRes = await makeRequest('GET', '/api/orders?phone=9888877777');
+    assert(normalizedPhoneRes.status === 200, 'GET /api/orders?phone=9888877777 returns HTTP 200');
+    const orderInNormalized = normalizedPhoneRes.body.orders.find(o => String(o.id) === String(createdOrderId));
+    assert(Boolean(orderInNormalized), 'Phone normalization matches order via 10-digit lookup');
+
+    // Verify single order retrieval by orderId (/api/orders/:id and /api/admin/orders/:id)
+    const singleOrderRes = await makeRequest('GET', `/api/orders/${createdOrderId}`);
+    assert(singleOrderRes.status === 200, 'GET /api/orders/:id returns HTTP 200');
+    assert(String(singleOrderRes.body.order.id) === String(createdOrderId), 'Single order by ID matches created order');
+
+    const singleAdminOrderRes = await makeRequest('GET', `/api/admin/orders/${createdOrderId}`);
+    assert(singleAdminOrderRes.status === 200, 'GET /api/admin/orders/:id returns HTTP 200');
+    assert(String(singleAdminOrderRes.body.order.id) === String(createdOrderId), 'Single admin order by ID matches created order');
     console.log('Storefront order placement and multi-portal reflection verified.\n');
 
     // -----------------------------------------------------------------
