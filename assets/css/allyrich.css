@@ -1,0 +1,420 @@
+/* ==========================================================================
+   AllyRich Loader & Cinematic Ruins Footer System
+   Extracted from RitikPal26/allyrich-loader
+   ========================================================================== */
+
+/* Brand Variables & System */
+:root {
+  --color-obsidian: #111112;
+  --color-ash: #4C4D53;
+  --color-mariner: #8EA6B3;
+  --color-ice: #E2E2E2;
+  --color-flint: #8A8A8A;
+  --color-sand: #FFFCE6;
+  --color-slate: #1B2033;
+  --color-sandstone: #F6E2CE;
+  --color-smoke: #202020;
+
+  --font-serif: 'Shippori Mincho B1', 'Times New Roman', serif;
+  --font-sans: 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif;
+  --font-barlow: 'Barlow', Arial, sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   1. LOADER COMPONENT (Exact etching & lighting effect)
+   -------------------------------------------------------------------------- */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+  background: var(--color-obsidian);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 600ms ease;
+}
+
+.loader--done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loader__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* The Brand Unit (AR emblem + AllyRich name)
+   etches in left-to-right in lockstep with the progress line.
+   Starts dim during fill, cleanly lighting up to full white at --lit. */
+.loader__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #ffffff;
+  opacity: 0.2;
+  clip-path: inset(-2px 100% -2px 0);
+  transition: opacity 500ms ease-out, clip-path 1400ms ease-in-out;
+}
+
+.loader--filling .loader__brand {
+  clip-path: inset(-2px 0% -2px 0);
+}
+
+.loader__mark img {
+  width: 124px;
+  height: 157px;
+  object-fit: contain;
+  display: block;
+}
+
+.loader__name {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-right: -0.28em;
+  white-space: nowrap;
+}
+
+/* Shining / Lit phase: solid pure white */
+.loader--lit .loader__brand {
+  opacity: 1;
+}
+
+.loader__track {
+  position: relative;
+  width: 160px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 1px;
+}
+
+.loader__progress {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  transform: scaleX(0.0448);
+  transform-origin: left;
+  transition: transform 1400ms ease-in-out;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.85);
+}
+
+.loader--filling .loader__progress {
+  transform: scaleX(1);
+}
+
+/* --------------------------------------------------------------------------
+   2. SITE FOOTER (Exact from allyrich-loader / forumcases.com)
+   -------------------------------------------------------------------------- */
+.site-footer-wrapper {
+  position: relative;
+  width: 100%;
+  display: block;
+  clear: both;
+}
+
+.site-footer {
+  position: relative;
+  background: var(--color-obsidian);
+  color: #fff;
+  overflow: hidden;
+  width: 100%;
+}
+
+.site-footer__bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 48px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 48px);
+}
+
+.site-footer__bg img {
+  width: 100%;
+  height: calc(100% + 48px);
+  margin-top: -24px;
+  object-fit: cover;
+  object-position: 50% 48.7%;
+  opacity: 0.1;
+  display: block;
+}
+
+.site-footer__bg-gradient {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(180deg, rgba(17, 17, 18, 0) 44.19%, var(--color-obsidian) 74.667%);
+}
+
+.site-footer a {
+  text-decoration: none;
+}
+
+.site-footer__heading {
+  font: 500 18px/1.4 var(--font-sans);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.site-footer__column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.site-footer__column a {
+  font: 300 18px/32px var(--font-barlow);
+  letter-spacing: 0.02em;
+  color: var(--color-flint);
+  margin-top: 20px;
+  transition: color 0.2s ease;
+}
+
+.site-footer__column a:hover {
+  color: #fff;
+}
+
+.site-footer__column--shop {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-footer__column--shop .site-footer__heading {
+  order: -6;
+}
+
+.site-footer__column--shop a[href*="/products/hades"] {
+  order: -5;
+}
+
+.site-footer__column--shop a[href*="/products/theseus"] {
+  order: -4;
+}
+
+.site-footer__column--shop a[href*="/products/wall-mount"] {
+  order: -3;
+}
+
+.site-footer__column:not(.site-footer__column--shop) {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-footer__column:not(.site-footer__column--shop) .site-footer__heading {
+  order: -2;
+}
+
+.site-footer__column:not(.site-footer__column--shop) a[href*=contact] {
+  order: 1;
+}
+
+.site-footer__logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.site-footer__logo:hover {
+  opacity: 0.85;
+  transform: scale(1.03);
+}
+
+.site-footer__logo img {
+  width: 100px;
+  height: 126px;
+  object-fit: contain;
+  display: block;
+}
+
+.site-footer__brand-name {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: 0.28em;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-right: -0.28em;
+}
+
+.site-footer__social {
+  display: flex;
+  color: #fff;
+}
+
+.site-footer__social a {
+  color: currentcolor;
+  display: flex;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.site-footer__social a:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.site-footer__social svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.site-footer__social-instagram {
+  color: var(--color-sand);
+}
+
+.site-footer__copyright,
+.site-footer__legal a {
+  font: 400 12px/1.06 var(--font-sans);
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.site-footer__legal a:hover {
+  color: var(--color-sand);
+}
+
+/* --------------------------------------------------------------------------
+   Footer Responsive Breakpoints
+   -------------------------------------------------------------------------- */
+@media (min-width: 990px) {
+  .site-footer__content {
+    position: relative;
+    max-width: 1440px;
+    margin: 0 auto;
+    height: 520px;
+  }
+  .site-footer__band {
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    transform: translate(-50%);
+  }
+  .site-footer__columns {
+    position: absolute;
+    top: 72px;
+    left: 120px;
+    display: flex;
+  }
+  .site-footer__column--shop {
+    width: 234px;
+  }
+  .site-footer__social {
+    position: absolute;
+    left: 120px;
+    bottom: 60px;
+    gap: 31px;
+  }
+  .site-footer__copyright {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    bottom: 55px;
+    text-align: center;
+  }
+  .site-footer__legal {
+    position: absolute;
+    right: 120px;
+    bottom: 55px;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: end;
+    justify-items: end;
+    gap: 14px 25px;
+  }
+}
+
+@media (min-width: 990px) and (max-width: 1399.98px) {
+  .site-footer__content {
+    height: auto;
+    padding: 72px 48px 56px;
+  }
+  .site-footer__band {
+    position: static;
+    transform: none;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+  .site-footer__columns {
+    position: static;
+    margin-bottom: 64px;
+  }
+  .site-footer__social {
+    position: static;
+    margin-bottom: 32px;
+  }
+  .site-footer__copyright {
+    position: static;
+    transform: none;
+    text-align: left;
+  }
+  .site-footer__legal {
+    position: static;
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 989.98px) {
+  .site-footer__band {
+    position: relative;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .site-footer__logo {
+    margin-top: 15px;
+  }
+  .site-footer__bg {
+    height: 200px;
+    inset: 0 0 auto;
+  }
+  .site-footer__bg-gradient {
+    background: linear-gradient(180deg, rgba(17, 17, 18, 0) 44.19%, var(--color-obsidian) 74.667%);
+  }
+  .site-footer__columns {
+    display: flex;
+    padding: 63px 0 0 47px;
+  }
+  .site-footer__column--shop {
+    width: 158px;
+  }
+  .site-footer__social {
+    justify-content: space-between;
+    padding: 80px 48px 0;
+  }
+  .site-footer__copyright {
+    text-align: center;
+    margin-top: 46px;
+  }
+  .site-footer__legal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 19px;
+    margin: 19px 0 13px;
+    text-align: center;
+  }
+}
