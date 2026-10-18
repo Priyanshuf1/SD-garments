@@ -264,7 +264,7 @@
 
         <!-- Discount Code -->
         <div style="display:flex; gap:8px; margin-bottom:1.5rem;">
-          <input type="text" id="discount-code" placeholder="Discount Code (e.g. GENRAGE10)" class="form-control" style="text-transform:uppercase;">
+          <input type="text" id="discount-code" placeholder="Discount Code (e.g. ALLY RICH10)" class="form-control" style="text-transform:uppercase;">
           <button type="button" onclick="applyPromo()" style="background:#111; color:#fff; border:none; padding:0 16px; font-weight:700; font-size:0.8rem; border-radius:3px; cursor:pointer;">APPLY</button>
         </div>
         <div id="discount-applied-msg" style="display:none; color:#2e7d32; font-size:0.8rem; font-weight:700; margin-bottom:1rem;">
@@ -282,7 +282,7 @@
             <span>FREE</span>
           </div>
           <div id="row-discount" style="display:none; justify-content:space-between; color:#e50914; font-weight:700;">
-            <span>Discount (GENRAGE10)</span>
+            <span>Discount (ALLY RICH10)</span>
             <span id="chk-discount">- Rs. 0</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:1.15rem; font-weight:900; border-top:2px solid #111; padding-top:10px; margin-top:4px;">
@@ -458,12 +458,12 @@
 
     function applyPromo() {
       const code = document.getElementById('discount-code').value.trim().toUpperCase();
-      if (code === 'GENRAGE10' || code === 'STREET10' || code === 'WELCOME') {
+      if (code === 'ALLY RICH10' || code === 'STREET10' || code === 'WELCOME') {
         discountApplied = true;
         document.getElementById('discount-applied-msg').style.display = 'block';
         renderSummary();
       } else {
-        alert('Invalid discount code. Try GENRAGE10 for 10% off!');
+        alert('Invalid discount code. Try ALLY RICH10 for 10% off!');
       }
     }
 

@@ -186,6 +186,9 @@ const WishlistEngine = {
   },
 
   decorateCards() {
+    // Purge any third-party app injected buttons
+    document.querySelectorAll('.vitals-wishlist, .sqa-wishlist, [class*="wishlist-by-square"], .swym-button, .swym-btn-container').forEach(el => el.remove());
+
     const list = this.getWishlist();
     const handles = new Set(list.map(i => {
       const h = typeof i === 'string' ? i : i.handle;
@@ -193,16 +196,31 @@ const WishlistEngine = {
     }));
 
     document.querySelectorAll('product-card, .product-card').forEach(card => {
-      const figure = card.querySelector('.product-card__figure') || card;
-      if (!figure) return;
-      if (figure.querySelector('.wishlist-btn')) return;
+      // Deduplicate: if multiple buttons exist on the card, keep only one
+      const existingBtns = card.querySelectorAll('.wishlist-btn');
+      if (existingBtns.length > 1) {
+        for (let i = 1; i < existingBtns.length; i++) {
+          existingBtns[i].remove();
+        }
+      }
 
       const rawHandle = card.getAttribute('handle') || card.querySelector('a[href*="/products/"]')?.getAttribute('href')?.split('/products/')?.[1]?.split('?')?.[0];
       if (!rawHandle) return;
       const cleanHandle = String(rawHandle).split('?')[0].split('#')[0].trim();
-
-      const title = card.querySelector('.product-title, h6')?.textContent?.trim() || cleanHandle;
       const isWishlisted = handles.has(cleanHandle);
+
+      if (existingBtns.length >= 1) {
+        const btn = existingBtns[0];
+        btn.setAttribute('data-wishlist-handle', cleanHandle);
+        btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
+        btn.setAttribute('aria-pressed', isWishlisted ? 'true' : 'false');
+        btn.classList.toggle('is-wishlisted', isWishlisted);
+        btn.innerHTML = this.getHeartSvg(isWishlisted);
+        return;
+      }
+
+      const figure = card.querySelector('.product-card__figure') || card;
+      if (!figure) return;
 
       const btn = document.createElement('button');
       btn.type = 'button';

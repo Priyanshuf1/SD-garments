@@ -737,6 +737,15 @@ button {
   stroke: #e50914 !important;
 }
 
+/* Ensure only one wishlist heart is displayed per card */
+.product-card .wishlist-btn ~ .wishlist-btn,
+.product-card__figure .wishlist-btn ~ .wishlist-btn,
+.product-card .vitals-wishlist,
+.product-card .sqa-wishlist,
+.product-card .swym-button {
+  display: none !important;
+}
+
 /* Quick Add Overlay */
 .quick-buy-btn {
   position: absolute;
