@@ -2,8 +2,18 @@
   "version": 2,
   "builds": [
     {
+      "src": "assets/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "*.html",
+          "data/**"
+        ]
+      }
     }
   ],
   "routes": [
