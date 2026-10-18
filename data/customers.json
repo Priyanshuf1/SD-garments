@@ -1,0 +1,146 @@
+[
+  {
+    "id": "CUST-1001",
+    "name": "Kabir Singhania",
+    "email": "kabir.singhania@gmail.com",
+    "phone": "+91 98201 44512",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "ordersCount": 6,
+    "totalSpent": 18450,
+    "lastOrderDate": "2026-10-17T18:22:00Z",
+    "tags": [
+      "VIP Streetwear",
+      "Drop Hunter",
+      "Prepaid"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1002",
+    "name": "Aanya Verma",
+    "email": "aanya.v@outlook.com",
+    "phone": "+91 98112 33490",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "ordersCount": 4,
+    "totalSpent": 11200,
+    "lastOrderDate": "2026-10-16T14:10:00Z",
+    "tags": [
+      "Repeat Buyer",
+      "Baby Tees"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1003",
+    "name": "Rohan Deshmukh",
+    "email": "rohan.d@gmail.com",
+    "phone": "+91 97654 88210",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "ordersCount": 5,
+    "totalSpent": 15300,
+    "lastOrderDate": "2026-10-15T09:45:00Z",
+    "tags": [
+      "Baggy Pants Fan",
+      "VIP Streetwear"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1004",
+    "name": "Ishaan Malhotra",
+    "email": "ishaan.m@gmail.com",
+    "phone": "+91 98721 00412",
+    "city": "Chandigarh",
+    "state": "Punjab",
+    "ordersCount": 3,
+    "totalSpent": 8990,
+    "lastOrderDate": "2026-10-14T20:15:00Z",
+    "tags": [
+      "Hoodies",
+      "COD"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1005",
+    "name": "Meera Nambiar",
+    "email": "meera.nambiar@gmail.com",
+    "phone": "+91 99450 12837",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "ordersCount": 2,
+    "totalSpent": 5198,
+    "lastOrderDate": "2026-10-12T11:30:00Z",
+    "tags": [
+      "New Launch 2026",
+      "Prepaid"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1006",
+    "name": "Devansh Roy",
+    "email": "devansh.roy@gmail.com",
+    "phone": "+91 98301 99281",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "ordersCount": 1,
+    "totalSpent": 2499,
+    "lastOrderDate": "2026-10-11T16:00:00Z",
+    "tags": [
+      "First Time Buyer"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1007",
+    "name": "Zoya Khan",
+    "email": "zoya.k@gmail.com",
+    "phone": "+91 99881 22345",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "ordersCount": 4,
+    "totalSpent": 12900,
+    "lastOrderDate": "2026-10-09T17:40:00Z",
+    "tags": [
+      "Gothic Pendants",
+      "VIP Streetwear"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1008",
+    "name": "Yashwardhan Rao",
+    "email": "yash.rao@yahoo.com",
+    "phone": "+91 94401 55621",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "ordersCount": 2,
+    "totalSpent": 6498,
+    "lastOrderDate": "2026-10-08T13:20:00Z",
+    "tags": [
+      "Full Sleeves",
+      "Corduroy"
+    ],
+    "status": "Active",
+    "password": "password123",
+    "wishlist": []
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "REV-2001",
+    "productId": 9581723877614,
+    "productTitle": "Zaraki Corduroy Full Sleeves",
+    "customerName": "Kabir Singhania",
+    "rating": 5,
+    "title": "Unreal Quality & Silhouette!",
+    "comment": "The 260 GSM corduroy fabric feels ultra-premium. Boxy fit is literally perfect, no awkward sagging. Worth every rupee.",
+    "verified": true,
+    "status": "Approved",
+    "date": "2026-10-17T19:30:00Z"
+  },
+  {
+    "id": "REV-2002",
+    "productId": 9581723877614,
+    "productTitle": "Zaraki Corduroy Full Sleeves",
+    "customerName": "Aanya Verma",
+    "rating": 5,
+    "title": "Top Tier Streetwear in India",
+    "comment": "Screen print texture is subtle and artisan stitching is on point. Got so many compliments in college!",
+    "verified": true,
+    "status": "Approved",
+    "date": "2026-10-16T15:00:00Z"
+  },
+  {
+    "id": "REV-2003",
+    "productId": 419341664494,
+    "productTitle": "Phantom Flared Baggy Cargo Pants",
+    "customerName": "Rohan Deshmukh",
+    "rating": 5,
+    "title": "The Stacking is Insane",
+    "comment": "Best flared baggy pants on the market right now. Pair them with any chunky sneakers and you are set.",
+    "verified": true,
+    "status": "Approved",
+    "date": "2026-10-15T11:20:00Z"
+  },
+  {
+    "id": "REV-2004",
+    "productId": 466002182382,
+    "productTitle": "Heavyweight Distressed Zip Hoodie",
+    "customerName": "Ishaan Malhotra",
+    "rating": 4,
+    "title": "Super warm, heavy drape",
+    "comment": "Fabric weight is legit 450+ GSM. Zipper is YKK quality. Took 4 days for shipping to Chandigarh, but worth the wait.",
+    "verified": true,
+    "status": "Approved",
+    "date": "2026-10-14T21:00:00Z"
+  },
+  {
+    "id": "REV-2005",
+    "productId": 9581723877614,
+    "productTitle": "Spear Charm Pendant Chain",
+    "customerName": "Zoya Khan",
+    "rating": 5,
+    "title": "Solid Stainless Steel weight",
+    "comment": "Does not tarnish or rust even with daily sweat and shower. The spear carving has sharp gothic detail.",
+    "verified": true,
+    "status": "Approved",
+    "date": "2026-10-10T12:00:00Z"
+  }
+]

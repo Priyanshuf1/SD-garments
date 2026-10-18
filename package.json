@@ -1,0 +1,15 @@
+{
+  "name": "genrage-clone",
+  "version": "1.0.0",
+  "description": "Full production clone of GENRAGE | Streetwear Clothing Brand India",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "GENRAGE",
+  "license": "ISC",
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

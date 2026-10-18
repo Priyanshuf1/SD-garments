@@ -1,0 +1,1397 @@
+/**
+ * GENRAGE - 1:1 Ditto Server with Full Video Streaming, Proxy, and Admin Control Hub API
+ */
+
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
+const supabase = require('./lib/supabase.js');
+
+const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = __dirname;
+const DATA_DIR = path.join(PUBLIC_DIR, 'data');
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf'
+};
+
+function serveVideoWithRange(req, res, filePath) {
+  const stat = fs.statSync(filePath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
+
+  if (range) {
+    const parts = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = (end - start) + 1;
+    const file = fs.createReadStream(filePath, { start, end });
+
+    res.writeHead(206, {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': 'video/mp4',
+      'Access-Control-Allow-Origin': '*'
+    });
+    file.pipe(res);
+  } else {
+    res.writeHead(200, {
+      'Content-Length': fileSize,
+      'Content-Type': 'video/mp4',
+      'Accept-Ranges': 'bytes',
+      'Access-Control-Allow-Origin': '*'
+    });
+    fs.createReadStream(filePath).pipe(res);
+  }
+}
+
+function proxyRequest(req, res, targetUrl) {
+  const parsed = new URL(targetUrl);
+  const options = {
+    hostname: parsed.hostname,
+    port: 443,
+    path: parsed.pathname + parsed.search,
+    method: req.method,
+    headers: {
+      ...req.headers,
+      host: parsed.hostname,
+      referer: 'https://genrage.com/'
+    }
+  };
+
+  const proxy = https.request(options, (remoteRes) => {
+    res.writeHead(remoteRes.statusCode, {
+      ...remoteRes.headers,
+      'access-control-allow-origin': '*'
+    });
+    remoteRes.pipe(res);
+  });
+
+  proxy.on('error', (err) => {
+    console.error('Proxy error:', err.message);
+    res.writeHead(502, { 'Content-Type': 'text/plain' });
+    res.end('Proxy Error');
+  });
+
+  req.pipe(proxy);
+}
+
+function downloadFile(sourceUrl, destPath) {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(sourceUrl);
+    const client = parsed.protocol === 'https:' ? https : http;
+    const request = client.get(sourceUrl, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        const nextUrl = new URL(res.headers.location, sourceUrl).toString();
+        return downloadFile(nextUrl, destPath).then(resolve).catch(reject);
+      }
+      if (res.statusCode !== 200) {
+        return reject(new Error(`Failed to download: HTTP ${res.statusCode}`));
+      }
+      const fileStream = fs.createWriteStream(destPath);
+      res.pipe(fileStream);
+      fileStream.on('finish', () => {
+        fileStream.close(resolve);
+      });
+      fileStream.on('error', reject);
+    });
+    request.on('error', reject);
+  });
+}
+
+const SECTION_VIDEOS = [
+  { name: 'hero_desktop.mp4', title: 'Hero Section Desktop Video', section: 'Homepage Hero Desktop', res: '2880 × 1080 (2.67:1 Ultra-wide)' },
+  { name: 'hero_mobile.mp4', title: 'Hero Section Mobile Video', section: 'Homepage Hero Mobile', res: '810 × 1080 (0.75:1 Portrait)' },
+  { name: 'lookbook1_desktop.mp4', title: 'Gothic "G" Lookbook Desktop', section: 'Artisan Lookbook Desktop', res: '2520 × 1080 (2.33:1 Cinematic)' },
+  { name: 'lookbook1_mobile.mp4', title: 'Gothic "G" Lookbook Mobile', section: 'Artisan Lookbook Mobile', res: '1080 × 1080 (1:1 Square)' },
+  { name: 'pants_feature.mp4', title: 'Streetwear Pants Feature Reel', section: 'Pants & Bottoms Showcase', res: '836 × 1080 (0.78:1 Portrait)' },
+  { name: 'showcase2.mp4', title: '3D River & Streetwear Showcase', section: 'Art Direction 3D Reel', res: '1920 × 1080 (16:9 Full HD)' }
+];
+
+function readJsonFile(filename, fallback = []) {
+  const p = path.join(DATA_DIR, filename);
+  try {
+    if (fs.existsSync(p)) {
+      return JSON.parse(fs.readFileSync(p, 'utf8'));
+    }
+  } catch (err) {
+    console.error(`Error reading ${filename}:`, err.message);
+  }
+  return fallback;
+}
+
+function writeJsonFile(filename, data) {
+  const p = path.join(DATA_DIR, filename);
+  try {
+    fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    console.error(`Error writing ${filename}:`, err.message);
+    return false;
+  }
+}
+
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+      if (body.length > 120 * 1024 * 1024) {
+        req.destroy();
+        reject(new Error('Payload too large (limit: 120MB)'));
+      }
+    });
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (e) {
+        resolve({});
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function sendJson(res, statusCode, data) {
+  res.writeHead(statusCode, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  });
+  res.end(JSON.stringify(data));
+}
+
+const server = http.createServer(async (req, res) => {
+  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  let pathname = decodeURIComponent(parsedUrl.pathname);
+
+  // Handle OPTIONS for CORS
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    });
+    return res.end();
+  }
+
+  // -------------------------------------------------------------
+  // Admin Portal Page Route
+  // -------------------------------------------------------------
+  if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html') {
+    const adminPath = path.join(PUBLIC_DIR, 'admin.html');
+    if (fs.existsSync(adminPath)) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return fs.createReadStream(adminPath).pipe(res);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // REST API Endpoints for Admin Management Portal
+  // -------------------------------------------------------------
+  if (pathname.startsWith('/api/admin/')) {
+    const apiRoute = pathname.replace('/api/admin/', '');
+
+    // 1. Executive Dashboard Stats
+    if (apiRoute === 'stats' && req.method === 'GET') {
+      const pData = readJsonFile('products.json', { products: [] });
+      const cData = readJsonFile('collections.json', { collections: [] });
+      const orders = readJsonFile('orders.json', []);
+      const discounts = readJsonFile('discounts.json', []);
+      const customers = readJsonFile('customers.json', []);
+      const reviews = readJsonFile('reviews.json', []);
+
+      const products = pData.products || [];
+      const collections = cData.collections || [];
+
+      const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+      const deliveredCount = orders.filter(o => o.orderStatus === 'Delivered').length;
+      const processingCount = orders.filter(o => o.orderStatus === 'Processing' || o.orderStatus === 'Pending').length;
+
+      const categoryCounts = {};
+      products.forEach(p => {
+        const cat = p.category || p.product_type || 'Streetwear';
+        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+      });
+
+      return sendJson(res, 200, {
+        success: true,
+        stats: {
+          totalProducts: products.length,
+          totalCollections: collections.length,
+          totalOrders: orders.length,
+          totalCustomers: customers.length,
+          totalReviews: reviews.length,
+          deliveredOrders: deliveredCount,
+          processingOrders: processingCount,
+          totalRevenue: Math.round(totalRevenue),
+          averageOrderValue: orders.length ? Math.round(totalRevenue / orders.length) : 0,
+          activeDiscounts: discounts.filter(d => d.isActive).length,
+          categoryBreakdown: categoryCounts
+        },
+        recentOrders: orders.slice(0, 5)
+      });
+    }
+
+    // 2. Products CRUD
+    if (apiRoute.startsWith('products')) {
+      const pData = readJsonFile('products.json', { products: [] });
+      let products = pData.products || [];
+
+      // GET /api/admin/products
+      if (req.method === 'GET' && apiRoute === 'products') {
+        const query = parsedUrl.searchParams.get('search')?.toLowerCase();
+        const collection = parsedUrl.searchParams.get('collection');
+        const category = parsedUrl.searchParams.get('category');
+        const stock = parsedUrl.searchParams.get('stock');
+        const homepage_section = parsedUrl.searchParams.get('homepage_section');
+        const sort = parsedUrl.searchParams.get('sort');
+
+        let filtered = products;
+        if (query) {
+          filtered = filtered.filter(p =>
+            p.title.toLowerCase().includes(query) ||
+            p.handle.toLowerCase().includes(query) ||
+            (p.category && p.category.toLowerCase().includes(query)) ||
+            (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+          );
+        }
+        if (category && category !== 'all') {
+          filtered = filtered.filter(p =>
+            (p.category && p.category.toLowerCase() === category.toLowerCase()) ||
+            (p.product_type && p.product_type.toLowerCase() === category.toLowerCase())
+          );
+        }
+        if (homepage_section && homepage_section !== 'all') {
+          filtered = filtered.filter(p => (p.homepage_section || 'none') === homepage_section);
+        }
+        if (collection && collection !== 'all') {
+          filtered = filtered.filter(p =>
+            p.tags && p.tags.some(t => t.toLowerCase() === collection.toLowerCase())
+          );
+        }
+        if (stock) {
+          if (stock === 'in_stock') filtered = filtered.filter(p => (p.variants?.[0]?.inventory_quantity ?? 100) > 10);
+          else if (stock === 'low_stock') filtered = filtered.filter(p => { const q = p.variants?.[0]?.inventory_quantity ?? 100; return q > 0 && q <= 10; });
+          else if (stock === 'out_of_stock') filtered = filtered.filter(p => (p.variants?.[0]?.inventory_quantity ?? 100) <= 0);
+        }
+        if (sort) {
+          if (sort === 'price_asc') filtered.sort((a, b) => Number(a.variants?.[0]?.price || 0) - Number(b.variants?.[0]?.price || 0));
+          else if (sort === 'price_desc') filtered.sort((a, b) => Number(b.variants?.[0]?.price || 0) - Number(a.variants?.[0]?.price || 0));
+          else if (sort === 'title_asc') filtered.sort((a, b) => a.title.localeCompare(b.title));
+          else if (sort === 'newest') filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        }
+
+        return sendJson(res, 200, {
+          success: true,
+          count: filtered.length,
+          products: filtered
+        });
+      }
+
+      // POST /api/admin/products (Create Product)
+      if (req.method === 'POST' && apiRoute === 'products') {
+        const payload = await parseBody(req);
+        const prodCategory = payload.category || payload.product_type || 'T-Shirts & Boxy Tees';
+        const primaryImage = payload.image || (payload.images && payload.images[0]?.src) || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+        const hoverImage = payload.hoverImage || (payload.images && payload.images[1]?.src) || null;
+
+        let productImages = [];
+        if (payload.images && Array.isArray(payload.images) && payload.images.length > 0) {
+          productImages = payload.images.map((img, i) => ({
+            id: img.id || (Date.now() + i + 2),
+            src: typeof img === 'string' ? img : img.src,
+            position: i + 1
+          }));
+        } else {
+          productImages.push({ id: Date.now() + 2, src: primaryImage, position: 1 });
+          if (hoverImage) {
+            productImages.push({ id: Date.now() + 3, src: hoverImage, position: 2 });
+          }
+        }
+
+        const newProduct = {
+          id: Date.now(),
+          title: payload.title || 'Untitled Product',
+          handle: payload.handle || (payload.title ? payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`),
+          body_html: payload.description || '',
+          vendor: payload.vendor || 'GENRAGE',
+          category: prodCategory,
+          product_type: payload.product_type || prodCategory,
+          homepage_section: payload.homepage_section || 'none',
+          tags: Array.isArray(payload.tags) ? payload.tags : (payload.tags ? payload.tags.split(',').map(s => s.trim()) : ['Shop']),
+          published_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          variants: [
+            {
+              id: Date.now() + 1,
+              title: payload.size || 'Default',
+              price: String(payload.price || '1299.00'),
+              compare_at_price: String(payload.compare_at_price || '1999.00'),
+              sku: payload.sku || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
+              available: payload.available !== false,
+              inventory_quantity: Number(payload.stock) || 100
+            }
+          ],
+          images: productImages
+        };
+
+        products.unshift(newProduct);
+        writeJsonFile('products.json', { products });
+        return sendJson(res, 201, { success: true, product: newProduct });
+      }
+
+      // PUT /api/admin/products/:id (Update Product)
+      if (req.method === 'PUT') {
+        const id = apiRoute.replace('products/', '');
+        const payload = await parseBody(req);
+        const index = products.findIndex(p => String(p.id) === String(id));
+
+        if (index === -1) {
+          return sendJson(res, 404, { success: false, message: 'Product not found' });
+        }
+
+        const current = products[index];
+        if (payload.title) current.title = payload.title;
+        if (payload.category) current.category = payload.category;
+        if (payload.product_type) current.product_type = payload.product_type;
+        if (payload.homepage_section !== undefined) current.homepage_section = payload.homepage_section;
+        if (payload.price && current.variants[0]) current.variants[0].price = String(payload.price);
+        if (payload.compare_at_price && current.variants[0]) current.variants[0].compare_at_price = String(payload.compare_at_price);
+        if (payload.stock !== undefined && current.variants[0]) current.variants[0].inventory_quantity = Number(payload.stock);
+        if (payload.available !== undefined && current.variants[0]) current.variants[0].available = Boolean(payload.available);
+        if (payload.tags) current.tags = Array.isArray(payload.tags) ? payload.tags : payload.tags.split(',').map(s => s.trim());
+        
+        if (payload.images && Array.isArray(payload.images) && payload.images.length > 0) {
+          current.images = payload.images.map((img, i) => ({
+            id: img.id || (Date.now() + i + 2),
+            src: typeof img === 'string' ? img : img.src,
+            position: i + 1
+          }));
+        } else {
+          if (payload.image) {
+            if (!current.images || current.images.length === 0) {
+              current.images = [{ id: Date.now() + 2, src: payload.image, position: 1 }];
+            } else {
+              current.images[0].src = payload.image;
+            }
+          }
+          if (payload.hoverImage) {
+            if (!current.images) current.images = [];
+            if (current.images.length > 1) {
+              current.images[1].src = payload.hoverImage;
+            } else {
+              current.images.push({ id: Date.now() + 3, src: payload.hoverImage, position: 2 });
+            }
+          } else if (payload.hoverImage === '') {
+            if (current.images && current.images.length > 1) {
+              current.images = [current.images[0]];
+            }
+          }
+        }
+        current.updated_at = new Date().toISOString();
+
+        products[index] = current;
+        writeJsonFile('products.json', { products });
+        return sendJson(res, 200, { success: true, product: current });
+      }
+
+      // DELETE /api/admin/products/:id (Delete Product)
+      if (req.method === 'DELETE') {
+        const id = apiRoute.replace('products/', '');
+        const filtered = products.filter(p => String(p.id) !== String(id));
+        if (filtered.length === products.length) {
+          return sendJson(res, 404, { success: false, message: 'Product not found' });
+        }
+        writeJsonFile('products.json', { products: filtered });
+        return sendJson(res, 200, { success: true, message: 'Product deleted' });
+      }
+    }
+
+    // 3. Collections API (Full CRUD)
+    if (apiRoute.startsWith('collections')) {
+      let cData = readJsonFile('collections.json', { collections: [] });
+      let collections = cData.collections || [];
+
+      // GET /api/admin/collections
+      if (req.method === 'GET' && apiRoute === 'collections') {
+        const query = parsedUrl.searchParams.get('search')?.toLowerCase();
+        let filtered = collections;
+        if (query) {
+          filtered = filtered.filter(c =>
+            c.title.toLowerCase().includes(query) ||
+            c.handle.toLowerCase().includes(query)
+          );
+        }
+        return sendJson(res, 200, { success: true, count: filtered.length, collections: filtered });
+      }
+
+      // POST /api/admin/collections (Create Collection)
+      if (req.method === 'POST' && apiRoute === 'collections') {
+        const payload = await parseBody(req);
+        const newCollection = {
+          id: Date.now(),
+          title: payload.title || 'New Streetwear Drop',
+          handle: payload.handle || (payload.title ? payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `drop-${Date.now()}`),
+          description: payload.description || '',
+          published_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          image: payload.image ? { src: payload.image } : { src: 'https://genrage.com/cdn/shop/files/front_79f62e01-7f3f-468e-903c-959328f4d873.png?v=1758346828&width=600' },
+          products_count: Number(payload.products_count) || 0
+        };
+        collections.unshift(newCollection);
+        writeJsonFile('collections.json', { collections });
+        return sendJson(res, 201, { success: true, collection: newCollection });
+      }
+
+      // PUT /api/admin/collections/:id (Update Collection)
+      if (req.method === 'PUT') {
+        const id = apiRoute.replace('collections/', '');
+        const payload = await parseBody(req);
+        const col = collections.find(c => String(c.id) === String(id) || c.handle === id);
+        if (!col) return sendJson(res, 404, { success: false, message: 'Collection not found' });
+
+        if (payload.title) col.title = payload.title;
+        if (payload.handle) col.handle = payload.handle;
+        if (payload.description !== undefined) col.description = payload.description;
+        if (payload.image) col.image = { src: payload.image };
+        if (payload.products_count !== undefined) col.products_count = Number(payload.products_count);
+        col.updated_at = new Date().toISOString();
+
+        writeJsonFile('collections.json', { collections });
+        return sendJson(res, 200, { success: true, collection: col });
+      }
+
+      // DELETE /api/admin/collections/:id (Delete Collection)
+      if (req.method === 'DELETE') {
+        const id = apiRoute.replace('collections/', '');
+        const filtered = collections.filter(c => String(c.id) !== String(id) && c.handle !== id);
+        if (filtered.length === collections.length) {
+          return sendJson(res, 404, { success: false, message: 'Collection not found' });
+        }
+        writeJsonFile('collections.json', { collections: filtered });
+        return sendJson(res, 200, { success: true, message: 'Collection deleted' });
+      }
+    }
+
+    // 4. Orders CRUD
+    if (apiRoute.startsWith('orders')) {
+      let orders = readJsonFile('orders.json', []);
+
+      // GET /api/admin/orders
+      if (req.method === 'GET' && apiRoute === 'orders') {
+        const status = parsedUrl.searchParams.get('status');
+        let filtered = orders;
+        if (status && status !== 'all') {
+          filtered = filtered.filter(o => o.orderStatus?.toLowerCase() === status.toLowerCase());
+        }
+        return sendJson(res, 200, { success: true, count: filtered.length, orders: filtered });
+      }
+
+      // POST /api/admin/orders
+      if (req.method === 'POST' && apiRoute === 'orders') {
+        const payload = await parseBody(req);
+        const pData = readJsonFile('products.json', { products: [] });
+        const allProducts = pData.products || [];
+
+        const incomingItems = (Array.isArray(payload.items) && payload.items.length > 0)
+          ? payload.items
+          : [{
+              title: payload.title || 'GENRAGE Heavyweight Streetwear Tee',
+              size: payload.size || 'L',
+              price: Number(payload.price || payload.total || 1499),
+              quantity: 1
+            }];
+
+        const processedItems = incomingItems.map(item => {
+          const match = allProducts.find(p =>
+            (item.id && String(p.id) === String(item.id)) ||
+            (item.title && p.title.toLowerCase() === String(item.title).toLowerCase())
+          );
+          return {
+            id: item.id || match?.id || Date.now(),
+            title: item.title || match?.title || 'Streetwear Apparel',
+            size: item.size || 'L',
+            price: Number(item.price) || Number(match?.variants?.[0]?.price) || 1499,
+            quantity: Number(item.quantity || item.qty) || 1,
+            image: item.image || match?.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+          };
+        });
+
+        const calculatedSubtotal = processedItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+        const subtotal = Number(payload.subtotal) || calculatedSubtotal || 1999;
+        const discount = Number(payload.discount) || 0;
+        const shipping = Number(payload.shipping) || 0;
+        const total = Number(payload.total) || Math.max(0, subtotal - discount + shipping);
+
+        const newOrder = {
+          id: payload.id || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
+          customer: payload.customer || { name: 'Walk-in Customer', city: 'Mumbai', phone: '+91 99999 99999' },
+          items: processedItems,
+          subtotal,
+          discount,
+          shipping,
+          total,
+          paymentMethod: payload.paymentMethod || 'Gokwik UPI',
+          paymentStatus: payload.paymentStatus || 'Paid',
+          orderStatus: payload.orderStatus || 'Processing',
+          trackingNumber: payload.trackingNumber || '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        orders.unshift(newOrder);
+        writeJsonFile('orders.json', orders);
+        return sendJson(res, 201, { success: true, order: newOrder });
+      }
+
+      // PUT /api/admin/orders/:id (Update Status)
+      if (req.method === 'PUT') {
+        const id = apiRoute.replace('orders/', '');
+        const payload = await parseBody(req);
+        const order = orders.find(o => String(o.id) === String(id));
+        if (!order) {
+          return sendJson(res, 404, { success: false, message: 'Order not found' });
+        }
+        if (payload.orderStatus) order.orderStatus = payload.orderStatus;
+        if (payload.paymentStatus) order.paymentStatus = payload.paymentStatus;
+        if (payload.paymentMethod) order.paymentMethod = payload.paymentMethod;
+        if (payload.trackingNumber !== undefined) order.trackingNumber = payload.trackingNumber;
+        if (payload.cashfreeOrderId) order.cashfreeOrderId = payload.cashfreeOrderId;
+        if (payload.cashfreePaymentId) order.cashfreePaymentId = payload.cashfreePaymentId;
+        if (payload.customer) order.customer = { ...order.customer, ...payload.customer };
+        order.updatedAt = new Date().toISOString();
+        writeJsonFile('orders.json', orders);
+        return sendJson(res, 200, { success: true, order });
+      }
+
+      // POST /api/admin/orders/:id/delhivery-awb (Generate Delhivery AWB & Dispatch)
+      if (req.method === 'POST' && apiRoute.includes('/delhivery-awb')) {
+        const id = apiRoute.replace('orders/', '').replace('/delhivery-awb', '');
+        const order = orders.find(o => String(o.id) === String(id));
+        if (!order) {
+          return sendJson(res, 404, { success: false, message: 'Order not found' });
+        }
+        
+        const delhiveryAwb = '14092' + Math.floor(1000000 + Math.random() * 9000000);
+        order.trackingNumber = delhiveryAwb;
+        order.delhiveryWaybill = delhiveryAwb;
+        order.carrier = 'Delhivery Express Air';
+        order.orderStatus = 'Shipped';
+        order.trackingUrl = `https://www.delhivery.com/track/package/${delhiveryAwb}`;
+        order.updatedAt = new Date().toISOString();
+
+        writeJsonFile('orders.json', orders);
+        return sendJson(res, 200, {
+          success: true,
+          message: `Delhivery Waybill ${delhiveryAwb} generated successfully!`,
+          awb: delhiveryAwb,
+          order
+        });
+      }
+
+      // POST /api/admin/orders/:id/cashfree-verify (Verify Cashfree Payment)
+      if (req.method === 'POST' && apiRoute.includes('/cashfree-verify')) {
+        const id = apiRoute.replace('orders/', '').replace('/cashfree-verify', '');
+        const order = orders.find(o => String(o.id) === String(id));
+        if (!order) {
+          return sendJson(res, 404, { success: false, message: 'Order not found' });
+        }
+
+        order.paymentStatus = 'Paid';
+        order.paymentMethod = order.paymentMethod || 'Cashfree 1-Click UPI';
+        order.cashfreePaymentId = order.cashfreePaymentId || `cf_pay_${Date.now()}`;
+        order.updatedAt = new Date().toISOString();
+
+        writeJsonFile('orders.json', orders);
+        return sendJson(res, 200, {
+          success: true,
+          message: 'Cashfree payment verified and confirmed.',
+          order
+        });
+      }
+
+      // DELETE /api/admin/orders/:id (Delete Order)
+      if (req.method === 'DELETE') {
+        const id = apiRoute.replace('orders/', '');
+        const filtered = orders.filter(o => String(o.id) !== String(id));
+        if (filtered.length === orders.length) {
+          return sendJson(res, 404, { success: false, message: 'Order not found' });
+        }
+        writeJsonFile('orders.json', filtered);
+        return sendJson(res, 200, { success: true, message: 'Order deleted' });
+      }
+    }
+
+    // 5. Discounts CRUD
+    if (apiRoute.startsWith('discounts')) {
+      let discounts = readJsonFile('discounts.json', []);
+
+      if (req.method === 'GET' && apiRoute === 'discounts') {
+        return sendJson(res, 200, { success: true, discounts });
+      }
+
+      if (req.method === 'POST' && apiRoute === 'discounts') {
+        const payload = await parseBody(req);
+        const newDiscount = {
+          id: `dsc_${Date.now()}`,
+          code: (payload.code || 'SALE10').toUpperCase(),
+          type: payload.type || 'percentage',
+          value: Number(payload.value) || 10,
+          minOrderValue: Number(payload.minOrderValue) || 999,
+          maxDiscount: Number(payload.maxDiscount) || 500,
+          usageCount: 0,
+          usageLimit: payload.usageLimit ? Number(payload.usageLimit) : null,
+          isActive: payload.isActive !== false,
+          description: payload.description || 'Special promo discount',
+          createdAt: new Date().toISOString()
+        };
+        discounts.unshift(newDiscount);
+        writeJsonFile('discounts.json', discounts);
+        return sendJson(res, 201, { success: true, discount: newDiscount });
+      }
+
+      if (req.method === 'PUT') {
+        const id = apiRoute.replace('discounts/', '');
+        const payload = await parseBody(req);
+        const discount = discounts.find(d => String(d.id) === String(id));
+        if (!discount) return sendJson(res, 404, { success: false, message: 'Discount not found' });
+
+        if (payload.isActive !== undefined) discount.isActive = Boolean(payload.isActive);
+        if (payload.value !== undefined) discount.value = Number(payload.value);
+        if (payload.code) discount.code = payload.code.toUpperCase();
+        writeJsonFile('discounts.json', discounts);
+        return sendJson(res, 200, { success: true, discount });
+      }
+
+      if (req.method === 'DELETE') {
+        const id = apiRoute.replace('discounts/', '');
+        const filtered = discounts.filter(d => String(d.id) !== String(id));
+        writeJsonFile('discounts.json', filtered);
+        return sendJson(res, 200, { success: true, message: 'Discount deleted' });
+      }
+    }
+
+    // 6. Settings
+    if (apiRoute === 'settings') {
+      let settings = readJsonFile('settings.json', {});
+
+      if (req.method === 'GET') {
+        return sendJson(res, 200, { success: true, settings });
+      }
+
+      if (req.method === 'POST') {
+        const payload = await parseBody(req);
+        settings = { ...settings, ...payload };
+        writeJsonFile('settings.json', settings);
+        return sendJson(res, 200, { success: true, settings });
+      }
+    }
+
+    // 7. Customers API
+    if (apiRoute.startsWith('customers')) {
+      let customers = readJsonFile('customers.json', []);
+
+      if (req.method === 'GET' && apiRoute === 'customers') {
+        const query = parsedUrl.searchParams.get('search')?.toLowerCase();
+        let filtered = customers;
+        if (query) {
+          filtered = filtered.filter(c =>
+            c.name.toLowerCase().includes(query) ||
+            c.email.toLowerCase().includes(query) ||
+            c.phone.toLowerCase().includes(query) ||
+            c.city.toLowerCase().includes(query)
+          );
+        }
+        return sendJson(res, 200, { success: true, count: filtered.length, customers: filtered });
+      }
+
+      if (req.method === 'POST' && apiRoute === 'customers') {
+        const payload = await parseBody(req);
+        const newCustomer = {
+          id: `CUST-${Date.now().toString().slice(-4)}`,
+          name: payload.name || 'New Customer',
+          email: payload.email || 'customer@example.com',
+          phone: payload.phone || '+91 99999 99999',
+          city: payload.city || 'Mumbai',
+          state: payload.state || 'Maharashtra',
+          ordersCount: Number(payload.ordersCount) || 1,
+          totalSpent: Number(payload.totalSpent) || 1599,
+          lastOrderDate: new Date().toISOString(),
+          tags: Array.isArray(payload.tags) ? payload.tags : (payload.tags ? payload.tags.split(',').map(s => s.trim()) : ['Verified']),
+          status: payload.status || 'Active'
+        };
+        customers.unshift(newCustomer);
+        writeJsonFile('customers.json', customers);
+        return sendJson(res, 201, { success: true, customer: newCustomer });
+      }
+
+      if (req.method === 'PUT') {
+        const id = apiRoute.replace('customers/', '');
+        const payload = await parseBody(req);
+        const customer = customers.find(c => String(c.id) === String(id));
+        if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
+
+        if (payload.name) customer.name = payload.name;
+        if (payload.email) customer.email = payload.email;
+        if (payload.phone) customer.phone = payload.phone;
+        if (payload.city) customer.city = payload.city;
+        if (payload.state) customer.state = payload.state;
+        if (payload.status) customer.status = payload.status;
+        if (payload.tags) customer.tags = Array.isArray(payload.tags) ? payload.tags : payload.tags.split(',').map(s => s.trim());
+        if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
+        if (payload.address !== undefined) customer.address = payload.address;
+        if (payload.pincode !== undefined) customer.pincode = payload.pincode;
+
+        writeJsonFile('customers.json', customers);
+        return sendJson(res, 200, { success: true, customer });
+      }
+
+      if (req.method === 'DELETE') {
+        const id = apiRoute.replace('customers/', '');
+        const filtered = customers.filter(c => String(c.id) !== String(id));
+        writeJsonFile('customers.json', filtered);
+        return sendJson(res, 200, { success: true, message: 'Customer deleted' });
+      }
+    }
+
+    // 8. Reviews API
+    if (apiRoute.startsWith('reviews')) {
+      let reviews = readJsonFile('reviews.json', []);
+
+      if (req.method === 'GET' && apiRoute === 'reviews') {
+        const status = parsedUrl.searchParams.get('status');
+        let filtered = reviews;
+        if (status && status !== 'all') {
+          filtered = filtered.filter(r => r.status.toLowerCase() === status.toLowerCase());
+        }
+        return sendJson(res, 200, { success: true, count: filtered.length, reviews: filtered });
+      }
+
+      if (req.method === 'POST' && apiRoute === 'reviews') {
+        const payload = await parseBody(req);
+        const newReview = {
+          id: `REV-${Date.now().toString().slice(-4)}`,
+          productId: payload.productId || 9581723877614,
+          productTitle: payload.productTitle || 'Zaraki Corduroy Full Sleeves',
+          customerName: payload.customerName || 'Verified Buyer',
+          rating: Number(payload.rating) || 5,
+          title: payload.title || 'Incredible Quality',
+          comment: payload.comment || 'Super comfortable and great fit.',
+          verified: payload.verified !== false,
+          status: payload.status || 'Approved',
+          date: new Date().toISOString()
+        };
+        reviews.unshift(newReview);
+        writeJsonFile('reviews.json', reviews);
+        return sendJson(res, 201, { success: true, review: newReview });
+      }
+
+      if (req.method === 'PUT') {
+        const id = apiRoute.replace('reviews/', '');
+        const payload = await parseBody(req);
+        const review = reviews.find(r => String(r.id) === String(id));
+        if (!review) return sendJson(res, 404, { success: false, message: 'Review not found' });
+
+        if (payload.status) review.status = payload.status;
+        if (payload.rating !== undefined) review.rating = Number(payload.rating);
+        if (payload.comment) review.comment = payload.comment;
+
+        writeJsonFile('reviews.json', reviews);
+        return sendJson(res, 200, { success: true, review });
+      }
+
+      if (req.method === 'DELETE') {
+        const id = apiRoute.replace('reviews/', '');
+        const filtered = reviews.filter(r => String(r.id) !== String(id));
+        writeJsonFile('reviews.json', filtered);
+        return sendJson(res, 200, { success: true, message: 'Review deleted' });
+      }
+    }
+
+    // 9. Media & Upload API
+    if (apiRoute === 'upload' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      if (!payload.data) {
+        return sendJson(res, 400, { success: false, message: 'No image data provided' });
+      }
+
+      let buffer;
+      let extension = '.png';
+      const matches = String(payload.data).match(/^data:([A-Za-z0-9-+\/]+);base64,(.+)$/);
+
+      if (matches) {
+        const mime = matches[1].toLowerCase();
+        if (mime.includes('jpeg') || mime.includes('jpg')) extension = '.jpg';
+        else if (mime.includes('webp')) extension = '.webp';
+        else if (mime.includes('gif')) extension = '.gif';
+        else if (mime.includes('svg')) extension = '.svg';
+        else if (mime.includes('mp4')) extension = '.mp4';
+        buffer = Buffer.from(matches[2], 'base64');
+      } else {
+        buffer = Buffer.from(payload.data, 'base64');
+      }
+
+      const rawName = (payload.filename || 'photo').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+      const filename = `genrage_${Date.now()}_${rawName}${extension}`;
+      const uploadDir = path.join(PUBLIC_DIR, 'assets', 'uploads');
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+      const savePath = path.join(uploadDir, filename);
+      fs.writeFileSync(savePath, buffer);
+
+      const fileUrl = `/assets/uploads/${filename}`;
+      let cdnUrl = null;
+
+      // If Supabase Storage is configured and it is an image, upload to product-images bucket
+      if (supabase.isConfigured && !extension.includes('mp4')) {
+        try {
+          const mimeType = extension === '.webp' ? 'image/webp' : (extension === '.jpg' || extension === '.jpeg' ? 'image/jpeg' : (extension === '.gif' ? 'image/gif' : 'image/png'));
+          const supaRes = await supabase.storage.uploadImage(buffer, filename, mimeType);
+          if (supaRes.success && supaRes.publicUrl) {
+            cdnUrl = supaRes.publicUrl;
+          }
+        } catch (supaErr) {
+          console.warn('Supabase storage upload background warning:', supaErr.message);
+        }
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        url: cdnUrl || fileUrl,
+        localUrl: fileUrl,
+        cdnUrl,
+        filename,
+        size: buffer.length
+      });
+    }
+
+    if (apiRoute === 'media' && req.method === 'GET') {
+      const uploadDir = path.join(PUBLIC_DIR, 'assets', 'uploads');
+      let files = [];
+      if (fs.existsSync(uploadDir)) {
+        files = fs.readdirSync(uploadDir).map(name => {
+          const stat = fs.statSync(path.join(uploadDir, name));
+          return {
+            name,
+            url: `/assets/uploads/${name}`,
+            size: stat.size,
+            createdAt: stat.mtime
+          };
+        });
+      }
+      return sendJson(res, 200, { success: true, count: files.length, files });
+    }
+
+    if (apiRoute.startsWith('media/') && req.method === 'DELETE') {
+      const filename = path.basename(apiRoute.replace('media/', ''));
+      const filePath = path.join(PUBLIC_DIR, 'assets', 'uploads', filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        return sendJson(res, 200, { success: true, message: 'Media deleted' });
+      }
+      return sendJson(res, 404, { success: false, message: 'File not found' });
+    }
+
+    // 10. Video Streaming Management API
+    if (apiRoute === 'videos' && req.method === 'GET') {
+      const videoDir = path.join(PUBLIC_DIR, 'assets', 'videos');
+      const list = SECTION_VIDEOS.map(v => {
+        const filePath = path.join(videoDir, v.name);
+        let exists = false;
+        let size = 0;
+        let mtime = null;
+        if (fs.existsSync(filePath)) {
+          exists = true;
+          const stat = fs.statSync(filePath);
+          size = stat.size;
+          mtime = stat.mtime;
+        }
+        return {
+          name: v.name,
+          title: v.title,
+          section: v.section,
+          res: v.res,
+          path: `/assets/videos/${v.name}`,
+          sizeBytes: size,
+          sizeFormatted: (size / (1024 * 1024)).toFixed(2) + ' MB',
+          lastModified: mtime,
+          exists,
+          status: exists ? 'HTTP 206 Ready' : 'File Missing'
+        };
+      });
+      return sendJson(res, 200, { success: true, count: list.length, videos: list });
+    }
+
+    if ((apiRoute === 'videos/update' || apiRoute === 'videos/upload') && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const rawName = payload.videoName || payload.filename;
+      if (!rawName) {
+        return sendJson(res, 400, { success: false, message: 'No target videoName provided' });
+      }
+
+      const cleanName = path.basename(rawName).replace(/[^a-zA-Z0-9_\.-]/g, '_');
+      const videoDir = path.join(PUBLIC_DIR, 'assets', 'videos');
+      if (!fs.existsSync(videoDir)) fs.mkdirSync(videoDir, { recursive: true });
+
+      const destPath = path.join(videoDir, cleanName);
+
+      if (payload.data) {
+        // Base64 data provided
+        let buffer;
+        const matches = String(payload.data).match(/^data:[^;]+;base64,(.+)$/);
+        if (matches) {
+          buffer = Buffer.from(matches[1], 'base64');
+        } else {
+          buffer = Buffer.from(payload.data, 'base64');
+        }
+        fs.writeFileSync(destPath, buffer);
+      } else if (payload.url) {
+        const rawUrl = String(payload.url).trim();
+        if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+          try {
+            await downloadFile(rawUrl, destPath);
+          } catch (dlErr) {
+            return sendJson(res, 500, { success: false, message: 'Failed to download video from URL: ' + dlErr.message });
+          }
+        } else {
+          // Local path like /assets/uploads/...
+          const relPath = rawUrl.replace(/^\//, '');
+          const localSrc = path.join(PUBLIC_DIR, relPath);
+          if (fs.existsSync(localSrc) && fs.statSync(localSrc).isFile()) {
+            fs.copyFileSync(localSrc, destPath);
+          } else {
+            return sendJson(res, 404, { success: false, message: 'Local source video not found: ' + rawUrl });
+          }
+        }
+      } else {
+        return sendJson(res, 400, { success: false, message: 'Neither video data (base64) nor video URL was provided' });
+      }
+
+      const stat = fs.statSync(destPath);
+      return sendJson(res, 200, {
+        success: true,
+        message: `Video ${cleanName} successfully updated and replaced!`,
+        video: {
+          name: cleanName,
+          path: `/assets/videos/${cleanName}`,
+          streamUrl: `/assets/videos/${cleanName}?t=${Date.now()}`,
+          sizeBytes: stat.size,
+          sizeFormatted: (stat.size / (1024 * 1024)).toFixed(2) + ' MB',
+          lastModified: stat.mtime
+        }
+      });
+    }
+
+    return sendJson(res, 404, { success: false, message: 'API route not found' });
+  }
+
+  // -------------------------------------------------------------
+  // Storefront Customer Auth & Profile APIs
+  // -------------------------------------------------------------
+  if (pathname.startsWith('/api/auth/')) {
+    const authRoute = pathname.replace('/api/auth/', '');
+    let customers = readJsonFile('customers.json', []);
+
+    // POST /api/auth/signup
+    if (authRoute === 'signup' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const email = (payload.email || '').toLowerCase().trim();
+      if (!email) {
+        return sendJson(res, 400, { success: false, message: 'Email is required' });
+      }
+      const existing = customers.find(c => (c.email || '').toLowerCase() === email);
+      if (existing) {
+        return sendJson(res, 400, { success: false, message: 'Account with this email already exists. Please log in.' });
+      }
+
+      const newId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newCustomer = {
+        id: newId,
+        name: payload.name || 'Storefront Member',
+        email: email,
+        phone: payload.phone || '+91 99999 00000',
+        password: payload.password || 'password123',
+        city: payload.city || 'Mumbai',
+        state: payload.state || 'Maharashtra',
+        address: payload.address || '',
+        pincode: payload.pincode || '',
+        ordersCount: 0,
+        totalSpent: 0,
+        lastOrderDate: new Date().toISOString(),
+        tags: ['Storefront Member', 'Verified'],
+        status: 'Active',
+        wishlist: Array.isArray(payload.wishlist) ? payload.wishlist : []
+      };
+
+      customers.unshift(newCustomer);
+      writeJsonFile('customers.json', customers);
+
+      const token = `tok_${newCustomer.id}_${Date.now()}`;
+      const safeUser = { ...newCustomer };
+      delete safeUser.password;
+
+      return sendJson(res, 201, { success: true, user: safeUser, token });
+    }
+
+    // POST /api/auth/login
+    if (authRoute === 'login' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const email = (payload.email || '').toLowerCase().trim();
+      const password = payload.password || '';
+
+      const customer = customers.find(c => (c.email || '').toLowerCase() === email);
+      if (!customer) {
+        return sendJson(res, 401, { success: false, message: 'Account not found with this email' });
+      }
+
+      if (customer.password && customer.password !== password) {
+        return sendJson(res, 401, { success: false, message: 'Invalid password' });
+      }
+
+      if (!customer.password) {
+        customer.password = password || 'password123';
+        writeJsonFile('customers.json', customers);
+      }
+
+      const token = `tok_${customer.id}_${Date.now()}`;
+      const safeUser = { ...customer };
+      delete safeUser.password;
+
+      return sendJson(res, 200, { success: true, user: safeUser, token });
+    }
+
+    // GET /api/auth/me
+    if (authRoute === 'me' && req.method === 'GET') {
+      const authHeader = req.headers.authorization || '';
+      const token = authHeader.replace('Bearer ', '').trim();
+      const userId = parsedUrl.searchParams.get('userId') || (token.startsWith('tok_') ? token.split('_')[1] : null);
+
+      let customer = null;
+      if (userId) customer = customers.find(c => String(c.id) === String(userId));
+
+      if (!customer) {
+        return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      }
+
+      const safeUser = { ...customer };
+      delete safeUser.password;
+      return sendJson(res, 200, { success: true, user: safeUser });
+    }
+
+    // PUT /api/auth/profile
+    if (authRoute === 'profile' && req.method === 'PUT') {
+      const payload = await parseBody(req);
+      const id = payload.id || (payload.email ? customers.find(c => c.email.toLowerCase() === payload.email.toLowerCase())?.id : null);
+      const customer = customers.find(c => String(c.id) === String(id));
+      if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
+
+      if (payload.name) customer.name = payload.name;
+      if (payload.phone) customer.phone = payload.phone;
+      if (payload.city) customer.city = payload.city;
+      if (payload.state) customer.state = payload.state;
+      if (payload.address) customer.address = payload.address;
+      if (payload.pincode) customer.pincode = payload.pincode;
+      if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
+
+      writeJsonFile('customers.json', customers);
+      const safeUser = { ...customer };
+      delete safeUser.password;
+      return sendJson(res, 200, { success: true, user: safeUser });
+    }
+
+    // GET /api/auth/orders
+    if (authRoute === 'orders' && req.method === 'GET') {
+      const email = parsedUrl.searchParams.get('email')?.toLowerCase();
+      const phone = parsedUrl.searchParams.get('phone');
+      const orders = readJsonFile('orders.json', []);
+
+      let userOrders = orders;
+      if (email || phone) {
+        userOrders = orders.filter(o =>
+          (email && o.customer?.email?.toLowerCase() === email) ||
+          (phone && o.customer?.phone?.replace(/\s+/g, '') === phone.replace(/\s+/g, ''))
+        );
+      }
+      return sendJson(res, 200, { success: true, count: userOrders.length, orders: userOrders });
+    }
+
+    // POST /api/auth/logout
+    if (authRoute === 'logout' && req.method === 'POST') {
+      return sendJson(res, 200, { success: true, message: 'Logged out successfully' });
+    }
+
+    return sendJson(res, 404, { success: false, message: 'Auth route not found' });
+  }
+
+  // -------------------------------------------------------------
+  // Storefront Checkout & Payment APIs (Cashfree strictly here)
+  // -------------------------------------------------------------
+  if (pathname.startsWith('/api/checkout/')) {
+    const checkoutRoute = pathname.replace('/api/checkout/', '');
+    let orders = readJsonFile('orders.json', []);
+
+    // POST /api/checkout/create-order
+    if (checkoutRoute === 'create-order' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const orderId = `GR-${Math.floor(1000 + Math.random() * 9000)}`;
+      const isCashfree = payload.paymentMethod === 'cashfree' || payload.paymentMethod === 'Cashfree 1-Click UPI';
+
+      const newOrder = {
+        id: orderId,
+        customer: {
+          name: payload.customer?.name || 'Customer',
+          email: payload.customer?.email || '',
+          phone: payload.customer?.phone || '+91 99999 00000',
+          city: payload.customer?.city || 'Mumbai',
+          state: payload.customer?.state || 'Maharashtra',
+          address: payload.customer?.address || '',
+          pincode: payload.customer?.pincode || ''
+        },
+        items: Array.isArray(payload.items) ? payload.items : [],
+        subtotal: Number(payload.subtotal) || Number(payload.total) || 1899,
+        discount: Number(payload.discount) || 0,
+        shipping: 0,
+        total: Number(payload.total) || 1899,
+        paymentMethod: isCashfree ? 'Cashfree 1-Click UPI' : 'Cash on Delivery (COD)',
+        paymentStatus: isCashfree ? 'Pending' : 'Pending COD',
+        orderStatus: 'Processing',
+        trackingNumber: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        cashfreeOrderId: isCashfree ? `cf_order_${orderId}_${Date.now()}` : null,
+        cashfreePaymentId: null
+      };
+
+      orders.unshift(newOrder);
+      writeJsonFile('orders.json', orders);
+
+      return sendJson(res, 201, {
+        success: true,
+        order: newOrder,
+        orderId: newOrder.id,
+        cashfreeOrderId: newOrder.cashfreeOrderId
+      });
+    }
+
+    // POST /api/checkout/verify-payment
+    if (checkoutRoute === 'verify-payment' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const orderId = payload.orderId;
+      const order = orders.find(o => String(o.id) === String(orderId));
+      if (!order) return sendJson(res, 404, { success: false, message: 'Order not found' });
+
+      order.paymentStatus = 'Paid';
+      order.cashfreePaymentId = payload.cashfreePaymentId || `cf_pay_${Date.now()}`;
+      order.updatedAt = new Date().toISOString();
+
+      writeJsonFile('orders.json', orders);
+      return sendJson(res, 200, { success: true, message: 'Payment confirmed & order marked Paid', order });
+    }
+
+    return sendJson(res, 404, { success: false, message: 'Checkout API route not found' });
+  }
+
+  // -------------------------------------------------------------
+  // Storefront Public Customer Wishlist Endpoint
+  // -------------------------------------------------------------
+  if (pathname.startsWith('/api/customers/')) {
+    const custId = pathname.replace('/api/customers/', '').replace(/\/$/, '');
+    let customers = readJsonFile('customers.json', []);
+    const customer = customers.find(c => String(c.id) === String(custId));
+    if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
+
+    if (req.method === 'PUT') {
+      const payload = await parseBody(req);
+      if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
+      if (payload.name) customer.name = payload.name;
+      if (payload.phone) customer.phone = payload.phone;
+      if (payload.city) customer.city = payload.city;
+      if (payload.state) customer.state = payload.state;
+      writeJsonFile('customers.json', customers);
+      const safeUser = { ...customer };
+      delete safeUser.password;
+      return sendJson(res, 200, { success: true, customer: safeUser });
+    }
+
+    if (req.method === 'GET') {
+      const safeUser = { ...customer };
+      delete safeUser.password;
+      return sendJson(res, 200, { success: true, customer: safeUser });
+    }
+  }
+
+  // -------------------------------------------------------------
+  // Storefront Static Pages
+  // -------------------------------------------------------------
+  // Serve Homepage
+  if (pathname === '/' || pathname === '/index.html') {
+    const indexPath = path.join(PUBLIC_DIR, 'index.html');
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Access-Control-Allow-Origin': '*'
+    });
+    return fs.createReadStream(indexPath).pipe(res);
+  }
+
+  // Serve Checkout Page
+  if (pathname === '/checkout' || pathname === '/checkout/' || pathname === '/checkout.html') {
+    const chkPath = path.join(PUBLIC_DIR, 'checkout.html');
+    if (fs.existsSync(chkPath)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      return fs.createReadStream(chkPath).pipe(res);
+    }
+  }
+
+  // Serve Customer Account Page
+  if (pathname === '/account' || pathname === '/account/' || pathname === '/account.html') {
+    const accPath = path.join(PUBLIC_DIR, 'account.html');
+    if (fs.existsSync(accPath)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      return fs.createReadStream(accPath).pipe(res);
+    }
+  }
+
+  // Serve Customer Login Page
+  if (pathname === '/login' || pathname === '/login/' || pathname === '/login.html') {
+    const loginPath = path.join(PUBLIC_DIR, 'login.html');
+    if (fs.existsSync(loginPath)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      return fs.createReadStream(loginPath).pipe(res);
+    }
+  }
+
+  // Serve Order Success Page
+  if (pathname === '/order-success' || pathname === '/order-success/' || pathname === '/order-success.html') {
+    const succPath = path.join(PUBLIC_DIR, 'order-success.html');
+    if (fs.existsSync(succPath)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      return fs.createReadStream(succPath).pipe(res);
+    }
+  }
+
+  // Serve Collections Page for ANY collection / category URL
+  if (pathname.startsWith('/collections')) {
+    const colPath = path.join(PUBLIC_DIR, 'collections.html');
+    if (fs.existsSync(colPath)) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return fs.createReadStream(colPath).pipe(res);
+    }
+  }
+
+  // Serve Single Product Page
+  if (pathname.startsWith('/products/')) {
+    const prodPath = path.join(PUBLIC_DIR, 'product.html');
+    if (fs.existsSync(prodPath)) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return fs.createReadStream(prodPath).pipe(res);
+    }
+  }
+
+  // Handle Video files with HTTP 206 Range support
+  if (pathname.startsWith('/assets/videos/')) {
+    const videoFile = path.join(PUBLIC_DIR, pathname);
+    if (fs.existsSync(videoFile)) {
+      return serveVideoWithRange(req, res, videoFile);
+    }
+  }
+
+  // Check local files
+  let localPath = path.join(PUBLIC_DIR, pathname);
+  if (fs.existsSync(localPath) && fs.statSync(localPath).isFile()) {
+    const ext = path.extname(localPath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+    if (ext === '.mp4') {
+      return serveVideoWithRange(req, res, localPath);
+    }
+
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Access-Control-Allow-Origin': '*'
+    });
+    return fs.createReadStream(localPath).pipe(res);
+  }
+
+  // Proxy CDN or remote asset requests directly to genrage.com
+  if (pathname.startsWith('/cdn/') || pathname.startsWith('/checkouts/')) {
+    const remoteUrl = `https://genrage.com${pathname}${parsedUrl.search}`;
+    return proxyRequest(req, res, remoteUrl);
+  }
+
+  // Shopify Storefront JSON endpoints
+  if (pathname === '/cart.js' || pathname === '/cart.json') {
+    return sendJson(res, 200, {
+      token: "cart_token_local",
+      note: null,
+      attributes: {},
+      original_total_price: 0,
+      total_price: 0,
+      total_discount: 0,
+      total_weight: 0.0,
+      item_count: 0,
+      items: [],
+      requires_shipping: true,
+      currency: "INR",
+      items_subtotal_price: 0
+    });
+  }
+
+  if (pathname === '/recommendations/products.json') {
+    return sendJson(res, 200, { products: [] });
+  }
+
+  if (pathname === '/search/suggest.json') {
+    return sendJson(res, 200, { resources: { results: { products: [] } } });
+  }
+
+  if (pathname === '/api/products') {
+    const pData = readJsonFile('products.json', { products: [] });
+    return sendJson(res, 200, { success: true, count: pData.products.length, products: pData.products });
+  }
+
+  // Fallback 404 (JSON formatted for JSON endpoints to prevent SyntaxError)
+  if (pathname.endsWith('.json') || pathname.endsWith('.js') || pathname.startsWith('/api/')) {
+    return sendJson(res, 404, { success: false, error: 'Endpoint not found', pathname });
+  }
+
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end('404 Not Found');
+});
+
+server.listen(PORT, () => {
+  console.log(`\n==================================================`);
+  console.log(`🔥 GENRAGE 1:1 DITTO Server Running!`);
+  console.log(`📍 Storefront: http://localhost:${PORT}`);
+  console.log(`⚡ Admin Portal: http://localhost:${PORT}/admin`);
+  console.log(`🎥 6 High-Definition Videos Ready & Streaming Locally`);
+  console.log(`==================================================\n`);
+});

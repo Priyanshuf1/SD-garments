@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | GENRAGE Official Store</title>
+  <link rel="shortcut icon" href="//genrage.com/cdn/shop/files/GENRAGE.png?v=1736145362&width=96">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <style>
+    :root {
+      --font-heading: 'Instrument Sans', sans-serif;
+      --font-body: 'Nunito', sans-serif;
+    }
+    body {
+      background: #f9f9f9;
+      color: #111;
+      font-family: var(--font-body);
+      margin: 0;
+      padding: 0;
+    }
+    .checkout-header {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .checkout-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+    @media (min-width: 900px) {
+      .checkout-container {
+        grid-template-columns: 1.25fr 1fr;
+      }
+    }
+    .card-box {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-box h3 {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin: 0 0 1.25rem;
+      letter-spacing: -0.01em;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #444;
+    }
+    .form-control {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 0.9rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-control:focus {
+      border-color: #000;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .payment-option {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+    .payment-option.active {
+      border-color: #000;
+      background: #fafafa;
+    }
+    .btn-complete {
+      width: 100%;
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 16px;
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+    .btn-complete:hover {
+      background: #222;
+    }
+    .order-item {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .order-item img {
+      width: 55px;
+      height: 68px;
+      object-fit: cover;
+      border-radius: 3px;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="checkout-header">
+    <a href="/collections/shop" style="display:flex; align-items:center; gap:6px; text-decoration:none; color:#111; font-size:0.85rem; font-weight:700;">
+      ← Return to Shop
+    </a>
+    <a href="/" style="text-decoration:none;">
+      <img src="//genrage.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="GENRAGE" style="height:26px; width:auto; filter: brightness(0);">
+    </a>
+    <div style="font-size:0.8rem; font-weight:700; color:#2e7d32; display:flex; align-items:center; gap:4px;">
+      🔒 256-Bit SSL Encrypted
+    </div>
+  </header>
+
+  <main class="checkout-container">
+    
+    <!-- Left Column: Shipping & Payment -->
+    <div>
+      
+      <!-- Contact Information -->
+      <section class="card-box">
+        <h3>1. Contact & Delivery Address</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="chk-name" class="form-control" placeholder="Rohan Varma" required>
+          </div>
+          <div class="form-group">
+            <label>Mobile Number (for delivery updates)</label>
+            <input type="tel" id="chk-phone" class="form-control" placeholder="+91 98200 12345" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address (for invoice & tracking)</label>
+          <input type="email" id="chk-email" class="form-control" placeholder="rohan@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Street Address / Flat / Floor</label>
+          <input type="text" id="chk-address" class="form-control" placeholder="Flat 402, Skyline Towers, Link Road" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" id="chk-city" class="form-control" placeholder="Mumbai" required>
+          </div>
+          <div class="form-group">
+            <label>State</label>
+            <input type="text" id="chk-state" class="form-control" placeholder="Maharashtra" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>PIN Code</label>
+          <input type="text" id="chk-pincode" class="form-control" placeholder="400053" style="max-width:200px;" required>
+        </div>
+      </section>
+
+      <!-- Delivery Method -->
+      <section class="card-box">
+        <h3>2. Delivery Option</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border:1px solid #111; border-radius:3px; background:#fafafa;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" checked disabled>
+            <div>
+              <strong style="font-size:0.9rem;">Delhivery Express Air Delivery</strong>
+              <div style="font-size:0.75rem; color:#666;">Delivered in 2-4 business days across India</div>
+            </div>
+          </div>
+          <span style="font-weight:800; color:#2e7d32; font-size:0.85rem;">FREE</span>
+        </div>
+      </section>
+
+      <!-- Payment Method: Cashfree Online vs COD -->
+      <section class="card-box">
+        <h3>3. Payment Method</h3>
+        <div style="font-size:0.8rem; color:#666; margin-bottom:1rem;">
+          Select your preferred payment gateway:
+        </div>
+
+        <!-- Cashfree Payment Gateway -->
+        <label class="payment-option active" id="opt-cashfree" onclick="selectPayment('cashfree')">
+          <input type="radio" name="paymentMethod" value="cashfree" checked style="margin-top:4px;">
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="font-size:0.95rem;">⚡ Cashfree Online Payment (UPI, Cards, NetBanking)</strong>
+              <span style="background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:2px;">RECOMMENDED</span>
+            </div>
+            <p style="margin:4px 0 0; font-size:0.8rem; color:#666;">
+              Instant 1-Click checkout with Google Pay, PhonePe, Paytm, All Credit/Debit Cards, and NetBanking via Cashfree Gateway.
+            </p>
+          </div>
+        </label>
+
+        <!-- Cash on Delivery -->
+        <label class="payment-option" id="opt-cod" onclick="selectPayment('cod')">
+          <input type="radio" name="paymentMethod" value="cod" style="margin-top:4px;">
+          <div style="flex:1;">
+            <strong style="font-size:0.95rem;">Cash on Delivery (COD)</strong>
+            <p style="margin:4px 0 0; font-size:0.8rem; color:#666;">
+              Pay via cash or UPI directly to the Delhivery courier upon doorstep delivery.
+            </p>
+          </div>
+        </label>
+
+        <button type="button" class="btn-complete" id="btn-submit-order" onclick="submitOrder()">
+          COMPLETE ORDER & PAY
+        </button>
+        <div style="text-align:center; font-size:0.75rem; color:#777; margin-top:8px;">
+          By placing order, you agree to GENRAGE Terms & Return Policy.
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Right Column: Order Summary -->
+    <div>
+      <aside class="card-box" style="position:sticky; top:2rem;">
+        <h3>Order Summary</h3>
+        
+        <div id="checkout-items-list" style="max-height:360px; overflow-y:auto; margin-bottom:1.5rem;">
+          <!-- Populated from cart -->
+        </div>
+
+        <!-- Discount Code -->
+        <div style="display:flex; gap:8px; margin-bottom:1.5rem;">
+          <input type="text" id="discount-code" placeholder="Discount Code (e.g. GENRAGE10)" class="form-control" style="text-transform:uppercase;">
+          <button type="button" onclick="applyPromo()" style="background:#111; color:#fff; border:none; padding:0 16px; font-weight:700; font-size:0.8rem; border-radius:3px; cursor:pointer;">APPLY</button>
+        </div>
+        <div id="discount-applied-msg" style="display:none; color:#2e7d32; font-size:0.8rem; font-weight:700; margin-bottom:1rem;">
+          ✓ Code applied! 10% discount subtracted.
+        </div>
+
+        <!-- Calculations -->
+        <div style="border-top:1px solid #eee; padding-top:1rem; font-size:0.9rem; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; color:#555;">
+            <span>Subtotal</span>
+            <span id="chk-subtotal">Rs. 0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:#2e7d32; font-weight:700;">
+            <span>Shipping (Delhivery Express Air)</span>
+            <span>FREE</span>
+          </div>
+          <div id="row-discount" style="display:none; justify-content:space-between; color:#e50914; font-weight:700;">
+            <span>Discount (GENRAGE10)</span>
+            <span id="chk-discount">- Rs. 0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:1.15rem; font-weight:900; border-top:2px solid #111; padding-top:10px; margin-top:4px;">
+            <span>Total Payable</span>
+            <span id="chk-total">Rs. 0</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+  </main>
+
+  <!-- Cashfree Payment Processing Modal -->
+  <div id="cashfree-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); z-index:999999; align-items:center; justify-content:center; padding:1.5rem;">
+    <div style="background:#fff; width:min(450px, 100%); border-radius:8px; padding:2rem; box-shadow:0 25px 50px rgba(0,0,0,0.4); text-align:center;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:1rem; margin-bottom:1.5rem;">
+        <span style="font-weight:800; font-size:0.85rem; color:#444; letter-spacing:0.04em; text-transform:uppercase;">⚡ Cashfree Payment Gateway</span>
+        <span style="background:#e8f5e9; color:#2e7d32; font-weight:800; font-size:0.7rem; padding:2px 8px; border-radius:99px;">SECURE 256-BIT</span>
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <div style="font-size:0.8rem; color:#666;">Payable Amount</div>
+        <div id="modal-pay-amount" style="font-size:2rem; font-weight:900; color:#111; margin:4px 0;">Rs. 1,899</div>
+        <div id="modal-order-id" style="font-size:0.75rem; color:#888;">Order ID: GR-XXXX</div>
+      </div>
+
+      <div style="background:#f9f9f9; border:1px solid #eee; border-radius:6px; padding:1.25rem; margin-bottom:1.5rem;">
+        <div style="font-size:0.8rem; font-weight:700; margin-bottom:8px; text-transform:uppercase;">Pay with UPI QR / App</div>
+        <div style="width:140px; height:140px; background:#fff; border:1px solid #ccc; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:#666; border-radius:4px;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=genrage@cashfree" alt="UPI QR" style="width:100%; height:100%; object-fit:contain;">
+        </div>
+        <div style="display:flex; justify-content:center; gap:8px; font-size:0.75rem; font-weight:700; color:#333;">
+          <span>GPay</span> • <span>PhonePe</span> • <span>Paytm</span> • <span>Cards</span>
+        </div>
+      </div>
+
+      <button type="button" onclick="confirmCashfreePayment()" style="width:100%; background:#2e7d32; color:#fff; border:none; padding:14px; font-weight:800; font-size:0.9rem; text-transform:uppercase; border-radius:4px; cursor:pointer;">
+        ✓ Confirm & Complete Payment
+      </button>
+      <button type="button" onclick="document.getElementById('cashfree-modal').style.display='none'" style="margin-top:10px; background:none; border:none; color:#777; font-size:0.8rem; cursor:pointer;">
+        Cancel Payment
+      </button>
+    </div>
+  </div>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    let checkoutItems = [];
+    let discountApplied = false;
+    let selectedPayment = 'cashfree';
+    let currentCreatedOrderId = null;
+
+    function selectPayment(mode) {
+      selectedPayment = mode;
+      document.getElementById('opt-cashfree').classList.toggle('active', mode === 'cashfree');
+      document.getElementById('opt-cod').classList.toggle('active', mode === 'cod');
+      document.getElementById('btn-submit-order').textContent = mode === 'cashfree' ? 'COMPLETE ORDER & PAY' : 'CONFIRM CASH ON DELIVERY ORDER';
+    }
+
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('genrage_cart');
+        if (raw) checkoutItems = JSON.parse(raw);
+      } catch (e) {}
+
+      // Fallback sample product if cart is empty
+      if (!checkoutItems || checkoutItems.length === 0) {
+        checkoutItems = [{
+          id: 9238158967022,
+          title: 'Genrage Melange Balloon Baggy Pants',
+          price: 1899,
+          compare_at_price: 2999,
+          quantity: 1,
+          size: '32',
+          image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+        }];
+      }
+
+      // Pre-fill user data if logged in
+      const user = window.AuthEngine?.getUser();
+      if (user) {
+        if (user.name) document.getElementById('chk-name').value = user.name;
+        if (user.phone) document.getElementById('chk-phone').value = user.phone;
+        if (user.email) document.getElementById('chk-email').value = user.email;
+        if (user.city) document.getElementById('chk-city').value = user.city;
+        if (user.state) document.getElementById('chk-state').value = user.state;
+        if (user.address) document.getElementById('chk-address').value = user.address;
+        if (user.pincode) document.getElementById('chk-pincode').value = user.pincode;
+      }
+
+      renderSummary();
+    }
+
+    function renderSummary() {
+      const container = document.getElementById('checkout-items-list');
+      let subtotal = 0;
+
+      container.innerHTML = checkoutItems.map(item => {
+        const price = Number(item.price || item.variants?.[0]?.price || 1899);
+        const qty = Number(item.quantity || 1);
+        subtotal += price * qty;
+        const img = item.image || item.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+
+        return `
+          <div class="order-item">
+            <img src="${img}" alt="${item.title}">
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:0.85rem; line-height:1.2;">${item.title}</div>
+              <div style="font-size:0.75rem; color:#666; margin-top:2px;">Qty: ${qty} • Size: ${item.size || 'Regular'}</div>
+              <div style="font-weight:800; font-size:0.85rem; margin-top:3px;">Rs. ${(price * qty).toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      let discount = 0;
+      if (discountApplied) {
+        discount = Math.round(subtotal * 0.1);
+      }
+
+      const total = subtotal - discount;
+
+      document.getElementById('chk-subtotal').textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
+      if (discountApplied) {
+        document.getElementById('row-discount').style.display = 'flex';
+        document.getElementById('chk-discount').textContent = `- Rs. ${discount.toLocaleString('en-IN')}`;
+      } else {
+        document.getElementById('row-discount').style.display = 'none';
+      }
+      document.getElementById('chk-total').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+    }
+
+    function applyPromo() {
+      const code = document.getElementById('discount-code').value.trim().toUpperCase();
+      if (code === 'GENRAGE10' || code === 'STREET10' || code === 'WELCOME') {
+        discountApplied = true;
+        document.getElementById('discount-applied-msg').style.display = 'block';
+        renderSummary();
+      } else {
+        alert('Invalid discount code. Try GENRAGE10 for 10% off!');
+      }
+    }
+
+    async function submitOrder() {
+      const name = document.getElementById('chk-name').value.trim();
+      const phone = document.getElementById('chk-phone').value.trim();
+      const email = document.getElementById('chk-email').value.trim();
+      const address = document.getElementById('chk-address').value.trim();
+      const city = document.getElementById('chk-city').value.trim();
+      const state = document.getElementById('chk-state').value.trim();
+      const pincode = document.getElementById('chk-pincode').value.trim();
+
+      if (!name || !phone || !email || !address || !city) {
+        alert('Please fill out all contact and delivery address fields.');
+        return;
+      }
+
+      let subtotal = 0;
+      checkoutItems.forEach(i => subtotal += Number(i.price || i.variants?.[0]?.price || 1899) * (i.quantity || 1));
+      const discount = discountApplied ? Math.round(subtotal * 0.1) : 0;
+      const total = subtotal - discount;
+
+      const orderPayload = {
+        customer: { name, phone, email, address, city, state, pincode },
+        items: checkoutItems.map(i => ({
+          id: i.id,
+          title: i.title,
+          size: i.size || 'M',
+          price: Number(i.price || i.variants?.[0]?.price || 1899),
+          quantity: i.quantity || 1,
+          image: i.image || i.images?.[0]?.src || ''
+        })),
+        subtotal,
+        discount,
+        total,
+        paymentMethod: selectedPayment === 'cashfree' ? 'Cashfree 1-Click UPI' : 'Cash on Delivery (COD)'
+      };
+
+      const submitBtn = document.getElementById('btn-submit-order');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'PROCESSING ORDER...';
+
+      try {
+        const res = await fetch('/api/checkout/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderPayload)
+        });
+        const data = await res.json();
+
+        if (data.success && data.order) {
+          currentCreatedOrderId = data.order.id;
+
+          if (selectedPayment === 'cashfree') {
+            // Show Cashfree payment modal
+            document.getElementById('modal-pay-amount').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+            document.getElementById('modal-order-id').textContent = `Order ID: ${currentCreatedOrderId}`;
+            document.getElementById('cashfree-modal').style.display = 'flex';
+          } else {
+            // COD - directly redirect
+            localStorage.removeItem('genrage_cart');
+            window.location.href = `/order-success?orderId=${currentCreatedOrderId}`;
+          }
+        } else {
+          alert('Failed to create order: ' + (data.message || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Order processing error: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        selectPayment(selectedPayment);
+      }
+    }
+
+    async function confirmCashfreePayment() {
+      if (!currentCreatedOrderId) return;
+      try {
+        const res = await fetch('/api/checkout/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: currentCreatedOrderId,
+            cashfreePaymentId: `cf_pay_${Date.now()}`
+          })
+        });
+        const data = await res.json();
+        localStorage.removeItem('genrage_cart');
+        window.location.href = `/order-success?orderId=${currentCreatedOrderId}&cashfree=paid`;
+      } catch (err) {
+        alert('Payment verification error: ' + err.message);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCart);
+  </script>
+</body>
+</html>

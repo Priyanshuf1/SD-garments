@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Streetwear Collections | GENRAGE Official Store India</title>
+  <meta name="description" content="Explore India's latest streetwear drops: baggy pants, boxy oversized tees, heavy hoodies, vests, and accessories from GENRAGE.">
+  <link rel="shortcut icon" href="//genrage.com/cdn/shop/files/GENRAGE.png?v=1736145362&width=96">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+
+  <style>
+    :root {
+      --bg-page: #f5f5f5;
+      --bg-card: #ffffff;
+      --text-main: #111111;
+      --text-sub: #777777;
+      --border-light: rgba(0, 0, 0, 0.08);
+      --heading-font-family: 'Instrument Sans', sans-serif;
+      --text-font-family: 'Nunito', sans-serif;
+      --color-sale: #e50914;
+    }
+
+    body {
+      background-color: var(--bg-page) !important;
+      color: var(--text-main);
+      font-family: var(--text-font-family);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Sticky Header - Pure Black Style 1:1 with Official Genrage Site */
+    .site-header {
+      background: #000000;
+      border-bottom: 1px solid #1a1a1a;
+      padding: 0.9rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .site-header__inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-nav-link {
+      color: #ffffff;
+      text-decoration: none;
+      font-family: var(--heading-font-family);
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 6px 0;
+      position: relative;
+      transition: color 0.2s;
+    }
+    .header-nav-link:hover {
+      color: #cccccc;
+    }
+
+    /* Dropdown Menus */
+    .nav-item-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #111111;
+      border: 1px solid #222222;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      border-radius: 2px;
+      min-width: 200px;
+      padding: 0.75rem 0;
+      z-index: 200;
+    }
+    .nav-item-dropdown:hover .nav-dropdown-menu {
+      display: block;
+    }
+    .nav-dropdown-link {
+      display: block;
+      padding: 8px 18px;
+      color: #ffffff;
+      text-decoration: none;
+      font-family: var(--heading-font-family);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-dropdown-link:hover {
+      background: #222222;
+      color: #ffffff;
+    }
+
+    /* Secondary Horizontal Sub-Category Navigation Bar */
+    .collection-subnav {
+      background: #e8e8e8;
+      border-bottom: 1px solid #dcdcdc;
+      position: relative;
+      z-index: 90;
+    }
+    .collection-subnav__inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      gap: 24px;
+    }
+    .collection-subnav__inner::-webkit-scrollbar { display: none; }
+
+    .category-chip {
+      color: #555555;
+      text-decoration: none;
+      font-family: var(--text-font-family);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 14px 2px;
+      white-space: nowrap;
+      cursor: pointer;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .category-chip:hover {
+      color: #000000;
+    }
+    .category-chip.active {
+      color: #000000;
+      font-weight: 800;
+    }
+    .category-chip.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #000000;
+    }
+    .category-chip .chip-count {
+      font-size: 0.7rem;
+      opacity: 0.6;
+      font-weight: 600;
+    }
+
+    /* Toolbar: Layout switcher, product count, filter button */
+    .collection-toolbar-bar {
+      max-width: 1440px;
+      margin: 1.5rem auto 1rem;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .layout-toggles {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .layout-btn {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #888;
+      transition: all 0.2s;
+      padding: 0;
+    }
+    .layout-btn:hover, .layout-btn.active {
+      color: #000;
+      border-color: #000;
+      background: #fff;
+    }
+    .collection-toolbar__products-count {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--heading-font-family);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #666666;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .btn-filter-toggle {
+      background: #ffffff;
+      border: 1px solid #ccc;
+      color: #111;
+      padding: 7px 16px;
+      font-family: var(--heading-font-family);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-filter-toggle:hover {
+      border-color: #000;
+      background: #000;
+      color: #fff;
+    }
+
+    /* Product Grid & Cards (Light Theme, 4 Columns Desktop, 2 Columns Mobile) */
+    .collection-main {
+      max-width: 1440px;
+      margin: 0 auto 5rem;
+      padding: 0 1.5rem;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 1024px) {
+      .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+    }
+    @media (max-width: 699px) {
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+    .product-grid.grid-cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .product-grid.grid-cols-1 {
+      grid-template-columns: 1fr;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Product Card Styling */
+    .product-card {
+      background: var(--bg-card);
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
+      opacity: 1 !important;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .product-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .product-card__figure {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: #ebebeb;
+    }
+    .product-card__media {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .product-card__image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.12s ease-in-out, transform 0.25s ease;
+      will-change: opacity;
+    }
+    .product-card__image--primary {
+      opacity: 1;
+      z-index: 1;
+    }
+    .product-card__image--secondary {
+      opacity: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .product-card:hover .product-card__image--secondary {
+      opacity: 1;
+    }
+    .product-card:hover .product-card__image--primary {
+      opacity: 0;
+    }
+
+    /* Wishlist Heart Button on Card */
+    .wishlist-btn {
+      position: absolute !important;
+      top: 10px !important;
+      right: 10px !important;
+      z-index: 25 !important;
+      background: rgba(0, 0, 0, 0.45) !important;
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      width: 34px !important;
+      height: 34px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, color 0.2s !important;
+      color: #ffffff !important;
+      padding: 0 !important;
+      pointer-events: auto !important;
+    }
+    .wishlist-btn:hover {
+      transform: scale(1.15) !important;
+      background: rgba(0, 0, 0, 0.8) !important;
+      color: #ffffff !important;
+    }
+    .wishlist-btn.is-wishlisted {
+      background: rgba(229, 9, 20, 0.25) !important;
+      border-color: #e50914 !important;
+      color: #e50914 !important;
+    }
+    .wishlist-btn.is-wishlisted svg {
+      fill: #e50914 !important;
+      stroke: #e50914 !important;
+    }
+
+    /* Discount Badge */
+    .badge-list {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 5;
+    }
+    .badge--on-sale {
+      background: var(--color-sale);
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 2px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    /* Quick Add Button */
+    .product-card__quick-add-button {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .product-card__quick-add-button:hover {
+      transform: scale(1.1);
+      background: #222222;
+    }
+
+    /* Card Details */
+    .product-card__info {
+      padding: 0.9rem 0.85rem 1rem;
+      text-align: center;
+      background: #ffffff;
+    }
+    .product-title {
+      color: #111111;
+      text-decoration: none;
+      font-family: var(--heading-font-family);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 4px;
+      transition: color 0.15s;
+    }
+    .product-title:hover {
+      color: #777777;
+    }
+    .price-list {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+    .text-on-sale {
+      font-weight: 800;
+      color: #000000;
+    }
+    .text-subdued {
+      color: #888888;
+      font-weight: 500;
+    }
+    .line-through {
+      text-decoration: line-through;
+    }
+
+    /* Filter Drawer */
+    #filter-drawer-aside {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(380px, 100vw);
+      background: #ffffff;
+      border-left: 1px solid var(--border-light);
+      z-index: 9999;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    }
+    .filter-section-title {
+      font-family: var(--heading-font-family);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #111;
+      margin: 1.25rem 0 0.5rem;
+    }
+    .filter-chips-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filter-chip-btn {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      color: #222;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 2px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .filter-chip-btn.active {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    /* Cart Drawer (No Payment Branding, Just Slide-Out Bag with Quantities & Checkout) */
+    #cart-drawer-aside {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(420px, 100vw);
+      background: #ffffff;
+      border-left: 1px solid var(--border-light);
+      z-index: 9999;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    }
+    .cart-qty-btn {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="color-scheme color-scheme--scheme-1">
+
+  <!-- ============================================================== -->
+  <!-- 1. TOP ANNOUNCEMENT BAR                                        -->
+  <!-- ============================================================== -->
+  <aside style="background:#000; color:#fff; padding:0.5rem 1rem; text-align:center; font-size:0.75rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">
+    <span>FREE EXPRESS DOORSTEP DELIVERY IN INDIA 🇮🇳 • LIMITED DROP</span>
+  </aside>
+
+  <!-- ============================================================== -->
+  <!-- 2. SITE HEADER (White/Light Sticky Header - NO ADMIN BUTTON)   -->
+  <!-- ============================================================== -->
+  <header class="site-header">
+    <div class="site-header__inner">
+      
+      <!-- Left: Brand Logo -->
+      <div style="display:flex; align-items:center; gap: 1.25rem;">
+        <a href="/" style="display:block; text-decoration:none;">
+          <img src="//genrage.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="GENRAGE" style="height: 26px; width: auto; object-fit: contain;">
+        </a>
+      </div>
+
+      <!-- Center: Desktop Navigation Links with Sub-Category Dropdowns -->
+      <nav class="hidden md:flex" style="display:flex; align-items:center; gap: 1.75rem;">
+        <a href="/collections/shop" class="header-nav-link">NEW ARRIVALS</a>
+
+        <!-- TOPS Dropdown -->
+        <div class="nav-item-dropdown">
+          <a href="/collections/tank-top-men" class="header-nav-link" style="display:inline-flex; align-items:center; gap:4px;">
+            TOPS
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+          </a>
+          <div class="nav-dropdown-menu">
+            <a href="/collections/tank-top-men" class="nav-dropdown-link">TANK TOP</a>
+            <a href="/collections/boxy-oversized-tshirt" class="nav-dropdown-link">TSHIRT</a>
+            <a href="/collections/hoodies-for-men" class="nav-dropdown-link">HOODIES</a>
+            <a href="/collections/jacket-for-men" class="nav-dropdown-link">JACKETS</a>
+            <a href="/collections/full-sleeve-t-shirt" class="nav-dropdown-link">FULL SLEEVE T SHIRT</a>
+            <a href="/collections/baby-tee" class="nav-dropdown-link">BABY TEE</a>
+          </div>
+        </div>
+
+        <!-- BOTTOMS Dropdown -->
+        <div class="nav-item-dropdown">
+          <a href="/collections/baggy-pants" class="header-nav-link" style="display:inline-flex; align-items:center; gap:4px;">
+            BOTTOMS
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+          </a>
+          <div class="nav-dropdown-menu">
+            <a href="/collections/baggy-pants" class="nav-dropdown-link">PANTS</a>
+            <a href="/collections/baggy-jeans" class="nav-dropdown-link">JEANS</a>
+            <a href="/collections/shorts-for-men" class="nav-dropdown-link">SHORTS</a>
+          </div>
+        </div>
+
+        <a href="/collections/basics-genrage" class="header-nav-link">BASICS</a>
+        <a href="/collections/accessories" class="header-nav-link">ACCESSORIES</a>
+        <a href="/collections/clearance-sale" class="header-nav-link" style="color:#e50914;">CLEARANCE</a>
+      </nav>
+
+      <!-- Right: User Account, Wishlist, Search, Cart (CLEAN - NO ADMIN BUTTON) -->
+      <div style="display:flex; align-items:center; gap: 1.25rem;">
+        
+        <!-- User Account Icon / Profile link -->
+        <a href="/account" class="header-account-link" data-account-trigger title="Account" style="color:#ffffff; text-decoration:none; display:flex; align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke-miterlimit="10"/>
+          </svg>
+        </a>
+
+        <!-- Search Icon Trigger -->
+        <button type="button" onclick="CollectionEngine.toggleFilterDrawer(true)" title="Search & Filter" style="background:none; border:none; color:#ffffff; cursor:pointer; display:flex; align-items:center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-miterlimit="10">
+            <path d="M10.364 3a7.364 7.364 0 1 0 0 14.727 7.364 7.364 0 0 0 0-14.727Z"/>
+            <path d="M15.857 15.858 21 21.001" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <!-- Wishlist Icon with Counter Badge -->
+        <a href="/collections/shop?view=wishlist" onclick="if(window.CollectionEngine){event.preventDefault(); CollectionEngine.setCategory('wishlist');}" title="Saved Wishlist" style="color:#ffffff; text-decoration:none; position:relative; display:flex; align-items:center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span class="wishlist-count-badge" style="display:none; position:absolute; top:-6px; right:-8px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; align-items:center; justify-content:center; line-height:16px; text-align:center;">0</span>
+        </a>
+
+        <!-- Cart Bag Trigger -->
+        <button type="button" onclick="CollectionEngine.openCartDrawer()" aria-label="Open Shopping Bag" style="background:none; border:none; color:#ffffff; cursor:pointer; position:relative; display:flex; align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span id="header-cart-badge" style="position:absolute; top:-6px; right:-8px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; display:flex; align-items:center; justify-content:center;">0</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- 3. SECONDARY HORIZONTAL SUB-CATEGORY NAV ROW                   -->
+  <!-- ============================================================== -->
+  <nav class="collection-subnav" aria-label="Sub-category Navigation">
+    <div class="collection-subnav__inner" id="category-chips">
+      <a href="/collections/shop" class="category-chip active" data-cat="all">New In</a>
+      <a href="/collections/baggy-pants" class="category-chip" data-cat="bottoms">Pants</a>
+      <a href="/collections/vest" class="category-chip" data-cat="vests">Tank Tops</a>
+      <a href="/collections/basics-genrage" class="category-chip" data-cat="basics">Basics</a>
+      <a href="/collections/boxy-oversized-tshirt" class="category-chip" data-cat="tshirts">T-shirts</a>
+      <a href="/collections/full-sleeve-t-shirt" class="category-chip" data-cat="longsleeves">Long Sleeves</a>
+      <a href="/collections/jacket-for-men" class="category-chip" data-cat="jackets">Jackets</a>
+      <a href="/collections/shorts-for-men" class="category-chip" data-cat="shorts">Shorts</a>
+      <a href="/collections/baggy-jeans" class="category-chip" data-cat="jeans">Jeans</a>
+      <a href="/collections/accessories" class="category-chip" data-cat="accessories">Accessories</a>
+      <a href="/collections/clearance-sale" class="category-chip" data-cat="clearance" style="color:#e50914;">Clearance Sale</a>
+    </div>
+  </nav>
+
+  <!-- Hidden Page Title element for test compatibility -->
+  <h1 id="page-title" style="display:none;">ALL STREETWEAR</h1>
+
+  <!-- ============================================================== -->
+  <!-- 4. TOOLBAR (Layout Toggles Left, Product Count Centered, Filter Right) -->
+  <!-- ============================================================== -->
+  <section class="collection-toolbar-bar">
+    
+    <!-- Top-Left: Grid/List View Toggles -->
+    <div class="layout-toggles">
+      <!-- 4 Columns Toggle -->
+      <button type="button" class="layout-btn active" id="btn-layout-4" onclick="CollectionEngine.setLayout(4)" title="4 Columns Grid">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M1 1h2v2H1zm4 0h2v2H5zm4 0h2v2H9zm4 0h2v2h-2zM1 5h2v2H1zm4 0h2v2H5zm4 0h2v2H9zm4 0h2v2h-2zM1 9h2v2H1zm4 0h2v2H5zm4 0h2v2H9zm4 0h2v2h-2zM1 13h2v2H1zm4 0h2v2H5zm4 0h2v2H9zm4 0h2v2h-2z"/>
+        </svg>
+      </button>
+
+      <!-- 3 Columns Toggle -->
+      <button type="button" class="layout-btn" id="btn-layout-3" onclick="CollectionEngine.setLayout(3)" title="3 Columns Grid">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M1 1h3v3H1zm5 0h3v3H6zm5 0h3v3h-3zM1 6h3v3H1zm5 0h3v3H6zm5 0h3v3h-3zM1 11h3v3H1zm5 0h3v3H6zm5 0h3v3h-3z"/>
+        </svg>
+      </button>
+
+      <!-- 1 Column / Compact List Toggle -->
+      <button type="button" class="layout-btn" id="btn-layout-1" onclick="CollectionEngine.setLayout(1)" title="Compact View">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M1 2h14v2H1zm0 5h14v2H1zm0 5h14v2H1z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Centered: Product Count -->
+    <p class="collection-toolbar__products-count" id="page-count-text">
+      245 PRODUCTS
+    </p>
+
+    <!-- Top-Right: Filter Button -->
+    <div>
+      <button type="button" class="btn-filter-toggle" onclick="CollectionEngine.toggleFilterDrawer()">
+        <span>FILTER</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line>
+          <line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- 5. PRODUCT GRID (Light background, 4 Col Desktop, 2 Col Mobile) -->
+  <!-- ============================================================== -->
+  <main class="collection-main">
+    <div class="product-grid" id="product-grid">
+      <!-- Dynamically Populated from /api/admin/products -->
+    </div>
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- 6. SLIDE-OUT FILTER DRAWER                                     -->
+  <!-- ============================================================== -->
+  <div id="filter-drawer-backdrop" onclick="CollectionEngine.toggleFilterDrawer(false)" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; backdrop-filter:blur(3px);"></div>
+
+  <aside id="filter-drawer-aside">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:1rem; border-bottom:1px solid #eee;">
+      <h3 style="font-family:var(--heading-font-family); font-size:1.1rem; font-weight:800; text-transform:uppercase; margin:0;">Filters</h3>
+      <button type="button" onclick="CollectionEngine.toggleFilterDrawer(false)" style="background:none; border:none; font-size:1.25rem; cursor:pointer; color:#555;">✕</button>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; padding:0.5rem 0;">
+      <!-- Sort By -->
+      <div class="filter-section-title">Sort By</div>
+      <select id="sort-select" onchange="CollectionEngine.handleSortChange(this.value)" style="width:100%; padding:9px 12px; border:1px solid #ccc; border-radius:2px; font-weight:600; font-family:inherit;">
+        <option value="featured">Featured Drops</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="title-asc">Alphabetical: A - Z</option>
+        <option value="newest">Newest First</option>
+      </select>
+
+      <!-- Sizes -->
+      <div class="filter-section-title">Size</div>
+      <div class="filter-chips-wrap">
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('size', 'S', this)">S</button>
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('size', 'M', this)">M</button>
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('size', 'L', this)">L</button>
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('size', 'XL', this)">XL</button>
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('size', 'XXL', this)">XXL</button>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-section-title">Price Range</div>
+      <div class="filter-chips-wrap">
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('price', 'under1500', this)">Under ₹1,500</button>
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('price', '1500to2500', this)">₹1,500 - ₹2,500</button>
+        <button type="button" class="filter-chip-btn" onclick="CollectionEngine.toggleFilter('price', 'above2500', this)">Above ₹2,500</button>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid #eee; padding-top:1rem; display:flex; gap:10px;">
+      <button type="button" onclick="CollectionEngine.clearFilters()" style="flex:1; background:#f0f0f0; color:#111; border:none; padding:12px; font-weight:700; font-size:0.8rem; text-transform:uppercase; border-radius:2px; cursor:pointer;">RESET</button>
+      <button type="button" onclick="CollectionEngine.toggleFilterDrawer(false)" style="flex:1; background:#000; color:#fff; border:none; padding:12px; font-weight:800; font-size:0.8rem; text-transform:uppercase; border-radius:2px; cursor:pointer;">APPLY</button>
+    </div>
+  </aside>
+
+  <!-- ============================================================== -->
+  <!-- 7. CART DRAWER (Official Genrage Style - NO Cashfree Branding)  -->
+  <!-- ============================================================== -->
+  <div id="cart-drawer-backdrop" onclick="CollectionEngine.closeCartDrawer()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; backdrop-filter:blur(3px);"></div>
+  
+  <aside id="cart-drawer-aside">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:1rem; border-bottom:1px solid #eee;">
+      <h3 style="font-family:var(--heading-font-family); font-size:1.15rem; font-weight:800; text-transform:uppercase; margin:0;">Shopping Bag</h3>
+      <button type="button" onclick="CollectionEngine.closeCartDrawer()" style="background:none; border:none; color:#111; font-size:1.25rem; cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Free Delivery Banner -->
+    <div style="background:#e8f5e9; border:1px solid #c8e6c9; border-radius:3px; padding:0.75rem; margin:1rem 0; font-size:0.75rem; text-align:center;">
+      <span style="color:#2e7d32; font-weight:800;">✓ FREE EXPRESS AIR DELIVERY</span> ON ALL ORDERS IN INDIA
+    </div>
+
+    <!-- Cart Items Container -->
+    <div id="cart-items-container" style="flex:1; overflow-y:auto; padding:0.5rem 0;">
+      <div id="cart-empty-msg" style="text-align:center; padding:3rem 1rem; color:#888;">
+        Your bag is currently empty.<br>
+        <span style="font-size:0.8rem; color:#555;">Pick from our latest streetwear drops!</span>
+      </div>
+    </div>
+
+    <!-- Cart Footer with SINGLE Checkout Button (NO PAYMENT BRANDING) -->
+    <div style="border-top:1px solid #eee; padding-top:1.25rem;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-weight:700; font-size:0.95rem;">
+        <span>Estimated Subtotal</span>
+        <span id="cart-total-price" style="font-weight:900;">Rs. 0</span>
+      </div>
+      <button type="button" id="btn-cart-checkout" onclick="window.location.href='/checkout'" style="width:100%; background:#000000; color:#ffffff; border:none; padding:15px; font-family:var(--heading-font-family); font-size:0.9rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; border-radius:2px; transition:background 0.2s;">
+        PROCEED TO CHECKOUT
+      </button>
+      <div style="text-align:center; font-size:0.7rem; color:#777; margin-top:8px;">
+        Taxes and shipping calculated at checkout
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================== -->
+  <!-- 8. SITE FOOTER (Pure Black 1:1 with Official GENRAGE Site)      -->
+  <!-- ============================================================== -->
+  <footer style="background:#000000; border-top:1px solid #1a1a1a; padding:4rem 1.5rem 2.5rem; color:#ffffff;">
+    <div style="max-width:1440px; margin:0 auto; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:2.5rem; margin-bottom:3rem;">
+      <div>
+        <img src="//genrage.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="GENRAGE" style="height:24px; margin-bottom:1rem;">
+        <p style="color:#888888; font-size:0.85rem; line-height:1.6; margin:0;">
+          Homegrown Indian Streetwear redefining modern silhouettes with oversized fits, drop shoulders, and premium heavyweight fabrics.
+        </p>
+      </div>
+      <div>
+        <h4 style="font-family:var(--heading-font-family); font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1rem; color:#ffffff;">Customer Care</h4>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.65rem; font-size:0.85rem; color:#aaaaaa;">
+          <li><a href="/pages/contact.html" style="color:inherit; text-decoration:none; transition:color 0.15s;">Track My Order</a></li>
+          <li><a href="/pages/returns.html" style="color:inherit; text-decoration:none; transition:color 0.15s;">Exchange & Returns</a></li>
+          <li><a href="/policies/shipping-policy.html" style="color:inherit; text-decoration:none; transition:color 0.15s;">Shipping Policy</a></li>
+          <li><a href="/policies/privacy-policy.html" style="color:inherit; text-decoration:none; transition:color 0.15s;">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-family:var(--heading-font-family); font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1rem; color:#ffffff;">Popular Categories</h4>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.65rem; font-size:0.85rem; color:#aaaaaa;">
+          <li><a href="/collections/baggy-pants" style="color:inherit; text-decoration:none; transition:color 0.15s;">Baggy Pants & Bottoms</a></li>
+          <li><a href="/collections/vest" style="color:inherit; text-decoration:none; transition:color 0.15s;">Heavyweight Vests</a></li>
+          <li><a href="/collections/boxy-oversized-tshirt" style="color:inherit; text-decoration:none; transition:color 0.15s;">Boxy Graphic Tees</a></li>
+          <li><a href="/collections/hoodies-for-men" style="color:inherit; text-decoration:none; transition:color 0.15s;">Oversized Hoodies</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-family:var(--heading-font-family); font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1rem; color:#ffffff;">Newsletter</h4>
+        <p style="color:#888888; font-size:0.8rem; margin-bottom:0.75rem;">Get early access to secret streetwear drops and exclusive promos.</p>
+        <div style="display:flex;">
+          <input type="email" placeholder="Your email..." style="background:#111111; border:1px solid #282828; color:#ffffff; padding:10px 14px; font-size:0.85rem; border-radius:2px 0 0 2px; outline:none; flex:1;">
+          <button type="button" style="background:#ffffff; color:#000000; border:none; font-weight:800; font-family:var(--heading-font-family); padding:10px 18px; font-size:0.8rem; text-transform:uppercase; border-radius:0 2px 2px 0; cursor:pointer;">JOIN</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="max-width:1440px; margin:0 auto; padding-top:2rem; border-top:1px solid #1a1a1a; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; font-size:0.75rem; color:#666666;">
+      <div>PROUDLY HOMEGROWN IN INDIA • © 2026 GENRAGE. ALL RIGHTS RESERVED.</div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <span style="border:1px solid #282828; background:#0d0d0d; color:#888888; padding:3px 8px; border-radius:2px;">UPI</span>
+        <span style="border:1px solid #282828; background:#0d0d0d; color:#888888; padding:3px 8px; border-radius:2px;">GPAY</span>
+        <span style="border:1px solid #282828; background:#0d0d0d; color:#888888; padding:3px 8px; border-radius:2px;">PHONEPE</span>
+        <span style="border:1px solid #282828; background:#0d0d0d; color:#888888; padding:3px 8px; border-radius:2px;">CARDS</span>
+        <span style="border:1px solid #282828; background:#0d0d0d; color:#888888; padding:3px 8px; border-radius:2px;">COD</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/wishlist.js"></script>
+  <script src="/assets/js/auth.js"></script>
+
+  <!-- ============================================================== -->
+  <!-- 9. COLLECTION LOGIC ENGINE                                     -->
+  <!-- ============================================================== -->
+  <script>
+    const CollectionEngine = {
+      allProducts: [],
+      filteredProducts: [],
+      activeCategory: 'all',
+      activeSort: 'featured',
+      activeSizeFilter: null,
+      activePriceFilter: null,
+      activeLayout: 4,
+      cart: [],
+
+      categoryMap: {
+        'all': 'ALL STREETWEAR',
+        'bottoms': 'PANTS & BOTTOMS',
+        'vests': 'VESTS & TANKS',
+        'tshirts': 'T-SHIRTS & BOXY TEES',
+        'longsleeves': 'FULL SLEEVE T-SHIRTS',
+        'babytee': 'BABY TEES',
+        'hoodies': 'HEAVY HOODIES',
+        'jackets': 'JACKETS',
+        'shorts': 'SHORTS',
+        'jeans': 'BAGGY JEANS',
+        'accessories': 'JEWELRY & ACCESSORIES',
+        'basics': 'GENRAGE BASICS',
+        'clearance': 'CLEARANCE SALE',
+        'wishlist': 'MY SAVED WISHLIST'
+      },
+
+      init() {
+        this.loadCartFromStorage();
+        this.parseUrlCategory();
+        this.setupEventListeners();
+        this.loadCatalog();
+      },
+
+      parseUrlCategory() {
+        const path = window.location.pathname.toLowerCase();
+        const params = new URLSearchParams(window.location.search);
+        const queryCat = params.get('category')?.toLowerCase();
+        const viewMode = params.get('view')?.toLowerCase();
+
+        if (viewMode === 'wishlist' || queryCat === 'wishlist') {
+          this.activeCategory = 'wishlist';
+        } else if (queryCat) {
+          if (queryCat.includes('baby')) this.activeCategory = 'babytee';
+          else if (queryCat.includes('basic')) this.activeCategory = 'basics';
+          else if (queryCat.includes('clearance') || queryCat.includes('sale')) this.activeCategory = 'clearance';
+          else if (queryCat.includes('short')) this.activeCategory = 'shorts';
+          else if (queryCat.includes('jean')) this.activeCategory = 'jeans';
+          else if (queryCat.includes('pant') || queryCat.includes('bottom')) this.activeCategory = 'bottoms';
+          else if (queryCat.includes('vest') || queryCat.includes('tank')) this.activeCategory = 'vests';
+          else if (queryCat.includes('full-sleeve') || queryCat.includes('long-sleeve') || queryCat.includes('longsleeve')) this.activeCategory = 'longsleeves';
+          else if (queryCat.includes('tshirt') || queryCat.includes('tee') || queryCat.includes('boxy')) this.activeCategory = 'tshirts';
+          else if (queryCat.includes('hoodie')) this.activeCategory = 'hoodies';
+          else if (queryCat.includes('jacket')) this.activeCategory = 'jackets';
+          else if (queryCat.includes('access') || queryCat.includes('jewel')) this.activeCategory = 'accessories';
+          else this.activeCategory = 'all';
+        } else if (path.includes('baby-tee') || path.includes('baby_tee')) {
+          this.activeCategory = 'babytee';
+        } else if (path.includes('basic')) {
+          this.activeCategory = 'basics';
+        } else if (path.includes('clearance') || path.includes('sale')) {
+          this.activeCategory = 'clearance';
+        } else if (path.includes('baggy-jeans') || path.includes('jeans')) {
+          this.activeCategory = 'jeans';
+        } else if (path.includes('shorts')) {
+          this.activeCategory = 'shorts';
+        } else if (path.includes('baggy-pants') || path.includes('bottom') || path.includes('pant')) {
+          this.activeCategory = 'bottoms';
+        } else if (path.includes('vest') || path.includes('tank')) {
+          this.activeCategory = 'vests';
+        } else if (path.includes('full-sleeve') || path.includes('long-sleeve')) {
+          this.activeCategory = 'longsleeves';
+        } else if (path.includes('boxy') || path.includes('tshirt') || path.includes('tee')) {
+          this.activeCategory = 'tshirts';
+        } else if (path.includes('hoodie')) {
+          this.activeCategory = 'hoodies';
+        } else if (path.includes('jacket')) {
+          this.activeCategory = 'jackets';
+        } else if (path.includes('access') || path.includes('jewel')) {
+          this.activeCategory = 'accessories';
+        } else {
+          this.activeCategory = 'all';
+        }
+      },
+
+      setupEventListeners() {
+        // Sub-category Navigation & Header Dropdown Link Handling
+        document.querySelectorAll('.category-chip, .nav-dropdown-link').forEach(link => {
+          link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (href && (href.startsWith('/collections/') || href.includes('collections.html'))) {
+              e.preventDefault();
+              const catFromChip = link.dataset.cat;
+              let targetCat = catFromChip;
+              if (!targetCat) {
+                if (href.includes('baby-tee')) targetCat = 'babytee';
+                else if (href.includes('tank') || href.includes('vest')) targetCat = 'vests';
+                else if (href.includes('boxy') || href.includes('tshirt')) targetCat = 'tshirts';
+                else if (href.includes('hoodie')) targetCat = 'hoodies';
+                else if (href.includes('jacket')) targetCat = 'jackets';
+                else if (href.includes('full-sleeve')) targetCat = 'longsleeves';
+                else if (href.includes('pants')) targetCat = 'bottoms';
+                else if (href.includes('jeans')) targetCat = 'jeans';
+                else if (href.includes('shorts')) targetCat = 'shorts';
+                else if (href.includes('basics')) targetCat = 'basics';
+                else if (href.includes('access')) targetCat = 'accessories';
+                else if (href.includes('clearance')) targetCat = 'clearance';
+                else targetCat = 'all';
+              }
+              this.setCategory(targetCat, href);
+            }
+          });
+        });
+
+        // Browser back/forward button support
+        window.addEventListener('popstate', () => {
+          this.parseUrlCategory();
+          this.updateActiveChip();
+          this.filterAndRender();
+        });
+      },
+
+      async loadCatalog() {
+        try {
+          const res = await fetch('/api/admin/products');
+          const data = await res.json();
+          if (data.success && Array.isArray(data.products)) {
+            this.allProducts = data.products;
+            this.updateActiveChip();
+            this.filterAndRender();
+          }
+        } catch (err) {
+          console.error('Failed to load products:', err);
+          document.getElementById('product-grid').innerHTML = `
+            <div style="grid-column: 1/-1; text-align:center; padding:4rem; color:#777;">
+              <h3>Unable to load collection</h3>
+              <p>Please refresh the page.</p>
+            </div>
+          `;
+        }
+      },
+
+      setCategory(cat, url) {
+        this.activeCategory = cat;
+        if (url && window.location.pathname !== url) {
+          window.history.pushState(null, '', url);
+        }
+        this.updateActiveChip();
+        this.filterAndRender();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      updateActiveChip() {
+        document.querySelectorAll('.category-chip').forEach(c => {
+          c.classList.toggle('active', c.dataset.cat === this.activeCategory);
+        });
+
+        const title = this.categoryMap[this.activeCategory] || 'ALL STREETWEAR';
+        document.getElementById('page-title').textContent = title;
+        document.title = `${title} | GENRAGE Official Store`;
+      },
+
+      filterAndRender() {
+        this.filteredProducts = this.allProducts.filter(p => {
+          const cat = (p.category || p.product_type || '').toLowerCase();
+          const title = (p.title || '').toLowerCase();
+          const tags = (p.tags || '').toString().toLowerCase();
+
+          // 1. Category Filter
+          if (this.activeCategory === 'wishlist') {
+            const wishlist = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
+            const wishlistedHandles = new Set(wishlist.map(i => (typeof i === 'string' ? i : i.handle)));
+            if (!wishlistedHandles.has(p.handle)) return false;
+          } else if (this.activeCategory === 'babytee') {
+            if (!(cat.includes('baby') || tags.includes('baby') || title.includes('baby'))) return false;
+          } else if (this.activeCategory === 'basics') {
+            if (!(p.homepage_section === 'genrage_basics' || tags.includes('basic') || title.includes('basic') || title.includes('balloon'))) return false;
+          } else if (this.activeCategory === 'clearance') {
+            const hasSale = (p.variants && p.variants[0] && p.variants[0].compare_at_price && Number(p.variants[0].compare_at_price) > Number(p.variants[0].price)) || tags.includes('clearance') || tags.includes('sale');
+            if (!hasSale) return false;
+          } else if (this.activeCategory === 'bottoms') {
+            if (!(cat.includes('pant') || cat.includes('bottom') || tags.includes('pant') || tags.includes('bottom'))) return false;
+          } else if (this.activeCategory === 'jeans') {
+            if (!(cat.includes('jean') || tags.includes('jean') || title.includes('jean') || title.includes('denim'))) return false;
+          } else if (this.activeCategory === 'shorts') {
+            if (!(cat.includes('short') || tags.includes('short') || title.includes('short'))) return false;
+          } else if (this.activeCategory === 'vests') {
+            if (!(cat.includes('vest') || cat.includes('tank') || tags.includes('vest') || tags.includes('tank'))) return false;
+          } else if (this.activeCategory === 'tshirts') {
+            if (!(cat.includes('t-shirt') || cat.includes('boxy') || tags.includes('boxy') || tags.includes('t-shirt') || title.includes('t-shirt') || title.includes('tshirt'))) return false;
+          } else if (this.activeCategory === 'longsleeves') {
+            if (!(title.includes('full sleeve') || title.includes('full-sleeve') || tags.includes('full-sleeve') || cat.includes('full sleeve'))) return false;
+          } else if (this.activeCategory === 'hoodies') {
+            if (!(cat.includes('hoodie') || tags.includes('hoodie') || title.includes('hoodie'))) return false;
+          } else if (this.activeCategory === 'jackets') {
+            if (!(cat.includes('jacket') || tags.includes('jacket') || title.includes('jacket'))) return false;
+          } else if (this.activeCategory === 'accessories') {
+            if (!(cat.includes('jewel') || cat.includes('pendant') || cat.includes('access') || tags.includes('access'))) return false;
+          }
+
+          // 2. Price Filter
+          const price = Number(p.variants?.[0]?.price || p.price || 1899);
+          if (this.activePriceFilter === 'under1500' && price >= 1500) return false;
+          if (this.activePriceFilter === '1500to2500' && (price < 1500 || price > 2500)) return false;
+          if (this.activePriceFilter === 'above2500' && price <= 2500) return false;
+
+          return true;
+        });
+
+        // Update count text
+        const countText = `${this.filteredProducts.length} PRODUCTS AVAILABLE`;
+        document.getElementById('page-count-text').textContent = countText;
+
+        this.sortAndRender();
+      },
+
+      sortAndRender() {
+        const sort = this.activeSort;
+        if (sort === 'price-asc') {
+          this.filteredProducts.sort((a, b) => Number(a.variants?.[0]?.price || a.price || 0) - Number(b.variants?.[0]?.price || b.price || 0));
+        } else if (sort === 'price-desc') {
+          this.filteredProducts.sort((a, b) => Number(b.variants?.[0]?.price || b.price || 0) - Number(a.variants?.[0]?.price || a.price || 0));
+        } else if (sort === 'title-asc') {
+          this.filteredProducts.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+        } else if (sort === 'newest') {
+          this.filteredProducts.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+        }
+
+        this.renderGrid();
+      },
+
+      renderGrid() {
+        const grid = document.getElementById('product-grid');
+        if (!grid) return;
+
+        if (this.filteredProducts.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; background:#fff; border-radius:4px; padding:4rem 2rem; text-align:center; color:#777; border:1px solid #e5e5e5;">
+              <h3 style="margin:0 0 8px; text-transform:uppercase;">No Streetwear Items Found</h3>
+              <p style="font-size:0.85rem; margin-bottom:1.5rem;">There are no products matching this filter combination.</p>
+              <button onclick="CollectionEngine.clearFilters(); CollectionEngine.setCategory('all', '/collections/shop');" style="background:#000; color:#fff; border:none; padding:10px 20px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; cursor:pointer;">BROWSE ALL DROPS</button>
+            </div>
+          `;
+          return;
+        }
+
+        const wishlist = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
+        const wishlistedHandles = new Set(wishlist.map(i => (typeof i === 'string' ? i : i.handle)));
+
+        grid.innerHTML = this.filteredProducts.map((p, idx) => {
+          const primaryImg = p.images?.[0]?.src || p.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+          const secondaryImg = p.images?.[1]?.src || p.hoverImage || '';
+          const price = p.variants?.[0]?.price || p.price || '1899';
+          const comparePrice = p.variants?.[0]?.compare_at_price || '';
+
+          let discountBadge = '';
+          if (comparePrice && Number(comparePrice) > Number(price)) {
+            const pct = Math.round(((Number(comparePrice) - Number(price)) / Number(comparePrice)) * 100);
+            discountBadge = `<badge-list class="badge-list badge-list--vertical"><on-sale-badge class="badge badge--on-sale">Save ${pct}%</on-sale-badge></badge-list>`;
+          }
+
+          const isWishlisted = wishlistedHandles.has(p.handle);
+          const safeTitle = (p.title || '').replace(/'/g, "\\'");
+          const isAboveFold = idx < 8;
+
+          return `
+            <product-card class="product-card" handle="${p.handle}">
+              <div class="product-card__figure">
+                ${discountBadge}
+                
+                <!-- Wishlist Heart Button -->
+                <button type="button" class="wishlist-btn ${isWishlisted ? 'is-wishlisted' : ''}" data-wishlist-handle="${p.handle}" aria-label="Add to wishlist" onclick="WishlistEngine.toggle('${p.handle}', { title: '${safeTitle}', price: '${price}', image: '${primaryImg}' }, event)">
+                  ${window.WishlistEngine ? window.WishlistEngine.getHeartSvg(isWishlisted) : '♥'}
+                </button>
+
+                <a href="/products/${p.handle}" class="product-card__media" draggable="false" data-instant>
+                  <img src="${primaryImg}" alt="${p.title}" loading="${isAboveFold ? 'eager' : 'lazy'}" ${idx < 4 ? 'fetchpriority="high"' : ''} decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall">
+                  ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary">` : ''}
+                </a>
+
+                <button type="button" class="product-card__quick-add-button" onclick="CollectionEngine.addToCart('${p.id}')" title="Quick Add">
+                  <svg aria-hidden="true" focusable="false" fill="none" width="12" class="icon icon-plus" viewBox="0 0 12 12">
+                    <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="product-card__info empty:hidden">
+                <div class="v-stack justify-items-center gap-1">
+                  <a href="/products/${p.handle}" class="product-title h6" data-instant>${p.title}</a>
+                  <price-list class="price-list">
+                    <sale-price class="h6 text-on-sale">
+                      <span class="money">Rs. ${Number(price).toLocaleString('en-IN')}</span>
+                    </sale-price>
+                    ${comparePrice ? `
+                    <compare-at-price class="h6 text-subdued line-through">
+                      <span class="money">Rs. ${Number(comparePrice).toLocaleString('en-IN')}</span>
+                    </compare-at-price>` : ''}
+                  </price-list>
+                </div>
+              </div>
+            </product-card>
+          `;
+        }).join('');
+
+        // Immediate Preloader: Pre-cache secondary hover images 600px ahead of scroll
+        if ('IntersectionObserver' in window) {
+          const imgObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                const card = entry.target;
+                const secImg = card.querySelector('.product-card__image--secondary');
+                if (secImg && secImg.src) {
+                  const pre = new Image();
+                  pre.src = secImg.src;
+                }
+                obs.unobserve(card);
+              }
+            });
+          }, { rootMargin: '600px 0px' });
+
+          grid.querySelectorAll('.product-card').forEach(c => imgObserver.observe(c));
+        }
+      },
+
+      setLayout(cols) {
+        this.activeLayout = cols;
+        const grid = document.getElementById('product-grid');
+        grid.className = 'product-grid' + (cols === 3 ? ' grid-cols-3' : cols === 1 ? ' grid-cols-1' : '');
+        document.getElementById('btn-layout-4').classList.toggle('active', cols === 4);
+        document.getElementById('btn-layout-3').classList.toggle('active', cols === 3);
+        document.getElementById('btn-layout-1').classList.toggle('active', cols === 1);
+      },
+
+      toggleFilterDrawer(show = null) {
+        const backdrop = document.getElementById('filter-drawer-backdrop');
+        const drawer = document.getElementById('filter-drawer-aside');
+        const isCurrentOpen = drawer.style.transform === 'translateX(0px)';
+        const willOpen = show !== null ? show : !isCurrentOpen;
+
+        backdrop.style.display = willOpen ? 'block' : 'none';
+        drawer.style.transform = willOpen ? 'translateX(0)' : 'translateX(100%)';
+      },
+
+      handleSortChange(val) {
+        this.activeSort = val;
+        this.sortAndRender();
+      },
+
+      toggleFilter(type, val, btn) {
+        if (type === 'price') {
+          this.activePriceFilter = this.activePriceFilter === val ? null : val;
+        }
+        btn.classList.toggle('active');
+        this.filterAndRender();
+      },
+
+      clearFilters() {
+        this.activePriceFilter = null;
+        this.activeSort = 'featured';
+        document.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('sort-select').value = 'featured';
+        this.filterAndRender();
+      },
+
+      // Shopping Bag Drawer Functions (NO CASHFREE BRANDING)
+      addToCart(prodId) {
+        const prod = this.allProducts.find(p => String(p.id) === String(prodId));
+        if (!prod) return;
+
+        const existing = this.cart.find(i => String(i.id) === String(prodId));
+        if (existing) {
+          existing.quantity = (existing.quantity || 1) + 1;
+        } else {
+          this.cart.push({
+            id: prod.id,
+            title: prod.title,
+            price: prod.variants?.[0]?.price || prod.price || 1899,
+            image: prod.images?.[0]?.src || prod.image || '',
+            quantity: 1,
+            size: 'M'
+          });
+        }
+
+        this.saveCartToStorage();
+        this.updateCartUi();
+        this.openCartDrawer();
+      },
+
+      changeQty(idx, delta) {
+        if (!this.cart[idx]) return;
+        this.cart[idx].quantity = (this.cart[idx].quantity || 1) + delta;
+        if (this.cart[idx].quantity <= 0) {
+          this.cart.splice(idx, 1);
+        }
+        this.saveCartToStorage();
+        this.updateCartUi();
+      },
+
+      removeFromCart(idx) {
+        this.cart.splice(idx, 1);
+        this.saveCartToStorage();
+        this.updateCartUi();
+      },
+
+      openCartDrawer() {
+        document.getElementById('cart-drawer-backdrop').style.display = 'block';
+        document.getElementById('cart-drawer-aside').style.transform = 'translateX(0)';
+      },
+
+      closeCartDrawer() {
+        document.getElementById('cart-drawer-backdrop').style.display = 'none';
+        document.getElementById('cart-drawer-aside').style.transform = 'translateX(100%)';
+      },
+
+      saveCartToStorage() {
+        try {
+          localStorage.setItem('genrage_cart', JSON.stringify(this.cart));
+        } catch (e) {}
+      },
+
+      loadCartFromStorage() {
+        try {
+          const raw = localStorage.getItem('genrage_cart');
+          if (raw) this.cart = JSON.parse(raw);
+        } catch (e) {}
+        this.updateCartUi();
+      },
+
+      updateCartUi() {
+        const badge = document.getElementById('header-cart-badge');
+        const totalCount = this.cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        if (badge) badge.textContent = totalCount;
+
+        const container = document.getElementById('cart-items-container');
+        if (!container) return;
+
+        if (this.cart.length === 0) {
+          container.innerHTML = `
+            <div id="cart-empty-msg" style="text-align:center; padding:3rem 1rem; color:#888;">
+              Your bag is currently empty.<br>
+              <span style="font-size:0.8rem; color:#555;">Pick from our latest streetwear drops!</span>
+            </div>
+          `;
+          document.getElementById('cart-total-price').textContent = 'Rs. 0';
+          return;
+        }
+
+        let total = 0;
+        container.innerHTML = this.cart.map((item, idx) => {
+          const price = Number(item.price || 1899);
+          const qty = Number(item.quantity || 1);
+          total += price * qty;
+          const img = item.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+
+          return `
+            <div style="display:flex; gap:12px; align-items:center; padding:0.85rem 0; border-bottom:1px solid #eee;">
+              <img src="${img}" alt="${item.title}" style="width:50px; height:62px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
+              <div style="flex:1;">
+                <div style="font-size:0.85rem; font-weight:700; color:#111; line-height:1.2;">${item.title}</div>
+                <div style="font-size:0.8rem; color:#111; font-weight:800; margin:3px 0;">Rs. ${price.toLocaleString('en-IN')}</div>
+                <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                  <button type="button" class="cart-qty-btn" onclick="CollectionEngine.changeQty(${idx}, -1)">-</button>
+                  <span style="font-size:0.85rem; font-weight:700; min-width:20px; text-align:center;">${qty}</span>
+                  <button type="button" class="cart-qty-btn" onclick="CollectionEngine.changeQty(${idx}, 1)">+</button>
+                </div>
+              </div>
+              <button type="button" onclick="CollectionEngine.removeFromCart(${idx})" style="background:none; border:none; color:#888; cursor:pointer; font-size:1.1rem; padding:4px;">✕</button>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('cart-total-price').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      CollectionEngine.init();
+    });
+
+    if (typeof window !== 'undefined') {
+      window.CollectionEngine = CollectionEngine;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+{
+  "collections": [
+    {
+      "id": 470551757038,
+      "title": "ACCESSORIES",
+      "handle": "accessories",
+      "description": "",
+      "published_at": "2026-03-31T16:11:33+05:30",
+      "updated_at": "2026-10-17T16:52:00+05:30",
+      "image": null,
+      "products_count": 34
+    },
+    {
+      "id": 480367673582,
+      "title": "Acid Wash T-Shirts for Men | Vintage Style Tees | GENRAGE",
+      "handle": "acid-wash-t-shirts",
+      "description": null,
+      "published_at": "2026-09-05T10:54:31+05:30",
+      "updated_at": "2026-09-05T10:54:31+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 470514106606,
+      "title": "BAD INFLUENCE",
+      "handle": "bloodbath",
+      "description": "",
+      "published_at": "2026-03-30T13:07:37+05:30",
+      "updated_at": "2026-10-17T16:52:00+05:30",
+      "image": null,
+      "products_count": 32
+    },
+    {
+      "id": 480367706350,
+      "title": "Baggy Cargo Pants for Men | Streetwear Cargos | GENRAGE",
+      "handle": "baggy-cargo-pants",
+      "description": null,
+      "published_at": "2026-09-05T10:54:32+05:30",
+      "updated_at": "2026-09-05T10:54:32+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 422753730798,
+      "title": "BAGGY JEANS",
+      "handle": "baggy-jeans",
+      "description": "",
+      "published_at": "2024-01-12T13:10:40+05:30",
+      "updated_at": "2026-10-17T16:51:58+05:30",
+      "image": null,
+      "products_count": 9
+    },
+    {
+      "id": 480367771886,
+      "title": "Baggy Jeans for Men & Women | GENRAGE",
+      "handle": "baggy-jeans-collection",
+      "description": null,
+      "published_at": "2026-09-05T10:55:03+05:30",
+      "updated_at": "2026-09-05T10:55:03+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 480367575278,
+      "title": "Baggy Lowers for Men | Streetwear Track Pants | GENRAGE",
+      "handle": "baggy-lowers",
+      "description": null,
+      "published_at": "2026-09-05T10:54:28+05:30",
+      "updated_at": "2026-09-05T10:54:28+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 419341664494,
+      "title": "BAGGY PANTS",
+      "handle": "baggy-pants",
+      "description": "",
+      "published_at": "2023-11-21T16:45:08+05:30",
+      "updated_at": "2026-10-18T00:16:01+05:30",
+      "image": {
+        "id": 1698941239534,
+        "created_at": "2024-12-17T10:08:36+05:30",
+        "src": "https://cdn.shopify.com/s/files/1/0633/9339/9022/collections/PANT_1_1a6e396f-1ca7-4587-afe1-4af9c8167ea8.png?v=1772686398",
+        "alt": "BAGGY PANTS - GENRAGE"
+      },
+      "products_count": 92
+    },
+    {
+      "id": 480367837422,
+      "title": "Baggy Pants Under Rs 500 | GENRAGE Affordable Streetwear",
+      "handle": "baggy-pants-budget",
+      "description": null,
+      "published_at": "2026-09-05T10:55:05+05:30",
+      "updated_at": "2026-09-05T10:55:05+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 455121043694,
+      "title": "BASICS GENRAGE",
+      "handle": "basics-genrage",
+      "description": "",
+      "published_at": "2025-07-11T17:51:38+05:30",
+      "updated_at": "2026-10-18T01:21:25+05:30",
+      "image": null,
+      "products_count": 18
+    },
+    {
+      "id": 457312895214,
+      "title": "BEST SELLERS | GENRAGE",
+      "handle": "best-sellers",
+      "description": "",
+      "published_at": "2025-08-18T12:27:33+05:30",
+      "updated_at": "2026-10-17T16:52:00+05:30",
+      "image": null,
+      "products_count": 13
+    },
+    {
+      "id": 455417102574,
+      "title": "BOOTCUT JEANS",
+      "handle": "bootcut-jeans",
+      "description": "",
+      "published_at": "2025-07-16T20:04:15+05:30",
+      "updated_at": "2026-10-16T16:48:32+05:30",
+      "image": null,
+      "products_count": 4
+    },
+    {
+      "id": 434076516590,
+      "title": "BOTTOMS",
+      "handle": "bottoms",
+      "description": "",
+      "published_at": "2024-06-23T16:49:14+05:30",
+      "updated_at": "2026-10-18T00:16:01+05:30",
+      "image": null,
+      "products_count": 98
+    },
+    {
+      "id": 480367509742,
+      "title": "Boxy Fit T-Shirts for Men | GENRAGE Streetwear",
+      "handle": "boxy-t-shirts",
+      "description": null,
+      "published_at": "2026-09-05T10:54:24+05:30",
+      "updated_at": "2026-09-05T10:54:25+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 422753763566,
+      "title": "Buy Shorts For Men at Best Price | Genrage",
+      "handle": "shorts-for-men",
+      "description": "",
+      "published_at": "2024-01-12T13:11:05+05:30",
+      "updated_at": "2026-10-17T16:52:00+05:30",
+      "image": {
+        "id": 1698941305070,
+        "created_at": "2024-12-17T10:08:42+05:30",
+        "src": "https://cdn.shopify.com/s/files/1/0633/9339/9022/collections/shorts_59b97b64-53d1-4988-bbeb-0a90cefe26cf.png?v=1769021308",
+        "alt": "SWEATSHORTS - GENRAGE"
+      },
+      "products_count": 11
+    },
+    {
+      "id": 422753698030,
+      "title": "CLEARANCE SALE",
+      "handle": "clearance-sale",
+      "description": "",
+      "published_at": "2024-01-12T13:09:00+05:30",
+      "updated_at": "2026-10-18T00:54:18+05:30",
+      "image": null,
+      "products_count": 217
+    },
+    {
+      "id": 448137494766,
+      "title": "CRATE",
+      "handle": "crate",
+      "description": "",
+      "published_at": "2025-05-22T20:11:22+05:30",
+      "updated_at": "2026-08-24T16:45:31+05:30",
+      "image": null,
+      "products_count": 3
+    },
+    {
+      "id": 480367608046,
+      "title": "Darkwear Fashion | All-Black Streetwear Aesthetic | GENRAGE",
+      "handle": "darkwear-aesthetic",
+      "description": null,
+      "published_at": "2026-09-05T10:54:29+05:30",
+      "updated_at": "2026-09-05T10:54:29+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 471110418670,
+      "title": "DUFFLE BAG",
+      "handle": "duffle-bag",
+      "description": "",
+      "published_at": "2026-04-09T15:45:26+05:30",
+      "updated_at": "2026-10-17T16:52:00+05:30",
+      "image": null,
+      "products_count": 34
+    },
+    {
+      "id": 442549731566,
+      "title": "FULL SLEEVE T SHIRT",
+      "handle": "full-sleeve-t-shirt",
+      "description": "",
+      "published_at": "2024-11-19T14:39:04+05:30",
+      "updated_at": "2026-10-18T00:54:18+05:30",
+      "image": {
+        "id": 1699502063854,
+        "created_at": "2025-03-17T20:14:24+05:30",
+        "src": "https://cdn.shopify.com/s/files/1/0633/9339/9022/collections/Artboard_1.png?v=1742222664",
+        "alt": null
+      },
+      "products_count": 36
+    },
+    {
+      "id": 466002182382,
+      "title": "HOODIES FOR MEN",
+      "handle": "hoodies-for-men",
+      "description": "",
+      "published_at": "2026-01-22T00:24:41+05:30",
+      "updated_at": "2026-10-18T00:54:18+05:30",
+      "image": {
+        "id": 1701591810286,
+        "created_at": "2026-03-05T10:31:49+05:30",
+        "src": "https://cdn.shopify.com/s/files/1/0633/9339/9022/collections/Artboard_1_9.png?v=1772686909",
+        "alt": null
+      },
+      "products_count": 62
+    },
+    {
+      "id": 461375013102,
+      "title": "HOODIES FOR MEN & WOMEN | GENRAGE",
+      "handle": "hoodies-for-men-women",
+      "description": "",
+      "published_at": "2025-11-03T12:12:36+05:30",
+      "updated_at": "2026-10-17T16:52:00+05:30",
+      "image": null,
+      "products_count": 27
+    },
+    {
+      "id": 480367804654,
+      "title": "Hoodies for Men | Oversized & Relaxed Fit | GENRAGE",
+      "handle": "mens-hoodies-collection",
+      "description": null,
+      "published_at": "2026-09-05T10:55:04+05:30",
+      "updated_at": "2026-09-05T10:55:04+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 472372543726,
+      "title": "JACKET FOR MEN",
+      "handle": "jacket-for-men",
+      "description": "",
+      "published_at": "2026-04-30T17:12:23+05:30",
+      "updated_at": "2026-10-18T00:54:18+05:30",
+      "image": null,
+      "products_count": 37
+    },
+    {
+      "id": 452798611694,
+      "title": "JERSEY T SHIRT",
+      "handle": "jersey-t-shirt",
+      "description": "",
+      "published_at": "2025-05-14T12:51:16+05:30",
+      "updated_at": "2026-07-29T16:16:42+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 455337804014,
+      "title": "JORTS",
+      "handle": "jorts",
+      "description": "",
+      "published_at": "2025-07-16T18:31:31+05:30",
+      "updated_at": "2026-07-29T16:16:42+05:30",
+      "image": null,
+      "products_count": 1
+    },
+    {
+      "id": 480367640814,
+      "title": "Korean Streetwear Fashion | Korean Style Clothing | GENRAGE",
+      "handle": "korean-streetwear",
+      "description": null,
+      "published_at": "2026-09-05T10:54:30+05:30",
+      "updated_at": "2026-09-05T10:54:30+05:30",
+      "image": null,
+      "products_count": 0
+    },
+    {
+      "id": 457312764142,
+      "title": "LIMITED TIME OFFER | UPTO 60% OFF",
+      "handle": "limited-time-offer",
+      "description": "",
+      "published_at": "2025-08-18T12:25:26+05:30",
+      "updated_at": "2026-10-18T00:54:18+05:30",
+      "image": null,
+      "products_count": 199
+    },
+    {
+      "id": 470925836526,
+      "title": "Lower For Men | Best Track Pants For Men",
+      "handle": "lower-for-men",
+      "description": "",
+      "published_at": "2026-04-06T16:05:33+05:30",
+      "updated_at": "2026-10-18T00:16:01+05:30",
+      "image": {
+        "id": 1701775245550,
+        "created_at": "2026-04-06T15:22:10+05:30",
+        "src": "https://cdn.shopify.com/s/files/1/0633/9339/9022/collections/PANT_1_4f445a52-8330-4b71-9abc-eb57e74309ac.png?v=1775479864",
+        "alt": "Lower-For-Men"
+      },
+      "products_count": 91
+    },
+    {
+      "id": 454178308334,
+      "title": "NEW ARRIVALS - GENRAGE",
+      "handle": "new-arrivals-genrage",
+      "description": "",
+      "published_at": "2025-06-16T16:51:49+05:30",
+      "updated_at": "2026-10-18T00:54:18+05:30",
+      "image": null,
+      "products_count": 238
+    }
+  ]
+}

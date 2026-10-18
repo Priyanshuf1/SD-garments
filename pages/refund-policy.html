@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REFUND & CANCELLATION | GENRAGE Streetwear Clothing Brand</title>
+  <link rel="shortcut icon" href="//genrage.com/cdn/shop/files/GENRAGE.png?v=1736145362&width=96">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <style>
+    .page-hero {
+      padding: 3.5rem 0 2rem;
+      border-bottom: 1px solid var(--color-border);
+      text-align: center;
+      background: #090909;
+    }
+    .page-content-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+      font-size: 0.95rem;
+      color: #ccc;
+      line-height: 1.8;
+    }
+    .page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
+      color: #fff;
+      margin: 2rem 0 1rem;
+    }
+    .page-content-wrapper p {
+      margin-bottom: 1.25rem;
+    }
+    .page-content-wrapper ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .page-content-wrapper li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <aside class="announcement-bar">
+    <div class="announcement-slide">
+      <span>FREE DOORSTEP DELIVERY IN INDIA 🇮🇳 • LIMITED QUANTITIES</span>
+    </div>
+  </aside>
+
+  <header class="site-header">
+    <div class="site-container header-inner">
+      <div class="header-left">
+        <button class="mobile-menu-trigger" id="mobile-menu-trigger"><span></span><span></span><span></span></button>
+        <a href="/" class="brand-logo">
+          <img src="//genrage.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="GENRAGE" onerror="this.outerHTML='<span class=\'brand-logo-text\'>GENRAGE</span>'">
+        </a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="/collections.html?category=new-arrivals-genrage" class="nav-link">NEW ARRIVALS</a>
+        <a href="/collections.html?category=vest" class="nav-link">TANK TOP</a>
+        <a href="/collections.html?category=boxy-t-shirts" class="nav-link">TSHIRT</a>
+        <a href="/collections.html?category=hoodies-for-men" class="nav-link">HOODIES</a>
+        <a href="/collections.html?category=baggy-pants" class="nav-link">BOTTOMS</a>
+        <a href="/collections.html?category=clearance-sale" class="nav-link sale-link">CLEARANCE SALE</a>
+        <a href="/pages/contact.html" class="nav-link">TRACK ORDER</a>
+      </nav>
+      <div class="header-actions">
+        <button class="action-btn search-trigger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+        <button class="action-btn cart-trigger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg><span class="badge-count cart-badge-count" style="display: none;">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-hero">
+    <div class="site-container">
+      <h1 class="hero-title" style="font-size: 2.25rem;">REFUND & CANCELLATION</h1>
+    </div>
+  </div>
+
+  <main class="page-content-wrapper">
+
+  <h3>REFUND & CANCELLATION GUIDELINES</h3>
+  <p>Orders can be cancelled before they are dispatched by emailing care@genrage.com.</p>
+  <p>If an item arrives damaged or defective, notify us within 48 hours of delivery with photographic evidence, and we will issue an immediate replacement or full store credit / refund.</p>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-container">
+      <div class="footer-bottom" style="border: none;">
+        <span>PROUDLY HOMEGROWN IN INDIA • © 2026 GENRAGE. ALL RIGHTS RESERVED.</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="cart-drawer-panel" id="cart-drawer">
+    <div class="cart-header">
+      <h3>YOUR CART</h3>
+      <button class="close-btn" id="cart-close">✕</button>
+    </div>
+    <div class="free-shipping-bar">
+      <div class="shipping-msg" id="shipping-msg">Add Rs. 999 for FREE DELIVERY</div>
+      <div class="progress-track"><div class="progress-fill" id="shipping-progress"></div></div>
+    </div>
+    <div class="cart-items-list" id="cart-items-list"></div>
+    <div class="cart-footer">
+      <div class="cart-subtotal"><span>SUBTOTAL</span><span id="cart-subtotal-price">Rs. 0</span></div>
+      <button class="checkout-btn" onclick="alert('Proceeding to Checkout!')">CHECKOUT</button>
+    </div>
+  </aside>
+
+  <div class="modal-overlay" id="search-modal">
+    <div class="modal-content search-modal-content">
+      <button class="modal-close" id="search-modal-close">✕</button>
+      <div class="search-input-wrap">
+        <input type="text" id="search-modal-input" placeholder="Search 240+ Streetwear Products...">
+      </div>
+      <div class="search-results-list" id="search-results"></div>
+    </div>
+  </div>
+
+  <nav class="mobile-drawer" id="mobile-drawer">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <span class="brand-logo-text" style="font-size: 1.4rem;">GENRAGE</span>
+      <button class="close-btn" id="mobile-drawer-close">✕</button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="/collections.html?category=new-arrivals-genrage">NEW ARRIVALS</a></li>
+      <li><a href="/collections.html?category=vest">TANK TOP</a></li>
+      <li><a href="/collections.html?category=boxy-t-shirts">TSHIRT</a></li>
+      <li><a href="/collections.html?category=hoodies-for-men">HOODIES</a></li>
+      <li><a href="/collections.html?category=baggy-pants">BOTTOMS</a></li>
+      <li><a href="/collections.html?category=clearance-sale">CLEARANCE SALE</a></li>
+      <li><a href="/pages/contact.html">TRACK ORDER</a></li>
+    </ul>
+  </nav>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

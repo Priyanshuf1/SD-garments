@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | GENRAGE Streetwear</title>
+  <link rel="shortcut icon" href="//genrage.com/cdn/shop/files/GENRAGE.png?v=1736145362&width=96">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <style>
+    body {
+      background-color: #ededed !important;
+      color: #111111 !important;
+    }
+    .announcement-bar {
+      background: #000000 !important;
+      border-bottom: 1px solid #1a1a1a !important;
+      color: #ffffff !important;
+    }
+    .site-header {
+      background: #000000 !important;
+      border-bottom: 1px solid #1a1a1a !important;
+    }
+    .desktop-nav .nav-link {
+      color: #ffffff !important;
+    }
+    .desktop-nav .nav-link:hover {
+      color: #cccccc !important;
+    }
+    .site-footer {
+      background: #000000 !important;
+      border-top: 1px solid #1a1a1a !important;
+      color: #ffffff !important;
+    }
+    .pdp-container {
+      padding: 2.5rem 0 5rem;
+    }
+    .pdp-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    @media (min-width: 992px) {
+      .pdp-grid {
+        grid-template-columns: 1.15fr 1fr;
+        gap: 4rem;
+      }
+    }
+    .pdp-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .pdp-main-img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      border-radius: 4px;
+      background: #e2e2e2;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    }
+    .pdp-thumbs {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      scrollbar-width: thin;
+    }
+    .pdp-thumb-img {
+      width: 75px;
+      height: 95px;
+      object-fit: cover;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1.5px solid rgba(0,0,0,0.18);
+      background: #e0e0e0;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .pdp-thumb-img:hover {
+      border-color: #555;
+    }
+    .pdp-thumb-img.active {
+      border-color: #000000 !important;
+      box-shadow: 0 0 0 1.5px #000000;
+    }
+    .pdp-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .pdp-badge {
+      display: inline-block;
+      background: #e50914;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 2px;
+      margin-bottom: 0.75rem;
+      align-self: flex-start;
+      letter-spacing: 0.05em;
+    }
+    .pdp-title {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      margin-bottom: 0.5rem;
+      color: #111111;
+      font-family: var(--font-heading);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .product-rating {
+      color: #ff9500;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .product-rating .count {
+      color: #666666;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .pdp-pricing {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .pdp-price {
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: #111111;
+      font-family: var(--font-heading);
+    }
+    .pdp-compare {
+      font-size: 1.2rem;
+      color: #888888;
+      text-decoration: line-through;
+      font-weight: 500;
+    }
+    .size-option-pill {
+      background: #ffffff;
+      border: 1.5px solid #cccccc;
+      color: #111111;
+      padding: 0.65rem 1.35rem;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .size-option-pill:hover, .size-option-pill.active {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border-color: #000000 !important;
+    }
+    .qty-control {
+      background: #ffffff;
+      border: 1.5px solid #cccccc;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .qty-btn {
+      color: #111111;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .qty-val {
+      color: #111111;
+      font-weight: 800;
+    }
+    #pdp-add-cart-btn {
+      background: #000000;
+      color: #ffffff;
+      border: 1.5px solid #000000;
+      border-radius: 2px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    #pdp-add-cart-btn:hover {
+      background: #222222;
+    }
+    #pdp-wishlist-btn {
+      background: #ffffff !important;
+      border: 1.5px solid #cccccc !important;
+      color: #111111 !important;
+      border-radius: 2px !important;
+    }
+    #pdp-wishlist-btn:hover {
+      border-color: #000000 !important;
+    }
+    #pdp-buy-now-btn {
+      background: #000000;
+      color: #ffffff;
+      border: 1.5px solid #000000;
+      border-radius: 2px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .accordion-item {
+      border-top: 1px solid rgba(0,0,0,0.15);
+      padding: 1.25rem 0;
+    }
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      color: #111111;
+    }
+    .accordion-body {
+      padding-top: 0.85rem;
+      font-size: 0.875rem;
+      color: #333333;
+      line-height: 1.65;
+      display: none;
+    }
+    .accordion-item.open .accordion-body {
+      display: block;
+    }
+    .section-title {
+      color: #111111;
+      font-family: var(--font-heading);
+      font-weight: 900;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar -->
+  <aside class="announcement-bar">
+    <div class="announcement-slide">
+      <span>FREE DOORSTEP DELIVERY IN INDIA 🇮🇳 • LIMITED QUANTITIES</span>
+    </div>
+  </aside>
+
+  <!-- Sticky Header -->
+  <header class="site-header">
+    <div class="site-container header-inner">
+      <div class="header-left">
+        <button class="mobile-menu-trigger" id="mobile-menu-trigger" aria-label="Open Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <a href="/" class="brand-logo" aria-label="GENRAGE Home">
+          <img src="//genrage.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="GENRAGE" onerror="this.outerHTML='<span class=\'brand-logo-text\'>GENRAGE</span>'">
+        </a>
+      </div>
+
+      <nav class="desktop-nav">
+        <a href="/collections.html?category=new-arrivals-genrage" class="nav-link">NEW ARRIVALS</a>
+        <a href="/collections.html?category=vest" class="nav-link">TANK TOP</a>
+        <a href="/collections.html?category=boxy-t-shirts" class="nav-link">TSHIRT</a>
+        <a href="/collections.html?category=hoodies-for-men" class="nav-link">HOODIES</a>
+        <a href="/collections.html?category=baggy-pants" class="nav-link">BOTTOMS</a>
+        <a href="/collections.html?category=clearance-sale" class="nav-link sale-link">CLEARANCE SALE</a>
+        <a href="/pages/contact.html" class="nav-link">TRACK ORDER</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Account Icon -->
+        <a href="/account" class="header-account-link action-btn" data-account-trigger title="Account" style="color:#fff; text-decoration:none; display:flex; align-items:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke-miterlimit="10"/>
+          </svg>
+        </a>
+        <button class="action-btn search-trigger" aria-label="Search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <button class="action-btn" id="wishlist-header-btn" onclick="window.location.href='/collections.html?view=wishlist'" aria-label="Wishlist">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span class="badge-count" id="wishlist-count" style="display: none;">0</span>
+        </button>
+        <button class="action-btn cart-trigger" aria-label="Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span class="badge-count cart-badge-count" style="display: none;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Detail Section -->
+  <main class="site-container pdp-container">
+    <div style="font-size: 0.75rem; color: #777777; text-transform: uppercase; margin-bottom: 2rem; font-weight: 600;">
+      <a href="/" style="color: #666666; text-decoration: none;">HOME</a> / <a href="/collections/shop" style="color: #666666; text-decoration: none;">STREETWEAR</a> / <span id="breadcrumb-title" style="color: #111111; font-weight: 800;">PRODUCT</span>
+    </div>
+
+    <div class="pdp-grid">
+      <!-- Media Gallery -->
+      <div class="pdp-gallery">
+        <img id="main-product-img" class="pdp-main-img" src="" alt="">
+        <div class="pdp-thumbs" id="product-thumbnails"></div>
+      </div>
+
+      <!-- Info & Buy Panel -->
+      <div class="pdp-details">
+        <span class="pdp-badge" id="product-save-badge">SALE</span>
+        <h1 class="pdp-title" id="product-title">Loading Product...</h1>
+        <div class="product-rating" style="margin-bottom: 1.25rem;">
+          ★★★★★ <span class="count" id="product-reviews-count">(4.8 / 5.0 • 128 Reviews)</span>
+        </div>
+
+        <div class="pdp-pricing">
+          <span class="pdp-price" id="product-price">Rs. 0</span>
+          <span class="pdp-compare" id="product-compare-price">Rs. 0</span>
+        </div>
+
+        <!-- Stock Indicator -->
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.8rem; font-weight: 700; color: #ff9500;">
+          <span>🔥</span> <span>Selling Fast — Limited quantities remaining</span>
+        </div>
+
+        <!-- Size Selector -->
+        <div style="margin-bottom: 1.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">SELECT SIZE:</label>
+            <button onclick="document.getElementById('size-guide-modal').classList.add('active')" style="color: #444444; font-size: 0.75rem; text-decoration: underline; text-transform: uppercase; font-weight: 700; background: none; border: none; cursor: pointer;">Size Guide</button>
+          </div>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;" id="size-options-container">
+            <!-- Injected -->
+          </div>
+        </div>
+
+        <!-- Quantity, Add to Cart & Wishlist -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+          <div class="qty-control" style="height: 48px;">
+            <button class="qty-btn" id="pdp-qty-minus" style="padding: 0 1rem; font-size: 1.1rem;">−</button>
+            <span class="qty-val" id="pdp-qty-val" style="padding: 0 1rem; font-size: 0.95rem;">1</span>
+            <button class="qty-btn" id="pdp-qty-plus" style="padding: 0 1rem; font-size: 1.1rem;">+</button>
+          </div>
+          <button class="btn-primary" id="pdp-add-cart-btn" style="flex-grow: 1; height: 48px;">
+            ADD TO CART
+          </button>
+          <button type="button" id="pdp-wishlist-btn" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 1.5px solid #cccccc; border-radius: 4px; color: #111111; cursor: pointer; transition: all 0.2s;" aria-label="Save to Wishlist" title="Save to Wishlist">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="heart-icon">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Express Checkout -->
+        <button class="gokwik-checkout-btn" style="height: 48px; margin-bottom: 2rem;" id="pdp-buy-now-btn">
+          ⚡ BUY IT NOW WITH 1-CLICK UPI
+        </button>
+
+        <!-- Accordions -->
+        <div class="accordion-item open">
+          <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+            <span>DESCRIPTION & SPECIFICATIONS</span>
+            <span>+</span>
+          </div>
+          <div class="accordion-body" id="pdp-description">
+            Crafted for endurance and unrestricted movement. Premium 380 GSM combed cotton with reinforced seams and signature boxy silhouette.
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+            <span>FABRIC & CARE INSTRUCTIONS</span>
+            <span>+</span>
+          </div>
+          <div class="accordion-body">
+            • 100% Premium Heavyweight Combed Cotton<br>
+            • Machine wash cold with similar colors<br>
+            • Wash inside out to preserve graphics<br>
+            • Do not tumble dry or iron directly over prints
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+            <span>SHIPPING & EASY 7-DAY RETURNS</span>
+            <span>+</span>
+          </div>
+          <div class="accordion-body">
+            • Free Pan-India Doorstep Delivery on prepaid orders.<br>
+            • Dispatched within 24–48 hours from our Mumbai studio.<br>
+            • 7-day hassle-free size exchange and return portal.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    <section style="margin-top: 6rem;">
+      <h2 class="section-title" style="margin-bottom: 2rem;">YOU MAY ALSO LIKE</h2>
+      <div class="product-grid" id="related-grid"></div>
+    </section>
+  </main>
+
+  <!-- Size Guide Modal -->
+  <div class="modal-overlay" id="size-guide-modal">
+    <div class="modal-content" style="max-width: 600px; padding: 2rem;">
+      <button class="modal-close" onclick="document.getElementById('size-guide-modal').classList.remove('active')">✕</button>
+      <h3 style="font-size: 1.25rem; margin-bottom: 1rem; text-transform: uppercase;">SIZE GUIDE (INCHES)</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #ccc;">
+        <thead>
+          <tr style="border-bottom: 1px solid #444; color: #fff;">
+            <th style="padding: 0.75rem 0.5rem; text-align: left;">SIZE</th>
+            <th style="padding: 0.75rem 0.5rem; text-align: left;">WAIST / CHEST</th>
+            <th style="padding: 0.75rem 0.5rem; text-align: left;">LENGTH</th>
+            <th style="padding: 0.75rem 0.5rem; text-align: left;">INSEAM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #222;">
+            <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #fff;">S</td>
+            <td style="padding: 0.75rem 0.5rem;">28 - 30"</td>
+            <td style="padding: 0.75rem 0.5rem;">41"</td>
+            <td style="padding: 0.75rem 0.5rem;">30"</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #222;">
+            <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #fff;">M</td>
+            <td style="padding: 0.75rem 0.5rem;">31 - 33"</td>
+            <td style="padding: 0.75rem 0.5rem;">42"</td>
+            <td style="padding: 0.75rem 0.5rem;">30.5"</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #222;">
+            <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #fff;">L</td>
+            <td style="padding: 0.75rem 0.5rem;">34 - 36"</td>
+            <td style="padding: 0.75rem 0.5rem;">43"</td>
+            <td style="padding: 0.75rem 0.5rem;">31"</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #fff;">XL</td>
+            <td style="padding: 0.75rem 0.5rem;">37 - 40"</td>
+            <td style="padding: 0.75rem 0.5rem;">44"</td>
+            <td style="padding: 0.75rem 0.5rem;">31.5"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="site-container">
+      <div class="footer-bottom" style="border: none;">
+        <span>PROUDLY HOMEGROWN IN INDIA • © 2026 GENRAGE.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Drawer & Modals -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="cart-drawer-panel" id="cart-drawer">
+    <div class="cart-header">
+      <h3>YOUR CART</h3>
+      <button class="close-btn" id="cart-close">✕</button>
+    </div>
+    <div class="free-shipping-bar">
+      <div class="shipping-msg" id="shipping-msg">Add Rs. 999 for FREE DELIVERY</div>
+      <div class="progress-track"><div class="progress-fill" id="shipping-progress"></div></div>
+    </div>
+    <div class="cart-items-list" id="cart-items-list"></div>
+    <div class="cart-footer">
+      <div class="cart-subtotal"><span>SUBTOTAL</span><span id="cart-subtotal-price">Rs. 0</span></div>
+      <button class="checkout-btn" onclick="window.location.href='/checkout'">CHECKOUT</button>
+    </div>
+  </aside>
+
+  <!-- Search Modal -->
+  <div class="modal-overlay" id="search-modal">
+    <div class="modal-content search-modal-content">
+      <button class="modal-close" id="search-modal-close">✕</button>
+      <div class="search-input-wrap">
+        <svg class="search-icon-inside" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-modal-input" placeholder="Search 240+ Streetwear Products...">
+      </div>
+      <div class="search-results-list" id="search-results"></div>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <nav class="mobile-drawer" id="mobile-drawer">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <span class="brand-logo-text" style="font-size: 1.4rem;">GENRAGE</span>
+      <button class="close-btn" id="mobile-drawer-close">✕</button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="/collections.html?category=new-arrivals-genrage">NEW ARRIVALS</a></li>
+      <li><a href="/collections.html?category=vest">TANK TOP</a></li>
+      <li><a href="/collections.html?category=boxy-t-shirts">TSHIRT</a></li>
+      <li><a href="/collections.html?category=hoodies-for-men">HOODIES</a></li>
+      <li><a href="/collections.html?category=baggy-pants">BOTTOMS</a></li>
+      <li><a href="/collections.html?category=clearance-sale" style="color: #ff4d4f;">CLEARANCE SALE</a></li>
+      <li><a href="/pages/contact.html">TRACK ORDER</a></li>
+    </ul>
+  </nav>
+
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/wishlist.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Wait for data
+      let attempts = 0;
+      while ((!GenrageApp.products || GenrageApp.products.length === 0) && attempts < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        attempts++;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const handle = params.get('handle');
+      const id = params.get('id');
+
+      let currentProduct = null;
+      if (handle) {
+        currentProduct = GenrageApp.products.find(p => p.handle === handle);
+      } else if (id) {
+        currentProduct = GenrageApp.products.find(p => p.id === parseInt(id));
+      }
+
+      if (!currentProduct && GenrageApp.products.length > 0) {
+        currentProduct = GenrageApp.products[0];
+      }
+
+      if (!currentProduct) return;
+
+      // Populate UI
+      document.title = `${currentProduct.title} | GENRAGE`;
+      document.getElementById('breadcrumb-title').textContent = currentProduct.title;
+      document.getElementById('product-title').textContent = currentProduct.title;
+
+      const variant = currentProduct.variants[0] || {};
+      const price = parseFloat(variant.price || 1499);
+      const comparePrice = variant.compare_at_price ? parseFloat(variant.compare_at_price) : (price * 1.5).toFixed(0);
+      const discount = Math.round(((comparePrice - price) / comparePrice) * 100);
+
+      document.getElementById('product-price').textContent = `Rs. ${price.toLocaleString('en-IN')}`;
+      if (comparePrice > price) {
+        document.getElementById('product-compare-price').textContent = `Rs. ${parseFloat(comparePrice).toLocaleString('en-IN')}`;
+        document.getElementById('product-save-badge').textContent = `SAVE ${discount}%`;
+      } else {
+        document.getElementById('product-compare-price').style.display = 'none';
+        document.getElementById('product-save-badge').style.display = 'none';
+      }
+
+      if (currentProduct.body_html) {
+        document.getElementById('pdp-description').innerHTML = currentProduct.body_html;
+      }
+
+      // Images
+      const images = currentProduct.images || [];
+      const mainImg = document.getElementById('main-product-img');
+      const thumbsContainer = document.getElementById('product-thumbnails');
+
+      if (images.length > 0) {
+        mainImg.src = images[0].src;
+        thumbsContainer.innerHTML = images.map((img, i) => `
+          <img class="pdp-thumb-img ${i === 0 ? 'active' : ''}" src="${img.src}" onclick="
+            document.getElementById('main-product-img').src='${img.src}';
+            document.querySelectorAll('.pdp-thumb-img').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+          ">
+        `).join('');
+      }
+
+      // Sizes
+      const sizes = currentProduct.variants && currentProduct.variants.length > 1
+        ? currentProduct.variants
+        : [{title: 'S'}, {title: 'M'}, {title: 'L'}, {title: 'XL'}, {title: 'XXL'}];
+
+      let selectedSize = sizes[0].title;
+      const sizeContainer = document.getElementById('size-options-container');
+      sizeContainer.innerHTML = sizes.map((s, i) => `
+        <button class="size-option-pill ${i === 0 ? 'active' : ''}" onclick="
+          document.querySelectorAll('.size-option-pill').forEach(p => p.classList.remove('active'));
+          this.classList.add('active');
+          selectedSize = '${s.title}';
+        ">${s.title}</button>
+      `).join('');
+
+      // Quantity
+      let qty = 1;
+      const qtyVal = document.getElementById('pdp-qty-val');
+      document.getElementById('pdp-qty-minus').onclick = () => {
+        if (qty > 1) { qty--; qtyVal.textContent = qty; }
+      };
+      document.getElementById('pdp-qty-plus').onclick = () => {
+        qty++; qtyVal.textContent = qty;
+      };
+
+      // Add to Cart
+      document.getElementById('pdp-add-cart-btn').onclick = () => {
+        GenrageApp.addToCart(currentProduct, { title: selectedSize, price: price }, qty);
+      };
+
+      // PDP Wishlist Button
+      const pdpWishlistBtn = document.getElementById('pdp-wishlist-btn');
+      if (pdpWishlistBtn && window.WishlistEngine) {
+        const updatePdpHeart = () => {
+          const isWish = WishlistEngine.has(currentProduct.handle);
+          pdpWishlistBtn.innerHTML = WishlistEngine.getHeartSvg(isWish);
+          pdpWishlistBtn.style.color = isWish ? '#e50914' : '#fff';
+        };
+        updatePdpHeart();
+        pdpWishlistBtn.onclick = (e) => {
+          const mainImgSrc = images[0] ? images[0].src : '';
+          WishlistEngine.toggle(currentProduct.handle, {
+            title: currentProduct.title,
+            price: price,
+            image: mainImgSrc
+          }, e);
+          updatePdpHeart();
+        };
+      }
+
+      // PDP Buy Now Button (1-Click Express Checkout)
+      const pdpBuyNowBtn = document.getElementById('pdp-buy-now-btn');
+      if (pdpBuyNowBtn) {
+        pdpBuyNowBtn.onclick = () => {
+          GenrageApp.addToCart(currentProduct, { title: selectedSize, price: price }, qty);
+          window.location.href = '/checkout';
+        };
+      }
+
+      // Related products
+      const related = GenrageApp.products.filter(p => p.id !== currentProduct.id).slice(0, 4);
+      document.getElementById('related-grid').innerHTML = related.map(p => GenrageApp.createProductCardHtml(p)).join('');
+      GenrageApp.bindCardEvents();
+    });
+  </script>
+</body>
+</html>

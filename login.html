@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In / Register | GENRAGE Club</title>
+  <link rel="shortcut icon" href="//genrage.com/cdn/shop/files/GENRAGE.png?v=1736145362&width=96">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <style>
+    body {
+      background: #f7f7f7;
+      color: #111;
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .login-header {
+      padding: 1.5rem 2rem;
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      text-align: center;
+    }
+    .auth-container {
+      max-width: 440px;
+      width: 100%;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      box-sizing: border-box;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #444;
+    }
+    .form-control {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 0.9rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-control:focus {
+      border-color: #000;
+    }
+    .btn-submit {
+      width: 100%;
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      font-family: 'Instrument Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .tabs-bar {
+      display: flex;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 1.5rem;
+    }
+    .tab-item {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 10px;
+      font-family: 'Instrument Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: #888;
+    }
+    .tab-item.active {
+      color: #000;
+      border-bottom: 2px solid #000;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="login-header">
+    <a href="/"><img src="//genrage.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="GENRAGE" style="height:28px; filter: brightness(0);"></a>
+  </header>
+
+  <main style="flex:1;">
+    <div class="auth-container">
+      <div style="text-align:center; margin-bottom:1.5rem;">
+        <h1 style="font-family:'Instrument Sans', sans-serif; font-size:1.6rem; font-weight:800; text-transform:uppercase; margin:0 0 4px;">GENRAGE CLUB</h1>
+        <p style="color:#666; font-size:0.85rem; margin:0;">Sign in to track orders and save your wishlist</p>
+      </div>
+
+      <div class="tabs-bar">
+        <button class="tab-item active" id="tab-login" onclick="setTab('login')">Sign In</button>
+        <button class="tab-item" id="tab-signup" onclick="setTab('signup')">Create Account</button>
+      </div>
+
+      <div id="error-alert" style="display:none; background:#fee; color:#c00; padding:10px 12px; border-radius:3px; font-size:0.8rem; margin-bottom:1rem; font-weight:700;"></div>
+
+      <!-- Login Form -->
+      <form id="form-login" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="kabir.singhania@gmail.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          <div style="font-size:0.75rem; color:#888; margin-top:4px;">(Default: password123)</div>
+        </div>
+        <button type="submit" class="btn-submit" id="btn-login">SIGN IN</button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="form-signup" style="display:none;" onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="signup-name" class="form-control" placeholder="Kabir Singhania" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="signup-email" class="form-control" placeholder="kabir@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="signup-phone" class="form-control" placeholder="+91 98200 00000" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signup-password" class="form-control" placeholder="Create a password" required>
+        </div>
+        <button type="submit" class="btn-submit" id="btn-signup">CREATE ACCOUNT</button>
+      </form>
+
+      <div style="text-align:center; margin-top:1.5rem;">
+        <a href="/collections/shop" style="color:#666; font-size:0.8rem; text-decoration:none;">← Return to Store</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    if (AuthEngine.isLoggedIn()) {
+      window.location.href = '/account';
+    }
+
+    function setTab(tab) {
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+      document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+      document.getElementById('error-alert').style.display = 'none';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      const btn = document.getElementById('btn-login');
+      btn.textContent = 'SIGNING IN...';
+      btn.disabled = true;
+
+      const res = await AuthEngine.login(email, pass);
+      btn.textContent = 'SIGN IN';
+      btn.disabled = false;
+
+      if (res.success) {
+        window.location.href = '/account';
+      } else {
+        const err = document.getElementById('error-alert');
+        err.textContent = res.message || 'Login failed';
+        err.style.display = 'block';
+      }
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const phone = document.getElementById('signup-phone').value;
+      const pass = document.getElementById('signup-password').value;
+      const btn = document.getElementById('btn-signup');
+      btn.textContent = 'CREATING...';
+      btn.disabled = true;
+
+      const res = await AuthEngine.signup({ name, email, phone, password: pass });
+      btn.textContent = 'CREATE ACCOUNT';
+      btn.disabled = false;
+
+      if (res.success) {
+        window.location.href = '/account';
+      } else {
+        const err = document.getElementById('error-alert');
+        err.textContent = res.message || 'Signup failed';
+        err.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

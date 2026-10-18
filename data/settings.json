@@ -1,0 +1,25 @@
+{
+  "storeName": "GENRAGE",
+  "brandTagline": "STREETWEAR INDIA // DEFINE YOUR IDENTITY",
+  "currency": "INR",
+  "currencySymbol": "₹",
+  "freeShippingThreshold": 999,
+  "supportEmail": "support@genrage.com",
+  "supportPhone": "+91 98765 43210",
+  "supportWhatsApp": "+91 98765 43210",
+  "instagramHandle": "@genrageclothing",
+  "announcements": [
+    "FREE DOORSTEP DELIVERY IN INDIA 🇮🇳",
+    "EXTRA 10% OFF ON PREPAID ORDERS | CODE: RAGE10",
+    "LOVED BY 300,000+ CUSTOMERS ACROSS INDIA"
+  ],
+  "flashSale": {
+    "enabled": true,
+    "title": "EXCLUSIVE DROP SALE ENDS IN",
+    "targetDate": "2026-10-31T23:59:59"
+  },
+  "seo": {
+    "metaTitle": "GENRAGE | Streetwear Clothing Brand India",
+    "metaDescription": "Shop high quality oversized tshirts, straight fit baggy pants, hoodies, and jackets proudly crafted in India."
+  }
+}

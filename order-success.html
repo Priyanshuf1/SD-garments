@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed | GENRAGE Official Store</title>
+  <link rel="shortcut icon" href="//genrage.com/cdn/shop/files/GENRAGE.png?v=1736145362&width=96">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <style>
+    body {
+      background: #f7f7f7;
+      color: #111;
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .header-bar {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+    .success-card {
+      max-width: 580px;
+      margin: 3.5rem auto;
+      padding: 2.5rem;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .check-circle {
+      width: 64px;
+      height: 64px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-bar">
+    <a href="/"><img src="//genrage.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="GENRAGE" style="height:26px; filter: brightness(0);"></a>
+  </header>
+
+  <main style="padding: 0 1.5rem;">
+    <div class="success-card">
+      <div class="check-circle">✓</div>
+      <h1 style="font-family:'Instrument Sans', sans-serif; font-size:1.75rem; font-weight:800; text-transform:uppercase; margin:0 0 8px;">Order Confirmed!</h1>
+      <p style="color:#666; font-size:0.95rem; margin:0 0 1.5rem;">Thank you for shopping with GENRAGE. We're packing your drop.</p>
+
+      <div style="background:#f9f9f9; border:1px solid #eee; border-radius:4px; padding:1.25rem; margin-bottom:1.75rem; text-align:left;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="color:#666; font-size:0.85rem;">Order Number</span>
+          <strong id="display-order-id" style="font-family:'Instrument Sans', sans-serif; font-size:1rem;">GR-XXXX</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="color:#666; font-size:0.85rem;">Carrier & Dispatch</span>
+          <strong style="color:#2e7d32; font-size:0.85rem;">Delhivery Express Air Delivery</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:#666; font-size:0.85rem;">Estimated Arrival</span>
+          <span style="font-size:0.85rem; font-weight:700;">2 - 4 Business Days</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <a href="/account" style="flex:1; background:#000; color:#fff; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">VIEW MY ACCOUNT</a>
+        <a href="/collections/shop" style="flex:1; background:#f0f0f0; color:#111; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">CONTINUE SHOPPING</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('orderId') || 'GR-1001';
+    document.getElementById('display-order-id').textContent = orderId;
+  </script>
+</body>
+</html>

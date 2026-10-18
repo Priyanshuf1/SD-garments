@@ -1,0 +1,67 @@
+[
+  {
+    "id": "dsc_1",
+    "code": "RAGE10",
+    "type": "percentage",
+    "value": 10,
+    "minOrderValue": 999,
+    "maxDiscount": 500,
+    "usageCount": 1420,
+    "usageLimit": 5000,
+    "isActive": true,
+    "description": "10% off on all streetwear orders above ₹999",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "id": "dsc_2",
+    "code": "FIRSTBUY",
+    "type": "percentage",
+    "value": 15,
+    "minOrderValue": 1499,
+    "maxDiscount": 750,
+    "usageCount": 890,
+    "usageLimit": 2500,
+    "isActive": true,
+    "description": "Welcome offer: 15% off first streetwear purchase",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "id": "dsc_3",
+    "code": "FREESHIP",
+    "type": "shipping",
+    "value": 100,
+    "minOrderValue": 0,
+    "maxDiscount": 150,
+    "usageCount": 2310,
+    "usageLimit": null,
+    "isActive": true,
+    "description": "Complimentary express doorstep delivery",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "id": "dsc_4",
+    "code": "BAGGY500",
+    "type": "fixed",
+    "value": 500,
+    "minOrderValue": 2999,
+    "maxDiscount": 500,
+    "usageCount": 312,
+    "usageLimit": 1000,
+    "isActive": true,
+    "description": "Flat ₹500 off on baggy pants and heavy outerwear bundles",
+    "createdAt": "2026-03-15T00:00:00Z"
+  },
+  {
+    "id": "dsc_5",
+    "code": "FESTIVE25",
+    "type": "percentage",
+    "value": 25,
+    "minOrderValue": 3999,
+    "maxDiscount": 1200,
+    "usageCount": 504,
+    "usageLimit": 500,
+    "isActive": false,
+    "description": "Festival Drop Special 25% Off (Expired)",
+    "createdAt": "2026-04-01T00:00:00Z"
+  }
+]
