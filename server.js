@@ -245,7 +245,7 @@ function formatSupabaseProductToLocal(s) {
     handle: s.handle,
     title: s.title,
     body_html: s.description || '',
-    vendor: s.vendor || 'GENRAGE',
+    vendor: s.vendor || 'ALLY RICH',
     category: s.category || 'T-Shirts & Boxy Tees',
     product_type: s.product_type || s.category || 'Streetwear',
     homepage_section: s.homepage_section || 'none',

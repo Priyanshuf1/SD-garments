@@ -218,7 +218,7 @@ const AuthEngine = {
         <button type="button" onclick="AuthEngine.closeAuthModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#777; line-height:1;">✕</button>
         
         <div style="text-align:center; margin-bottom:1.25rem;">
-          <h2 style="font-size:1.35rem; font-weight:800; letter-spacing:-0.02em; text-transform:uppercase; margin:0 0 4px;">GENRAGE CLUB</h2>
+          <h2 style="font-family:'Shippori Mincho B1', serif; font-size:1.35rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; margin:0 0 4px;">ALLY RICH CLUB</h2>
           <p style="color:#666; font-size:0.8rem; margin:0;">100% Free Member Access • Supabase Secured</p>
         </div>
 

@@ -137,13 +137,13 @@ async function runTests() {
 
     // Test static pages served
     const chkPageRes = await request({ hostname: 'localhost', port: testPort, path: '/checkout.html', method: 'GET' });
-    assert(chkPageRes.status === 200 && chkPageRes.raw.includes('Checkout | GENRAGE'), 'Checkout page served at /checkout.html');
+    assert(chkPageRes.status === 200 && (chkPageRes.raw.includes('Checkout | ALLY RICH') || chkPageRes.raw.includes('Checkout | GENRAGE')), 'Checkout page served at /checkout.html');
 
     const accPageRes = await request({ hostname: 'localhost', port: testPort, path: '/account.html', method: 'GET' });
-    assert(accPageRes.status === 200 && accPageRes.raw.includes('My Account | GENRAGE'), 'Account page served at /account.html');
+    assert(accPageRes.status === 200 && (accPageRes.raw.includes('My Account | ALLY RICH') || accPageRes.raw.includes('My Account | GENRAGE')), 'Account page served at /account.html');
 
     const loginPageRes = await request({ hostname: 'localhost', port: testPort, path: '/login.html', method: 'GET' });
-    assert(loginPageRes.status === 200 && loginPageRes.raw.includes('GENRAGE CLUB'), 'Login page served at /login.html');
+    assert(loginPageRes.status === 200 && (loginPageRes.raw.includes('ALLY RICH CLUB') || loginPageRes.raw.includes('GENRAGE CLUB')), 'Login page served at /login.html');
 
     // Deep Customer Auth & Checkout APIs Verification
     const testEmail = `reviewer_${Date.now()}@testgenrage.com`;

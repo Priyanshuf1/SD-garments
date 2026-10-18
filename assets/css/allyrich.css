@@ -3,6 +3,23 @@
    Extracted from RitikPal26/allyrich-loader
    ========================================================================== */
 
+/* Local Web Fonts from RitikPal26/allyrich-loader */
+@font-face {
+  font-family: 'Shippori Mincho B1';
+  src: url('/assets/shippori-mincho-b1-500.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow Semi Condensed';
+  src: url('/assets/barlow-semi-condensed-600.woff2') format('woff2');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Brand Variables & System */
 :root {
   --color-obsidian: #111112;
@@ -18,6 +35,86 @@
   --font-serif: 'Shippori Mincho B1', 'Times New Roman', serif;
   --font-sans: 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif;
   --font-barlow: 'Barlow', Arial, sans-serif;
+}
+
+/* ==========================================================================
+   AllyRich Brand Identity & Fancy Typography System
+   ========================================================================== */
+.allyrich-header-brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+  color: #ffffff !important;
+  vertical-align: middle;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.allyrich-header-brand:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.allyrich-header-logo-img {
+  height: 32px !important;
+  width: auto !important;
+  max-height: 36px !important;
+  object-fit: contain !important;
+  display: inline-block !important;
+}
+
+.allyrich-header-brand-name {
+  font-family: var(--font-serif) !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.26em !important;
+  text-transform: uppercase !important;
+  color: #ffffff !important;
+  margin-right: -0.26em !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+}
+
+/* Light / Inverted Theme Header Brand (Checkout, Login, Account, Order Confirmed) */
+.allyrich-header-brand--dark {
+  color: #111112 !important;
+}
+
+.allyrich-header-brand--dark .allyrich-header-brand-name {
+  color: #111112 !important;
+}
+
+.allyrich-header-brand--dark .allyrich-header-logo-img {
+  filter: brightness(0) !important;
+}
+
+/* Fancy Typography Utility Classes */
+.allyrich-fancy-title {
+  font-family: var(--font-serif) !important;
+  letter-spacing: 0.22em !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+}
+
+.allyrich-fancy-sub {
+  font-family: var(--font-sans) !important;
+  letter-spacing: 0.28em !important;
+  text-transform: uppercase !important;
+}
+
+@media (max-width: 699px) {
+  .allyrich-header-brand {
+    gap: 8px !important;
+  }
+  .allyrich-header-logo-img {
+    height: 26px !important;
+  }
+  .allyrich-header-brand-name {
+    font-size: 16px !important;
+    letter-spacing: 0.2em !important;
+    margin-right: -0.2em !important;
+  }
 }
 
 /* --------------------------------------------------------------------------
