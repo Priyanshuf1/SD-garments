@@ -1,5 +1,25 @@
 [
   {
+    "id": "CUST-1792399072120",
+    "name": "otp verify 1792399070652",
+    "email": "otp_verify_1792399070652@example.com",
+    "phone": "",
+    "city": "",
+    "state": "",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
     "id": "CUST-1792369819695",
     "name": "Kabir Oberoi",
     "email": "testuser_1792369817836@example.com",

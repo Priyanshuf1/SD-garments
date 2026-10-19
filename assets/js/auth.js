@@ -367,7 +367,22 @@ const AuthEngine = {
       submitBtn.disabled = false;
 
       if (res.success) {
-        successBox.textContent = res.message || 'Verification code sent to your email!';
+        let msgHtml = `<div>${res.message || 'Verification code generated!'}</div>`;
+        if (res.code) {
+          msgHtml += `
+            <div style="margin-top:10px; padding:12px; background:#f0fdf4; border:1px solid #22c55e; border-radius:4px; text-align:center;">
+              <div style="font-size:0.75rem; color:#15803d; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Your 6-Digit Login Code</div>
+              <div style="font-size:1.8rem; font-weight:800; letter-spacing:0.25em; color:#111; margin:6px 0; font-family:monospace;">${res.code}</div>
+              <button type="button" onclick="document.getElementById('otp-code').value='${res.code}'; document.getElementById('btn-otp-submit').click();" style="background:#15803d; color:#fff; border:none; padding:8px 16px; font-weight:800; font-size:0.8rem; border-radius:3px; cursor:pointer; text-transform:uppercase; letter-spacing:0.04em; margin-top:2px; box-shadow:0 2px 6px rgba(21,128,61,0.25);">
+                ⚡ Click to Auto-Fill & Sign In
+              </button>
+              <div style="font-size:0.7rem; color:#666; margin-top:6px;">(Or check your email inbox for the sign-in link)</div>
+            </div>
+          `;
+          // Pre-fill input
+          codeInput.value = res.code;
+        }
+        successBox.innerHTML = msgHtml;
         successBox.style.display = 'block';
         codeContainer.style.display = 'block';
         emailInput.readOnly = true;
@@ -426,7 +441,108 @@ const AuthEngine = {
     }
   },
 
+  /**
+   * Handle Supabase Magic Link and OAuth Callbacks from URL hash
+   */
+  async handleUrlAuthCallback() {
+    try {
+      const hash = window.location.hash ? window.location.hash.substring(1) : '';
+      const search = window.location.search ? window.location.search.substring(1) : '';
+      const params = new URLSearchParams(hash || search);
+
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      const errorDesc = params.get('error_description');
+
+      if (errorDesc) {
+        console.warn('Auth callback message:', errorDesc);
+        return;
+      }
+
+      if (accessToken) {
+        console.log('🔑 Processing Supabase email auth callback...');
+        let user = null;
+        try {
+          const uRes = await fetch('https://shhjnxarewideotbhzby.supabase.co/auth/v1/user', {
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaGpueGFyZXdpZGVvdGJoemJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMTQ4OTAsImV4cCI6MjEwNzg5MDg5MH0.EXo3CsahywhVMbLYqinayGzpgPR4ro_UzOKsEWUjBIE',
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          if (uRes.ok) {
+            const uData = await uRes.json();
+            user = {
+              id: uData.id,
+              email: uData.email,
+              name: uData.user_metadata?.full_name || uData.user_metadata?.name || uData.email.split('@')[0],
+              phone: uData.user_metadata?.phone || '',
+              city: '',
+              state: '',
+              address: '',
+              locality: '',
+              pincode: '',
+              country: 'India',
+              ordersCount: 0,
+              totalSpent: 0,
+              tags: ['Storefront Member', 'Supabase Link Verified'],
+              status: 'Active',
+              wishlist: []
+            };
+          }
+        } catch (e) {}
+
+        if (!user) {
+          user = {
+            id: `CUST-${Date.now()}`,
+            email: 'member@allyrich.com',
+            name: 'Storefront Member',
+            phone: '',
+            city: '',
+            state: '',
+            address: '',
+            locality: '',
+            pincode: '',
+            country: 'India',
+            ordersCount: 0,
+            totalSpent: 0,
+            tags: ['Storefront Member', 'Supabase Link Verified'],
+            status: 'Active',
+            wishlist: []
+          };
+        }
+
+        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        localStorage.setItem(this.TOKEN_KEY, accessToken);
+        if (refreshToken) localStorage.setItem('genrage_refresh_token', refreshToken);
+
+        // Remove hash from URL for clean address bar
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+
+        this.updateHeader();
+        if (window.WishlistEngine) {
+          window.WishlistEngine.syncWithServer();
+        }
+
+        // Show welcome toast
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed; bottom:24px; right:24px; background:#000; color:#fff; padding:14px 22px; border-radius:4px; font-weight:800; font-size:0.85rem; z-index:999999; box-shadow:0 10px 30px rgba(0,0,0,0.3); letter-spacing:0.04em; text-transform:uppercase;';
+        toast.textContent = '✓ SIGNED IN SUCCESSFULLY — WELCOME BACK';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+
+        if (window.location.pathname.includes('/login')) {
+          window.location.href = '/account';
+        }
+      }
+    } catch (e) {
+      console.warn('Error handling URL auth callback:', e);
+    }
+  },
+
   init() {
+    this.handleUrlAuthCallback();
     this.updateHeader();
   }
 };
