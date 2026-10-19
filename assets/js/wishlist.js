@@ -130,11 +130,15 @@ const WishlistEngine = {
   updateButtons(handle, isWishlisted) {
     const cleanHandle = String(handle).split('?')[0].split('#')[0].trim();
     const buttons = document.querySelectorAll(`[data-wishlist-handle="${cleanHandle}"]`);
+    const targetPressed = isWishlisted ? 'true' : 'false';
     buttons.forEach(btn => {
-      btn.setAttribute('aria-pressed', isWishlisted ? 'true' : 'false');
-      btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
-      btn.classList.toggle('is-wishlisted', isWishlisted);
-      btn.innerHTML = this.getHeartSvg(isWishlisted);
+      const currentPressed = btn.getAttribute('aria-pressed');
+      if (currentPressed !== targetPressed) {
+        btn.setAttribute('aria-pressed', targetPressed);
+        btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
+        btn.classList.toggle('is-wishlisted', isWishlisted);
+        btn.innerHTML = this.getHeartSvg(isWishlisted);
+      }
     });
   },
 
@@ -156,10 +160,14 @@ const WishlistEngine = {
       const h = btn.getAttribute('data-wishlist-handle');
       const cleanHandle = h ? String(h).split('?')[0].split('#')[0].trim() : '';
       const isWishlisted = handles.has(cleanHandle);
-      btn.setAttribute('aria-pressed', isWishlisted ? 'true' : 'false');
-      btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
-      btn.classList.toggle('is-wishlisted', isWishlisted);
-      btn.innerHTML = this.getHeartSvg(isWishlisted);
+      const targetPressed = isWishlisted ? 'true' : 'false';
+      const currentPressed = btn.getAttribute('aria-pressed');
+      if (currentPressed !== targetPressed) {
+        btn.setAttribute('aria-pressed', targetPressed);
+        btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
+        btn.classList.toggle('is-wishlisted', isWishlisted);
+        btn.innerHTML = this.getHeartSvg(isWishlisted);
+      }
     });
 
     this.updateBadge();
@@ -301,54 +309,81 @@ const WishlistEngine = {
     }, 3200);
   },
 
+  _isUpdating: false,
+
   decorateCards() {
-    // Purge any third-party app injected buttons
-    document.querySelectorAll('.vitals-wishlist, .sqa-wishlist, [class*="wishlist-by-square"], .swym-button, .swym-btn-container').forEach(el => el.remove());
+    if (this._isUpdating) return;
+    this._isUpdating = true;
+    try {
+      // Purge any third-party app injected buttons
+      document.querySelectorAll('.vitals-wishlist, .sqa-wishlist, [class*="wishlist-by-square"], .swym-button, .swym-btn-container').forEach(el => el.remove());
 
-    const list = this.getWishlist();
-    const handles = new Set(list.map(i => {
-      const h = typeof i === 'string' ? i : i.handle;
-      return h ? String(h).split('?')[0].split('#')[0].trim() : '';
-    }));
+      const list = this.getWishlist();
+      const handles = new Set(list.map(i => {
+        const h = typeof i === 'string' ? i : i.handle;
+        return h ? String(h).split('?')[0].split('#')[0].trim() : '';
+      }));
 
-    document.querySelectorAll('product-card, .product-card').forEach(card => {
-      // Deduplicate: if multiple buttons exist on the card, keep only one
-      const existingBtns = card.querySelectorAll('.wishlist-btn');
-      if (existingBtns.length > 1) {
-        for (let i = 1; i < existingBtns.length; i++) {
-          existingBtns[i].remove();
+      document.querySelectorAll('product-card, .product-card').forEach(card => {
+        // Deduplicate: if multiple buttons exist on the card, keep only one
+        const existingBtns = card.querySelectorAll('.wishlist-btn');
+        if (existingBtns.length > 1) {
+          for (let i = 1; i < existingBtns.length; i++) {
+            existingBtns[i].remove();
+          }
         }
-      }
 
-      const rawHandle = card.getAttribute('handle') || card.querySelector('a[href*="/products/"]')?.getAttribute('href')?.split('/products/')?.[1]?.split('?')?.[0];
-      if (!rawHandle) return;
-      const cleanHandle = String(rawHandle).split('?')[0].split('#')[0].trim();
-      const isWishlisted = handles.has(cleanHandle);
+        const rawHandle = card.getAttribute('handle') || card.querySelector('a[href*="/products/"]')?.getAttribute('href')?.split('/products/')?.[1]?.split('?')?.[0];
+        if (!rawHandle) return;
+        const cleanHandle = String(rawHandle).split('?')[0].split('#')[0].trim();
+        const isWishlisted = handles.has(cleanHandle);
+        const targetPressed = isWishlisted ? 'true' : 'false';
 
-      if (existingBtns.length >= 1) {
-        const btn = existingBtns[0];
+        if (existingBtns.length >= 1) {
+          const btn = existingBtns[0];
+          const curHandle = btn.getAttribute('data-wishlist-handle');
+          const curPressed = btn.getAttribute('aria-pressed');
+          if (curHandle !== cleanHandle) btn.setAttribute('data-wishlist-handle', cleanHandle);
+          if (curPressed !== targetPressed) {
+            btn.setAttribute('aria-pressed', targetPressed);
+            btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
+            btn.classList.toggle('is-wishlisted', isWishlisted);
+            btn.innerHTML = this.getHeartSvg(isWishlisted);
+          }
+          return;
+        }
+
+        const figure = card.querySelector('.product-card__figure') || card;
+        if (!figure) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'wishlist-btn' + (isWishlisted ? ' is-wishlisted' : '');
         btn.setAttribute('data-wishlist-handle', cleanHandle);
         btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
-        btn.setAttribute('aria-pressed', isWishlisted ? 'true' : 'false');
-        btn.classList.toggle('is-wishlisted', isWishlisted);
+        btn.setAttribute('aria-pressed', targetPressed);
         btn.innerHTML = this.getHeartSvg(isWishlisted);
-        return;
-      }
 
-      const figure = card.querySelector('.product-card__figure') || card;
-      if (!figure) return;
+        // Bind direct click and pointer down handlers to guarantee isolation from carousel drag
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          handleWishlistTrigger(btn, e);
+        });
 
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'wishlist-btn' + (isWishlisted ? ' is-wishlisted' : '');
-      btn.setAttribute('data-wishlist-handle', cleanHandle);
-      btn.setAttribute('aria-label', isWishlisted ? 'Remove from wishlist' : 'Add to wishlist');
-      btn.setAttribute('aria-pressed', isWishlisted ? 'true' : 'false');
-      btn.innerHTML = this.getHeartSvg(isWishlisted);
+        ['pointerdown', 'mousedown', 'touchstart', 'touchend', 'mouseup'].forEach(evt => {
+          btn.addEventListener(evt, (e) => {
+            e.stopPropagation();
+          }, { passive: evt === 'touchstart' || evt === 'touchend', capture: true });
+        });
 
-      figure.style.position = 'relative';
-      figure.appendChild(btn);
-    });
+        figure.style.position = 'relative';
+        figure.appendChild(btn);
+      });
+    } finally {
+      this._isUpdating = false;
+    }
   },
 
   init() {
@@ -381,15 +416,32 @@ const WishlistEngine = {
       }, delay);
     });
 
-    // Auto-observe DOM mutations for dynamic product injections
+    // Auto-observe DOM mutations ONLY for genuinely added product cards
     if (typeof MutationObserver !== 'undefined' && document.body && !this._observer) {
       let debounceTimer = null;
-      this._observer = new MutationObserver(() => {
+      this._observer = new MutationObserver((mutations) => {
+        if (this._isUpdating) return;
+        let hasNewCards = false;
+        for (const m of mutations) {
+          if (m.type === 'childList' && m.addedNodes.length > 0) {
+            for (const n of m.addedNodes) {
+              if (n.nodeType === 1) {
+                if (n.tagName === 'PRODUCT-CARD' || n.classList?.contains('product-card') || n.querySelector?.('product-card, .product-card')) {
+                  hasNewCards = true;
+                  break;
+                }
+              }
+            }
+          }
+          if (hasNewCards) break;
+        }
+        if (!hasNewCards) return;
+
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           this.renderButtons();
           this.decorateCards();
-        }, 100);
+        }, 150);
       });
       this._observer.observe(document.body, { childList: true, subtree: true });
     }
@@ -406,12 +458,25 @@ function handleWishlistTrigger(btn, e) {
   if (!handle) return;
   const card = btn.closest('product-card') || btn.closest('.product-card') || btn.closest('.product-card__figure')?.parentElement;
   const title = card ? (card.querySelector('.product-title, h6')?.textContent?.trim() || handle) : handle;
-  const priceEl = card ? card.querySelector('.price-list, .text-on-sale, .sale-price, .money') : null;
+  
+  // Pick the single sale price or regular price cleanly, avoiding combined concatenated strings
+  const priceEl = card ? (card.querySelector('sale-price .money') || card.querySelector('.text-on-sale .money') || card.querySelector('.price-list .money') || card.querySelector('.money')) : null;
   const price = priceEl ? priceEl.textContent.replace(/[^0-9]/g, '') : '';
   const imgEl = card ? card.querySelector('.product-card__image--primary') : null;
-  const image = imgEl ? imgEl.src : '';
+  const image = imgEl ? (imgEl.currentSrc || imgEl.src) : '';
   WishlistEngine.toggle(handle, { title, price, image }, e);
 }
+
+// Global capture listeners to intercept pointer/mouse events on wishlist buttons
+// This stops <scroll-carousel> from interpreting clicks as drags!
+['pointerdown', 'mousedown', 'touchstart', 'touchend', 'mouseup'].forEach(evt => {
+  document.addEventListener(evt, (e) => {
+    const btn = e.target.closest('.wishlist-btn');
+    if (btn) {
+      e.stopPropagation();
+    }
+  }, true);
+});
 
 // Unified infallible click capture handler for all devices (laptops, desktops, touchscreens)
 document.addEventListener('click', (e) => {
@@ -419,6 +484,7 @@ document.addEventListener('click', (e) => {
   if (!btn) return;
   e.preventDefault();
   e.stopPropagation();
+  e.stopImmediatePropagation();
   handleWishlistTrigger(btn, e);
 }, true);
 

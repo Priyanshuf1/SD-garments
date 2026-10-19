@@ -581,6 +581,217 @@ async function deleteProductFromSupabase(productIdOrHandle, fallbackHandle) {
   }
 }
 
+// Transactional Email Service for OTP Authentication
+async function sendOtpEmail(email, otpCode) {
+  let emailDispatched = false;
+
+  // 1. Resend API Integration (Preferred for D2C & Vercel)
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+          to: [email],
+          subject: `Your ALLYRICH Login Code: ${otpCode}`,
+          html: `
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
+              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
+                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+              </div>
+              <div style="padding:28px 0; text-align:center;">
+                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
+                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
+                  ${otpCode}
+                </div>
+                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+              </div>
+              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
+                If you did not request this code, you can safely ignore this email.<br>
+                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+              </div>
+            </div>
+          `
+        })
+      });
+      if (res.ok) {
+        emailDispatched = true;
+        console.log(`✅ [RESEND EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
+      } else {
+        const errText = await res.text();
+        console.warn(`⚠️ [RESEND EMAIL ERROR]:`, errText);
+      }
+    } catch (err) {
+      console.warn(`⚠️ [RESEND ERROR]:`, err.message);
+    }
+  }
+
+  // 2. Brevo (Sendinblue) API Integration (Free 300 emails/day)
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  if (!emailDispatched && brevoApiKey) {
+    try {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'ALLYRICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
+          to: [{ email }],
+          subject: `Your ALLYRICH Login Code: ${otpCode}`,
+          htmlContent: `
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
+              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
+                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+              </div>
+              <div style="padding:28px 0; text-align:center;">
+                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
+                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
+                  ${otpCode}
+                </div>
+                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+              </div>
+              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
+                If you did not request this code, you can safely ignore this email.<br>
+                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+              </div>
+            </div>
+          `
+        })
+      });
+      if (res.ok) {
+        emailDispatched = true;
+        console.log(`✅ [BREVO EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
+      } else {
+        const errText = await res.text();
+        console.warn(`⚠️ [BREVO EMAIL ERROR]:`, errText);
+      }
+    } catch (err) {
+      console.warn(`⚠️ [BREVO ERROR]:`, err.message);
+    }
+  }
+
+  // 3. Try Supabase OTP as well if configured (works if user set up custom SMTP in Supabase)
+  if (!emailDispatched && supabase.isConfigured) {
+    try {
+      const supaRes = await supabase.auth.sendMagicLink({ email });
+      if (supaRes && supaRes.success) {
+        emailDispatched = true;
+        console.log(`✅ [SUPABASE EMAIL DISPATCH] Delivered magic link / OTP to ${email}`);
+      }
+    } catch (e) {}
+  }
+
+  console.log(`\n======================================================`);
+  console.log(`🔐 [SECURE OTP DISPATCH] 6-Digit Code for ${email}: ${otpCode} (Delivered via Email: ${emailDispatched})`);
+  console.log(`======================================================\n`);
+
+  return emailDispatched;
+}
+
+// Order Confirmation Email Service via Resend
+async function sendOrderConfirmationEmail(order) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const email = (order.customer?.email || '').trim();
+  if (!resendApiKey || !email || !email.includes('@')) return false;
+
+  const itemsHtml = (order.items || []).map(item => `
+    <tr>
+      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee;">
+        <div style="font-weight: 700; color: #111;">${item.title || item.name || 'ALLYRICH Streetwear Item'}</div>
+        <div style="font-size: 12px; color: #777;">Size: ${item.size || 'M'} &bull; Qty: ${item.quantity || 1}</div>
+      </td>
+      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; text-align: right; font-weight: 700; color: #111;">
+        ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
+      </td>
+    </tr>
+  `).join('');
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+        to: [email],
+        subject: `Order Confirmed: #${order.id} - ALLYRICH`,
+        html: `
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:560px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
+            <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
+              <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
+              <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+            </div>
+            <div style="padding:24px 0;">
+              <h2 style="font-size:18px; margin:0 0 8px; color:#000;">Thank You for Your Order</h2>
+              <p style="font-size:14px; color:#555; margin:0 0 20px;">Order <strong>#${order.id}</strong> has been received and is being prepared for dispatch.</p>
+              
+              <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                <thead>
+                  <tr style="border-bottom:2px solid #000; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">
+                    <th style="text-align:left; padding:8px 0;">Item</th>
+                    <th style="text-align:right; padding:8px 0;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+
+              <div style="background:#f9f9f9; padding:16px; border-radius:6px; margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
+                  <span>Subtotal:</span>
+                  <span>₹${(order.subtotal || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
+                  <span>Shipping:</span>
+                  <span>${order.shipping === 0 ? 'FREE' : '₹' + order.shipping}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:#000; padding-top:8px; border-top:1px solid #ddd;">
+                  <span>Order Total:</span>
+                  <span>₹${(order.total || 0).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div style="font-size:13px; color:#444; line-height:1.6;">
+                <strong>Shipping Address:</strong><br>
+                ${order.customer?.name || ''}<br>
+                ${order.customer?.address || ''}${order.customer?.locality ? ', ' + order.customer.locality : ''}<br>
+                ${order.customer?.city || ''}, ${order.customer?.state || ''} ${order.customer?.pincode || ''}<br>
+                ${order.customer?.country || 'India'}
+              </div>
+            </div>
+            <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
+              If you have questions about your order, reply to this email or visit our website.<br>
+              &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+            </div>
+          </div>
+        `
+      })
+    });
+    if (res.ok) {
+      console.log(`✅ [ORDER CONFIRMATION EMAIL] Delivered to ${email} for order ${order.id}`);
+      return true;
+    } else {
+      const errText = await res.text();
+      console.warn(`⚠️ [ORDER CONFIRMATION EMAIL ERROR]:`, errText);
+    }
+  } catch (err) {
+    console.warn(`⚠️ [ORDER EMAIL EXCEPTION]:`, err.message);
+  }
+  return false;
+}
+
 async function handleGetSingleProduct(req, res, idOrHandle) {
   const products = await getAllProducts();
   const queryStr = decodeURIComponent(idOrHandle).trim().toLowerCase();
@@ -1981,217 +2192,6 @@ async function appHandler(req, res) {
 
       return sendJson(res, 200, { success: true, user: safeUser, token: authToken });
     }
-
-// Transactional Email Service for OTP Authentication
-async function sendOtpEmail(email, otpCode) {
-  let emailDispatched = false;
-
-  // 1. Resend API Integration (Preferred for D2C & Vercel)
-  const resendApiKey = process.env.RESEND_API_KEY;
-  if (resendApiKey) {
-    try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
-          to: [email],
-          subject: `Your ALLYRICH Login Code: ${otpCode}`,
-          html: `
-            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
-              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
-                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
-              </div>
-              <div style="padding:28px 0; text-align:center;">
-                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
-                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
-                  ${otpCode}
-                </div>
-                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
-              </div>
-              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
-                If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
-              </div>
-            </div>
-          `
-        })
-      });
-      if (res.ok) {
-        emailDispatched = true;
-        console.log(`✅ [RESEND EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
-      } else {
-        const errText = await res.text();
-        console.warn(`⚠️ [RESEND EMAIL ERROR]:`, errText);
-      }
-    } catch (err) {
-      console.warn(`⚠️ [RESEND ERROR]:`, err.message);
-    }
-  }
-
-  // 2. Brevo (Sendinblue) API Integration (Free 300 emails/day)
-  const brevoApiKey = process.env.BREVO_API_KEY;
-  if (!emailDispatched && brevoApiKey) {
-    try {
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': brevoApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: 'ALLYRICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
-          to: [{ email }],
-          subject: `Your ALLYRICH Login Code: ${otpCode}`,
-          htmlContent: `
-            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
-              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
-                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
-              </div>
-              <div style="padding:28px 0; text-align:center;">
-                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
-                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
-                  ${otpCode}
-                </div>
-                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
-              </div>
-              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
-                If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
-              </div>
-            </div>
-          `
-        })
-      });
-      if (res.ok) {
-        emailDispatched = true;
-        console.log(`✅ [BREVO EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
-      } else {
-        const errText = await res.text();
-        console.warn(`⚠️ [BREVO EMAIL ERROR]:`, errText);
-      }
-    } catch (err) {
-      console.warn(`⚠️ [BREVO ERROR]:`, err.message);
-    }
-  }
-
-  // 3. Try Supabase OTP as well if configured (works if user set up custom SMTP in Supabase)
-  if (!emailDispatched && supabase.isConfigured) {
-    try {
-      const supaRes = await supabase.auth.sendMagicLink({ email });
-      if (supaRes && supaRes.success) {
-        emailDispatched = true;
-        console.log(`✅ [SUPABASE EMAIL DISPATCH] Delivered magic link / OTP to ${email}`);
-      }
-    } catch (e) {}
-  }
-
-  console.log(`\n======================================================`);
-  console.log(`🔐 [SECURE OTP DISPATCH] 6-Digit Code for ${email}: ${otpCode} (Delivered via Email: ${emailDispatched})`);
-  console.log(`======================================================\n`);
-
-  return emailDispatched;
-}
-
-// Order Confirmation Email Service via Resend
-async function sendOrderConfirmationEmail(order) {
-  const resendApiKey = process.env.RESEND_API_KEY;
-  const email = (order.customer?.email || '').trim();
-  if (!resendApiKey || !email || !email.includes('@')) return false;
-
-  const itemsHtml = (order.items || []).map(item => `
-    <tr>
-      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee;">
-        <div style="font-weight: 700; color: #111;">${item.title || item.name || 'ALLYRICH Streetwear Item'}</div>
-        <div style="font-size: 12px; color: #777;">Size: ${item.size || 'M'} &bull; Qty: ${item.quantity || 1}</div>
-      </td>
-      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; text-align: right; font-weight: 700; color: #111;">
-        ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
-      </td>
-    </tr>
-  `).join('');
-
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
-        to: [email],
-        subject: `Order Confirmed: #${order.id} - ALLYRICH`,
-        html: `
-          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:560px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
-            <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-              <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
-              <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
-            </div>
-            <div style="padding:24px 0;">
-              <h2 style="font-size:18px; margin:0 0 8px; color:#000;">Thank You for Your Order</h2>
-              <p style="font-size:14px; color:#555; margin:0 0 20px;">Order <strong>#${order.id}</strong> has been received and is being prepared for dispatch.</p>
-              
-              <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
-                <thead>
-                  <tr style="border-bottom:2px solid #000; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">
-                    <th style="text-align:left; padding:8px 0;">Item</th>
-                    <th style="text-align:right; padding:8px 0;">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsHtml}
-                </tbody>
-              </table>
-
-              <div style="background:#f9f9f9; padding:16px; border-radius:6px; margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
-                  <span>Subtotal:</span>
-                  <span>₹${(order.subtotal || 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
-                  <span>Shipping:</span>
-                  <span>${order.shipping === 0 ? 'FREE' : '₹' + order.shipping}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:#000; padding-top:8px; border-top:1px solid #ddd;">
-                  <span>Order Total:</span>
-                  <span>₹${(order.total || 0).toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-
-              <div style="font-size:13px; color:#444; line-height:1.6;">
-                <strong>Shipping Address:</strong><br>
-                ${order.customer?.name || ''}<br>
-                ${order.customer?.address || ''}${order.customer?.locality ? ', ' + order.customer.locality : ''}<br>
-                ${order.customer?.city || ''}, ${order.customer?.state || ''} ${order.customer?.pincode || ''}<br>
-                ${order.customer?.country || 'India'}
-              </div>
-            </div>
-            <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
-              If you have questions about your order, reply to this email or visit our website.<br>
-              &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
-            </div>
-          </div>
-        `
-      })
-    });
-    if (res.ok) {
-      console.log(`✅ [ORDER CONFIRMATION EMAIL] Delivered to ${email} for order ${order.id}`);
-      return true;
-    } else {
-      const errText = await res.text();
-      console.warn(`⚠️ [ORDER CONFIRMATION EMAIL ERROR]:`, errText);
-    }
-  } catch (err) {
-    console.warn(`⚠️ [ORDER EMAIL EXCEPTION]:`, err.message);
-  }
-  return false;
-}
 
     // POST /api/auth/send-otp and /api/auth/magic-link (100% Free 6-Digit Numeric OTP)
     if ((authRoute === 'send-otp' || authRoute === 'magic-link') && req.method === 'POST') {

@@ -82,6 +82,7 @@ async function runTests() {
     assert(prodsRes.status === 200, 'GET /api/products returns HTTP 200');
     assert(prodsRes.body.success === true, 'Response body has success: true');
     const products = prodsRes.body.products || [];
+    const initialCount = products.length;
     
     const giftCardFound = products.find(p =>
       (p.handle || '').toLowerCase().includes('gift-card') ||
@@ -318,7 +319,7 @@ async function runTests() {
 
     const checkDataJsonProds = await makeRequest('GET', '/data/products.json');
     assert(!checkDataJsonProds.body.products.some(p => String(p.id) === String(testProdId)), 'Test product successfully removed from storefront /data/products.json');
-    assert(checkStorefrontProds.body.products.length === 244, 'Catalog count restored exactly to 244 products');
+    assert(checkStorefrontProds.body.products.length === initialCount, `Catalog count restored exactly to ${initialCount} products`);
     console.log('Teardown and catalog integrity verified.\n');
 
     console.log('====================================================');
