@@ -1634,6 +1634,9 @@
             </div>
             <div class="panel-actions">
               <input type="text" id="sub-search-input" placeholder="Search email address..." style="width: 240px; height: 34px;">
+              <button class="btn btn-primary btn-sm" onclick="Admin.openBroadcastModal()">
+                ✉️ Broadcast to Subscribers
+              </button>
               <button class="btn btn-secondary btn-sm" onclick="Admin.fetchSubscribers(true)">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                 Refresh
@@ -2800,6 +2803,40 @@
     <div class="modal-footer">
       <button class="btn btn-secondary btn-sm" onclick="closeModal('review-modal')">Cancel</button>
       <button class="btn btn-primary btn-sm" onclick="Admin.saveReview()">Submit Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- BROADCAST CAMPAIGN MODAL -->
+<div class="modal-backdrop" id="broadcast-modal">
+  <div class="modal" style="max-width: 620px; width: 95%;">
+    <div class="modal-header">
+      <div class="modal-title">✉️ Broadcast Custom Message / Campaign</div>
+      <button class="modal-close" onclick="closeModal('broadcast-modal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="broadcast-recipient-badge" style="background:var(--bg-secondary); border:1px solid var(--border-color); padding:10px 14px; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-bottom:1.25rem; display:flex; align-items:center; gap:8px;">
+        ✉️ Will send to active Inner Circle subscribers
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Email Subject *</label>
+        <input type="text" id="broadcast-subject" class="form-control" placeholder="e.g. Secret Drop Access: 24-Hour VIP Archive" style="width:100%;" required>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Announcement Headline</label>
+        <input type="text" id="broadcast-headline" class="form-control" placeholder="e.g. PRIVATE ARCHIVE ACCESS IS NOW LIVE" style="width:100%;">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Campaign Message Content *</label>
+        <textarea id="broadcast-message" class="form-control" rows="6" placeholder="Write your luxury announcement, discount code, or drop details here..." style="width:100%; line-height:1.6;" required></textarea>
+      </div>
+      <div id="broadcast-status" style="margin-top:8px; font-size:0.85rem; font-weight:700; display:none;"></div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('broadcast-modal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="btn-send-broadcast" onclick="Admin.sendBroadcastCampaign()">Send Campaign</button>
     </div>
   </div>
 </div>
@@ -4659,6 +4696,90 @@ const Admin = {
     a.download = `inner_circle_subscribers_${Date.now()}.csv`;
     a.click();
     this.showToast('📥 Inner Circle Subscribers CSV exported.');
+  },
+
+  openBroadcastModal() {
+    const count = (this.subscribers || []).length;
+    const badge = document.getElementById('broadcast-recipient-badge');
+    if (badge) {
+      badge.textContent = `✉️ Will broadcast campaign to ${count} active Inner Circle subscriber${count === 1 ? '' : 's'}`;
+    }
+    const statusEl = document.getElementById('broadcast-status');
+    if (statusEl) {
+      statusEl.style.display = 'none';
+      statusEl.textContent = '';
+    }
+    const btn = document.getElementById('btn-send-broadcast');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Send Campaign';
+    }
+    openModal('broadcast-modal');
+  },
+
+  async sendBroadcastCampaign() {
+    const subject = document.getElementById('broadcast-subject')?.value?.trim();
+    const headline = document.getElementById('broadcast-headline')?.value?.trim();
+    const message = document.getElementById('broadcast-message')?.value?.trim();
+
+    if (!subject || !message) {
+      alert('Please fill in both the Email Subject and Campaign Message Content.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-send-broadcast');
+    const statusEl = document.getElementById('broadcast-status');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Broadcasting...';
+    }
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'var(--text-secondary)';
+      statusEl.textContent = '🚀 Dispatching emails via Resend... Please wait.';
+    }
+
+    try {
+      const res = await fetch('/api/admin/subscribers/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, headline, message })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (statusEl) {
+          statusEl.style.color = '#10b981';
+          statusEl.textContent = `✅ Successfully broadcasted to ${data.count} subscriber${data.count === 1 ? '' : 's'}!`;
+        }
+        this.showToast(`✉️ Broadcast sent to ${data.count} subscriber(s)!`);
+        setTimeout(() => {
+          closeModal('broadcast-modal');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Send Campaign';
+          }
+        }, 1500);
+      } else {
+        if (statusEl) {
+          statusEl.style.color = '#ef4444';
+          statusEl.textContent = `⚠️ Error: ${data.message || 'Failed to dispatch broadcast'}`;
+        }
+        alert(data.message || 'Broadcast failed');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Send Campaign';
+        }
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = `⚠️ Network Error: ${err.message}`;
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Send Campaign';
+      }
+    }
   },
 
   // -------------------------------------------------------------

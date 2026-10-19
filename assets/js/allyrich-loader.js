@@ -91,7 +91,7 @@
     }
 
     document.documentElement.style.overflow = 'hidden';
-    capTimer = setTimeout(finish, 2800);
+    capTimer = setTimeout(finish, 1200);
 
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
@@ -101,8 +101,8 @@
           animationTimer2 = setTimeout(function () {
             clearTimeout(capTimer);
             finish();
-          }, 750);
-        }, 1200);
+          }, 400);
+        }, 450);
       });
     });
   }

@@ -1,5 +1,239 @@
 [
   {
+    "id": "test_device_user_1792418959191",
+    "name": "Cross Device Tester",
+    "email": "device_test_1792418959191@allyrich.com",
+    "phone": "9988776655",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "42 Regent Street, Penthouse 4",
+    "locality": "",
+    "pincode": "560001",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "boxy-heavy-tee",
+      "baggy-pants",
+      "hoodie-charcoal"
+    ],
+    "cart": []
+  },
+  {
+    "id": "4eb2f9e6-a4bd-49dc-9c08-4ce41d388a84",
+    "name": "Original User",
+    "email": "dup_test_1792418938152@allyrichtest.com",
+    "phone": "+91 99999 00000",
+    "password": "SecurePassword123",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "2026-10-19T14:09:01.094Z",
+    "tags": [
+      "Storefront Member",
+      "Supabase Verified"
+    ],
+    "status": "Active",
+    "wishlist": [],
+    "cart": []
+  },
+  {
+    "id": "cust_cross_1792418930460",
+    "name": "Aarav Mehta",
+    "email": "cross_1792418930460@allyrichtest.com",
+    "phone": "9876543210",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Villa 14, Palm Meadows",
+    "locality": "Whitefield",
+    "pincode": "560066",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "hoodie-washed-black"
+    ],
+    "cart": [
+      {
+        "id": "item_1",
+        "handle": "boxy-tshirt-black",
+        "title": "Boxy Tee",
+        "price": 1299,
+        "quantity": 2,
+        "size": "L"
+      }
+    ]
+  },
+  {
+    "id": "80a6eebb-b13e-4ea5-8e88-762cc398e890",
+    "name": "Original User",
+    "email": "dup_test_1792418819460@allyrichtest.com",
+    "phone": "+91 99999 00000",
+    "password": "SecurePassword123",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "2026-10-19T14:07:02.738Z",
+    "tags": [
+      "Storefront Member",
+      "Supabase Verified"
+    ],
+    "status": "Active",
+    "wishlist": [],
+    "cart": []
+  },
+  {
+    "id": "cust_cross_1792418810965",
+    "name": "Aarav Mehta",
+    "email": "cross_1792418810965@allyrichtest.com",
+    "phone": "9876543210",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Villa 14, Palm Meadows",
+    "locality": "Whitefield",
+    "pincode": "560066",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "hoodie-washed-black"
+    ],
+    "cart": [
+      {
+        "id": "item_1",
+        "handle": "boxy-tshirt-black",
+        "title": "Boxy Tee",
+        "price": 1299,
+        "quantity": 2,
+        "size": "L"
+      }
+    ]
+  },
+  {
+    "id": "91f27bff-0b72-4250-b528-20353bea34fa",
+    "name": "Original User",
+    "email": "dup_test_1792418436065@allyrichtest.com",
+    "phone": "+91 99999 00000",
+    "password": "SecurePassword123",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "2026-10-19T14:00:39.504Z",
+    "tags": [
+      "Storefront Member",
+      "Supabase Verified"
+    ],
+    "status": "Active",
+    "wishlist": [],
+    "cart": []
+  },
+  {
+    "id": "cust_cross_1792418426964",
+    "name": "Aarav Mehta",
+    "email": "cross_1792418426964@allyrichtest.com",
+    "phone": "9876543210",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Villa 14, Palm Meadows",
+    "locality": "Whitefield",
+    "pincode": "560066",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "hoodie-washed-black"
+    ],
+    "cart": [
+      {
+        "id": "item_1",
+        "handle": "boxy-tshirt-black",
+        "title": "Boxy Tee",
+        "price": 1299,
+        "quantity": 2,
+        "size": "L"
+      }
+    ]
+  },
+  {
+    "id": "test_device_user_1792415274857",
+    "name": "Cross Device Tester",
+    "email": "device_test_1792415274857@allyrich.com",
+    "phone": "9988776655",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "42 Regent Street, Penthouse 4",
+    "locality": "",
+    "pincode": "560001",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "boxy-heavy-tee",
+      "baggy-pants",
+      "hoodie-charcoal"
+    ]
+  },
+  {
+    "id": "CUST-1792414938141",
+    "name": "otp verify 1792414936844",
+    "email": "otp_verify_1792414936844@example.com",
+    "phone": "",
+    "city": "",
+    "state": "",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
+    "id": "test_device_user_1792411482201",
+    "name": "Cross Device Tester",
+    "email": "device_test_1792411482201@allyrich.com",
+    "phone": "9988776655",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "42 Regent Street, Penthouse 4",
+    "locality": "",
+    "pincode": "560001",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "boxy-heavy-tee",
+      "baggy-pants",
+      "hoodie-charcoal"
+    ]
+  },
+  {
     "id": "CUST-1792399072120",
     "name": "otp verify 1792399070652",
     "email": "otp_verify_1792399070652@example.com",

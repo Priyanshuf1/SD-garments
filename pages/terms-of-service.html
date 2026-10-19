@@ -7,6 +7,7 @@
   <link rel="shortcut icon" href="/assets/ar-logo.png">
   <link rel="stylesheet" href="/assets/css/theme.css">
   <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="/assets/css/allyrich.css">
   <style>
     .page-hero {
       padding: 3.5rem 0 2rem;
@@ -39,32 +40,62 @@
   </style>
 </head>
 <body>
-  <aside class="announcement-bar">
-    <div class="announcement-slide">
-      <span>FREE DOORSTEP DELIVERY IN INDIA 🇮🇳 • LIMITED QUANTITIES</span>
-    </div>
-  </aside>
-
   <header class="site-header">
-    <div class="site-container header-inner">
-      <div class="header-left">
-        <button class="mobile-menu-trigger" id="mobile-menu-trigger"><span></span><span></span><span></span></button>
-        <a href="/" class="brand-logo">
-          <img src="//allyrich.com/cdn/shop/files/logo.png?v=1716806780&width=2800" alt="ALLYRICH" onerror="this.outerHTML='<span class=\'brand-logo-text\'>ALLYRICH</span>'">
+    <div class="site-header__inner">
+      <!-- Left: Brand Logo -->
+      <div style="display:flex; align-items:center; gap: 1.25rem; flex-shrink: 0; min-width: max-content;">
+        <a href="/" class="allyrich-header-brand" aria-label="ALLYRICH Home" style="flex-shrink: 0; min-width: max-content;">
+          <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="30" height="38">
+          <span class="allyrich-header-brand-name">ALLYRICH</span>
         </a>
       </div>
-      <nav class="desktop-nav">
-        <a href="/collections.html?category=new-arrivals-genrage" class="nav-link">NEW ARRIVALS</a>
-        <a href="/collections.html?category=vest" class="nav-link">TANK TOP</a>
-        <a href="/collections.html?category=boxy-t-shirts" class="nav-link">TSHIRT</a>
-        <a href="/collections.html?category=hoodies-for-men" class="nav-link">HOODIES</a>
-        <a href="/collections.html?category=baggy-pants" class="nav-link">BOTTOMS</a>
-        <a href="/collections.html?category=clearance-sale" class="nav-link sale-link">CLEARANCE SALE</a>
-        <a href="/pages/contact.html" class="nav-link">TRACK ORDER</a>
+
+      <!-- Center: Desktop Navigation Links -->
+      <nav class="site-header__nav">
+        <a href="/collections/shop" class="header-nav-link">NEW ARRIVALS</a>
+        <a href="/collections/vest" class="header-nav-link">TANK TOP</a>
+        <a href="/collections/boxy-oversized-tshirt" class="header-nav-link">TSHIRT</a>
+        <a href="/collections/hoodies-for-men" class="header-nav-link">HOODIES</a>
+        <a href="/collections/baggy-pants" class="header-nav-link">BOTTOMS</a>
+        <a href="/collections/clearance-sale" class="header-nav-link" style="color:#e50914;">CLEARANCE SALE</a>
+        <a href="/pages/contact.html" class="header-nav-link">CONTACT</a>
       </nav>
-      <div class="header-actions">
-        <button class="action-btn search-trigger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
-        <button class="action-btn cart-trigger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg><span class="badge-count cart-badge-count" style="display: none;">0</span></button>
+
+      <!-- Right: User Account, Wishlist, Search, Cart -->
+      <div class="header-actions-group">
+        <!-- User Account Icon / Profile link -->
+        <a href="/account" class="header-account-link action-touch-btn" data-account-trigger title="Account" style="color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke-miterlimit="10"/>
+          </svg>
+        </a>
+
+        <!-- Search Icon Trigger -->
+        <a href="/collections/shop" class="search-trigger action-touch-btn" title="Search & Filter" style="color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-miterlimit="10">
+            <path d="M10.364 3a7.364 7.364 0 1 0 0 14.727 7.364 7.364 0 0 0 0-14.727Z"/>
+            <path d="M15.857 15.858 21 21.001" stroke-linecap="round"/>
+          </svg>
+        </a>
+
+        <!-- Wishlist Icon with Counter Badge -->
+        <a href="/collections/shop?view=wishlist" class="action-touch-btn" title="Saved Wishlist" style="color:#ffffff; text-decoration:none; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span id="header-wishlist-badge" class="wishlist-count-badge" style="display:none; position:absolute; top:2px; right:2px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; align-items:center; justify-content:center; line-height:16px; text-align:center;">0</span>
+        </a>
+
+        <!-- Cart Bag Trigger -->
+        <button type="button" class="cart-trigger action-touch-btn" data-open-cart="true" onclick="if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer();} return false;" aria-label="Open Shopping Bag" style="background:none; border:none; color:#ffffff; cursor:pointer; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span id="header-cart-badge" style="position:absolute; top:2px; right:2px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; display:flex; align-items:center; justify-content:center;">0</span>
+        </button>
       </div>
     </div>
   </header>
@@ -83,10 +114,89 @@
 
   </main>
 
-  <footer class="site-footer">
-    <div class="site-container">
-      <div class="footer-bottom" style="border: none;">
-        <span>PROUDLY HOMEGROWN IN INDIA • © 2026 ALLYRICH. ALL RIGHTS RESERVED.</span>
+  <footer id="shopify-section-sections--footer" class="shopify-section shopify-section-group-footer-group site-footer-wrapper">
+    <div class="site-footer full-width">
+      <div class="site-footer__bg" aria-hidden="true">
+        <img src="/assets/footer-ruins.webp" alt="" loading="lazy">
+        <div class="site-footer__bg-gradient"></div>
+      </div>
+
+      <div class="site-footer__content">
+        <!-- Main Grid: Brand & Newsletter on Left, 2 Navigation Columns on Right -->
+        <div class="site-footer__main-grid">
+          <!-- Left: Brand Crest & Inner Circle Newsletter -->
+          <div class="site-footer__brand-block">
+            <a class="site-footer__logo" href="/" aria-label="AllyRich Home">
+              <img src="/assets/ar-logo.png" alt="AllyRich Crest" width="62" height="78">
+              <span class="site-footer__brand-name">ALLYRICH</span>
+            </a>
+            <p class="site-footer__brand-tagline">ARCHITECTURAL SILHOUETTES &bull; HOMEGROWN IN INDIA &bull; WORLDWIDE DELIVERY</p>
+
+            <div class="site-footer__newsletter">
+              <h4 class="site-footer__newsletter-heading">JOIN THE INNER CIRCLE</h4>
+              <p class="site-footer__newsletter-sub">Gain priority access to limited drops, archival releases, and invite-only showcases.</p>
+              <form class="site-footer__newsletter-form" onsubmit="if(window.submitNewsletter){window.submitNewsletter(this, event);}else{event.preventDefault(); alert('Subscribed to Inner Circle!');} return false;">
+                <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
+                <button type="submit" class="site-footer__newsletter-btn">SUBSCRIBE</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right: 2 Navigation Columns (Client Care & Legal) -->
+          <div class="site-footer__columns">
+            <div class="site-footer__column">
+              <p class="site-footer__heading">CLIENT CARE</p>
+              <a href="/pages/contact.html">Track Order</a>
+              <a href="/pages/shipping-policy.html">Shipping Policy</a>
+              <a href="/pages/refund-policy.html">Returns &amp; Exchanges</a>
+              <a href="/pages/contact.html">Size Guide</a>
+              <a href="/pages/contact.html">Contact Concierge</a>
+            </div>
+
+            <div class="site-footer__column">
+              <p class="site-footer__heading">LEGAL &amp; POLICIES</p>
+              <a href="/pages/terms-of-service.html">Terms &amp; Conditions</a>
+              <a href="/pages/privacy-policy.html">Privacy Policy</a>
+              <a href="/pages/refund-policy.html">Refund Policy</a>
+              <a href="/pages/shipping-policy.html">Shipping Guidelines</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Links Row -->
+        <div class="site-footer__meta">
+          <div class="site-footer__social">
+            <a href="https://www.instagram.com/allyrich_" aria-label="Instagram" target="_blank" rel="noopener me" title="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            <a href="https://www.youtube.com/@allyrich" aria-label="YouTube" target="_blank" rel="noopener me" title="YouTube">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor"></polygon>
+              </svg>
+            </a>
+            <a href="https://x.com/allyrich" aria-label="X" target="_blank" rel="noopener me" title="X">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Bottom Copyright & Legal -->
+        <div class="site-footer__bottom">
+          <p class="site-footer__copyright">&copy; 2026 ALLYRICH &bull; ALL RIGHTS RESERVED &bull; CRAFTED FOR THE FEW</p>
+          <div class="site-footer__legal">
+            <a href="/pages/terms-of-service.html">TERMS</a>
+            <a href="/pages/privacy-policy.html">PRIVACY</a>
+            <a href="/pages/refund-policy.html">REFUNDS</a>
+            <a href="/pages/shipping-policy.html">SHIPPING</a>
+          </div>
+        </div>
       </div>
     </div>
   </footer>
@@ -104,7 +214,7 @@
     <div class="cart-items-list" id="cart-items-list"></div>
     <div class="cart-footer">
       <div class="cart-subtotal"><span>SUBTOTAL</span><span id="cart-subtotal-price">Rs. 0</span></div>
-      <button class="checkout-btn" onclick="alert('Proceeding to Checkout!')">CHECKOUT</button>
+      <button class="checkout-btn" onclick="window.location.href='/checkout.html'">CHECKOUT</button>
     </div>
   </aside>
 
@@ -124,16 +234,19 @@
       <button class="close-btn" id="mobile-drawer-close">✕</button>
     </div>
     <ul class="mobile-nav-list">
-      <li><a href="/collections.html?category=new-arrivals-genrage">NEW ARRIVALS</a></li>
-      <li><a href="/collections.html?category=vest">TANK TOP</a></li>
-      <li><a href="/collections.html?category=boxy-t-shirts">TSHIRT</a></li>
-      <li><a href="/collections.html?category=hoodies-for-men">HOODIES</a></li>
-      <li><a href="/collections.html?category=baggy-pants">BOTTOMS</a></li>
-      <li><a href="/collections.html?category=clearance-sale">CLEARANCE SALE</a></li>
-      <li><a href="/pages/contact.html">TRACK ORDER</a></li>
+      <li><a href="/collections/shop">NEW ARRIVALS</a></li>
+      <li><a href="/collections/vest">TANK TOP</a></li>
+      <li><a href="/collections/boxy-oversized-tshirt">TSHIRT</a></li>
+      <li><a href="/collections/hoodies-for-men">HOODIES</a></li>
+      <li><a href="/collections/baggy-pants">BOTTOMS</a></li>
+      <li><a href="/collections/clearance-sale">CLEARANCE SALE</a></li>
+      <li><a href="/pages/contact.html">CONTACT</a></li>
     </ul>
   </nav>
 
+  <script src="/assets/js/wishlist.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/quick-buy.js"></script>
   <script src="/assets/js/app.js"></script>
 </body>
 </html>

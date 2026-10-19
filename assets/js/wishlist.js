@@ -5,7 +5,7 @@
 
 const WishlistEngine = {
   STORAGE_KEY: 'genrage_wishlist',
-  _lastToggleTime: {},
+  _syncTimer: null,
   _observer: null,
 
   getWishlist() {
@@ -53,13 +53,8 @@ const WishlistEngine = {
     if (!handle) return false;
 
     const cleanHandle = String(handle).split('?')[0].split('#')[0].trim();
-    const now = Date.now();
-    if (this._lastToggleTime[cleanHandle] && (now - this._lastToggleTime[cleanHandle] < 350)) {
-      // Prevent double trigger from capture + inline onclick or rapid clicks
-      return this.has(cleanHandle);
-    }
-    this._lastToggleTime[cleanHandle] = now;
 
+    // Instant Optimistic Toggle
     let list = this.getWishlist();
     const existingIndex = list.findIndex(item => {
       const itemHandle = typeof item === 'string' ? item : item.handle;
@@ -84,14 +79,28 @@ const WishlistEngine = {
       this.showToast('♥ Saved to Wishlist!');
     }
 
+    // Immediately persist to localStorage
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(list));
       localStorage.setItem('wishlist', JSON.stringify(list));
     } catch (e) {}
 
+    // Instant UI DOM update
     this.updateButtons(cleanHandle, isAdded);
     this.updateBadge();
-    this.syncWithServer();
+
+    // Pulse animation for tactile feedback
+    const buttons = document.querySelectorAll(`[data-wishlist-handle="${cleanHandle}"]`);
+    buttons.forEach(btn => {
+      btn.style.transform = 'scale(1.25)';
+      setTimeout(() => { btn.style.transform = ''; }, 160);
+    });
+
+    // Debounce server synchronization with 400ms timer
+    clearTimeout(this._syncTimer);
+    this._syncTimer = setTimeout(() => {
+      this.syncWithServer();
+    }, 400);
 
     // Notify listeners of change
     if (typeof window !== 'undefined') {
@@ -217,14 +226,6 @@ const WishlistEngine = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: identifier, email: user.email, wishlist: cleanHandles })
       }).catch(() => {});
-
-      if (user.id) {
-        await fetch(`/api/customers/${encodeURIComponent(user.id)}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email, wishlist: cleanHandles })
-        }).catch(() => {});
-      }
     } catch (e) {
       console.warn('Could not sync wishlist to backend:', e.message);
     }
@@ -367,14 +368,11 @@ const WishlistEngine = {
   }
 };
 
-// Global click capture handler for bulletproof wishlist clicks
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.wishlist-btn');
-  if (!btn) return;
-  e.preventDefault();
-  e.stopPropagation();
-  if (typeof e.stopImmediatePropagation === 'function') {
-    e.stopImmediatePropagation();
+function handleWishlistTrigger(btn, e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
   }
   const handle = btn.getAttribute('data-wishlist-handle');
   if (!handle) return;
@@ -385,7 +383,29 @@ document.addEventListener('click', (e) => {
   const imgEl = card ? card.querySelector('.product-card__image--primary') : null;
   const image = imgEl ? imgEl.src : '';
   WishlistEngine.toggle(handle, { title, price, image }, e);
-}, true); // Use capture phase so no carousel or link intercepts
+}
+
+let lastWishlistTouchTs = 0;
+
+// Fast touch response on mobile (0ms delay)
+document.addEventListener('touchend', (e) => {
+  const btn = e.target.closest('.wishlist-btn');
+  if (!btn) return;
+  lastWishlistTouchTs = Date.now();
+  handleWishlistTrigger(btn, e);
+}, { passive: false, capture: true });
+
+// Global click capture handler for desktop
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.wishlist-btn');
+  if (!btn) return;
+  if (Date.now() - lastWishlistTouchTs < 500) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  handleWishlistTrigger(btn, e);
+}, true);
 
 document.addEventListener('DOMContentLoaded', () => {
   WishlistEngine.init();

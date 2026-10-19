@@ -18,9 +18,37 @@
       this.bindTriggers();
       this.bindCartTriggers();
       this.bindNewsletter();
+      this.hydrateCloudCart();
       this.updateAllBadges();
       this.checkUrlForCart();
       this.fetchCatalog();
+    },
+
+    async hydrateCloudCart() {
+      try {
+        const userRaw = localStorage.getItem('genrage_user');
+        if (!userRaw) return;
+        const user = JSON.parse(userRaw);
+        if (!user || (!user.id && !user.email)) return;
+        const identifier = user.id || user.email;
+
+        // If local cart is empty and user has cart, check cloud cart
+        const localCart = this.getCart();
+        if (localCart.length === 0 && Array.isArray(user.cart) && user.cart.length > 0) {
+          this.saveCart(user.cart);
+          return;
+        }
+
+        const res = await fetch(`/api/cart?userId=${encodeURIComponent(identifier)}&email=${encodeURIComponent(user.email || '')}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.cart) && data.cart.length > 0) {
+            if (localCart.length === 0) {
+              this.saveCart(data.cart);
+            }
+          }
+        }
+      } catch (e) {}
     },
 
     async fetchCatalog() {
@@ -309,6 +337,7 @@
 
       localStorage.setItem('genrage_cart', JSON.stringify(cart));
       localStorage.setItem('genrage_cart_v1', JSON.stringify(cart));
+      this.syncWithServer(cart);
 
       // Trigger app hooks if present
       if (window.GenrageApp) {
@@ -323,6 +352,21 @@
       this.updateAllBadges();
       this.close();
       this.openCartDrawer();
+    },
+
+    syncWithServer(cart) {
+      try {
+        const userRaw = localStorage.getItem('genrage_user');
+        if (!userRaw) return;
+        const user = JSON.parse(userRaw);
+        if (!user || (!user.id && !user.email)) return;
+        const identifier = user.id || user.email;
+        fetch('/api/cart/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: identifier, email: user.email, cart: cart || this.getCart() })
+        }).catch(() => {});
+      } catch (e) {}
     },
 
     buyNow() {
@@ -346,6 +390,7 @@
         localStorage.setItem('genrage_cart', json);
         localStorage.setItem('genrage_cart_v1', json);
       } catch (e) {}
+      this.syncWithServer(cart);
       this.updateAllBadges();
       this.renderGlobalCart();
       if (window.CollectionEngine && typeof window.CollectionEngine.updateCartUi === 'function') {

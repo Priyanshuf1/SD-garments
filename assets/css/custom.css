@@ -715,13 +715,21 @@ button {
   cursor: pointer !important;
   padding: 0 !important;
   pointer-events: auto !important;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, color 0.2s !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, color 0.2s !important;
 }
 
 .wishlist-btn:hover {
   transform: scale(1.15) !important;
   background-color: rgba(0, 0, 0, 0.8) !important;
   color: #ffffff !important;
+}
+
+.wishlist-btn:active {
+  transform: scale(1.3) !important;
 }
 
 .wishlist-btn.is-wishlisted,

@@ -381,8 +381,23 @@
             if (data.success && data.user) {
               currentUser = data.user;
               localStorage.setItem('genrage_user', JSON.stringify(currentUser));
+              if (Array.isArray(currentUser.cart) && currentUser.cart.length > 0) {
+                try {
+                  localStorage.setItem('genrage_cart', JSON.stringify(currentUser.cart));
+                  localStorage.setItem('genrage_cart_v1', JSON.stringify(currentUser.cart));
+                } catch (ce) {}
+              }
             }
           } catch (e) {}
+        }
+
+        if (currentUser && Array.isArray(currentUser.cart) && currentUser.cart.length > 0) {
+          try {
+            if (!localStorage.getItem('genrage_cart') || localStorage.getItem('genrage_cart') === '[]') {
+              localStorage.setItem('genrage_cart', JSON.stringify(currentUser.cart));
+              localStorage.setItem('genrage_cart_v1', JSON.stringify(currentUser.cart));
+            }
+          } catch (ce) {}
         }
 
         if (!currentUser) {

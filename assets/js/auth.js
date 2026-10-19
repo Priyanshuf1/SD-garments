@@ -43,6 +43,18 @@ const AuthEngine = {
       } catch (e) {}
     }
 
+    // Immediately persist user cart from cloud into localStorage across devices
+    if (Array.isArray(user.cart) && user.cart.length > 0) {
+      try {
+        localStorage.setItem('genrage_cart', JSON.stringify(user.cart));
+        localStorage.setItem('genrage_cart_v1', JSON.stringify(user.cart));
+        if (window.QuickBuyEngine) {
+          if (typeof window.QuickBuyEngine.updateAllBadges === 'function') window.QuickBuyEngine.updateAllBadges();
+          if (typeof window.QuickBuyEngine.renderGlobalCart === 'function') window.QuickBuyEngine.renderGlobalCart();
+        }
+      } catch (e) {}
+    }
+
     this.updateHeader();
     if (window.WishlistEngine) {
       window.WishlistEngine.loadUserWishlist(user);

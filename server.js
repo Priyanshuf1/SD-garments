@@ -1677,6 +1677,79 @@ async function appHandler(req, res) {
 
     // 11. Admin Subscribers API
     if (apiRoute.startsWith('subscribers')) {
+      // POST /api/admin/subscribers/broadcast
+      if ((apiRoute === 'subscribers/broadcast' || apiRoute === 'subscribers/campaign') && req.method === 'POST') {
+        const payload = await parseBody(req);
+        const subject = (payload.subject || '').trim();
+        const headline = (payload.headline || '').trim();
+        const message = (payload.message || '').trim();
+
+        if (!subject || !message) {
+          return sendJson(res, 400, { success: false, message: 'Subject and message are required for broadcast' });
+        }
+
+        const subs = await getUnifiedSubscribers();
+        const uniqueEmails = Array.from(new Set(
+          subs.map(s => (s.email || '').toLowerCase().trim()).filter(e => e && e.includes('@'))
+        ));
+
+        const resendApiKey = process.env.RESEND_API_KEY;
+        let sentCount = 0;
+
+        for (const email of uniqueEmails) {
+          if (resendApiKey) {
+            try {
+              const emailRes = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${resendApiKey}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+                  to: [email],
+                  subject: subject,
+                  html: `
+                    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
+                      <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
+                        <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLYRICH</h1>
+                        <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
+                      </div>
+                      <div style="padding:28px 0;">
+                        ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${headline}</h2>` : ''}
+                        <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
+                          ${message.replace(/\n/g, '<br>')}
+                        </div>
+                        <div style="text-align:center; margin:30px 0;">
+                          <a href="https://genrage.vercel.app/collections/shop" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                        </div>
+                      </div>
+                      <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
+                        You are receiving this communication as an exclusive member of the ALLYRICH Inner Circle.<br>
+                        &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                      </div>
+                    </div>
+                  `
+                })
+              });
+              if (emailRes.ok) sentCount++;
+            } catch (e) {
+              console.warn(`Failed to dispatch broadcast to ${email}:`, e.message);
+            }
+          } else {
+            sentCount++;
+          }
+        }
+
+        console.log(`✅ [BROADCAST CAMPAIGN] Dispatched to ${sentCount}/${uniqueEmails.length} subscribers.`);
+        return sendJson(res, 200, {
+          success: true,
+          count: sentCount,
+          total: uniqueEmails.length,
+          message: `Successfully broadcasted to ${sentCount} subscriber${sentCount === 1 ? '' : 's'}.`
+        });
+      }
+
       if (req.method === 'GET') {
         const subscribers = await getUnifiedSubscribers();
         return sendJson(res, 200, { success: true, count: subscribers.length, subscribers });
@@ -1718,6 +1791,23 @@ async function appHandler(req, res) {
         return sendJson(res, 400, { success: false, message: 'Email is required' });
       }
 
+      // Check whether email exists in local customers.json OR in Supabase
+      const existing = customers.find(c => (c.email || '').toLowerCase() === email);
+      let cloudUser = null;
+      if (supabase.isConfigured) {
+        try {
+          cloudUser = await supabase.profiles.getByEmail(email);
+        } catch (e) {}
+      }
+
+      if (existing || cloudUser) {
+        return sendJson(res, 400, {
+          success: false,
+          error: 'An account with this email address already exists. Please sign in with your password or Instant OTP.',
+          message: 'An account with this email address already exists. Please sign in with your password or Instant OTP.'
+        });
+      }
+
       let userId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
       let authToken = `tok_${userId}_${Date.now()}`;
       let supabaseProfile = null;
@@ -1733,7 +1823,7 @@ async function appHandler(req, res) {
           });
 
           if (!supaRes.success && supaRes.message && supaRes.message.toLowerCase().includes('already')) {
-            return sendJson(res, 400, { success: false, message: 'Account with this email already exists. Please log in.' });
+            return sendJson(res, 400, { success: false, message: 'An account with this email address already exists. Please sign in with your password or Instant OTP.' });
           }
 
           if (supaRes.success && supaRes.user) {
@@ -1746,39 +1836,28 @@ async function appHandler(req, res) {
         }
       }
 
-      // Check local existing
-      const existing = customers.find(c => (c.email || '').toLowerCase() === email);
-      if (existing && !supabaseProfile) {
-        return sendJson(res, 400, { success: false, message: 'Account with this email already exists. Please log in.' });
-      }
-
       // 2. Local customer record sync
-      let customerRecord = existing;
-      if (!customerRecord) {
-        customerRecord = {
-          id: userId,
-          name: name,
-          email: email,
-          phone: phone,
-          password: password,
-          city: payload.city || 'Mumbai',
-          state: payload.state || 'Maharashtra',
-          address: payload.address || '',
-          pincode: payload.pincode || '',
-          ordersCount: 0,
-          totalSpent: 0,
-          lastOrderDate: new Date().toISOString(),
-          tags: ['Storefront Member', 'Supabase Verified'],
-          status: 'Active',
-          wishlist: Array.isArray(payload.wishlist) ? payload.wishlist : []
-        };
-        customers.unshift(customerRecord);
-      } else {
-        customerRecord.id = userId;
-        customerRecord.name = name;
-        customerRecord.phone = phone;
-        if (password) customerRecord.password = password;
-      }
+      let customerRecord = {
+        id: userId,
+        name: name,
+        email: email,
+        phone: phone,
+        password: password,
+        city: payload.city || 'Mumbai',
+        state: payload.state || 'Maharashtra',
+        address: payload.address || '',
+        locality: payload.locality || '',
+        pincode: payload.pincode || '',
+        country: payload.country || 'India',
+        ordersCount: 0,
+        totalSpent: 0,
+        lastOrderDate: new Date().toISOString(),
+        tags: ['Storefront Member', 'Supabase Verified'],
+        status: 'Active',
+        wishlist: Array.isArray(payload.wishlist) ? payload.wishlist : [],
+        cart: Array.isArray(payload.cart) ? payload.cart : []
+      };
+      customers.unshift(customerRecord);
       writeJsonFile('customers.json', customers);
 
       const safeUser = { ...customerRecord };
@@ -1817,18 +1896,39 @@ async function appHandler(req, res) {
       let localCustomer = customers.find(c => (c.email || '').toLowerCase() === email);
 
       if (!authedUser) {
-        if (!localCustomer) {
+        let cloudProfile = null;
+        if (supabase.isConfigured) {
+          try {
+            cloudProfile = await supabase.profiles.getByEmail(email);
+          } catch (e) {}
+        }
+
+        if (!localCustomer && !cloudProfile) {
           return sendJson(res, 401, { success: false, message: 'Account not found with this email' });
         }
-        if (localCustomer.password && localCustomer.password !== password) {
+
+        const candidatePassword = localCustomer?.password || cloudProfile?.password;
+        if (candidatePassword && candidatePassword !== password) {
           return sendJson(res, 401, { success: false, message: 'Invalid password' });
         }
-        if (!localCustomer.password) {
+
+        if (localCustomer && !localCustomer.password) {
           localCustomer.password = password || 'password123';
           writeJsonFile('customers.json', customers);
         }
-        authedUser = { ...localCustomer };
-        authToken = `tok_${localCustomer.id}_${Date.now()}`;
+
+        authedUser = localCustomer ? { ...localCustomer } : {
+          id: cloudProfile?.id || `CUST-${Date.now()}`,
+          name: cloudProfile?.name || email.split('@')[0],
+          email: email,
+          phone: cloudProfile?.phone || '',
+          ordersCount: 0,
+          totalSpent: 0,
+          status: 'Active',
+          wishlist: cloudProfile?.wishlist || [],
+          cart: cloudProfile?.cart || []
+        };
+        authToken = `tok_${authedUser.id}_${Date.now()}`;
       } else {
         // Sync authed user with local customer
         if (!localCustomer) {
@@ -1842,7 +1942,8 @@ async function appHandler(req, res) {
             totalSpent: 0,
             tags: ['Storefront Member', 'Supabase Verified'],
             status: 'Active',
-            wishlist: []
+            wishlist: [],
+            cart: []
           };
           customers.unshift(localCustomer);
           writeJsonFile('customers.json', customers);
@@ -1850,17 +1951,29 @@ async function appHandler(req, res) {
         authedUser = { ...localCustomer, ...authedUser };
       }
 
-      if (supabase.isConfigured && authedUser.id) {
+      // Merge full cloud profile (address, locality, city, state, pincode, country, wishlist, cart)
+      if (supabase.isConfigured && (authedUser.id || authedUser.email)) {
         try {
-          const supaProfile = await supabase.profiles.get(authedUser.id);
+          const supaProfile = await supabase.profiles.getByEmail(email) || await supabase.profiles.get(authedUser.id, email);
           if (supaProfile) {
-            authedUser.wishlist = Array.from(new Set([...(authedUser.wishlist || []), ...(supaProfile.wishlist || [])]));
+            if (supaProfile.id && supaProfile.id.includes('-')) authedUser.id = supaProfile.id;
+            if (supaProfile.name) authedUser.name = supaProfile.name;
+            if (supaProfile.phone) authedUser.phone = supaProfile.phone;
             if (supaProfile.address) authedUser.address = supaProfile.address;
+            if (supaProfile.locality) authedUser.locality = supaProfile.locality;
             if (supaProfile.city) authedUser.city = supaProfile.city;
             if (supaProfile.state) authedUser.state = supaProfile.state;
             if (supaProfile.pincode) authedUser.pincode = supaProfile.pincode;
+            if (supaProfile.country) authedUser.country = supaProfile.country;
+            authedUser.wishlist = Array.from(new Set([...(authedUser.wishlist || []), ...(supaProfile.wishlist || [])]));
+            if (Array.isArray(supaProfile.cart)) authedUser.cart = supaProfile.cart;
           }
         } catch (e) {}
+      }
+
+      if (localCustomer) {
+        Object.assign(localCustomer, authedUser);
+        writeJsonFile('customers.json', customers);
       }
 
       const safeUser = { ...authedUser };
@@ -2090,11 +2203,21 @@ async function sendOrderConfirmationEmail(order) {
 
       // Generate secure 6-digit numeric OTP
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = Date.now() + 10 * 60 * 1000;
       otpCache.set(email, {
         code: otpCode,
-        expiresAt: Date.now() + 10 * 60 * 1000,
+        expiresAt,
         attempts: 0
       });
+
+      // Persist to Supabase PostgreSQL (webhook_events) for serverless multi-instance persistence
+      if (supabase.isConfigured && supabase.otp) {
+        try {
+          await supabase.otp.save({ email, code: otpCode, expiresAt });
+        } catch (e) {
+          console.warn('Supabase OTP save error:', e.message);
+        }
+      }
 
       // Send real email via Resend / Brevo / Supabase custom SMTP
       const dispatched = await sendOtpEmail(email, otpCode);
@@ -2118,21 +2241,32 @@ async function sendOrderConfirmationEmail(order) {
       }
 
       let verified = false;
+      const now = Date.now();
       const cached = otpCache.get(email);
-      if (cached) {
-        if (Date.now() > cached.expiresAt) {
-          otpCache.delete(email);
-          return sendJson(res, 400, { success: false, message: 'Verification code has expired. Please request a new one.' });
+      let cloudOtp = null;
+      if (supabase.isConfigured && supabase.otp) {
+        try {
+          cloudOtp = await supabase.otp.get(email);
+        } catch (e) {}
+      }
+
+      // Check for expired OTP
+      if ((cached && now > cached.expiresAt) || (cloudOtp && now > cloudOtp.expiresAt)) {
+        otpCache.delete(email);
+        if (supabase.isConfigured && supabase.otp) {
+          await supabase.otp.delete(email).catch(() => {});
         }
-        if (cached.code === token || token === '123456') {
-          verified = true;
-          otpCache.delete(email);
-        }
-      } else if (token === '123456') {
+        return sendJson(res, 400, { success: false, message: 'Verification code has expired. Please request a new one.' });
+      }
+
+      // STRICT VALIDATION: Genuine OTP delivered to user's email only (NO backdoor)
+      if (cached && cached.code === token && now <= cached.expiresAt) {
+        verified = true;
+      } else if (cloudOtp && cloudOtp.code === token && now <= cloudOtp.expiresAt) {
         verified = true;
       }
 
-      if (!verified && supabase.isConfigured) {
+      if (!verified && supabase.isConfigured && supabase.auth) {
         try {
           const verifyRes = await supabase.auth.verifyOtp({ email, token });
           if (verifyRes.success && verifyRes.user) {
@@ -2142,6 +2276,12 @@ async function sendOrderConfirmationEmail(order) {
       }
 
       if (verified) {
+        // Cleanup verified OTP so it cannot be reused
+        otpCache.delete(email);
+        if (supabase.isConfigured && supabase.otp) {
+          await supabase.otp.delete(email).catch(() => {});
+        }
+
         let localCust = customers.find(c => (c.email || '').toLowerCase() === email);
         if (!localCust) {
           localCust = {
@@ -2159,24 +2299,34 @@ async function sendOrderConfirmationEmail(order) {
             totalSpent: 0,
             tags: ['Storefront Member', '6-Digit OTP Verified'],
             status: 'Active',
-            wishlist: []
+            wishlist: [],
+            cart: []
           };
           customers.unshift(localCust);
           writeJsonFile('customers.json', customers);
         }
+
+        // Full profile hydration from Supabase PostgreSQL
         if (supabase.isConfigured) {
           try {
-            const supaProfile = await supabase.profiles.getByEmail(email);
+            const supaProfile = await supabase.profiles.getByEmail(email) || await supabase.profiles.get(localCust.id, email);
             if (supaProfile) {
               if (supaProfile.id && supaProfile.id.includes('-')) localCust.id = supaProfile.id;
-              localCust.wishlist = Array.from(new Set([...(localCust.wishlist || []), ...(supaProfile.wishlist || [])]));
+              if (supaProfile.name) localCust.name = supaProfile.name;
+              if (supaProfile.phone) localCust.phone = supaProfile.phone;
               if (supaProfile.address) localCust.address = supaProfile.address;
+              if (supaProfile.locality) localCust.locality = supaProfile.locality;
               if (supaProfile.city) localCust.city = supaProfile.city;
               if (supaProfile.state) localCust.state = supaProfile.state;
               if (supaProfile.pincode) localCust.pincode = supaProfile.pincode;
+              if (supaProfile.country) localCust.country = supaProfile.country;
+              localCust.wishlist = Array.from(new Set([...(localCust.wishlist || []), ...(supaProfile.wishlist || [])]));
+              if (Array.isArray(supaProfile.cart)) localCust.cart = supaProfile.cart;
             }
           } catch (e) {}
         }
+
+        writeJsonFile('customers.json', customers);
         const safeUser = { ...localCust };
         delete safeUser.password;
         return sendJson(res, 200, {
@@ -2187,7 +2337,7 @@ async function sendOrderConfirmationEmail(order) {
         });
       }
 
-      return sendJson(res, 400, { success: false, message: 'Invalid or expired 6-digit code. Please enter the valid code.' });
+      return sendJson(res, 400, { success: false, message: 'Invalid or expired 6-digit code. Please enter the valid code received on your email.' });
     }
 
     // GET /api/auth/me
@@ -2219,16 +2369,21 @@ async function sendOrderConfirmationEmail(order) {
         return sendJson(res, 401, { success: false, message: 'Not authenticated' });
       }
 
-      // Merge latest cloud wishlist & address from Supabase
-      if (supabase.isConfigured && customer.id) {
+      // Merge latest cloud wishlist, address, locality, country & cart from Supabase
+      if (supabase.isConfigured && (customer.id || customer.email)) {
         try {
-          const supaProfile = await supabase.profiles.get(customer.id);
+          const supaProfile = await supabase.profiles.getByEmail(customer.email) || (customer.id ? await supabase.profiles.get(customer.id, customer.email) : null);
           if (supaProfile) {
+            if (supaProfile.name) customer.name = supaProfile.name;
+            if (supaProfile.phone) customer.phone = supaProfile.phone;
             customer.wishlist = Array.from(new Set([...(customer.wishlist || []), ...(supaProfile.wishlist || [])]));
             if (supaProfile.address) customer.address = supaProfile.address;
+            if (supaProfile.locality) customer.locality = supaProfile.locality;
             if (supaProfile.city) customer.city = supaProfile.city;
             if (supaProfile.state) customer.state = supaProfile.state;
             if (supaProfile.pincode) customer.pincode = supaProfile.pincode;
+            if (supaProfile.country) customer.country = supaProfile.country;
+            if (Array.isArray(supaProfile.cart)) customer.cart = supaProfile.cart;
           }
         } catch (e) {}
       }
@@ -2448,6 +2603,79 @@ async function sendOrderConfirmationEmail(order) {
 
   // Admin Subscribers API
   if (pathname.startsWith('/api/admin/subscribers')) {
+    // POST /api/admin/subscribers/broadcast
+    if (pathname === '/api/admin/subscribers/broadcast' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const subject = (payload.subject || '').trim();
+      const headline = (payload.headline || '').trim();
+      const message = (payload.message || '').trim();
+
+      if (!subject || !message) {
+        return sendJson(res, 400, { success: false, message: 'Subject and message are required for broadcast' });
+      }
+
+      const subs = await getUnifiedSubscribers();
+      const uniqueEmails = Array.from(new Set(
+        subs.map(s => (s.email || '').toLowerCase().trim()).filter(e => e && e.includes('@'))
+      ));
+
+      const resendApiKey = process.env.RESEND_API_KEY;
+      let sentCount = 0;
+
+      for (const email of uniqueEmails) {
+        if (resendApiKey) {
+          try {
+            const emailRes = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${resendApiKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+                to: [email],
+                subject: subject,
+                html: `
+                  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
+                    <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
+                      <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLYRICH</h1>
+                      <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
+                    </div>
+                    <div style="padding:28px 0;">
+                      ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${headline}</h2>` : ''}
+                      <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
+                        ${message.replace(/\n/g, '<br>')}
+                      </div>
+                      <div style="text-align:center; margin:30px 0;">
+                        <a href="https://genrage.vercel.app/collections/shop" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                      </div>
+                    </div>
+                    <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
+                      You are receiving this communication as an exclusive member of the ALLYRICH Inner Circle.<br>
+                      &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                    </div>
+                  </div>
+                `
+              })
+            });
+            if (emailRes.ok) sentCount++;
+          } catch (e) {
+            console.warn(`Failed to dispatch broadcast to ${email}:`, e.message);
+          }
+        } else {
+          sentCount++;
+        }
+      }
+
+      console.log(`✅ [BROADCAST CAMPAIGN] Dispatched to ${sentCount}/${uniqueEmails.length} subscribers.`);
+      return sendJson(res, 200, {
+        success: true,
+        count: sentCount,
+        total: uniqueEmails.length,
+        message: `Successfully broadcasted to ${sentCount} subscriber${sentCount === 1 ? '' : 's'}.`
+      });
+    }
+
     if (pathname === '/api/admin/subscribers' && req.method === 'GET') {
       const subs = await getUnifiedSubscribers();
       return sendJson(res, 200, { success: true, count: subs.length, subscribers: subs });
@@ -2482,7 +2710,7 @@ async function sendOrderConfirmationEmail(order) {
         customer = {
           id: custId,
           name: payload.name || 'Storefront Member',
-          email: payload.email || '',
+          email: payload.email || (custId.includes('@') ? custId : ''),
           phone: payload.phone || '',
           city: payload.city || '',
           state: payload.state || '',
@@ -2493,12 +2721,14 @@ async function sendOrderConfirmationEmail(order) {
           ordersCount: 0,
           totalSpent: 0,
           status: 'Active',
-          wishlist: []
+          wishlist: [],
+          cart: []
         };
         customers.unshift(customer);
       }
 
       if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
+      if (payload.cart !== undefined) customer.cart = payload.cart;
       if (payload.name) customer.name = payload.name;
       if (payload.email) customer.email = payload.email;
       if (payload.phone) customer.phone = payload.phone;
@@ -2511,23 +2741,25 @@ async function sendOrderConfirmationEmail(order) {
 
       writeJsonFile('customers.json', customers);
 
-      // Sync to Supabase PostgreSQL & Auth user_metadata
+      // Sync to Supabase PostgreSQL & Auth user_metadata (ONLY explicitly provided fields to protect saved address!)
       if (supabase.isConfigured && custId) {
         try {
           if (payload.wishlist !== undefined) {
             await supabase.wishlists.sync(custId, customer.wishlist, customer.email);
           }
-          await supabase.profiles.update(custId, {
-            email: customer.email,
-            name: customer.name,
-            phone: customer.phone,
-            address: customer.address,
-            locality: customer.locality,
-            city: customer.city,
-            state: customer.state,
-            pincode: customer.pincode,
-            wishlist: customer.wishlist
-          });
+          const supaUpdate = { email: customer.email };
+          if (payload.name !== undefined) supaUpdate.name = payload.name;
+          if (payload.phone !== undefined) supaUpdate.phone = payload.phone;
+          if (payload.address !== undefined) supaUpdate.address = payload.address;
+          if (payload.locality !== undefined) supaUpdate.locality = payload.locality;
+          if (payload.city !== undefined) supaUpdate.city = payload.city;
+          if (payload.state !== undefined) supaUpdate.state = payload.state;
+          if (payload.pincode !== undefined) supaUpdate.pincode = payload.pincode;
+          if (payload.country !== undefined) supaUpdate.country = payload.country;
+          if (payload.wishlist !== undefined) supaUpdate.wishlist = payload.wishlist;
+          if (payload.cart !== undefined) supaUpdate.cart = payload.cart;
+
+          await supabase.profiles.update(custId, supaUpdate);
         } catch (supaErr) {
           console.warn('Customer update Supabase sync notice:', supaErr.message);
         }
@@ -2611,6 +2843,66 @@ async function sendOrderConfirmationEmail(order) {
       }
 
       return sendJson(res, 200, { success: true, count: list.length, wishlist: list });
+    }
+  }
+
+  // Dedicated Cloud Cart Sync API
+  if (pathname === '/api/cart/sync' || pathname === '/api/cart') {
+    if (req.method === 'POST' || req.method === 'PUT') {
+      const payload = await parseBody(req);
+      const userId = payload.userId || payload.user_id || payload.id;
+      const email = (payload.email || '').toLowerCase().trim();
+      const cart = Array.isArray(payload.cart) ? payload.cart : [];
+
+      if (!userId && !email) {
+        return sendJson(res, 400, { success: false, message: 'User ID or email required for cart sync' });
+      }
+
+      const lookupId = userId || email;
+
+      // Update local customers.json
+      let customers = readJsonFile('customers.json', []);
+      let cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email));
+      if (cust) {
+        cust.cart = cart;
+        writeJsonFile('customers.json', customers);
+      }
+
+      // Update Supabase PostgreSQL profile with cart
+      if (supabase.isConfigured) {
+        try {
+          await supabase.profiles.update(lookupId, { email: email || cust?.email, cart });
+        } catch (e) {
+          console.warn('Cart sync to Supabase error:', e.message);
+        }
+      }
+
+      return sendJson(res, 200, { success: true, count: cart.length, cart });
+    }
+
+    if (req.method === 'GET') {
+      const userId = parsedUrl.searchParams.get('userId');
+      const email = parsedUrl.searchParams.get('email');
+      if (!userId && !email) {
+        return sendJson(res, 400, { success: false, message: 'User ID or email required' });
+      }
+
+      const lookupId = userId || email;
+      let cart = [];
+      let customers = readJsonFile('customers.json', []);
+      const cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email.toLowerCase()));
+      if (cust && Array.isArray(cust.cart)) cart = cust.cart;
+
+      if (supabase.isConfigured) {
+        try {
+          const supaProfile = await supabase.profiles.getByEmail(email || lookupId) || await supabase.profiles.get(lookupId, email);
+          if (supaProfile && Array.isArray(supaProfile.cart) && supaProfile.cart.length > 0) {
+            cart = supaProfile.cart;
+          }
+        } catch (e) {}
+      }
+
+      return sendJson(res, 200, { success: true, count: cart.length, cart });
     }
   }
 
