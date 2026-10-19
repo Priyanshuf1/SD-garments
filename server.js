@@ -7,6 +7,31 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+
+// Load environment variables from .env and .env.local if present
+['.env', '.env.local'].forEach(file => {
+  const p = path.join(__dirname, file);
+  if (fs.existsSync(p)) {
+    try {
+      const content = fs.readFileSync(p, 'utf8');
+      content.split(/\r?\n/).forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+          const idx = trimmed.indexOf('=');
+          const key = trimmed.substring(0, idx).trim();
+          let val = trimmed.substring(idx + 1).trim();
+          if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.substring(1, val.length - 1);
+          }
+          if (!process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      });
+    } catch (e) {}
+  }
+});
+
 const supabase = require('./lib/supabase.js');
 
 const PORT = process.env.PORT || 3000;
@@ -913,6 +938,11 @@ async function handleCreateOrder(req, res, isCheckout = false) {
       }
     }
   } catch (e) {}
+
+  // Send real order confirmation email via Resend if email is provided
+  sendOrderConfirmationEmail(newOrder).catch(err => {
+    console.warn('⚠️ [ASYNC ORDER EMAIL WARNING]:', err.message);
+  });
 
   return sendJson(res, 201, {
     success: true,
@@ -1953,6 +1983,101 @@ async function sendOtpEmail(email, otpCode) {
   console.log(`======================================================\n`);
 
   return emailDispatched;
+}
+
+// Order Confirmation Email Service via Resend
+async function sendOrderConfirmationEmail(order) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const email = (order.customer?.email || '').trim();
+  if (!resendApiKey || !email || !email.includes('@')) return false;
+
+  const itemsHtml = (order.items || []).map(item => `
+    <tr>
+      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee;">
+        <div style="font-weight: 700; color: #111;">${item.title || item.name || 'ALLYRICH Streetwear Item'}</div>
+        <div style="font-size: 12px; color: #777;">Size: ${item.size || 'M'} &bull; Qty: ${item.quantity || 1}</div>
+      </td>
+      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; text-align: right; font-weight: 700; color: #111;">
+        ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
+      </td>
+    </tr>
+  `).join('');
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+        to: [email],
+        subject: `Order Confirmed: #${order.id} - ALLYRICH`,
+        html: `
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:560px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
+            <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
+              <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
+              <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+            </div>
+            <div style="padding:24px 0;">
+              <h2 style="font-size:18px; margin:0 0 8px; color:#000;">Thank You for Your Order</h2>
+              <p style="font-size:14px; color:#555; margin:0 0 20px;">Order <strong>#${order.id}</strong> has been received and is being prepared for dispatch.</p>
+              
+              <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                <thead>
+                  <tr style="border-bottom:2px solid #000; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">
+                    <th style="text-align:left; padding:8px 0;">Item</th>
+                    <th style="text-align:right; padding:8px 0;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+
+              <div style="background:#f9f9f9; padding:16px; border-radius:6px; margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
+                  <span>Subtotal:</span>
+                  <span>₹${(order.subtotal || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
+                  <span>Shipping:</span>
+                  <span>${order.shipping === 0 ? 'FREE' : '₹' + order.shipping}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:#000; padding-top:8px; border-top:1px solid #ddd;">
+                  <span>Order Total:</span>
+                  <span>₹${(order.total || 0).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div style="font-size:13px; color:#444; line-height:1.6;">
+                <strong>Shipping Address:</strong><br>
+                ${order.customer?.name || ''}<br>
+                ${order.customer?.address || ''}${order.customer?.locality ? ', ' + order.customer.locality : ''}<br>
+                ${order.customer?.city || ''}, ${order.customer?.state || ''} ${order.customer?.pincode || ''}<br>
+                ${order.customer?.country || 'India'}
+              </div>
+            </div>
+            <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
+              If you have questions about your order, reply to this email or visit our website.<br>
+              &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+            </div>
+          </div>
+        `
+      })
+    });
+    if (res.ok) {
+      console.log(`✅ [ORDER CONFIRMATION EMAIL] Delivered to ${email} for order ${order.id}`);
+      return true;
+    } else {
+      const errText = await res.text();
+      console.warn(`⚠️ [ORDER CONFIRMATION EMAIL ERROR]:`, errText);
+    }
+  } catch (err) {
+    console.warn(`⚠️ [ORDER EMAIL EXCEPTION]:`, err.message);
+  }
+  return false;
 }
 
     // POST /api/auth/send-otp and /api/auth/magic-link (100% Free 6-Digit Numeric OTP)
