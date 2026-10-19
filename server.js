@@ -2266,7 +2266,7 @@ async function sendOrderConfirmationEmail(order) {
 
       if (!customer && payload.email) {
         customer = {
-          id: `CUST-${Date.now()}`,
+          id: payload.id || payload.userId || `CUST-${Date.now()}`,
           name: payload.name || payload.email.split('@')[0],
           email: payload.email.toLowerCase(),
           phone: payload.phone || '',
@@ -2472,8 +2472,9 @@ async function sendOrderConfirmationEmail(order) {
   // -------------------------------------------------------------
   if (pathname.startsWith('/api/customers/')) {
     const custId = pathname.replace('/api/customers/', '').replace(/\/$/, '');
+    const emailQuery = (parsedUrl.searchParams.get('email') || '').toLowerCase().trim();
     let customers = readJsonFile('customers.json', []);
-    let customer = customers.find(c => String(c.id) === String(custId));
+    let customer = customers.find(c => String(c.id) === String(custId) || (emailQuery && c.email && c.email.toLowerCase() === emailQuery));
 
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
@@ -2540,7 +2541,10 @@ async function sendOrderConfirmationEmail(order) {
     if (req.method === 'GET') {
       if (!customer && supabase.isConfigured) {
         try {
-          customer = await supabase.profiles.get(custId, custId.includes('@') ? custId : null);
+          customer = await supabase.profiles.get(custId, emailQuery || (custId.includes('@') ? custId : null));
+          if (!customer && emailQuery) {
+            customer = await supabase.profiles.getByEmail(emailQuery);
+          }
         } catch (e) {}
       }
       if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
