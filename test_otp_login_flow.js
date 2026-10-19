@@ -116,20 +116,34 @@ server.listen(TEST_PORT, async () => {
     assert.strictEqual(badRes.status, 400, 'verify-otp with bad code must return 400');
     console.log('✅ PASS: verify-otp correctly rejected invalid OTP');
 
-    // Test F: Verify OTP with valid test code '123456' -> should pass with 200
-    console.log('Testing POST /api/auth/verify-otp with test master code...');
-    const okRes = await fetch(`http://127.0.0.1:${TEST_PORT}/api/auth/verify-otp`, {
+    // Test F: Backdoor '123456' must be rejected with 400
+    console.log('Testing POST /api/auth/verify-otp with removed backdoor 123456...');
+    const backdoorRes = await fetch(`http://127.0.0.1:${TEST_PORT}/api/auth/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: testEmail, code: '123456' })
     });
-    assert.strictEqual(okRes.status, 200, 'verify-otp with valid code must return 200');
+    assert.strictEqual(backdoorRes.status, 400, 'verify-otp with backdoor 123456 must return 400');
+    console.log('✅ PASS: verify-otp correctly rejected removed 123456 backdoor');
+
+    // Test G: Verify genuine OTP from Supabase PostgreSQL persistence
+    console.log('Testing POST /api/auth/verify-otp with real generated OTP...');
+    const supabaseAdapter = require('./lib/supabase');
+    const cloudRecord = await supabaseAdapter.otp.get(testEmail);
+    assert(cloudRecord && cloudRecord.code, 'Cloud OTP record must exist in Supabase');
+
+    const okRes = await fetch(`http://127.0.0.1:${TEST_PORT}/api/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, code: cloudRecord.code })
+    });
+    assert.strictEqual(okRes.status, 200, 'verify-otp with genuine OTP must return 200');
     const okData = await okRes.json();
     assert.strictEqual(okData.success, true, 'verify-otp success must be true');
     assert.ok(okData.token, 'verify-otp must issue token');
     assert.ok(okData.user, 'verify-otp must return user');
     assert.strictEqual(okData.user.email, testEmail, 'verify-otp returned correct user email');
-    console.log('✅ PASS: verify-otp succeeded and issued token & user profile');
+    console.log('✅ PASS: verify-otp succeeded with genuine OTP and issued token & user profile');
 
     console.log('\n======================================================');
     console.log('🎉 ALL 5 STOREFRONT DEFECT FIXES VERIFIED SUCCESSFULLY!');

@@ -701,6 +701,7 @@
 
   // Expose globally
   window.QuickBuyEngine = QuickBuy;
+  window.QuickBuy = QuickBuy;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => QuickBuy.init());

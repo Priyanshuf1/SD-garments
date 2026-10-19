@@ -42,8 +42,13 @@
 <body>
   <header class="site-header">
     <div class="site-header__inner">
-      <!-- Left: Brand Logo -->
+      <!-- Left: Brand Logo & Mobile Menu Trigger -->
       <div style="display:flex; align-items:center; gap: 1.25rem; flex-shrink: 0; min-width: max-content;">
+        <button class="mobile-menu-trigger action-touch-btn" id="mobile-menu-trigger" aria-label="Open Navigation Menu" style="background:none; border:none; color:#ffffff; cursor:pointer; align-items:center; justify-content:center; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
         <a href="/" class="allyrich-header-brand" aria-label="ALLYRICH Home" style="flex-shrink: 0; min-width: max-content;">
           <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="30" height="38">
           <span class="allyrich-header-brand-name">ALLYRICH</span>

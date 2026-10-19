@@ -4699,10 +4699,18 @@ const Admin = {
   },
 
   openBroadcastModal() {
+    const updateBadge = (cnt) => {
+      const badge = document.getElementById('broadcast-recipient-badge');
+      if (badge) {
+        badge.textContent = `✉️ Will broadcast campaign to ${cnt} active Inner Circle subscriber${cnt === 1 ? '' : 's'}`;
+      }
+    };
     const count = (this.subscribers || []).length;
-    const badge = document.getElementById('broadcast-recipient-badge');
-    if (badge) {
-      badge.textContent = `✉️ Will broadcast campaign to ${count} active Inner Circle subscriber${count === 1 ? '' : 's'}`;
+    updateBadge(count);
+    if (!this.subscribers || this.subscribers.length === 0) {
+      this.fetchSubscribers().then(() => {
+        updateBadge((this.subscribers || []).length);
+      }).catch(() => {});
     }
     const statusEl = document.getElementById('broadcast-status');
     if (statusEl) {

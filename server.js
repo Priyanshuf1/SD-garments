@@ -2465,6 +2465,8 @@ async function sendOrderConfirmationEmail(order) {
             city: customer.city,
             state: customer.state,
             pincode: customer.pincode,
+            country: customer.country,
+            cart: customer.cart,
             wishlist: customer.wishlist
           });
           if (payload.wishlist !== undefined) {
@@ -2776,6 +2778,24 @@ async function sendOrderConfirmationEmail(order) {
           customer = await supabase.profiles.get(custId, emailQuery || (custId.includes('@') ? custId : null));
           if (!customer && emailQuery) {
             customer = await supabase.profiles.getByEmail(emailQuery);
+          }
+        } catch (e) {}
+      } else if (customer && supabase.isConfigured) {
+        try {
+          const supaProfile = await supabase.profiles.getByEmail(customer.email || emailQuery) || await supabase.profiles.get(custId, customer.email || emailQuery);
+          if (supaProfile) {
+            if (supaProfile.address && !customer.address) customer.address = supaProfile.address;
+            if (supaProfile.locality && !customer.locality) customer.locality = supaProfile.locality;
+            if (supaProfile.city && !customer.city) customer.city = supaProfile.city;
+            if (supaProfile.state && !customer.state) customer.state = supaProfile.state;
+            if (supaProfile.pincode && !customer.pincode) customer.pincode = supaProfile.pincode;
+            if (supaProfile.country && (!customer.country || customer.country === 'India')) customer.country = supaProfile.country;
+            if (supaProfile.phone && !customer.phone) customer.phone = supaProfile.phone;
+            if (supaProfile.name && (!customer.name || customer.name === 'Storefront Member')) customer.name = supaProfile.name;
+            if (Array.isArray(supaProfile.cart) && (!customer.cart || customer.cart.length === 0)) customer.cart = supaProfile.cart;
+            if (Array.isArray(supaProfile.wishlist)) {
+              customer.wishlist = Array.from(new Set([...(customer.wishlist || []), ...supaProfile.wishlist]));
+            }
           }
         } catch (e) {}
       }

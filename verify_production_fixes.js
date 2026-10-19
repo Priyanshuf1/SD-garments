@@ -111,7 +111,13 @@ async function verifyLive() {
     assert(res.raw && res.raw.includes('ar-logo.png'), `${page} uses official AR logo`);
     assert(res.raw && !res.raw.includes('logo.png?v='), `${page} contains no broken shopify logo`);
     assert(res.raw && res.raw.includes('footer-ruins.webp'), `${page} renders ruins footer`);
+    assert(res.raw && res.raw.includes('id="mobile-menu-trigger"'), `${page} renders mobile menu trigger in header`);
+    assert(res.raw && res.raw.includes('id="mobile-drawer"'), `${page} renders mobile drawer navigation`);
   }
+
+  // Wishlist touch handling
+  const wishJsRes = await request({ hostname, path: '/assets/js/wishlist.js', method: 'GET' });
+  assert(wishJsRes.status === 200 && wishJsRes.raw.includes('touchstart') && wishJsRes.raw.includes('wishlistTouchMoved'), 'Live wishlist.js includes touchstart and scroll suppression');
 
   // 7. Index HTML Assets & Loader
   console.log('\n--- 7. Live Loader & Script Cleanliness ---');

@@ -58,6 +58,7 @@ async function runTests() {
     assert(wishlistJs.includes('this.updateButtons(cleanHandle, isAdded)'), 'wishlist.js performs instant optimistic DOM button update');
     assert(wishlistJs.includes('scale(1.25)'), 'wishlist.js applies tactile scale pulse');
     assert(!wishlistJs.includes('this._isUpdating = true'), 'wishlist.js removed restrictive multi-tap lock');
+    assert(wishlistJs.includes('touchstart') && wishlistJs.includes('wishlistTouchMoved'), 'wishlist.js implements touchstart and scroll-swipe suppression for mobile');
 
     const customCss = fs.readFileSync(path.resolve(__dirname, 'assets/css/custom.css'), 'utf8');
     assert(customCss.includes('touch-action: manipulation !important;'), 'custom.css enforces touch-action: manipulation on wishlist buttons');
@@ -216,6 +217,8 @@ async function runTests() {
       assert(content.includes('shopify-section-sections--footer'), `${file} uses ruins footer`);
       assert(content.includes('footer-ruins.webp'), `${file} includes ruins background`);
       assert(content.includes('wishlist.js') && content.includes('auth.js') && content.includes('quick-buy.js'), `${file} includes required engine scripts`);
+      assert(content.includes('id="mobile-menu-trigger"'), `${file} includes mobile menu hamburger trigger in header`);
+      assert(content.includes('id="mobile-drawer"'), `${file} includes responsive mobile navigation drawer`);
 
       // Check direct server route
       const cleanRoute = '/' + file.replace('.html', '');

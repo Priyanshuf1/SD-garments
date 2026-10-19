@@ -386,11 +386,37 @@ function handleWishlistTrigger(btn, e) {
 }
 
 let lastWishlistTouchTs = 0;
+let wishlistTouchStartX = 0;
+let wishlistTouchStartY = 0;
+let wishlistTouchMoved = false;
 
-// Fast touch response on mobile (0ms delay)
+// Fast touch response on mobile (0ms delay on genuine taps)
+document.addEventListener('touchstart', (e) => {
+  const btn = e.target.closest('.wishlist-btn');
+  if (!btn) return;
+  const touch = e.touches[0];
+  if (touch) {
+    wishlistTouchStartX = touch.clientX;
+    wishlistTouchStartY = touch.clientY;
+    wishlistTouchMoved = false;
+  }
+}, { passive: true, capture: true });
+
+document.addEventListener('touchmove', (e) => {
+  if (e.touches && e.touches[0]) {
+    const dx = e.touches[0].clientX - wishlistTouchStartX;
+    const dy = e.touches[0].clientY - wishlistTouchStartY;
+    if (Math.hypot(dx, dy) > 10) {
+      wishlistTouchMoved = true;
+    }
+  }
+}, { passive: true, capture: true });
+
 document.addEventListener('touchend', (e) => {
   const btn = e.target.closest('.wishlist-btn');
   if (!btn) return;
+  // If user was scrolling/swiping through cards, ignore tap
+  if (wishlistTouchMoved) return;
   lastWishlistTouchTs = Date.now();
   handleWishlistTrigger(btn, e);
 }, { passive: false, capture: true });
