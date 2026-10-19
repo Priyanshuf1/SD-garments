@@ -194,8 +194,10 @@
         <button type="submit" class="btn-submit" id="btn-signup">CREATE ACCOUNT</button>
       </form>
 
-      <div style="text-align:center; margin-top:1.5rem;">
-        <a href="/collections/shop" style="color:#666; font-size:0.8rem; text-decoration:none;">← Return to Store</a>
+      <div style="text-align:center; margin-top:1.5rem; display:flex; justify-content:center; align-items:center; gap:12px; font-size:0.8rem;">
+        <a href="/collections/shop" style="color:#666; text-decoration:none;">← Return to Store</a>
+        <span style="color:#ccc;">|</span>
+        <a href="/pages/contact.html" onclick="if(window.openChatModal){window.openChatModal(); return false;}" style="color:#000; font-weight:700; text-decoration:none;">Chat with Us</a>
       </div>
     </div>
   </main>
@@ -319,5 +321,6 @@
       }
     }
   </script>
+  <script src="/assets/js/chat-widget.js"></script>
 </body>
 </html>

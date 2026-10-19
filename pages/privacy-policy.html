@@ -63,7 +63,7 @@
         <a href="/collections/hoodies-for-men" class="header-nav-link">HOODIES</a>
         <a href="/collections/baggy-pants" class="header-nav-link">BOTTOMS</a>
         <a href="/collections/clearance-sale" class="header-nav-link" style="color:#e50914;">CLEARANCE SALE</a>
-        <a href="/pages/contact.html" class="header-nav-link">CONTACT</a>
+        <a href="/pages/contact.html" class="header-nav-link" onclick="if(window.openChatModal){window.openChatModal(); return false;}">CHAT WITH US</a>
       </nav>
 
       <!-- Right: User Account, Wishlist, Search, Cart -->
@@ -156,6 +156,7 @@
           <div class="site-footer__columns">
             <div class="site-footer__column">
               <p class="site-footer__heading">CLIENT CARE</p>
+              <a href="/pages/contact.html" onclick="if(window.openChatModal){window.openChatModal(); return false;}">Chat with Us</a>
               <a href="/track" target="_blank" rel="noopener">Track Order</a>
               <a href="/pages/shipping-policy.html">Shipping Policy</a>
               <a href="/pages/refund-policy.html">Returns &amp; Exchanges</a>
@@ -249,7 +250,7 @@
       <li><a href="/collections/hoodies-for-men">HOODIES</a></li>
       <li><a href="/collections/baggy-pants">BOTTOMS</a></li>
       <li><a href="/collections/clearance-sale">CLEARANCE SALE</a></li>
-      <li><a href="/pages/contact.html">CONTACT</a></li>
+      <li><a href="/pages/contact.html" onclick="if(window.openChatModal){window.openChatModal(); return false;}">CHAT WITH US</a></li>
     </ul>
   </nav>
 
@@ -257,5 +258,6 @@
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/quick-buy.js"></script>
   <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/chat-widget.js"></script>
 </body>
 </html>

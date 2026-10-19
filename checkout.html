@@ -149,8 +149,13 @@
       <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="28" height="35">
       <span class="allyrich-header-brand-name">ALLYRICH</span>
     </a>
-    <div style="font-size:0.8rem; font-weight:700; color:#2e7d32; display:flex; align-items:center; gap:4px;">
-      🔒 256-Bit SSL Encrypted
+    <div style="display:flex; align-items:center; gap:14px;">
+      <a href="/pages/contact.html" onclick="if(window.openChatModal){window.openChatModal(); return false;}" style="text-decoration:none; color:#111; font-size:0.8rem; font-weight:700;">
+        Chat with Us
+      </a>
+      <div style="font-size:0.8rem; font-weight:700; color:#2e7d32; display:flex; align-items:center; gap:4px;">
+        🔒 256-Bit SSL Encrypted
+      </div>
     </div>
   </header>
 
@@ -589,5 +594,6 @@
 
     document.addEventListener('DOMContentLoaded', loadCart);
   </script>
+  <script src="/assets/js/chat-widget.js"></script>
 </body>
 </html>

@@ -1,17 +1,17 @@
 {
-  "storeName": "GENRAGE",
-  "brandTagline": "STREETWEAR INDIA // DEFINE YOUR IDENTITY",
+  "storeName": "ALLYRICH",
+  "brandTagline": "ARCHITECTURAL SILHOUETTES • HOMEGROWN IN INDIA • WORLDWIDE DELIVERY",
   "currency": "INR",
   "currencySymbol": "₹",
   "freeShippingThreshold": 999,
-  "supportEmail": "support@genrage.com",
+  "supportEmail": "care@allyrich.com",
   "supportPhone": "+91 98765 43210",
   "supportWhatsApp": "+91 98765 43210",
-  "instagramHandle": "@genrageclothing",
+  "instagramHandle": "@allyrich_",
   "announcements": [
     "FREE DOORSTEP DELIVERY IN INDIA 🇮🇳",
-    "EXTRA 10% OFF ON PREPAID ORDERS | CODE: RAGE10",
-    "LOVED BY 300,000+ CUSTOMERS ACROSS INDIA"
+    "EXTRA 10% OFF ON PREPAID ORDERS",
+    "ARCHITECTURAL SILHOUETTES CRAFTED FOR THE FEW"
   ],
   "flashSale": {
     "enabled": true,
@@ -19,7 +19,7 @@
     "targetDate": "2026-10-31T23:59:59"
   },
   "seo": {
-    "metaTitle": "GENRAGE | Streetwear Clothing Brand India",
+    "metaTitle": "ALLYRICH | Luxury Streetwear India",
     "metaDescription": "Shop high quality oversized tshirts, straight fit baggy pants, hoodies, and jackets proudly crafted in India."
   }
 }

@@ -130,9 +130,14 @@
       <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="28" height="35">
       <span class="allyrich-header-brand-name">ALLYRICH</span>
     </a>
-    <button onclick="AuthEngine.logout()" style="background:none; border:1px solid #ccc; padding:6px 14px; border-radius:2px; font-weight:700; font-size:0.8rem; cursor:pointer;">
-      Sign Out
-    </button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button onclick="if(window.openChatModal){window.openChatModal();}else{window.location.href='/pages/contact.html';}" style="background:#000; color:#fff; border:none; padding:6px 14px; border-radius:2px; font-weight:700; font-size:0.8rem; cursor:pointer;">
+        Chat with Us
+      </button>
+      <button onclick="AuthEngine.logout()" style="background:none; border:1px solid #ccc; padding:6px 14px; border-radius:2px; font-weight:700; font-size:0.8rem; cursor:pointer;">
+        Sign Out
+      </button>
+    </div>
   </header>
 
   <main class="account-wrapper">
@@ -666,5 +671,6 @@
       initAccount();
     }
   </script>
+  <script src="/assets/js/chat-widget.js"></script>
 </body>
 </html>
