@@ -1,7 +1,10 @@
 /**
  * ALLYRICH Luxury Client Concierge & Direct Chat Widget
- * Provides a floating "CHAT WITH US" trigger pill and modal
- * with direct WhatsApp, Instagram DM, Delhivery Tracking & Email actions.
+ * Matches exact 1:1 card design from user screenshot:
+ * 1. "Let's talk on Instagram" (Official IG gradient icon + chevron)
+ * 2. "Lets talk on WhatsApp" (Official WhatsApp green circle + chevron)
+ * 3. "Track Your Order" (Delivery icon + chevron, links to /track)
+ * 4. "Send us an Email" (Email icon + chevron, links to mailto:care@allyrich.com)
  */
 
 (function () {
@@ -133,16 +136,16 @@
 
     .ar-chat-modal {
       width: 100%;
-      max-width: 410px;
-      background: #0e0e0e;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: 12px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+      max-width: 420px;
+      background: #fbfbfb;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
       overflow: hidden;
       transform: translateY(20px) scale(0.97);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #ffffff;
+      color: #111111;
     }
 
     .ar-chat-modal-backdrop.is-open .ar-chat-modal {
@@ -151,11 +154,11 @@
 
     /* Modal Header */
     .ar-chat-modal__header {
-      padding: 20px 20px 16px;
-      background: #141414;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px 22px 14px;
+      background: #ffffff;
+      border-bottom: 1px solid #f0f0f0;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
@@ -163,7 +166,7 @@
     .ar-chat-modal__brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .ar-chat-modal__crest {
@@ -179,18 +182,17 @@
     }
 
     .ar-chat-modal__brand-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #111111;
       margin: 0;
       line-height: 1.2;
     }
 
     .ar-chat-modal__brand-subtitle {
-      font-size: 0.75rem;
-      color: #999999;
+      font-size: 0.8rem;
+      color: #6b7280;
       margin: 0;
       display: flex;
       align-items: center;
@@ -198,28 +200,28 @@
     }
 
     .ar-chat-modal__close {
-      background: none;
+      background: #f3f4f6;
       border: none;
-      color: #888888;
+      color: #4b5563;
       cursor: pointer;
-      padding: 4px;
+      padding: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       transition: all 0.2s;
     }
 
     .ar-chat-modal__close:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
+      background: #e5e7eb;
+      color: #111111;
     }
 
-    /* Modal Body / Action Cards */
+    /* Modal Body / Action Cards (Matches User Screenshot 1:1) */
     .ar-chat-modal__body {
-      padding: 16px 20px 20px;
+      padding: 16px 18px 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -227,134 +229,98 @@
       overflow-y: auto;
     }
 
+    /* Pure White Rounded Pill Card from Screenshot */
     .ar-chat-card {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px 16px;
-      background: #151515;
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      border-radius: 8px;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #ffffff;
+      border: 1px solid #eef0f2;
+      border-radius: 16px;
       text-decoration: none;
-      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
       position: relative;
     }
 
     .ar-chat-card:hover {
-      background: #1c1c1c;
-      border-color: rgba(255, 255, 255, 0.28);
-      transform: translateX(3px);
+      background: #ffffff;
+      border-color: #d1d5db;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
     }
 
-    .ar-chat-card--whatsapp:hover {
-      border-color: rgba(37, 211, 102, 0.5);
-      box-shadow: 0 4px 20px rgba(37, 211, 102, 0.15);
+    .ar-chat-card:active {
+      transform: translateY(0) scale(0.99);
     }
 
-    .ar-chat-card--instagram:hover {
-      border-color: rgba(225, 48, 108, 0.5);
-      box-shadow: 0 4px 20px rgba(225, 48, 108, 0.15);
-    }
-
-    .ar-chat-card__icon-box {
-      width: 42px;
-      height: 42px;
-      border-radius: 8px;
+    .ar-chat-card__left {
       display: flex;
       align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .ar-chat-card--whatsapp .ar-chat-card__icon-box {
-      background: rgba(37, 211, 102, 0.12);
-      color: #25D366;
-    }
-
-    .ar-chat-card--instagram .ar-chat-card__icon-box {
-      background: linear-gradient(45deg, rgba(240, 148, 51, 0.15), rgba(230, 44, 144, 0.15), rgba(188, 24, 136, 0.15));
-      color: #E1306C;
-    }
-
-    .ar-chat-card--track .ar-chat-card__icon-box {
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
-    }
-
-    .ar-chat-card--email .ar-chat-card__icon-box {
-      background: rgba(255, 255, 255, 0.06);
-      color: #bbbbbb;
-    }
-
-    .ar-chat-card__content {
-      flex: 1;
+      gap: 16px;
       min-width: 0;
     }
 
-    .ar-chat-card__header {
+    .ar-chat-card__icon {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      margin-bottom: 2px;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+    }
+
+    .ar-chat-card__icon--badge-dark {
+      background: #111111;
+      color: #ffffff;
+      border-radius: 9px;
+      width: 34px;
+      height: 34px;
+    }
+
+    .ar-chat-card__icon--badge-red {
+      background: #ea4335;
+      color: #ffffff;
+      border-radius: 9px;
+      width: 34px;
+      height: 34px;
     }
 
     .ar-chat-card__title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #111827;
+      letter-spacing: -0.01em;
       margin: 0;
-      color: #ffffff;
-    }
-
-    .ar-chat-card__badge {
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 2px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-
-    .ar-chat-card__badge--green {
-      background: rgba(37, 211, 102, 0.18);
-      color: #25D366;
-    }
-
-    .ar-chat-card__badge--insta {
-      background: rgba(225, 48, 108, 0.18);
-      color: #ff6b95;
-    }
-
-    .ar-chat-card__desc {
-      font-size: 0.75rem;
-      color: #999999;
-      margin: 0;
-      line-height: 1.35;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .ar-chat-card__arrow {
-      color: #666666;
-      font-size: 1rem;
-      transition: transform 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #222222;
+      transition: transform 0.2s ease;
       flex-shrink: 0;
+      padding-left: 8px;
     }
 
     .ar-chat-card:hover .ar-chat-card__arrow {
-      color: #ffffff;
-      transform: translateX(2px);
+      transform: translateX(3px);
     }
 
     /* Modal Footer Note */
     .ar-chat-modal__footer-note {
-      font-size: 0.7rem;
-      color: #777777;
+      font-size: 0.75rem;
+      color: #888888;
       text-align: center;
-      margin: 4px 0 0;
+      margin: 6px 0 0;
       line-height: 1.4;
     }
 
@@ -371,8 +337,14 @@
       }
       .ar-chat-modal {
         max-width: 100%;
-        border-radius: 16px 16px 0 0;
+        border-radius: 20px 20px 0 0;
         border-bottom: none;
+      }
+      .ar-chat-card {
+        padding: 15px 18px;
+      }
+      .ar-chat-card__title {
+        font-size: 1rem;
       }
     }
 
@@ -380,7 +352,8 @@
     @media (prefers-reduced-motion: reduce) {
       .ar-chat-trigger,
       .ar-chat-modal,
-      .ar-chat-card {
+      .ar-chat-card,
+      .ar-chat-card__arrow {
         transition: none !important;
       }
       .ar-chat-trigger__status::after {
@@ -419,100 +392,111 @@
         <div class="ar-chat-modal__brand">
           <img src="/assets/ar-logo.png" alt="AR" class="ar-chat-modal__crest" width="26" height="32">
           <div class="ar-chat-modal__title-wrap">
-            <h3 class="ar-chat-modal__brand-title" id="ar-chat-modal-title">ALLYRICH CONCIERGE</h3>
+            <h3 class="ar-chat-modal__brand-title" id="ar-chat-modal-title">Chat with Us</h3>
             <p class="ar-chat-modal__brand-subtitle">
-              <span class="ar-chat-trigger__status" style="width:6px; height:6px;"></span>
-              Live support via WhatsApp &amp; Instagram
+              <span class="ar-chat-trigger__status" style="width:7px; height:7px;"></span>
+              We usually reply within minutes
             </p>
           </div>
         </div>
         <button type="button" class="ar-chat-modal__close" id="ar-chat-modal-close" aria-label="Close Chat Window">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
 
-      <!-- Action Cards -->
+      <!-- Action Cards (1:1 with user screenshot) -->
       <div class="ar-chat-modal__body">
 
-        <!-- 1. WhatsApp Support -->
-        <a href="${WHATSAPP_URL}" target="_blank" rel="noopener noreferrer" class="ar-chat-card ar-chat-card--whatsapp" id="ar-chat-link-whatsapp">
-          <div class="ar-chat-card__icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.04 6.78C8.87 6.78 8.6 6.84 8.36 7.1C8.13 7.36 7.48 7.97 7.48 9.21C7.48 10.45 8.39 11.64 8.52 11.81C8.65 11.98 10.3 14.54 12.83 15.63C13.43 15.89 13.9 16.05 14.27 16.16C14.88 16.36 15.43 16.33 15.87 16.27C16.36 16.2 17.38 15.65 17.59 15.06C17.8 14.47 17.8 13.96 17.74 13.86C17.68 13.76 17.5 13.7 17.23 13.56C16.96 13.43 15.64 12.78 15.4 12.69C15.16 12.6 14.98 12.56 14.81 12.82C14.64 13.08 14.15 13.65 14 13.82C13.85 13.99 13.7 14.01 13.43 13.88C13.16 13.75 12.3 13.47 11.27 12.55C10.47 11.83 9.93 10.95 9.77 10.68C9.61 10.41 9.75 10.27 9.89 10.13C10.01 10.01 10.16 9.81 10.3 9.65C10.44 9.49 10.49 9.36 10.58 9.18C10.67 9 10.62 8.85 10.56 8.72C10.5 8.59 10 7.36 9.78 6.84C9.57 6.34 9.36 6.4 9.2 6.39C9.04 6.39 8.87 6.39 8.7 6.39L9.04 6.78Z"/>
-            </svg>
-          </div>
-          <div class="ar-chat-card__content">
-            <div class="ar-chat-card__header">
-              <h4 class="ar-chat-card__title">WhatsApp Instant Chat</h4>
-              <span class="ar-chat-card__badge ar-chat-card__badge--green">Online</span>
-            </div>
-            <p class="ar-chat-card__desc">Direct talk with our client team for sizing &amp; orders</p>
-          </div>
-          <span class="ar-chat-card__arrow">↗</span>
-        </a>
-
-        <!-- 2. Instagram Direct -->
+        <!-- 1. Let's talk on Instagram -->
         <a href="${INSTAGRAM_URL}" target="_blank" rel="noopener noreferrer" class="ar-chat-card ar-chat-card--instagram" id="ar-chat-link-instagram" onclick="if(window.innerWidth > 900){this.href='${INSTAGRAM_WEB_URL}';}">
-          <div class="ar-chat-card__icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-            </svg>
-          </div>
-          <div class="ar-chat-card__content">
-            <div class="ar-chat-card__header">
-              <h4 class="ar-chat-card__title">Instagram Direct (@allyrich_)</h4>
-              <span class="ar-chat-card__badge ar-chat-card__badge--insta">Active Daily</span>
+          <div class="ar-chat-card__left">
+            <div class="ar-chat-card__icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="ar-ig-grad-widget" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#FFD600"/>
+                    <stop offset="25%" stop-color="#FF7A00"/>
+                    <stop offset="50%" stop-color="#FF0069"/>
+                    <stop offset="75%" stop-color="#D300C5"/>
+                    <stop offset="100%" stop-color="#7638FA"/>
+                  </linearGradient>
+                </defs>
+                <rect x="2" y="2" width="20" height="20" rx="6" stroke="url(#ar-ig-grad-widget)" stroke-width="2.2"/>
+                <circle cx="12" cy="12" r="4.6" stroke="url(#ar-ig-grad-widget)" stroke-width="2.2"/>
+                <circle cx="17.5" cy="6.5" r="1.3" fill="url(#ar-ig-grad-widget)"/>
+              </svg>
             </div>
-            <p class="ar-chat-card__desc">DM our creative studio for drops &amp; styling support</p>
+            <span class="ar-chat-card__title">Let's talk on Instagram</span>
           </div>
-          <span class="ar-chat-card__arrow">↗</span>
+          <span class="ar-chat-card__arrow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
         </a>
 
-        <!-- 3. Delhivery Express Tracking -->
+        <!-- 2. Lets talk on WhatsApp -->
+        <a href="${WHATSAPP_URL}" target="_blank" rel="noopener noreferrer" class="ar-chat-card ar-chat-card--whatsapp" id="ar-chat-link-whatsapp">
+          <div class="ar-chat-card__left">
+            <div class="ar-chat-card__icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="15" fill="#25D366"/>
+                <path d="M16 6.5C10.75 6.5 6.5 10.75 6.5 16C6.5 17.75 7 19.4 7.85 20.85L6.5 25.5L11.3 24.2C12.7 25 14.3 25.5 16 25.5C21.25 25.5 25.5 21.25 25.5 16C25.5 10.75 21.25 6.5 16 6.5ZM21.3 19.6C21.05 20.3 19.8 20.85 19.2 20.95C18.65 21.05 17.95 21.1 15.6 20.1C12.5 18.8 10.5 15.65 10.35 15.45C10.2 15.25 9.1 13.8 9.1 12.3C9.1 10.8 9.85 10.05 10.15 9.75C10.45 9.45 10.8 9.35 11.05 9.35C11.25 9.35 11.45 9.35 11.65 9.35C11.85 9.35 12.1 9.3 12.35 9.9C12.6 10.5 13.2 11.95 13.25 12.1C13.35 12.25 13.4 12.45 13.3 12.65C13.2 12.85 13.1 12.95 12.95 13.15C12.8 13.35 12.65 13.5 12.45 13.75C12.25 13.95 12.05 14.2 12.3 14.6C12.55 15 13.4 16.4 14.65 17.5C16.25 18.9 17.55 19.35 17.95 19.55C18.35 19.75 18.55 19.7 18.8 19.45C19.05 19.2 19.7 18.4 19.95 18.05C20.2 17.7 20.45 17.75 20.75 17.85C21.05 17.95 22.65 18.75 22.95 18.9C23.25 19.05 23.45 19.15 23.55 19.3C23.65 19.45 23.65 20.05 23.4 20.75L21.3 19.6Z" fill="white"/>
+              </svg>
+            </div>
+            <span class="ar-chat-card__title">Lets talk on WhatsApp</span>
+          </div>
+          <span class="ar-chat-card__arrow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
+        </a>
+
+        <!-- 3. Track Your Order -->
         <a href="${TRACK_ORDER_URL}" class="ar-chat-card ar-chat-card--track" id="ar-chat-link-track">
-          <div class="ar-chat-card__icon-box">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="3" width="15" height="13"></rect>
-              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-              <circle cx="5.5" cy="18.5" r="2.5"></circle>
-              <circle cx="18.5" cy="18.5" r="2.5"></circle>
-            </svg>
-          </div>
-          <div class="ar-chat-card__content">
-            <div class="ar-chat-card__header">
-              <h4 class="ar-chat-card__title">Track Delhivery Order</h4>
+          <div class="ar-chat-card__left">
+            <div class="ar-chat-card__icon ar-chat-card__icon--badge-dark">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </svg>
             </div>
-            <p class="ar-chat-card__desc">Real-time live dispatch and transit updates by Order ID</p>
+            <span class="ar-chat-card__title">Track Your Order</span>
           </div>
-          <span class="ar-chat-card__arrow">↗</span>
+          <span class="ar-chat-card__arrow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
         </a>
 
-        <!-- 4. Email Support -->
+        <!-- 4. Send us an Email -->
         <a href="mailto:${SUPPORT_EMAIL}" class="ar-chat-card ar-chat-card--email" id="ar-chat-link-email">
-          <div class="ar-chat-card__icon-box">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-          </div>
-          <div class="ar-chat-card__content">
-            <div class="ar-chat-card__header">
-              <h4 class="ar-chat-card__title">${SUPPORT_EMAIL}</h4>
+          <div class="ar-chat-card__left">
+            <div class="ar-chat-card__icon ar-chat-card__icon--badge-red">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
             </div>
-            <p class="ar-chat-card__desc">Email our concierge for order &amp; business queries</p>
+            <span class="ar-chat-card__title">Send us an Email</span>
           </div>
-          <span class="ar-chat-card__arrow">↗</span>
+          <span class="ar-chat-card__arrow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
         </a>
 
         <!-- Operating Hours Note -->
         <p class="ar-chat-modal__footer-note">
-          Hours: Mon – Sat, 10:00 AM – 7:00 PM IST<br>
-          Instant response on WhatsApp during operating hours
+          ALLYRICH Client Concierge &bull; Mon &ndash; Sat, 10 AM &ndash; 7 PM IST
         </p>
 
       </div>
