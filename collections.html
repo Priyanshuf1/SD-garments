@@ -1222,7 +1222,7 @@
                   ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary">` : ''}
                 </a>
 
-                <button type="button" class="product-card__quick-add-button" onclick="CollectionEngine.addToCart('${p.id}')" title="Quick Add">
+                <button type="button" class="product-card__quick-add-button" data-id="${p.id}" data-handle="${p.handle}" onclick="if(!window.QuickBuyEngine){CollectionEngine.addToCart('${p.id}');}" title="Quick Add">
                   <svg aria-hidden="true" focusable="false" fill="none" width="12" class="icon icon-plus" viewBox="0 0 12 12">
                     <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/>
                   </svg>
@@ -1448,6 +1448,7 @@
       window.CollectionEngine = CollectionEngine;
     }
   </script>
+<script src="/assets/js/quick-buy.js"></script>
 <script src="/assets/js/allyrich-loader.js"></script>
 </body>
 </html>

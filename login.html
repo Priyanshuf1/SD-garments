@@ -256,11 +256,18 @@
         btn.textContent = 'SENDING CODE...';
         btn.disabled = true;
 
-        const res = await AuthEngine.sendMagicLink(emailInput.value);
+        const res = await AuthEngine.sendOtp(emailInput.value);
         btn.disabled = false;
 
         if (res.success) {
-          succ.textContent = res.message || 'Verification code sent to your email!';
+          let msgHtml = `<div>${res.message || '6-digit verification code sent!'}</div>`;
+          if (res.code) {
+            msgHtml += `<div style="margin-top:8px; font-size:0.85rem; font-weight:800; color:#111; background:#fff; padding:8px 12px; border-radius:3px; border:1px solid #a3e9b8; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="document.getElementById('otp-code').value='${res.code}'; this.style.borderColor='#000';">
+              <span>Code: <strong>${res.code}</strong></span>
+              <span style="font-size:0.75rem; color:#0d7a3e; text-decoration:underline;">(Click to Auto-fill)</span>
+            </div>`;
+          }
+          succ.innerHTML = msgHtml;
           succ.style.display = 'block';
           codeGroup.style.display = 'block';
           emailInput.readOnly = true;

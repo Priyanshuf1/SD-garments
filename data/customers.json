@@ -1,5 +1,85 @@
 [
   {
+    "id": "CUST-1792368304195",
+    "name": "Kabir Oberoi",
+    "email": "testuser_1792368302326@example.com",
+    "phone": "+91 98201 99999",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Penthouse 1401, Crescent Bay, Parel",
+    "locality": "Near ITC Grand Central",
+    "pincode": "400012",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1792368198966",
+    "name": "Kabir Oberoi",
+    "email": "testuser_1792368198043@example.com",
+    "phone": "+91 98201 99999",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Penthouse 1401, Crescent Bay, Parel",
+    "locality": "Near ITC Grand Central",
+    "pincode": "400012",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1792368181973",
+    "name": "Kabir Oberoi",
+    "email": "testuser_1792368180511@example.com",
+    "phone": "+91 98201 99999",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Penthouse 1401, Crescent Bay, Parel",
+    "locality": "Near ITC Grand Central",
+    "pincode": "400012",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1792368120016",
+    "name": "testuser 1792368117982",
+    "email": "testuser_1792368117982@example.com",
+    "phone": "",
+    "city": "",
+    "state": "",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
     "id": "CUST-1001",
     "name": "Kabir Singhania",
     "email": "kabir.singhania@gmail.com",

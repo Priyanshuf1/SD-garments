@@ -352,14 +352,23 @@
       }
 
       // Pre-fill user data if logged in
-      const user = window.AuthEngine?.getUser();
+      let user = window.AuthEngine?.getUser ? window.AuthEngine.getUser() : null;
+      if (!user) {
+        try {
+          const raw = localStorage.getItem('genrage_user');
+          if (raw) user = JSON.parse(raw);
+        } catch (e) {}
+      }
       if (user) {
-        if (user.name) document.getElementById('chk-name').value = user.name;
+        const fullName = user.name || user.full_name || '';
+        if (fullName) document.getElementById('chk-name').value = fullName;
         if (user.phone) document.getElementById('chk-phone').value = user.phone;
         if (user.email) document.getElementById('chk-email').value = user.email;
         if (user.city) document.getElementById('chk-city').value = user.city;
         if (user.state) document.getElementById('chk-state').value = user.state;
-        if (user.address) document.getElementById('chk-address').value = user.address;
+        const fullAddr = [user.address, user.locality].filter(Boolean).join(', ');
+        if (fullAddr) document.getElementById('chk-address').value = fullAddr;
+        else if (user.address) document.getElementById('chk-address').value = user.address;
         if (user.pincode) document.getElementById('chk-pincode').value = user.pincode;
       }
 

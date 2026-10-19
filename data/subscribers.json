@@ -1,0 +1,30 @@
+[
+  {
+    "id": "SUB-1792368305075",
+    "email": "innercircle_1792368305073@allyrich.com",
+    "subscribedAt": "2026-10-19T00:05:05.075Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792368199277",
+    "email": "innercircle_1792368199273@allyrich.com",
+    "subscribedAt": "2026-10-19T00:03:19.277Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792368182281",
+    "email": "innercircle_1792368182278@allyrich.com",
+    "subscribedAt": "2026-10-19T00:03:02.281Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1718000001",
+    "email": "vip.collector@gmail.com",
+    "subscribedAt": "2026-10-18T10:00:00.000Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  }
+]

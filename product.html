@@ -34,15 +34,23 @@
     }
     .pdp-container {
       padding: 2.5rem 0 5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      box-sizing: border-box;
+      overflow-x: hidden;
+      width: 100%;
     }
     .pdp-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 3rem;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2.5rem;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     @media (min-width: 992px) {
       .pdp-grid {
-        grid-template-columns: 1.15fr 1fr;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
         gap: 4rem;
       }
     }
@@ -50,22 +58,38 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+      box-sizing: border-box;
     }
     .pdp-main-img {
       width: 100%;
+      max-width: 100%;
       aspect-ratio: 3/4;
       object-fit: cover;
       border-radius: 4px;
       background: #e2e2e2;
       border: 1px solid rgba(0,0,0,0.08);
       box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      box-sizing: border-box;
     }
     .pdp-thumbs {
       display: flex;
       gap: 0.75rem;
       overflow-x: auto;
+      max-width: 100%;
+      width: 100%;
       padding-bottom: 0.5rem;
       scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+    }
+    .pdp-details {
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+      box-sizing: border-box;
     }
     .pdp-thumb-img {
       width: 75px;
@@ -231,6 +255,44 @@
       color: #111111;
       font-family: var(--font-heading);
       font-weight: 900;
+    }
+    @media (max-width: 768px) {
+      .site-header {
+        padding: 0 8px !important;
+      }
+      .header-inner {
+        padding: 0 4px !important;
+        gap: 8px !important;
+      }
+      .header-left {
+        gap: 8px !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+      }
+      .allyrich-header-brand {
+        gap: 6px !important;
+        min-width: 0 !important;
+      }
+      .allyrich-header-brand-name {
+        font-size: 1.15rem !important;
+        white-space: nowrap !important;
+      }
+      .header-actions {
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+      }
+      .action-btn {
+        width: 32px !important;
+        height: 32px !important;
+      }
+      #pdp-add-cart-btn {
+        font-size: 0.82rem !important;
+        padding: 0 10px !important;
+      }
+      #pdp-buy-now-btn {
+        font-size: 0.82rem !important;
+        padding: 0 8px !important;
+      }
     }
   </style>
   <!-- AllyRich Fonts & Styles -->
@@ -618,6 +680,7 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/wishlist.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/quick-buy.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       // Wait for data

@@ -75,16 +75,47 @@ const AuthEngine = {
     }
   },
 
-  async sendMagicLink(email) {
+  async sendOtp(email) {
     try {
-      const res = await fetch('/api/auth/magic-link', {
+      const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
       return await res.json();
     } catch (err) {
-      return { success: false, message: 'Network error sending login code' };
+      return { success: false, message: 'Network error sending 6-digit code' };
+    }
+  },
+
+  async sendMagicLink(email) {
+    return this.sendOtp(email);
+  },
+
+  async updateProfile(profileData) {
+    try {
+      const user = this.getUser();
+      const payload = { ...profileData };
+      if (user && user.id) payload.id = user.id;
+      if (user && user.email && !payload.email) payload.email = user.email;
+
+      const res = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.getToken() || ''}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
+        this.updateHeader();
+        return { success: true, user: data.user, message: 'Profile updated successfully' };
+      }
+      return { success: false, message: data.message || 'Failed to update profile' };
+    } catch (err) {
+      return { success: false, message: 'Network error updating profile' };
     }
   },
 
