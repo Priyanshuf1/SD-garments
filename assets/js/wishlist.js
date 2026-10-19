@@ -11,7 +11,24 @@ const WishlistEngine = {
   getWishlist() {
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY) || localStorage.getItem('wishlist');
-      return raw ? JSON.parse(raw) : [];
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      // Fallback: check genrage_user in localStorage if genrage_wishlist is empty
+      const userRaw = localStorage.getItem('genrage_user');
+      if (userRaw) {
+        const u = JSON.parse(userRaw);
+        if (Array.isArray(u.wishlist) && u.wishlist.length > 0) {
+          const formatted = u.wishlist.map(item => typeof item === 'string' ? { handle: item, addedAt: new Date().toISOString() } : item);
+          try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(formatted));
+            localStorage.setItem('wishlist', JSON.stringify(formatted));
+          } catch (e) {}
+          return formatted;
+        }
+      }
+      return [];
     } catch (e) {
       return [];
     }
@@ -75,6 +92,14 @@ const WishlistEngine = {
     this.updateButtons(cleanHandle, isAdded);
     this.updateBadge();
     this.syncWithServer();
+
+    // Notify listeners of change
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wishlist:updated', { detail: { count: list.length, wishlist: list } }));
+      if (typeof window.loadWishlist === 'function') {
+        window.loadWishlist();
+      }
+    }
 
     return isAdded;
   },
@@ -159,6 +184,17 @@ const WishlistEngine = {
     this.renderButtons();
     this.updateBadge();
 
+    // Trigger page re-renders across views
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wishlist:updated', { detail: { count: localList.length, wishlist: localList } }));
+      if (typeof window.loadWishlist === 'function') {
+        window.loadWishlist();
+      }
+      if (window.CollectionEngine && typeof window.CollectionEngine.filterAndRender === 'function') {
+        window.CollectionEngine.filterAndRender();
+      }
+    }
+
     // If local had new items not yet in cloud, sync to server
     if (localList.length > cloudWish.length) {
       this.syncWithServer();
@@ -170,22 +206,25 @@ const WishlistEngine = {
       const userRaw = localStorage.getItem('genrage_user');
       if (!userRaw) return;
       const user = JSON.parse(userRaw);
-      if (!user || !user.id) return;
+      if (!user || (!user.id && !user.email)) return;
 
       const wishlist = this.getWishlist();
       const cleanHandles = Array.from(new Set(wishlist.map(i => typeof i === 'string' ? i : i.handle).filter(Boolean)));
+      const identifier = user.id || user.email;
 
       await fetch('/api/wishlist/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, wishlist: cleanHandles })
+        body: JSON.stringify({ userId: identifier, email: user.email, wishlist: cleanHandles })
       }).catch(() => {});
 
-      await fetch(`/api/customers/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wishlist: cleanHandles })
-      }).catch(() => {});
+      if (user.id) {
+        await fetch(`/api/customers/${encodeURIComponent(user.id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email, wishlist: cleanHandles })
+        }).catch(() => {});
+      }
     } catch (e) {
       console.warn('Could not sync wishlist to backend:', e.message);
     }

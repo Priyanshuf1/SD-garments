@@ -631,27 +631,44 @@
 .desktop-nav {
   min-width: 0 !important;
   flex-shrink: 1 !important;
+  overflow: hidden !important;
 }
 
-@media (max-width: 1240px) {
+/* User account badge responsiveness: hide text on mobile, keep avatar circle */
+@media (max-width: 640px) {
+  .sm-max\:hidden,
+  .header-user-name {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1320px) {
   .header__primary-nav ul,
   .site-header__nav,
   .desktop-nav {
-    gap: clamp(0.5rem, 1vw, 1rem) !important;
+    gap: clamp(0.4rem, 0.9vw, 0.85rem) !important;
   }
   .header__primary-nav-item a,
   .site-header__nav a,
-  .desktop-nav .nav-link {
-    font-size: 0.78rem !important;
+  .desktop-nav .nav-link,
+  .header-nav-link {
+    font-size: 0.76rem !important;
     letter-spacing: 0.02em !important;
   }
 }
 
-@media (max-width: 1080px) {
-  .desktop-nav {
+@media (max-width: 1180px) {
+  .desktop-nav,
+  .site-header__nav,
+  .header__primary-nav ul {
     display: none !important;
   }
-  .mobile-menu-trigger {
+  .mobile-menu-trigger,
+  .header__primary-nav button[aria-controls="sidebar-menu"] {
     display: flex !important;
   }
+  #shopify-section-sections--23671272669422__header {
+    --header-grid: "primary-nav logo secondary-nav" / auto 1fr auto !important;
+  }
 }
+

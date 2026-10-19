@@ -29,6 +29,26 @@ const AuthEngine = {
     return !!this.getUser();
   },
 
+  _saveUserSession(user, token) {
+    if (!user) return;
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    if (token) localStorage.setItem(this.TOKEN_KEY, token);
+
+    // Immediately persist user wishlist into localStorage so it is available synchronously on any device
+    if (Array.isArray(user.wishlist)) {
+      try {
+        const list = user.wishlist.map(i => typeof i === 'string' ? { handle: i, addedAt: new Date().toISOString() } : i);
+        localStorage.setItem('genrage_wishlist', JSON.stringify(list));
+        localStorage.setItem('wishlist', JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    this.updateHeader();
+    if (window.WishlistEngine) {
+      window.WishlistEngine.loadUserWishlist(user);
+    }
+  },
+
   async login(email, password) {
     try {
       const res = await fetch('/api/auth/login', {
@@ -38,12 +58,7 @@ const AuthEngine = {
       });
       const data = await res.json();
       if (data.success && data.user) {
-        localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
-        if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
-        this.updateHeader();
-        if (window.WishlistEngine) {
-          window.WishlistEngine.loadUserWishlist(data.user);
-        }
+        this._saveUserSession(data.user, data.token);
         return { success: true, user: data.user };
       }
       return { success: false, message: data.message || 'Login failed' };
@@ -61,12 +76,7 @@ const AuthEngine = {
       });
       const data = await res.json();
       if (data.success && data.user) {
-        localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
-        if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
-        this.updateHeader();
-        if (window.WishlistEngine) {
-          window.WishlistEngine.loadUserWishlist(data.user);
-        }
+        this._saveUserSession(data.user, data.token);
         return { success: true, user: data.user };
       }
       return { success: false, message: data.message || 'Signup failed' };
@@ -131,12 +141,7 @@ const AuthEngine = {
       });
       const data = await res.json();
       if (data.success && data.user) {
-        localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
-        if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
-        this.updateHeader();
-        if (window.WishlistEngine) {
-          window.WishlistEngine.loadUserWishlist(data.user);
-        }
+        this._saveUserSession(data.user, data.token);
         return { success: true, user: data.user };
       }
       return { success: false, message: data.message || 'Verification failed' };
@@ -536,9 +541,27 @@ const AuthEngine = {
     }
   },
 
+  async refreshUser() {
+    try {
+      const user = this.getUser();
+      const token = this.getToken();
+      if (!user && !token) return;
+      const res = await fetch(`/api/auth/me?userId=${encodeURIComponent(user?.id || '')}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          this._saveUserSession(data.user, token);
+        }
+      }
+    } catch (e) {}
+  },
+
   init() {
     this.handleUrlAuthCallback();
     this.updateHeader();
+    this.refreshUser();
   }
 };
 

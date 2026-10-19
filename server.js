@@ -2176,18 +2176,19 @@ async function sendOtpEmail(email, otpCode) {
       // Also sync to Supabase PostgreSQL profiles and wishlists
       if (supabase.isConfigured) {
         try {
-          if (customer.id && String(customer.id).includes('-')) {
-            await supabase.profiles.update(customer.id, {
-              name: customer.name,
-              phone: customer.phone,
-              address: customer.address,
-              city: customer.city,
-              state: customer.state,
-              pincode: customer.pincode
-            });
-            if (payload.wishlist !== undefined) {
-              await supabase.wishlists.sync(customer.id, customer.wishlist);
-            }
+          await supabase.profiles.update(customer.id, {
+            email: customer.email,
+            name: customer.name,
+            phone: customer.phone,
+            address: customer.address,
+            locality: customer.locality,
+            city: customer.city,
+            state: customer.state,
+            pincode: customer.pincode,
+            wishlist: customer.wishlist
+          });
+          if (payload.wishlist !== undefined) {
+            await supabase.wishlists.sync(customer.id, customer.wishlist, customer.email);
           }
         } catch (syncErr) {
           console.warn('Supabase profile sync warning:', syncErr.message);
@@ -2388,12 +2389,14 @@ async function sendOtpEmail(email, otpCode) {
       if (supabase.isConfigured && custId) {
         try {
           if (payload.wishlist !== undefined) {
-            await supabase.wishlists.sync(custId, customer.wishlist);
+            await supabase.wishlists.sync(custId, customer.wishlist, customer.email);
           }
           await supabase.profiles.update(custId, {
+            email: customer.email,
             name: customer.name,
             phone: customer.phone,
             address: customer.address,
+            locality: customer.locality,
             city: customer.city,
             state: customer.state,
             pincode: customer.pincode,
@@ -2412,7 +2415,7 @@ async function sendOtpEmail(email, otpCode) {
     if (req.method === 'GET') {
       if (!customer && supabase.isConfigured) {
         try {
-          customer = await supabase.profiles.get(custId);
+          customer = await supabase.profiles.get(custId, custId.includes('@') ? custId : null);
         } catch (e) {}
       }
       if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
@@ -2427,15 +2430,18 @@ async function sendOtpEmail(email, otpCode) {
     if (req.method === 'POST' || req.method === 'PUT') {
       const payload = await parseBody(req);
       const userId = payload.userId || payload.user_id || payload.id;
+      const email = (payload.email || '').toLowerCase().trim();
       const wishlist = Array.isArray(payload.wishlist) ? payload.wishlist : [];
 
-      if (!userId) {
-        return sendJson(res, 400, { success: false, message: 'User ID required for wishlist sync' });
+      if (!userId && !email) {
+        return sendJson(res, 400, { success: false, message: 'User ID or email required for wishlist sync' });
       }
+
+      const lookupId = userId || email;
 
       // Update local customers.json
       let customers = readJsonFile('customers.json', []);
-      let cust = customers.find(c => String(c.id) === String(userId));
+      let cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email));
       if (cust) {
         cust.wishlist = wishlist;
         writeJsonFile('customers.json', customers);
@@ -2444,7 +2450,7 @@ async function sendOtpEmail(email, otpCode) {
       // Update Supabase PostgreSQL wishlists and user_metadata
       if (supabase.isConfigured) {
         try {
-          await supabase.wishlists.sync(userId, wishlist);
+          await supabase.wishlists.sync(lookupId, wishlist, email || cust?.email);
         } catch (e) {
           console.warn('Wishlist sync to Supabase error:', e.message);
         }
@@ -2455,18 +2461,20 @@ async function sendOtpEmail(email, otpCode) {
 
     if (req.method === 'GET') {
       const userId = parsedUrl.searchParams.get('userId');
-      if (!userId) {
-        return sendJson(res, 400, { success: false, message: 'User ID required' });
+      const email = parsedUrl.searchParams.get('email');
+      if (!userId && !email) {
+        return sendJson(res, 400, { success: false, message: 'User ID or email required' });
       }
 
+      const lookupId = userId || email;
       let list = [];
       let customers = readJsonFile('customers.json', []);
-      const cust = customers.find(c => String(c.id) === String(userId));
+      const cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email.toLowerCase()));
       if (cust && Array.isArray(cust.wishlist)) list = cust.wishlist;
 
       if (supabase.isConfigured) {
         try {
-          const cloudList = await supabase.wishlists.getByUserId(userId);
+          const cloudList = await supabase.wishlists.getByUserId(lookupId, email || cust?.email);
           if (cloudList && cloudList.length > 0) {
             list = Array.from(new Set([...list, ...cloudList]));
           }

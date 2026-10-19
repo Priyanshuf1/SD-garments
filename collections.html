@@ -61,16 +61,16 @@
       min-width: 0;
       white-space: nowrap;
     }
-    @media (max-width: 1240px) {
+    @media (max-width: 1320px) {
       .site-header__nav {
-        gap: 0.75rem !important;
+        gap: clamp(0.45rem, 0.9vw, 0.85rem) !important;
       }
       .header-nav-link {
-        font-size: 0.78rem !important;
+        font-size: 0.76rem !important;
         letter-spacing: 0.02em !important;
       }
     }
-    @media (max-width: 1100px) {
+    @media (max-width: 1180px) {
       .site-header__nav {
         display: none !important;
       }
@@ -578,7 +578,7 @@
         <span class="loader__mark">
           <img src="/assets/ar-logo.png" alt="AR" width="124" height="157">
         </span>
-        <span class="loader__name">AllyRich</span>
+        <span class="loader__name">ALLYRICH</span>
       </div>
       <span class="loader__track">
         <span class="loader__progress"></span>
@@ -893,7 +893,7 @@
           <div class="site-footer__newsletter">
             <h4 class="site-footer__newsletter-heading">JOIN THE INNER CIRCLE</h4>
             <p class="site-footer__newsletter-sub">Gain priority access to limited drops, archival releases, and invite-only showcases.</p>
-            <form class="site-footer__newsletter-form" onsubmit="event.preventDefault(); const inp = this.querySelector('input'); if(inp && inp.value){ alert('Thank you for joining the AllyRich Inner Circle.'); inp.value = ''; }">
+            <form class="site-footer__newsletter-form" onsubmit="window.submitNewsletter ? window.submitNewsletter(this, event) : event.preventDefault(); return false;">
               <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
               <button type="submit" class="site-footer__newsletter-btn">SUBSCRIBE</button>
             </form>

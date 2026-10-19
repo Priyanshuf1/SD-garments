@@ -558,7 +558,7 @@
           <div class="site-footer__newsletter">
             <h4 class="site-footer__newsletter-heading">JOIN THE INNER CIRCLE</h4>
             <p class="site-footer__newsletter-sub">Gain priority access to limited drops, archival releases, and invite-only showcases.</p>
-            <form class="site-footer__newsletter-form" onsubmit="event.preventDefault(); const inp = this.querySelector('input'); if(inp && inp.value){ alert('Thank you for joining the AllyRich Inner Circle.'); inp.value = ''; }">
+            <form class="site-footer__newsletter-form" onsubmit="window.submitNewsletter ? window.submitNewsletter(this, event) : event.preventDefault(); return false;">
               <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
               <button type="submit" class="site-footer__newsletter-btn">SUBSCRIBE</button>
             </form>

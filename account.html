@@ -544,6 +544,9 @@
       }).join('');
     }
 
+    window.loadWishlist = loadWishlist;
+    window.addEventListener('wishlist:updated', () => loadWishlist());
+
     function removeWishlistItem(handle) {
       if (window.WishlistEngine) {
         WishlistEngine.toggle(handle);
