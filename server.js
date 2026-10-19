@@ -2999,6 +2999,47 @@ async function sendOrderConfirmationEmail(order) {
     }
   }
 
+  // Handle /track Route (Redirect to Delhivery logistics package tracking)
+  if (pathname === '/track' || pathname === '/track/' || pathname === '/track-order' || pathname === '/api/track') {
+    const rawId = parsedUrl.searchParams.get('id') ||
+                  parsedUrl.searchParams.get('orderId') ||
+                  parsedUrl.searchParams.get('awb') ||
+                  parsedUrl.searchParams.get('waybill') ||
+                  parsedUrl.searchParams.get('q');
+
+    if (rawId) {
+      const cleanId = String(rawId).trim().replace(/^#/, '');
+      let orders = readJsonFile('orders.json', []);
+      let matchedOrder = orders.find(o =>
+        (o.id && (o.id.toLowerCase() === cleanId.toLowerCase() || o.id.toLowerCase() === '#' + cleanId.toLowerCase())) ||
+        (o.trackingNumber && o.trackingNumber.toLowerCase() === cleanId.toLowerCase()) ||
+        (o.delhiveryWaybill && o.delhiveryWaybill.toLowerCase() === cleanId.toLowerCase())
+      );
+
+      if (!matchedOrder && supabase && supabase.isConfigured) {
+        try {
+          const supaOrders = await supabase.orders.getAll(100);
+          matchedOrder = supaOrders.find(o =>
+            (o.id && (String(o.id).toLowerCase() === cleanId.toLowerCase() || String(o.id).toLowerCase() === '#' + cleanId.toLowerCase())) ||
+            (o.trackingNumber && String(o.trackingNumber).toLowerCase() === cleanId.toLowerCase()) ||
+            (o.delhiveryWaybill && String(o.delhiveryWaybill).toLowerCase() === cleanId.toLowerCase())
+          );
+        } catch (e) {}
+      }
+
+      const targetIdentifier = matchedOrder && (matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill)
+        ? (matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill)
+        : cleanId;
+
+      res.writeHead(302, { 'Location': `https://www.delhivery.com/track/package/${encodeURIComponent(targetIdentifier)}` });
+      return res.end();
+    }
+
+    // Direct redirection to official Delhivery package tracking portal
+    res.writeHead(302, { 'Location': 'https://www.delhivery.com/track/package/' });
+    return res.end();
+  }
+
   // Handle /cart Route (Redirect to collections with openCart drawer)
   if (pathname === '/cart' || pathname === '/cart/') {
     res.writeHead(302, { 'Location': '/collections/shop?openCart=true' });

@@ -315,7 +315,9 @@
               <div>
                 ${o.trackingNumber ? `
                   Delhivery AWB: <a href="https://www.delhivery.com/track/package/${o.trackingNumber}" target="_blank" style="color:#1565c0; font-weight:700; text-decoration:none;">${o.trackingNumber} ↗</a>
-                ` : '<span style="color:#888;">Express dispatch in progress</span>'}
+                ` : `
+                  <a href="/track?id=${encodeURIComponent(o.id)}" target="_blank" style="color:#1565c0; font-weight:700; text-decoration:none;">Track on Delhivery ↗</a>
+                `}
               </div>
             </div>
           </div>

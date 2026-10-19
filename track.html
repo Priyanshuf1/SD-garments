@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracking Package | ALLYRICH</title>
+  <link rel="shortcut icon" href="/assets/ar-logo.png">
+  <meta http-equiv="refresh" content="0; url=https://www.delhivery.com/track/package/">
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id') || params.get('orderId') || params.get('awb') || params.get('waybill') || params.get('q');
+      if (id) {
+        var cleanId = id.trim().replace(/^#/, '');
+        window.location.replace('https://www.delhivery.com/track/package/' + encodeURIComponent(cleanId));
+      } else {
+        window.location.replace('https://www.delhivery.com/track/package/');
+      }
+    })();
+  </script>
+</head>
+<body style="background:#000; color:#fff; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; text-align:center; padding:1.5rem;">
+  <img src="/assets/ar-logo.png" alt="AR" style="width:48px; height:auto; margin-bottom:1.5rem;">
+  <h2 style="font-size:1.1rem; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px; font-weight:700;">Redirecting to Delhivery Logistics...</h2>
+  <p style="font-size:0.85rem; color:#888; margin:0 0 1.5rem;">Connecting to Delhivery official tracking portal.</p>
+  <a href="https://www.delhivery.com/track/package/" style="color:#fff; font-size:0.8rem; text-decoration:underline;">Click here if not redirected automatically</a>
+</body>
+</html>

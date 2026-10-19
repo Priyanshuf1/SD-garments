@@ -79,9 +79,12 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:10px; justify-content:center;">
-        <a href="/account" style="flex:1; background:#000; color:#fff; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">VIEW MY ACCOUNT</a>
-        <a href="/collections/shop" style="flex:1; background:#f0f0f0; color:#111; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">CONTINUE SHOPPING</a>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom: 0.5rem;">
+        <a id="btn-track-delhivery" href="/track" target="_blank" rel="noopener" style="background:#e50914; color:#fff; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px; display:block;">TRACK SHIPMENT WITH DELHIVERY ↗</a>
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <a href="/account" style="flex:1; background:#000; color:#fff; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">VIEW MY ACCOUNT</a>
+          <a href="/collections/shop" style="flex:1; background:#f0f0f0; color:#111; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">CONTINUE SHOPPING</a>
+        </div>
       </div>
     </div>
   </main>
@@ -90,6 +93,10 @@
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('orderId') || 'GR-1001';
     document.getElementById('display-order-id').textContent = orderId;
+    const trackBtn = document.getElementById('btn-track-delhivery');
+    if (trackBtn && orderId) {
+      trackBtn.href = '/track?id=' + encodeURIComponent(orderId);
+    }
   </script>
 </body>
 </html>
