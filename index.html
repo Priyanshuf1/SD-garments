@@ -1459,13 +1459,13 @@ first.parentNode.insertBefore(script, first);
               </svg>
             </a>
           </li><li class="header__search-link">
-            <a href="/search" aria-controls="header-search-sections--23671272669422__header">
+            <a href="/search" class="search-trigger" aria-controls="header-search-sections--23671272669422__header" style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
               <span class="sr-only">Search</span><svg aria-hidden="true" fill="none" focusable="false" width="24" class="header__nav-icon icon icon-search" viewBox="0 0 24 24">
       <path d="M10.364 3a7.364 7.364 0 1 0 0 14.727 7.364 7.364 0 0 0 0-14.727Z" stroke="currentColor" stroke-width="2" stroke-miterlimit="10"/>
       <path d="M15.857 15.858 21 21.001" stroke="currentColor" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round"/>
     </svg></a>
           </li><li class="relative header__wishlist-link">
-            <a href="/collections/shop?view=wishlist" title="Saved Wishlist" aria-label="View Saved Wishlist" style="color:inherit; text-decoration:none; position:relative; display:flex; align-items:center; padding: 4px;">
+            <a href="/collections/shop?view=wishlist" title="Saved Wishlist" aria-label="View Saved Wishlist" style="color:inherit; text-decoration:none; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding: 4px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
               <span class="sr-only">Wishlist</span>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="header__nav-icon icon">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -1475,10 +1475,12 @@ first.parentNode.insertBefore(script, first);
           </li><li class="relative header__cart-link">
           <a
             href="/cart"
-            
-              aria-controls="cart-drawer"
-            
+            class="cart-trigger"
+            data-open-cart="true"
+            onclick="if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer(); return false;}"
+            aria-controls="cart-drawer"
             data-no-instant
+            style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;"
           >
             <span class="sr-only">Cart</span><svg aria-hidden="true" fill="none" focusable="false" width="24" class="header__nav-icon icon icon-cart" viewBox="0 0 24 24"><path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><cart-dot class="header__cart-dot  "></cart-dot>
           </a>

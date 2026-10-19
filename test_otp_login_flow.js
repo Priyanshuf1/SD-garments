@@ -12,19 +12,21 @@ console.log('--- 1. Checking Frontend Files For Security & Layout Fixes ---');
 
 const authJs = fs.readFileSync('assets/js/auth.js', 'utf8');
 assert(!authJs.includes('Click to Auto-Fill & Sign In'), 'auth.js must NOT include auto-fill button that leaked OTP code');
+assert(!authJs.includes('AUTO-FILL 123456'), 'auth.js must NOT leak master bypass code in modal UI');
 assert(authJs.includes('handleUrlAuthCallback'), 'auth.js must include handleUrlAuthCallback for Supabase magic link');
 assert(authJs.includes('accessToken'), 'auth.js must parse accessToken from URL callback');
 console.log('✅ PASS: auth.js has no OTP leak and correctly handles secure auth callbacks');
 
 const loginHtml = fs.readFileSync('login.html', 'utf8');
 assert(!loginHtml.includes('Click to Auto-Fill & Sign In'), 'login.html must NOT include auto-fill button that leaked OTP code');
+assert(!loginHtml.includes('AUTO-FILL 123456'), 'login.html must NOT leak master bypass code on login page');
 assert(!loginHtml.includes('codeInput.value = res.code'), 'login.html must NOT prefill code from response');
 assert(loginHtml.includes('Login Code Dispatched'), 'login.html must display clean customer instructions');
-console.log('✅ PASS: login.html completely eliminates OTP code leak and green box');
+console.log('✅ PASS: login.html completely eliminates OTP code leak and green/yellow boxes');
 
 const collectionsHtml = fs.readFileSync('collections.html', 'utf8');
 assert(!collectionsHtml.includes('FREE EXPRESS DOORSTEP DELIVERY IN INDIA'), 'collections.html must NOT have announcement bar');
-assert(collectionsHtml.includes('.site-header__nav') && collectionsHtml.includes('@media (max-width: 900px)'), 'collections.html must hide center nav on mobile');
+assert(collectionsHtml.includes('.site-header__nav') && (collectionsHtml.includes('@media (max-width: 1024px)') || collectionsHtml.includes('@media (max-width: 900px)')), 'collections.html must hide center nav on mobile');
 assert(!collectionsHtml.includes('style="display:flex; justify-content:center; align-items:center; flex:1;"'), 'collections.html must not override mobile hiding with inline flex style');
 assert(collectionsHtml.includes('Your Wishlist Is Empty'), 'collections.html must include dedicated wishlist empty state');
 assert(collectionsHtml.includes('search-active-banner'), 'collections.html must include search active banner');
@@ -32,9 +34,10 @@ console.log('✅ PASS: collections.html header collision fixed, top announcement
 
 const quickBuyJs = fs.readFileSync('assets/js/quick-buy.js', 'utf8');
 assert(quickBuyJs.includes('injectCartDrawer'), 'quick-buy.js must include cart drawer engine');
-assert(quickBuyJs.includes('a[href="/cart"]'), 'quick-buy.js must intercept /cart clicks to open drawer');
+assert(quickBuyJs.includes('a[href*="/cart"]') || quickBuyJs.includes('a[href="/cart"]'), 'quick-buy.js must intercept cart clicks to open drawer');
 assert(quickBuyJs.includes('openCartDrawer'), 'quick-buy.js must provide openCartDrawer method');
-console.log('✅ PASS: quick-buy.js includes foolproof cart drawer interception');
+assert(quickBuyJs.includes('touchend'), 'quick-buy.js must listen for mobile touch events');
+console.log('✅ PASS: quick-buy.js includes foolproof cart drawer interception with touch support');
 
 // ========================================================
 // 2. BACKEND API & ROUTING VERIFICATION
@@ -73,6 +76,19 @@ server.listen(TEST_PORT, async () => {
     assert(products.length >= 240, `Catalog must have at least 240 products, got ${products.length}`);
     console.log(`✅ PASS: GET /api/products returns ${products.length} products (all catalog items present)`);
 
+    // Test C2: Multi-Word Search Queries (Fix for 0 products search bug)
+    console.log('Testing multi-word search: ?q=black+pants...');
+    const searchPantsRes = await fetch(`http://127.0.0.1:${TEST_PORT}/api/products?q=black+pants`);
+    const searchPantsData = await searchPantsRes.json();
+    assert(searchPantsData.products.length > 0, 'Multi-word search "black pants" must return matching items');
+    console.log(`✅ PASS: Multi-word search "black pants" returned ${searchPantsData.products.length} matching products`);
+
+    console.log('Testing multi-word search: ?q=oversized+hoodie...');
+    const searchHoodieRes = await fetch(`http://127.0.0.1:${TEST_PORT}/api/products?q=oversized+hoodie`);
+    const searchHoodieData = await searchHoodieRes.json();
+    assert(searchHoodieData.products.length > 0, 'Multi-word search "oversized hoodie" must return matching items');
+    console.log(`✅ PASS: Multi-word search "oversized hoodie" returned ${searchHoodieData.products.length} matching products`);
+
     // Test D: Send OTP (No Code Leaked to Client)
     const testEmail = `otp_verify_${Date.now()}@example.com`;
     console.log(`\nTesting POST /api/auth/send-otp for ${testEmail}...`);
@@ -86,6 +102,7 @@ server.listen(TEST_PORT, async () => {
     assert.strictEqual(sendData.success, true, 'send-otp success must be true');
     assert.strictEqual(sendData.code, undefined, 'send-otp response must NOT contain the OTP code');
     assert.strictEqual(sendData.otp, undefined, 'send-otp response must NOT contain otp field');
+    assert.strictEqual(sendData.devBypass, undefined, 'send-otp response must NOT leak devBypass field');
     assert(sendData.message.includes('verification code has been dispatched'), 'send-otp must return clean customer message');
     console.log('✅ PASS: send-otp dispatched securely with zero OTP leak in response payload');
 

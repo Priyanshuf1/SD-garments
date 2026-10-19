@@ -381,15 +381,26 @@
     },
 
     bindCartTriggers() {
-      // Infallible event listener on capture phase across all pages
-      document.addEventListener('click', (e) => {
-        const trigger = e.target.closest('a[href="/cart"], a[href="/cart/"], a[aria-controls="cart-drawer"], .header__cart-link a, .header__cart-link, .cart-trigger, [data-open-cart]');
+      // Infallible event listener on capture phase across all pages (touch and click)
+      let lastTriggerTime = 0;
+      const handleCartOpen = (e) => {
+        const trigger = e.target.closest('a[href*="/cart"], a[aria-controls="cart-drawer"], .header__cart-link, .header__cart-link a, .cart-trigger, [data-open-cart], #header-cart-badge, .header__cart-dot');
         if (trigger) {
+          const now = Date.now();
+          if (now - lastTriggerTime < 350) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          lastTriggerTime = now;
           e.preventDefault();
           e.stopPropagation();
           this.openCartDrawer();
         }
-      }, true);
+      };
+
+      document.addEventListener('click', handleCartOpen, true);
+      document.addEventListener('touchend', handleCartOpen, { passive: false, capture: true });
     },
 
     injectCartDrawer() {

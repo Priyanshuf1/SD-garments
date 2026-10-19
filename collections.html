@@ -57,19 +57,24 @@
       align-items: center;
       gap: 1.75rem;
     }
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
       .site-header__nav {
         display: none !important;
       }
       .site-header {
-        padding: 0.75rem 1rem !important;
+        padding: 0.65rem 1rem !important;
       }
       .allyrich-header-brand-name {
         font-size: 1.15rem !important;
         letter-spacing: 0.12em !important;
       }
       .header-actions-group {
-        gap: 0.85rem !important;
+        gap: 0.5rem !important;
+      }
+      .collection-subnav__inner {
+        justify-content: flex-start !important;
+        padding: 0 1rem !important;
+        gap: 16px !important;
       }
     }
     .header-nav-link {
@@ -628,7 +633,7 @@
       <div class="header-actions-group" style="display:flex; align-items:center; gap: 1.25rem;">
         
         <!-- User Account Icon / Profile link -->
-        <a href="/account" class="header-account-link" data-account-trigger title="Account" style="color:#ffffff; text-decoration:none; display:flex; align-items:center;">
+        <a href="/account" class="header-account-link action-touch-btn" data-account-trigger title="Account" style="color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke-miterlimit="10"/>
@@ -636,7 +641,7 @@
         </a>
 
         <!-- Search Icon Trigger -->
-        <button type="button" onclick="CollectionEngine.toggleFilterDrawer(true)" title="Search & Filter" style="background:none; border:none; color:#ffffff; cursor:pointer; display:flex; align-items:center;">
+        <button type="button" class="search-trigger action-touch-btn" onclick="CollectionEngine.toggleFilterDrawer(true); return false;" title="Search & Filter" style="background:none; border:none; color:#ffffff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-miterlimit="10">
             <path d="M10.364 3a7.364 7.364 0 1 0 0 14.727 7.364 7.364 0 0 0 0-14.727Z"/>
             <path d="M15.857 15.858 21 21.001" stroke-linecap="round"/>
@@ -644,21 +649,21 @@
         </button>
 
         <!-- Wishlist Icon with Counter Badge -->
-        <a href="/collections/shop?view=wishlist" onclick="if(window.CollectionEngine){event.preventDefault(); CollectionEngine.setCategory('wishlist');}" title="Saved Wishlist" style="color:#ffffff; text-decoration:none; position:relative; display:flex; align-items:center;">
+        <a href="/collections/shop?view=wishlist" class="action-touch-btn" onclick="if(window.CollectionEngine){event.preventDefault(); CollectionEngine.setCategory('wishlist');}" title="Saved Wishlist" style="color:#ffffff; text-decoration:none; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
           </svg>
-          <span class="wishlist-count-badge" style="display:none; position:absolute; top:-6px; right:-8px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; align-items:center; justify-content:center; line-height:16px; text-align:center;">0</span>
+          <span class="wishlist-count-badge" style="display:none; position:absolute; top:2px; right:2px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; align-items:center; justify-content:center; line-height:16px; text-align:center;">0</span>
         </a>
 
         <!-- Cart Bag Trigger -->
-        <button type="button" onclick="CollectionEngine.openCartDrawer()" aria-label="Open Shopping Bag" style="background:none; border:none; color:#ffffff; cursor:pointer; position:relative; display:flex; align-items:center;">
+        <button type="button" class="cart-trigger action-touch-btn" data-open-cart="true" onclick="if(window.CollectionEngine){CollectionEngine.openCartDrawer();}else if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer();} return false;" aria-label="Open Shopping Bag" style="background:none; border:none; color:#ffffff; cursor:pointer; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <path d="M16 10a4 4 0 0 1-8 0"></path>
           </svg>
-          <span id="header-cart-badge" style="position:absolute; top:-6px; right:-8px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; display:flex; align-items:center; justify-content:center;">0</span>
+          <span id="header-cart-badge" style="position:absolute; top:2px; right:2px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; display:flex; align-items:center; justify-content:center;">0</span>
         </button>
 
       </div>
@@ -670,7 +675,7 @@
   <!-- ============================================================== -->
   <nav class="collection-subnav" aria-label="Sub-category Navigation">
     <div class="collection-subnav__inner" id="category-chips">
-      <a href="/collections/shop" class="category-chip active" data-cat="all">New In</a>
+      <a href="/collections/shop" class="category-chip active" data-cat="all">All Products</a>
       <a href="/collections/baggy-pants" class="category-chip" data-cat="bottoms">Pants</a>
       <a href="/collections/vest" class="category-chip" data-cat="vests">Tank Tops</a>
       <a href="/collections/basics-genrage" class="category-chip" data-cat="basics">Basics</a>
@@ -1000,6 +1005,12 @@
 
         if (qParam) {
           this.searchQuery = qParam;
+        } else if (path.startsWith('/search')) {
+          setTimeout(() => {
+            this.toggleFilterDrawer(true);
+            const input = document.getElementById('filter-search-input');
+            if (input) input.focus();
+          }, 350);
         }
 
         if (viewMode === 'wishlist' || queryCat === 'wishlist') {
@@ -1180,11 +1191,19 @@
           const tags = (p.tags || '').toString().toLowerCase();
           const desc = (p.body_html || '').toLowerCase();
 
-          // Search keyword filter
+          // Search keyword filter (multi-word token matching)
           if (this.searchQuery) {
-            const sq = this.searchQuery.toLowerCase();
-            const matches = title.includes(sq) || handle.includes(sq) || cat.includes(sq) || tags.includes(sq) || desc.includes(sq);
+            const terms = this.searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+            const targetText = `${title} ${handle} ${cat} ${tags} ${desc}`.toLowerCase();
+            const matches = terms.every(term => targetText.includes(term));
             if (!matches) return false;
+          }
+
+          // Size Filter
+          if (this.activeSizeFilter) {
+            const sz = this.activeSizeFilter.toUpperCase();
+            const hasSize = (p.variants || []).some(v => (v.title || '').toUpperCase() === sz || (v.option1 || '').toUpperCase() === sz || v.title === 'Default');
+            if (!hasSize) return false;
           }
 
           // 1. Category Filter
@@ -1400,11 +1419,17 @@
       toggleFilterDrawer(show = null) {
         const backdrop = document.getElementById('filter-drawer-backdrop');
         const drawer = document.getElementById('filter-drawer-aside');
-        const isCurrentOpen = drawer.style.transform === 'translateX(0px)';
+        const isCurrentOpen = drawer.style.transform === 'translateX(0px)' || drawer.style.transform === 'translateX(0)';
         const willOpen = show !== null ? show : !isCurrentOpen;
 
         backdrop.style.display = willOpen ? 'block' : 'none';
         drawer.style.transform = willOpen ? 'translateX(0)' : 'translateX(100%)';
+        if (willOpen) {
+          setTimeout(() => {
+            const inp = document.getElementById('filter-search-input');
+            if (inp) inp.focus();
+          }, 150);
+        }
       },
 
       handleSortChange(val) {
@@ -1415,6 +1440,8 @@
       toggleFilter(type, val, btn) {
         if (type === 'price') {
           this.activePriceFilter = this.activePriceFilter === val ? null : val;
+        } else if (type === 'size') {
+          this.activeSizeFilter = this.activeSizeFilter === val ? null : val;
         }
         btn.classList.toggle('active');
         this.filterAndRender();
@@ -1422,9 +1449,16 @@
 
       clearFilters() {
         this.activePriceFilter = null;
+        this.activeSizeFilter = null;
         this.activeSort = 'featured';
+        this.searchQuery = '';
+        const searchInput = document.getElementById('filter-search-input');
+        if (searchInput) searchInput.value = '';
         document.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('sort-select').value = 'featured';
+        const sortSelect = document.getElementById('sort-select');
+        if (sortSelect) sortSelect.value = 'featured';
+        this.activeCategory = 'all';
+        this.updateActiveChip();
         this.filterAndRender();
       },
 
@@ -1469,13 +1503,21 @@
       },
 
       openCartDrawer() {
-        document.getElementById('cart-drawer-backdrop').style.display = 'block';
-        document.getElementById('cart-drawer-aside').style.transform = 'translateX(0)';
+        this.loadCartFromStorage();
+        this.updateCartUi();
+        const backdrop = document.getElementById('cart-drawer-backdrop');
+        const aside = document.getElementById('cart-drawer-aside');
+        if (backdrop) backdrop.style.display = 'block';
+        if (aside) aside.style.transform = 'translateX(0)';
+        document.body.style.overflow = 'hidden';
       },
 
       closeCartDrawer() {
-        document.getElementById('cart-drawer-backdrop').style.display = 'none';
-        document.getElementById('cart-drawer-aside').style.transform = 'translateX(100%)';
+        const backdrop = document.getElementById('cart-drawer-backdrop');
+        const aside = document.getElementById('cart-drawer-aside');
+        if (backdrop) backdrop.style.display = 'none';
+        if (aside) aside.style.transform = 'translateX(100%)';
+        document.body.style.overflow = '';
       },
 
       saveCartToStorage() {

@@ -559,7 +559,7 @@ async function handleGetSingleOrder(req, res, orderId) {
 
 async function handleGetProducts(req, res, parsedUrl) {
   const products = await getAllProducts();
-  const query = parsedUrl.searchParams.get('search')?.toLowerCase();
+  const query = (parsedUrl.searchParams.get('search') || parsedUrl.searchParams.get('q') || '').toLowerCase().trim();
   const collection = parsedUrl.searchParams.get('collection');
   const category = parsedUrl.searchParams.get('category');
   const stock = parsedUrl.searchParams.get('stock');
@@ -568,12 +568,11 @@ async function handleGetProducts(req, res, parsedUrl) {
 
   let filtered = products;
   if (query) {
-    filtered = filtered.filter(p =>
-      p.title.toLowerCase().includes(query) ||
-      p.handle.toLowerCase().includes(query) ||
-      (p.category && p.category.toLowerCase().includes(query)) ||
-      (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
-    );
+    const terms = query.split(/\s+/).filter(Boolean);
+    filtered = filtered.filter(p => {
+      const targetText = `${p.title || ''} ${p.handle || ''} ${p.category || ''} ${p.product_type || ''} ${Array.isArray(p.tags) ? p.tags.join(' ') : (p.tags || '')} ${p.body_html || ''}`.toLowerCase();
+      return terms.every(t => targetText.includes(t));
+    });
   }
   if (category && category !== 'all') {
     filtered = filtered.filter(p =>
@@ -1842,7 +1841,54 @@ async function sendOtpEmail(email, otpCode) {
     }
   }
 
-  // 2. Try Supabase OTP as well if configured (works if user set up custom SMTP in Supabase)
+  // 2. Brevo (Sendinblue) API Integration (Free 300 emails/day)
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  if (!emailDispatched && brevoApiKey) {
+    try {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'ALLY RICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
+          to: [{ email }],
+          subject: `Your ALLY RICH Login Code: ${otpCode}`,
+          htmlContent: `
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
+              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLY RICH</h1>
+                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+              </div>
+              <div style="padding:28px 0; text-align:center;">
+                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
+                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
+                  ${otpCode}
+                </div>
+                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+              </div>
+              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
+                If you did not request this code, you can safely ignore this email.<br>
+                &copy; ${new Date().getFullYear()} ALLY RICH. All rights reserved.
+              </div>
+            </div>
+          `
+        })
+      });
+      if (res.ok) {
+        emailDispatched = true;
+        console.log(`✅ [BREVO EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
+      } else {
+        const errText = await res.text();
+        console.warn(`⚠️ [BREVO EMAIL ERROR]:`, errText);
+      }
+    } catch (err) {
+      console.warn(`⚠️ [BREVO ERROR]:`, err.message);
+    }
+  }
+
+  // 3. Try Supabase OTP as well if configured (works if user set up custom SMTP in Supabase)
   if (!emailDispatched && supabase.isConfigured) {
     try {
       const supaRes = await supabase.auth.sendMagicLink({ email });
@@ -1876,15 +1922,14 @@ async function sendOtpEmail(email, otpCode) {
         attempts: 0
       });
 
-      // Send real email via Resend / Supabase custom SMTP
+      // Send real email via Resend / Brevo / Supabase custom SMTP
       const dispatched = await sendOtpEmail(email, otpCode);
 
       // Return clean, secure customer response without exposing the OTP code
       return sendJson(res, 200, {
         success: true,
-        message: dispatched
-          ? `A 6-digit verification code has been dispatched to ${email}. Please check your Gmail (including Spam and Promotions folders).`
-          : `A 6-digit verification code has been dispatched to ${email}. Please check your inbox (or Spam/Promotions folder).`
+        emailSent: dispatched,
+        message: `A 6-digit verification code has been dispatched to ${email}. Please check your Gmail (including Spam and Promotions folders).`
       });
     }
 

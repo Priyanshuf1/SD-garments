@@ -329,13 +329,6 @@
     <style>.loader { display: none; }</style>
   </noscript>
 
-  <!-- Announcement Bar -->
-  <aside class="announcement-bar">
-    <div class="announcement-slide">
-      <span>FREE DOORSTEP DELIVERY IN INDIA 🇮🇳 • LIMITED QUANTITIES</span>
-    </div>
-  </aside>
-
   <!-- Sticky Header -->
   <header class="site-header">
     <div class="site-container header-inner">
@@ -350,35 +343,35 @@
       </div>
 
       <nav class="desktop-nav">
-        <a href="/collections.html?category=new-arrivals-genrage" class="nav-link">NEW ARRIVALS</a>
-        <a href="/collections.html?category=vest" class="nav-link">TANK TOP</a>
-        <a href="/collections.html?category=boxy-t-shirts" class="nav-link">TSHIRT</a>
-        <a href="/collections.html?category=hoodies-for-men" class="nav-link">HOODIES</a>
-        <a href="/collections.html?category=baggy-pants" class="nav-link">BOTTOMS</a>
-        <a href="/collections.html?category=clearance-sale" class="nav-link sale-link">CLEARANCE SALE</a>
+        <a href="/collections/shop" class="nav-link">NEW ARRIVALS</a>
+        <a href="/collections/vest" class="nav-link">TANK TOP</a>
+        <a href="/collections/boxy-oversized-tshirt" class="nav-link">TSHIRT</a>
+        <a href="/collections/hoodies-for-men" class="nav-link">HOODIES</a>
+        <a href="/collections/baggy-pants" class="nav-link">BOTTOMS</a>
+        <a href="/collections/clearance-sale" class="nav-link sale-link">CLEARANCE SALE</a>
         <a href="/pages/contact.html" class="nav-link">TRACK ORDER</a>
       </nav>
 
       <div class="header-actions">
         <!-- Account Icon -->
-        <a href="/account" class="header-account-link action-btn" data-account-trigger title="Account" style="color:#fff; text-decoration:none; display:flex; align-items:center;">
+        <a href="/account" class="header-account-link action-btn" data-account-trigger title="Account" style="color:#fff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke-miterlimit="10"/>
           </svg>
         </a>
-        <button class="action-btn search-trigger" aria-label="Search">
+        <button class="action-btn search-trigger" onclick="if(window.GenrageApp){GenrageApp.openSearch();}else{window.location.href='/search';} return false;" aria-label="Search" style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
         </button>
-        <button class="action-btn" id="wishlist-header-btn" onclick="window.location.href='/collections.html?view=wishlist'" aria-label="Wishlist">
+        <button class="action-btn" id="wishlist-header-btn" onclick="window.location.href='/collections/shop?view=wishlist'" aria-label="Wishlist" style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
           </svg>
           <span class="badge-count" id="wishlist-count" style="display: none;">0</span>
         </button>
-        <button class="action-btn cart-trigger" aria-label="Cart">
+        <button class="action-btn cart-trigger" data-open-cart="true" onclick="if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer();}else if(window.GenrageApp){GenrageApp.openCart();}else{window.location.href='/cart';} return false;" aria-label="Cart" style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
             <line x1="3" y1="6" x2="21" y2="6"></line>
