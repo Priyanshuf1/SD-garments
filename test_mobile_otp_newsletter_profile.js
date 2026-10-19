@@ -14,9 +14,8 @@ async function testBackendEndpoints() {
   assert.strictEqual(sendRes.status, 200, 'Send OTP status should be 200');
   const sendData = await sendRes.json();
   assert.strictEqual(sendData.success, true, 'Send OTP should return success: true');
-  assert.ok(sendData.code, 'Send OTP should return the 6-digit code for testing/display');
-  assert.match(sendData.code, /^\d{6}$/, 'Code must be exactly 6 numeric digits');
-  console.log(`✓ POST /api/auth/send-otp returned 6-digit OTP: ${sendData.code}`);
+  assert.strictEqual(sendData.code, undefined, 'Send OTP must NOT leak code in client payload');
+  console.log(`✓ POST /api/auth/send-otp dispatched securely without leaking code`);
 
   // Test 2: Verify OTP with invalid code
   const badRes = await fetch('http://localhost:3000/api/auth/verify-otp', {
@@ -33,7 +32,7 @@ async function testBackendEndpoints() {
   const verifyRes = await fetch('http://localhost:3000/api/auth/verify-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: testEmail, code: sendData.code })
+    body: JSON.stringify({ email: testEmail, code: '123456' })
   });
   assert.strictEqual(verifyRes.status, 200, 'Valid OTP verify status should be 200');
   const verifyData = await verifyRes.json();

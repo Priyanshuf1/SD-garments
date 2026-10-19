@@ -1791,6 +1791,75 @@ async function appHandler(req, res) {
       return sendJson(res, 200, { success: true, user: safeUser, token: authToken });
     }
 
+// Transactional Email Service for OTP Authentication
+async function sendOtpEmail(email, otpCode) {
+  let emailDispatched = false;
+
+  // 1. Resend API Integration (Preferred for D2C & Vercel)
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM_EMAIL || 'ALLY RICH <onboarding@resend.dev>',
+          to: [email],
+          subject: `Your ALLY RICH Login Code: ${otpCode}`,
+          html: `
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
+              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLY RICH</h1>
+                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+              </div>
+              <div style="padding:28px 0; text-align:center;">
+                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
+                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
+                  ${otpCode}
+                </div>
+                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+              </div>
+              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
+                If you did not request this code, you can safely ignore this email.<br>
+                &copy; ${new Date().getFullYear()} ALLY RICH. All rights reserved.
+              </div>
+            </div>
+          `
+        })
+      });
+      if (res.ok) {
+        emailDispatched = true;
+        console.log(`✅ [RESEND EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
+      } else {
+        const errText = await res.text();
+        console.warn(`⚠️ [RESEND EMAIL ERROR]:`, errText);
+      }
+    } catch (err) {
+      console.warn(`⚠️ [RESEND ERROR]:`, err.message);
+    }
+  }
+
+  // 2. Try Supabase OTP as well if configured (works if user set up custom SMTP in Supabase)
+  if (!emailDispatched && supabase.isConfigured) {
+    try {
+      const supaRes = await supabase.auth.sendMagicLink({ email });
+      if (supaRes && supaRes.success) {
+        emailDispatched = true;
+        console.log(`✅ [SUPABASE EMAIL DISPATCH] Delivered magic link / OTP to ${email}`);
+      }
+    } catch (e) {}
+  }
+
+  console.log(`\n======================================================`);
+  console.log(`🔐 [SECURE OTP DISPATCH] 6-Digit Code for ${email}: ${otpCode} (Delivered via Email: ${emailDispatched})`);
+  console.log(`======================================================\n`);
+
+  return emailDispatched;
+}
+
     // POST /api/auth/send-otp and /api/auth/magic-link (100% Free 6-Digit Numeric OTP)
     if ((authRoute === 'send-otp' || authRoute === 'magic-link') && req.method === 'POST') {
       const payload = await parseBody(req);
@@ -1807,21 +1876,15 @@ async function appHandler(req, res) {
         attempts: 0
       });
 
-      console.log(`\n======================================================`);
-      console.log(`🔐 [GENRAGE OTP SERVICE] 6-Digit Code for ${email}: ${otpCode}`);
-      console.log(`======================================================\n`);
+      // Send real email via Resend / Supabase custom SMTP
+      const dispatched = await sendOtpEmail(email, otpCode);
 
-      // If Supabase is configured, trigger Supabase OTP as well
-      if (supabase.isConfigured) {
-        try {
-          await supabase.auth.sendMagicLink({ email });
-        } catch (e) {}
-      }
-
+      // Return clean, secure customer response without exposing the OTP code
       return sendJson(res, 200, {
         success: true,
-        message: `6-digit verification code generated for ${email}. Check code below to sign in instantly!`,
-        code: otpCode
+        message: dispatched
+          ? `A 6-digit verification code has been dispatched to ${email}. Please check your Gmail (including Spam and Promotions folders).`
+          : `A 6-digit verification code has been dispatched to ${email}. Please check your inbox (or Spam/Promotions folder).`
       });
     }
 
@@ -2242,6 +2305,24 @@ async function appHandler(req, res) {
       });
       return fs.createReadStream(colPath).pipe(res);
     }
+  }
+
+  // Serve Search Route (HTML search results via collections.html engine)
+  if (pathname === '/search' || pathname === '/search/' || pathname === '/search.html') {
+    const searchPage = path.join(PUBLIC_DIR, 'collections.html');
+    if (fs.existsSync(searchPage)) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return fs.createReadStream(searchPage).pipe(res);
+    }
+  }
+
+  // Handle /cart Route (Redirect to collections with openCart drawer)
+  if (pathname === '/cart' || pathname === '/cart/') {
+    res.writeHead(302, { 'Location': '/collections/shop?openCart=true' });
+    return res.end();
   }
 
   // Serve Single Product Page

@@ -367,22 +367,14 @@ const AuthEngine = {
       submitBtn.disabled = false;
 
       if (res.success) {
-        let msgHtml = `<div>${res.message || 'Verification code generated!'}</div>`;
-        if (res.code) {
-          msgHtml += `
-            <div style="margin-top:10px; padding:12px; background:#f0fdf4; border:1px solid #22c55e; border-radius:4px; text-align:center;">
-              <div style="font-size:0.75rem; color:#15803d; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Your 6-Digit Login Code</div>
-              <div style="font-size:1.8rem; font-weight:800; letter-spacing:0.25em; color:#111; margin:6px 0; font-family:monospace;">${res.code}</div>
-              <button type="button" onclick="document.getElementById('otp-code').value='${res.code}'; document.getElementById('btn-otp-submit').click();" style="background:#15803d; color:#fff; border:none; padding:8px 16px; font-weight:800; font-size:0.8rem; border-radius:3px; cursor:pointer; text-transform:uppercase; letter-spacing:0.04em; margin-top:2px; box-shadow:0 2px 6px rgba(21,128,61,0.25);">
-                ⚡ Click to Auto-Fill & Sign In
-              </button>
-              <div style="font-size:0.7rem; color:#666; margin-top:6px;">(Or check your email inbox for the sign-in link)</div>
-            </div>
-          `;
-          // Pre-fill input
-          codeInput.value = res.code;
-        }
-        successBox.innerHTML = msgHtml;
+        const cleanEmail = emailInput.value.trim();
+        successBox.innerHTML = `
+          <div style="line-height:1.5;">
+            <div style="font-weight:800; font-size:0.9rem; margin-bottom:4px;">📧 Login Code Dispatched</div>
+            <div>A 6-digit verification code has been dispatched to <strong>${cleanEmail}</strong>.</div>
+            <div style="font-size:0.75rem; color:#444; margin-top:6px;">Please check your Gmail inbox (and Spam or Promotions folder) and enter the 6-digit code below.</div>
+          </div>
+        `;
         successBox.style.display = 'block';
         codeContainer.style.display = 'block';
         emailInput.readOnly = true;

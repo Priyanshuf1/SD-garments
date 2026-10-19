@@ -14,8 +14,12 @@
 
     async init() {
       this.injectDom();
+      this.injectCartDrawer();
       this.bindTriggers();
+      this.bindCartTriggers();
       this.bindNewsletter();
+      this.updateAllBadges();
+      this.checkUrlForCart();
       this.fetchCatalog();
     },
 
@@ -307,52 +311,251 @@
       localStorage.setItem('genrage_cart_v1', JSON.stringify(cart));
 
       // Trigger app hooks if present
-      let drawerOpened = false;
       if (window.GenrageApp) {
         window.GenrageApp.cart = cart;
         if (typeof window.GenrageApp.updateCartUI === 'function') window.GenrageApp.updateCartUI();
-        if (typeof window.GenrageApp.openCart === 'function') {
-          window.GenrageApp.openCart();
-          drawerOpened = true;
-        }
       }
       if (window.CollectionEngine) {
         window.CollectionEngine.cart = cart;
         if (typeof window.CollectionEngine.updateCartUi === 'function') window.CollectionEngine.updateCartUi();
-        if (typeof window.CollectionEngine.openCartDrawer === 'function') {
-          window.CollectionEngine.openCartDrawer();
-          drawerOpened = true;
-        } else if (typeof window.CollectionEngine.openCart === 'function') {
-          window.CollectionEngine.openCart();
-          drawerOpened = true;
-        }
       }
 
-      // Fallback DOM activation if drawer not already opened
-      if (!drawerOpened) {
-        const cartDrawer = document.getElementById('cart-drawer');
-        const drawerBackdrop = document.getElementById('drawer-backdrop');
-        if (cartDrawer) {
-          cartDrawer.classList.add('active');
-          if (drawerBackdrop) drawerBackdrop.classList.add('active');
-          document.body.style.overflow = 'hidden';
-        }
-      }
-
-      // Update badge counts on header
-      const totalCount = cart.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
-      document.querySelectorAll('.cart-badge-count, #cart-count').forEach(el => {
-        el.textContent = totalCount;
-        el.style.display = totalCount > 0 ? 'flex' : 'none';
-      });
-
+      this.updateAllBadges();
       this.close();
+      this.openCartDrawer();
     },
 
     buyNow() {
       if (!this.currentProduct) return;
       this.addToCartAndOpenDrawer();
       window.location.href = '/checkout';
+    },
+
+    getCart() {
+      try {
+        const raw = localStorage.getItem('genrage_cart') || localStorage.getItem('genrage_cart_v1');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    },
+
+    saveCart(cart) {
+      try {
+        const json = JSON.stringify(cart);
+        localStorage.setItem('genrage_cart', json);
+        localStorage.setItem('genrage_cart_v1', json);
+      } catch (e) {}
+      this.updateAllBadges();
+      this.renderGlobalCart();
+      if (window.CollectionEngine && typeof window.CollectionEngine.updateCartUi === 'function') {
+        window.CollectionEngine.cart = cart;
+        window.CollectionEngine.updateCartUi();
+      }
+      if (window.GenrageApp && typeof window.GenrageApp.updateCartUI === 'function') {
+        window.GenrageApp.cart = cart;
+        window.GenrageApp.updateCartUI();
+      }
+    },
+
+    updateAllBadges() {
+      const cart = this.getCart();
+      const totalCount = cart.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
+      document.querySelectorAll('.cart-badge-count, #cart-count, #header-cart-badge, .header__cart-dot').forEach(el => {
+        if (el.tagName === 'CART-DOT') {
+          el.style.display = totalCount > 0 ? 'block' : 'none';
+        } else {
+          el.textContent = totalCount;
+          el.style.display = totalCount > 0 ? 'flex' : 'none';
+        }
+      });
+    },
+
+    checkUrlForCart() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('openCart') === 'true' || window.location.hash === '#cart') {
+          setTimeout(() => this.openCartDrawer(), 300);
+        }
+      } catch (e) {}
+    },
+
+    bindCartTriggers() {
+      // Infallible event listener on capture phase across all pages
+      document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('a[href="/cart"], a[href="/cart/"], a[aria-controls="cart-drawer"], .header__cart-link a, .header__cart-link, .cart-trigger, [data-open-cart]');
+        if (trigger) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.openCartDrawer();
+        }
+      }, true);
+    },
+
+    injectCartDrawer() {
+      if (document.getElementById('global-cart-drawer') || document.getElementById('cart-drawer-aside')) return;
+
+      const backdrop = document.createElement('div');
+      backdrop.id = 'global-cart-backdrop';
+      backdrop.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:99998; backdrop-filter:blur(3px);';
+      backdrop.onclick = () => this.closeCartDrawer();
+
+      const drawer = document.createElement('aside');
+      drawer.id = 'global-cart-drawer';
+      drawer.setAttribute('role', 'dialog');
+      drawer.setAttribute('aria-label', 'Shopping Bag');
+      drawer.style.cssText = `
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(420px, 100vw);
+        background: #ffffff;
+        color: #111111;
+        z-index: 99999;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      `;
+
+      drawer.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:1rem; border-bottom:1px solid #eee;">
+          <h3 style="font-size:1.15rem; font-weight:800; text-transform:uppercase; margin:0; letter-spacing:0.04em; color:#111;">Shopping Bag</h3>
+          <button type="button" id="global-cart-close" aria-label="Close Bag" style="background:none; border:none; color:#111; font-size:1.25rem; cursor:pointer; padding:4px;">✕</button>
+        </div>
+
+        <div style="background:#e8f5e9; border:1px solid #c8e6c9; border-radius:3px; padding:0.75rem; margin:1rem 0; font-size:0.75rem; text-align:center; color:#111;">
+          <span style="color:#2e7d32; font-weight:800;">✓ FREE EXPRESS AIR DELIVERY</span> ON ALL ORDERS IN INDIA
+        </div>
+
+        <div id="global-cart-items" style="flex:1; overflow-y:auto; padding:0.5rem 0;"></div>
+
+        <div style="border-top:1px solid #eee; padding-top:1.25rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-weight:700; font-size:0.95rem; color:#111;">
+            <span>Estimated Subtotal</span>
+            <span id="global-cart-total" style="font-weight:900;">Rs. 0</span>
+          </div>
+          <button type="button" id="global-cart-checkout-btn" style="width:100%; background:#000000; color:#ffffff; border:none; padding:15px; font-size:0.9rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; border-radius:2px; transition:background 0.2s;">
+            PROCEED TO CHECKOUT
+          </button>
+          <div style="text-align:center; font-size:0.7rem; color:#777; margin-top:8px;">
+            Taxes and shipping calculated at checkout
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(backdrop);
+      document.body.appendChild(drawer);
+
+      document.getElementById('global-cart-close').onclick = () => this.closeCartDrawer();
+      document.getElementById('global-cart-checkout-btn').onclick = () => {
+        const cart = this.getCart();
+        if (cart.length === 0) {
+          alert('Your cart is empty. Please add items before checking out.');
+          return;
+        }
+        window.location.href = '/checkout';
+      };
+    },
+
+    openCartDrawer() {
+      if (window.CollectionEngine && typeof window.CollectionEngine.openCartDrawer === 'function') {
+        window.CollectionEngine.openCartDrawer();
+        return;
+      }
+      if (window.GenrageApp && typeof window.GenrageApp.openCart === 'function') {
+        window.GenrageApp.openCart();
+        return;
+      }
+
+      this.injectCartDrawer();
+      this.renderGlobalCart();
+      const backdrop = document.getElementById('global-cart-backdrop');
+      const drawer = document.getElementById('global-cart-drawer');
+      if (backdrop && drawer) {
+        backdrop.style.display = 'block';
+        drawer.style.transform = 'translateX(0)';
+        document.body.style.overflow = 'hidden';
+      }
+    },
+
+    closeCartDrawer() {
+      const backdrop = document.getElementById('global-cart-backdrop');
+      const drawer = document.getElementById('global-cart-drawer');
+      if (backdrop && drawer) {
+        backdrop.style.display = 'none';
+        drawer.style.transform = 'translateX(100%)';
+        document.body.style.overflow = '';
+      }
+    },
+
+    renderGlobalCart() {
+      const container = document.getElementById('global-cart-items');
+      const totalEl = document.getElementById('global-cart-total');
+      const checkoutBtn = document.getElementById('global-cart-checkout-btn');
+      if (!container) return;
+
+      const cart = this.getCart();
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:3rem 1rem; color:#888;">
+            Your bag is currently empty.<br>
+            <a href="/collections/shop" style="display:inline-block; margin-top:1rem; background:#000; color:#fff; padding:8px 16px; border-radius:2px; font-size:0.78rem; font-weight:800; text-transform:uppercase; text-decoration:none;">EXPLORE DROPS</a>
+          </div>
+        `;
+        if (totalEl) totalEl.textContent = 'Rs. 0';
+        if (checkoutBtn) {
+          checkoutBtn.style.opacity = '0.5';
+          checkoutBtn.style.cursor = 'not-allowed';
+        }
+        return;
+      }
+
+      if (checkoutBtn) {
+        checkoutBtn.style.opacity = '1';
+        checkoutBtn.style.cursor = 'pointer';
+      }
+
+      let subtotal = 0;
+      container.innerHTML = cart.map((item, idx) => {
+        const price = Number(item.price || 1899);
+        const qty = Number(item.quantity || 1);
+        subtotal += price * qty;
+        const img = item.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+
+        return `
+          <div style="display:flex; gap:12px; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid #f0f0f0; align-items:center;">
+            <img src="${img}" alt="${item.title}" style="width:60px; height:80px; object-fit:cover; border-radius:2px; background:#f5f5f5;">
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:0.85rem; color:#111; line-height:1.2;">${item.title}</div>
+              <div style="font-size:0.75rem; color:#666; margin:3px 0;">Size: <strong>${item.size || 'M'}</strong></div>
+              <div style="font-weight:800; font-size:0.85rem; color:#000;">Rs. ${(price * qty).toLocaleString('en-IN')}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button type="button" onclick="window.QuickBuyEngine.changeCartQty(${idx}, -1)" style="width:26px; height:26px; background:#f0f0f0; border:1px solid #ccc; border-radius:2px; font-weight:800; cursor:pointer;">−</button>
+              <span style="font-size:0.85rem; font-weight:700; min-width:18px; text-align:center;">${qty}</span>
+              <button type="button" onclick="window.QuickBuyEngine.changeCartQty(${idx}, 1)" style="width:26px; height:26px; background:#f0f0f0; border:1px solid #ccc; border-radius:2px; font-weight:800; cursor:pointer;">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (totalEl) totalEl.textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
+    },
+
+    changeCartQty(idx, delta) {
+      const cart = this.getCart();
+      if (!cart[idx]) return;
+      cart[idx].quantity = (Number(cart[idx].quantity) || 1) + delta;
+      if (cart[idx].quantity <= 0) {
+        cart.splice(idx, 1);
+      }
+      this.saveCart(cart);
     },
 
     bindNewsletter() {
