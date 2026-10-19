@@ -1,5 +1,5 @@
 /**
- * ALLY RICH / GENRAGE - Unified Quick-Buy Bottom Sheet & Drawer Engine
+ * ALLYRICH / GENRAGE - Unified Quick-Buy Bottom Sheet & Drawer Engine
  * Powers 1-click mobile quick-buy, desktop quick-view drawer, cart synchronization,
  * and Inner Circle newsletter integration.
  */
@@ -142,7 +142,7 @@
           id: id || Date.now(),
           handle: handle || 'streetwear-item',
           title: title,
-          vendor: 'ALLY RICH',
+          vendor: 'ALLYRICH',
           price: price,
           compare_at_price: comparePrice,
           images: [{ src: img }],
@@ -184,7 +184,7 @@
         <div class="qb-product-header">
           <img src="${img || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}" alt="${product.title}" class="qb-thumb">
           <div class="qb-meta">
-            <div class="qb-vendor">${product.vendor || 'ALLY RICH'}</div>
+            <div class="qb-vendor">${product.vendor || 'ALLYRICH'}</div>
             <div class="qb-title" title="${product.title}">${product.title}</div>
             <div class="qb-pricing">
               <span class="qb-price-current">Rs. ${price.toLocaleString('en-IN')}</span>

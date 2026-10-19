@@ -47,6 +47,8 @@
   text-decoration: none !important;
   color: #ffffff !important;
   vertical-align: middle;
+  flex-shrink: 0 !important;
+  min-width: max-content !important;
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
@@ -606,5 +608,50 @@
   }
 }
 
+/* ==========================================================================
+   Global Header Collision & Responsive Protection
+   Prevents logo/navigation/account badge collisions across all screen widths
+   ========================================================================== */
+.allyrich-header-brand,
+.header__logo,
+.header-left {
+  flex-shrink: 0 !important;
+  min-width: max-content !important;
+}
 
+.header__secondary-nav,
+.header-actions,
+.header-actions-group {
+  flex-shrink: 0 !important;
+  min-width: max-content !important;
+}
 
+.header__primary-nav,
+.site-header__nav,
+.desktop-nav {
+  min-width: 0 !important;
+  flex-shrink: 1 !important;
+}
+
+@media (max-width: 1240px) {
+  .header__primary-nav ul,
+  .site-header__nav,
+  .desktop-nav {
+    gap: clamp(0.5rem, 1vw, 1rem) !important;
+  }
+  .header__primary-nav-item a,
+  .site-header__nav a,
+  .desktop-nav .nav-link {
+    font-size: 0.78rem !important;
+    letter-spacing: 0.02em !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-menu-trigger {
+    display: flex !important;
+  }
+}

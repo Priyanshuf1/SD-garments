@@ -119,10 +119,50 @@ const WishlistEngine = {
 
   updateBadge() {
     const count = this.getWishlist().length;
-    document.querySelectorAll('.wishlist-count-badge').forEach(badge => {
+    document.querySelectorAll('.wishlist-count-badge, #header-wishlist-badge, #wishlist-count').forEach(badge => {
       badge.textContent = count;
       badge.style.display = count > 0 ? 'inline-flex' : 'none';
     });
+  },
+
+  loadUserWishlist(user) {
+    if (!user) return;
+    const cloudWish = Array.isArray(user.wishlist) ? user.wishlist : [];
+    let localList = this.getWishlist();
+    
+    const localHandles = new Set(localList.map(i => {
+      const h = typeof i === 'string' ? i : i.handle;
+      return h ? String(h).split('?')[0].split('#')[0].trim() : '';
+    }).filter(Boolean));
+
+    let updated = false;
+    for (const item of cloudWish) {
+      const h = typeof item === 'string' ? item : item.handle;
+      const cleanH = h ? String(h).split('?')[0].split('#')[0].trim() : '';
+      if (cleanH && !localHandles.has(cleanH)) {
+        localList.push(typeof item === 'string' ? { handle: cleanH, addedAt: new Date().toISOString() } : item);
+        localHandles.add(cleanH);
+        updated = true;
+      }
+    }
+
+    if (updated || (localList.length === 0 && cloudWish.length > 0)) {
+      if (localList.length === 0 && cloudWish.length > 0) {
+        localList = cloudWish.map(item => typeof item === 'string' ? { handle: item, addedAt: new Date().toISOString() } : item);
+      }
+      try {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(localList));
+        localStorage.setItem('wishlist', JSON.stringify(localList));
+      } catch (e) {}
+    }
+
+    this.renderButtons();
+    this.updateBadge();
+
+    // If local had new items not yet in cloud, sync to server
+    if (localList.length > cloudWish.length) {
+      this.syncWithServer();
+    }
   },
 
   async syncWithServer() {
@@ -133,11 +173,19 @@ const WishlistEngine = {
       if (!user || !user.id) return;
 
       const wishlist = this.getWishlist();
+      const cleanHandles = Array.from(new Set(wishlist.map(i => typeof i === 'string' ? i : i.handle).filter(Boolean)));
+
+      await fetch('/api/wishlist/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, wishlist: cleanHandles })
+      }).catch(() => {});
+
       await fetch(`/api/customers/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wishlist })
-      });
+        body: JSON.stringify({ wishlist: cleanHandles })
+      }).catch(() => {});
     } catch (e) {
       console.warn('Could not sync wishlist to backend:', e.message);
     }
@@ -239,6 +287,24 @@ const WishlistEngine = {
     this.renderButtons();
     this.decorateCards();
     
+    // Auto cloud-fetch for logged in user to hydrate multi-device wishlist
+    try {
+      const userRaw = localStorage.getItem('genrage_user');
+      if (userRaw) {
+        const user = JSON.parse(userRaw);
+        if (user && user.id) {
+          fetch(`/api/wishlist?userId=${encodeURIComponent(user.id)}`)
+            .then(r => r.json())
+            .then(data => {
+              if (data && data.success && Array.isArray(data.wishlist) && data.wishlist.length > 0) {
+                this.loadUserWishlist({ wishlist: data.wishlist });
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    } catch (e) {}
+
     // Multiple delayed sweeps to ensure asynchronous cards get decorated
     [300, 800, 1500, 3000].forEach(delay => {
       setTimeout(() => {

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Streetwear Collections | ALLY RICH Official Store India</title>
-  <meta name="description" content="Explore India's latest luxury streetwear drops: baggy pants, boxy oversized tees, heavy hoodies, vests, and accessories from ALLY RICH.">
+  <title>Streetwear Collections | ALLYRICH Official Store India</title>
+  <meta name="description" content="Explore India's latest luxury streetwear drops: baggy pants, boxy oversized tees, heavy hoodies, vests, and accessories from ALLYRICH.">
   <link rel="shortcut icon" href="/assets/ar-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,13 +51,26 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 1.5rem;
     }
     .site-header__nav {
       display: flex;
       align-items: center;
-      gap: 1.75rem;
+      gap: clamp(0.6rem, 1.3vw, 1.75rem);
+      flex-shrink: 1;
+      min-width: 0;
+      white-space: nowrap;
     }
-    @media (max-width: 1024px) {
+    @media (max-width: 1240px) {
+      .site-header__nav {
+        gap: 0.75rem !important;
+      }
+      .header-nav-link {
+        font-size: 0.78rem !important;
+        letter-spacing: 0.02em !important;
+      }
+    }
+    @media (max-width: 1100px) {
       .site-header__nav {
         display: none !important;
       }
@@ -584,10 +597,10 @@
     <div class="site-header__inner">
       
       <!-- Left: Brand Logo -->
-      <div style="display:flex; align-items:center; gap: 1.25rem;">
-        <a href="/" class="allyrich-header-brand" aria-label="AllyRich Home">
+      <div style="display:flex; align-items:center; gap: 1.25rem; flex-shrink: 0; min-width: max-content;">
+        <a href="/" class="allyrich-header-brand" aria-label="ALLYRICH Home" style="flex-shrink: 0; min-width: max-content;">
           <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="30" height="38">
-          <span class="allyrich-header-brand-name">ALLY RICH</span>
+          <span class="allyrich-header-brand-name">ALLYRICH</span>
         </a>
       </div>
 
@@ -630,7 +643,7 @@
       </nav>
 
       <!-- Right: User Account, Wishlist, Search, Cart -->
-      <div class="header-actions-group" style="display:flex; align-items:center; gap: 1.25rem;">
+      <div class="header-actions-group" style="display:flex; align-items:center; gap: 1.25rem; flex-shrink: 0; min-width: max-content;">
         
         <!-- User Account Icon / Profile link -->
         <a href="/account" class="header-account-link action-touch-btn" data-account-trigger title="Account" style="color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
@@ -675,7 +688,7 @@
   <!-- ============================================================== -->
   <nav class="collection-subnav" aria-label="Sub-category Navigation">
     <div class="collection-subnav__inner" id="category-chips">
-      <a href="/collections/shop" class="category-chip active" data-cat="all">All Products</a>
+      <a href="/collections/shop" class="category-chip active" data-cat="all">New In</a>
       <a href="/collections/baggy-pants" class="category-chip" data-cat="bottoms">Pants</a>
       <a href="/collections/vest" class="category-chip" data-cat="vests">Tank Tops</a>
       <a href="/collections/basics-genrage" class="category-chip" data-cat="basics">Basics</a>
@@ -873,7 +886,7 @@
         <div class="site-footer__brand-block">
           <a class="site-footer__logo" href="/" aria-label="AllyRich Home">
             <img src="/assets/ar-logo.png" alt="AllyRich Crest" width="62" height="78">
-            <span class="site-footer__brand-name">ALLY RICH</span>
+            <span class="site-footer__brand-name">ALLYRICH</span>
           </a>
           <p class="site-footer__brand-tagline">ARCHITECTURAL SILHOUETTES &bull; HOMEGROWN IN INDIA &bull; WORLDWIDE DELIVERY</p>
 
@@ -937,7 +950,7 @@
 
       <!-- Bottom Copyright & Legal -->
       <div class="site-footer__bottom">
-        <p class="site-footer__copyright">&copy; 2026 ALLY RICH &bull; ALL RIGHTS RESERVED &bull; CRAFTED FOR THE FEW</p>
+        <p class="site-footer__copyright">&copy; 2026 ALLYRICH &bull; ALL RIGHTS RESERVED &bull; CRAFTED FOR THE FEW</p>
         <div class="site-footer__legal">
           <a href="/pages/terms-of-service.html">TERMS</a>
           <a href="/pages/privacy-policy.html">PRIVACY</a>
@@ -980,7 +993,7 @@
         'shorts': 'SHORTS',
         'jeans': 'BAGGY JEANS',
         'accessories': 'JEWELRY & ACCESSORIES',
-        'basics': 'ALLY RICH BASICS',
+        'basics': 'ALLYRICH BASICS',
         'clearance': 'CLEARANCE SALE',
         'wishlist': 'MY SAVED WISHLIST'
       },
@@ -1163,7 +1176,7 @@
 
         const title = this.categoryMap[this.activeCategory] || 'ALL STREETWEAR';
         document.getElementById('page-title').textContent = title;
-        document.title = `${title} | ALLY RICH Official Store`;
+        document.title = `${title} | ALLYRICH Official Store`;
       },
 
       handleSearchInput(val) {
@@ -1264,7 +1277,7 @@
           if (searchInput && searchInput.value !== this.searchQuery) searchInput.value = this.searchQuery;
           document.getElementById('page-count-text').textContent = `${this.filteredProducts.length} PRODUCTS FOUND`;
           document.getElementById('page-title').textContent = `SEARCH: "${this.searchQuery.toUpperCase()}"`;
-          document.title = `Search: ${this.searchQuery} | ALLY RICH Official Store`;
+          document.title = `Search: ${this.searchQuery} | ALLYRICH Official Store`;
         } else {
           if (searchBanner) searchBanner.style.display = 'none';
           document.getElementById('page-count-text').textContent = `${this.filteredProducts.length} PRODUCTS AVAILABLE`;

@@ -52,7 +52,7 @@ assert(indexHtml.includes('CLIENT CARE</p>'), 'index.html footer has Client Care
 assert(!indexHtml.includes('ALLYRICH VIP</p>'), 'index.html footer does NOT have VIP column');
 assert(indexHtml.includes('LEGAL &amp; POLICIES</p>'), 'index.html footer has Legal column');
 assert(!indexHtml.includes('site-footer__payment-methods'), 'index.html footer does NOT have payment methods row (ss 1)');
-assert(indexHtml.includes('2026 ALLY RICH'), 'index.html footer has clean AllyRich copyright');
+assert(indexHtml.includes('2026 ALLYRICH'), 'index.html footer has clean AllyRich copyright');
 
 // 5. Announcement bar removed from index.html (ss 2)
 assert(!indexHtml.includes('shopify-section-sections--23671272669422__announcement-bar'), 'Announcement bar section is REMOVED from index.html');

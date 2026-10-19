@@ -42,7 +42,7 @@ const AuthEngine = {
         if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
         this.updateHeader();
         if (window.WishlistEngine) {
-          window.WishlistEngine.syncWithServer();
+          window.WishlistEngine.loadUserWishlist(data.user);
         }
         return { success: true, user: data.user };
       }
@@ -65,7 +65,7 @@ const AuthEngine = {
         if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
         this.updateHeader();
         if (window.WishlistEngine) {
-          window.WishlistEngine.syncWithServer();
+          window.WishlistEngine.loadUserWishlist(data.user);
         }
         return { success: true, user: data.user };
       }
@@ -111,6 +111,9 @@ const AuthEngine = {
       if (data.success && data.user) {
         localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
         this.updateHeader();
+        if (window.WishlistEngine && data.user.wishlist) {
+          window.WishlistEngine.loadUserWishlist(data.user);
+        }
         return { success: true, user: data.user, message: 'Profile updated successfully' };
       }
       return { success: false, message: data.message || 'Failed to update profile' };
@@ -132,7 +135,7 @@ const AuthEngine = {
         if (data.token) localStorage.setItem(this.TOKEN_KEY, data.token);
         this.updateHeader();
         if (window.WishlistEngine) {
-          window.WishlistEngine.syncWithServer();
+          window.WishlistEngine.loadUserWishlist(data.user);
         }
         return { success: true, user: data.user };
       }
@@ -161,11 +164,11 @@ const AuthEngine = {
         const firstName = (user.name || user.full_name || 'Account').split(' ')[0];
         el.setAttribute('href', '/account');
         el.innerHTML = `
-          <div style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit; font-weight:700; font-size:0.8rem; letter-spacing:0.04em; text-transform:uppercase;">
-            <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#111; color:#fff; font-size:0.75rem; font-weight:800;">
+          <div style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit; font-weight:700; font-size:0.8rem; letter-spacing:0.04em; text-transform:uppercase; max-width:130px; overflow:hidden;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#111; color:#fff; font-size:0.75rem; font-weight:800; flex-shrink:0;">
               ${firstName.charAt(0).toUpperCase()}
             </span>
-            <span class="sm-max:hidden">${firstName}</span>
+            <span class="sm-max:hidden" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; display:inline-block;">${firstName}</span>
           </div>
         `;
         el.onclick = (e) => {
@@ -249,7 +252,7 @@ const AuthEngine = {
         <button type="button" onclick="AuthEngine.closeAuthModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#777; line-height:1;">✕</button>
         
         <div style="text-align:center; margin-bottom:1.25rem;">
-          <h2 style="font-family:'Shippori Mincho B1', serif; font-size:1.35rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; margin:0 0 4px;">ALLY RICH CLUB</h2>
+          <h2 style="font-family:'Shippori Mincho B1', serif; font-size:1.35rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; margin:0 0 4px;">ALLYRICH CLUB</h2>
           <p style="color:#666; font-size:0.8rem; margin:0;">100% Free Member Access • Supabase Secured</p>
         </div>
 

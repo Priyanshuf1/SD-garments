@@ -150,6 +150,37 @@ function writeJsonFile(filename, data) {
   }
 }
 
+async function getUnifiedSubscribers() {
+  let localSubs = readJsonFile('subscribers.json', []);
+  if (supabase.isConfigured && supabase.subscribers) {
+    try {
+      const cloudSubs = await supabase.subscribers.getAll();
+      if (cloudSubs && cloudSubs.length > 0) {
+        const seen = new Set();
+        const merged = [];
+        for (const s of cloudSubs) {
+          const em = (s.email || '').toLowerCase().trim();
+          if (em && !seen.has(em)) {
+            seen.add(em);
+            merged.push(s);
+          }
+        }
+        for (const s of localSubs) {
+          const em = (s.email || '').toLowerCase().trim();
+          if (em && !seen.has(em)) {
+            seen.add(em);
+            merged.push(s);
+          }
+        }
+        return merged;
+      }
+    } catch (e) {
+      console.warn('Could not fetch cloud subscribers:', e.message);
+    }
+  }
+  return localSubs;
+}
+
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -246,7 +277,7 @@ function formatSupabaseProductToLocal(s) {
     handle: s.handle,
     title: s.title,
     body_html: s.description || '',
-    vendor: s.vendor || 'ALLY RICH',
+    vendor: s.vendor || 'ALLYRICH',
     category: s.category || 'T-Shirts & Boxy Tees',
     product_type: s.product_type || s.category || 'Streetwear',
     homepage_section: s.homepage_section || 'none',
@@ -1616,14 +1647,19 @@ async function appHandler(req, res) {
 
     // 11. Admin Subscribers API
     if (apiRoute.startsWith('subscribers')) {
-      let subscribers = readJsonFile('subscribers.json', []);
-
       if (req.method === 'GET') {
+        const subscribers = await getUnifiedSubscribers();
         return sendJson(res, 200, { success: true, count: subscribers.length, subscribers });
       }
 
       if (req.method === 'DELETE') {
         const subId = apiRoute.replace('subscribers/', '').replace('subscribers', '').trim();
+        if (supabase.isConfigured && supabase.subscribers) {
+          try {
+            await supabase.subscribers.delete(subId);
+          } catch (e) {}
+        }
+        let subscribers = readJsonFile('subscribers.json', []);
         subscribers = subscribers.filter(s => String(s.id) !== String(subId) && s.email !== subId);
         writeJsonFile('subscribers.json', subscribers);
         return sendJson(res, 200, { success: true, message: 'Subscriber removed' });
@@ -1784,6 +1820,19 @@ async function appHandler(req, res) {
         authedUser = { ...localCustomer, ...authedUser };
       }
 
+      if (supabase.isConfigured && authedUser.id) {
+        try {
+          const supaProfile = await supabase.profiles.get(authedUser.id);
+          if (supaProfile) {
+            authedUser.wishlist = Array.from(new Set([...(authedUser.wishlist || []), ...(supaProfile.wishlist || [])]));
+            if (supaProfile.address) authedUser.address = supaProfile.address;
+            if (supaProfile.city) authedUser.city = supaProfile.city;
+            if (supaProfile.state) authedUser.state = supaProfile.state;
+            if (supaProfile.pincode) authedUser.pincode = supaProfile.pincode;
+          }
+        } catch (e) {}
+      }
+
       const safeUser = { ...authedUser };
       delete safeUser.password;
 
@@ -1805,13 +1854,13 @@ async function sendOtpEmail(email, otpCode) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM_EMAIL || 'ALLY RICH <onboarding@resend.dev>',
+          from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
           to: [email],
-          subject: `Your ALLY RICH Login Code: ${otpCode}`,
+          subject: `Your ALLYRICH Login Code: ${otpCode}`,
           html: `
             <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
               <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLY RICH</h1>
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
                 <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
               </div>
               <div style="padding:28px 0; text-align:center;">
@@ -1823,7 +1872,7 @@ async function sendOtpEmail(email, otpCode) {
               </div>
               <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
                 If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLY RICH. All rights reserved.
+                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
               </div>
             </div>
           `
@@ -1852,13 +1901,13 @@ async function sendOtpEmail(email, otpCode) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          sender: { name: 'ALLY RICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
+          sender: { name: 'ALLYRICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
           to: [{ email }],
-          subject: `Your ALLY RICH Login Code: ${otpCode}`,
+          subject: `Your ALLYRICH Login Code: ${otpCode}`,
           htmlContent: `
             <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
               <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLY RICH</h1>
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
                 <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
               </div>
               <div style="padding:28px 0; text-align:center;">
@@ -1870,7 +1919,7 @@ async function sendOtpEmail(email, otpCode) {
               </div>
               <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
                 If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLY RICH. All rights reserved.
+                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
               </div>
             </div>
           `
@@ -1990,6 +2039,19 @@ async function sendOtpEmail(email, otpCode) {
           customers.unshift(localCust);
           writeJsonFile('customers.json', customers);
         }
+        if (supabase.isConfigured) {
+          try {
+            const supaProfile = await supabase.profiles.getByEmail(email);
+            if (supaProfile) {
+              if (supaProfile.id && supaProfile.id.includes('-')) localCust.id = supaProfile.id;
+              localCust.wishlist = Array.from(new Set([...(localCust.wishlist || []), ...(supaProfile.wishlist || [])]));
+              if (supaProfile.address) localCust.address = supaProfile.address;
+              if (supaProfile.city) localCust.city = supaProfile.city;
+              if (supaProfile.state) localCust.state = supaProfile.state;
+              if (supaProfile.pincode) localCust.pincode = supaProfile.pincode;
+            }
+          } catch (e) {}
+        }
         const safeUser = { ...localCust };
         delete safeUser.password;
         return sendJson(res, 200, {
@@ -2030,6 +2092,20 @@ async function sendOtpEmail(email, otpCode) {
 
       if (!customer) {
         return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      }
+
+      // Merge latest cloud wishlist & address from Supabase
+      if (supabase.isConfigured && customer.id) {
+        try {
+          const supaProfile = await supabase.profiles.get(customer.id);
+          if (supaProfile) {
+            customer.wishlist = Array.from(new Set([...(customer.wishlist || []), ...(supaProfile.wishlist || [])]));
+            if (supaProfile.address) customer.address = supaProfile.address;
+            if (supaProfile.city) customer.city = supaProfile.city;
+            if (supaProfile.state) customer.state = supaProfile.state;
+            if (supaProfile.pincode) customer.pincode = supaProfile.pincode;
+          }
+        } catch (e) {}
       }
 
       const safeUser = { ...customer };
@@ -2191,11 +2267,9 @@ async function sendOtpEmail(email, otpCode) {
   }
 
   // -------------------------------------------------------------
-  // Newsletter & Subscribers APIs
+  // Newsletter & Subscribers APIs (Cloud Supabase Database Storage)
   // -------------------------------------------------------------
   if (pathname === '/api/newsletter' || pathname === '/api/subscribers') {
-    let subscribers = readJsonFile('subscribers.json', []);
-
     if (req.method === 'POST') {
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
@@ -2203,7 +2277,8 @@ async function sendOtpEmail(email, otpCode) {
         return sendJson(res, 400, { success: false, message: 'Valid email address is required' });
       }
 
-      const existing = subscribers.find(s => (s.email || '').toLowerCase() === email);
+      const currentSubs = await getUnifiedSubscribers();
+      const existing = currentSubs.find(s => (s.email || '').toLowerCase() === email);
       if (existing) {
         return sendJson(res, 200, {
           success: true,
@@ -2220,13 +2295,16 @@ async function sendOtpEmail(email, otpCode) {
         status: 'Active'
       };
 
-      subscribers.unshift(newSub);
-      writeJsonFile('subscribers.json', subscribers);
+      let localSubs = readJsonFile('subscribers.json', []);
+      localSubs.unshift(newSub);
+      writeJsonFile('subscribers.json', localSubs);
 
-      if (supabase.isConfigured) {
+      if (supabase.isConfigured && supabase.subscribers) {
         try {
-          await supabase.from('subscribers').insert([newSub]);
-        } catch (e) {}
+          await supabase.subscribers.insert(newSub);
+        } catch (e) {
+          console.warn('Newsletter Supabase insert notice:', e.message);
+        }
       }
 
       return sendJson(res, 201, {
@@ -2237,20 +2315,26 @@ async function sendOtpEmail(email, otpCode) {
     }
 
     if (req.method === 'GET') {
-      return sendJson(res, 200, { success: true, count: subscribers.length, subscribers });
+      const subs = await getUnifiedSubscribers();
+      return sendJson(res, 200, { success: true, count: subs.length, subscribers: subs });
     }
   }
 
   // Admin Subscribers API
   if (pathname.startsWith('/api/admin/subscribers')) {
-    let subscribers = readJsonFile('subscribers.json', []);
-
     if (pathname === '/api/admin/subscribers' && req.method === 'GET') {
-      return sendJson(res, 200, { success: true, count: subscribers.length, subscribers });
+      const subs = await getUnifiedSubscribers();
+      return sendJson(res, 200, { success: true, count: subs.length, subscribers: subs });
     }
 
     if (req.method === 'DELETE') {
       const subId = pathname.replace('/api/admin/subscribers/', '').trim();
+      if (supabase.isConfigured && supabase.subscribers) {
+        try {
+          await supabase.subscribers.delete(subId);
+        } catch (e) {}
+      }
+      let subscribers = readJsonFile('subscribers.json', []);
       subscribers = subscribers.filter(s => String(s.id) !== String(subId) && s.email !== subId);
       writeJsonFile('subscribers.json', subscribers);
       return sendJson(res, 200, { success: true, message: 'Subscriber removed' });
@@ -2263,13 +2347,33 @@ async function sendOtpEmail(email, otpCode) {
   if (pathname.startsWith('/api/customers/')) {
     const custId = pathname.replace('/api/customers/', '').replace(/\/$/, '');
     let customers = readJsonFile('customers.json', []);
-    const customer = customers.find(c => String(c.id) === String(custId));
-    if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
+    let customer = customers.find(c => String(c.id) === String(custId));
 
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
+      if (!customer) {
+        customer = {
+          id: custId,
+          name: payload.name || 'Storefront Member',
+          email: payload.email || '',
+          phone: payload.phone || '',
+          city: payload.city || '',
+          state: payload.state || '',
+          address: payload.address || '',
+          locality: payload.locality || '',
+          pincode: payload.pincode || '',
+          country: payload.country || 'India',
+          ordersCount: 0,
+          totalSpent: 0,
+          status: 'Active',
+          wishlist: []
+        };
+        customers.unshift(customer);
+      }
+
       if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
       if (payload.name) customer.name = payload.name;
+      if (payload.email) customer.email = payload.email;
       if (payload.phone) customer.phone = payload.phone;
       if (payload.city !== undefined) customer.city = payload.city;
       if (payload.state !== undefined) customer.state = payload.state;
@@ -2279,15 +2383,97 @@ async function sendOtpEmail(email, otpCode) {
       if (payload.country !== undefined) customer.country = payload.country;
 
       writeJsonFile('customers.json', customers);
+
+      // Sync to Supabase PostgreSQL & Auth user_metadata
+      if (supabase.isConfigured && custId) {
+        try {
+          if (payload.wishlist !== undefined) {
+            await supabase.wishlists.sync(custId, customer.wishlist);
+          }
+          await supabase.profiles.update(custId, {
+            name: customer.name,
+            phone: customer.phone,
+            address: customer.address,
+            city: customer.city,
+            state: customer.state,
+            pincode: customer.pincode,
+            wishlist: customer.wishlist
+          });
+        } catch (supaErr) {
+          console.warn('Customer update Supabase sync notice:', supaErr.message);
+        }
+      }
+
       const safeUser = { ...customer };
       delete safeUser.password;
-      return sendJson(res, 200, { success: true, customer: safeUser });
+      return sendJson(res, 200, { success: true, customer: safeUser, user: safeUser });
     }
 
     if (req.method === 'GET') {
+      if (!customer && supabase.isConfigured) {
+        try {
+          customer = await supabase.profiles.get(custId);
+        } catch (e) {}
+      }
+      if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
       const safeUser = { ...customer };
       delete safeUser.password;
-      return sendJson(res, 200, { success: true, customer: safeUser });
+      return sendJson(res, 200, { success: true, customer: safeUser, user: safeUser });
+    }
+  }
+
+  // Dedicated Cloud Wishlist Sync API
+  if (pathname === '/api/wishlist/sync' || pathname === '/api/wishlist') {
+    if (req.method === 'POST' || req.method === 'PUT') {
+      const payload = await parseBody(req);
+      const userId = payload.userId || payload.user_id || payload.id;
+      const wishlist = Array.isArray(payload.wishlist) ? payload.wishlist : [];
+
+      if (!userId) {
+        return sendJson(res, 400, { success: false, message: 'User ID required for wishlist sync' });
+      }
+
+      // Update local customers.json
+      let customers = readJsonFile('customers.json', []);
+      let cust = customers.find(c => String(c.id) === String(userId));
+      if (cust) {
+        cust.wishlist = wishlist;
+        writeJsonFile('customers.json', customers);
+      }
+
+      // Update Supabase PostgreSQL wishlists and user_metadata
+      if (supabase.isConfigured) {
+        try {
+          await supabase.wishlists.sync(userId, wishlist);
+        } catch (e) {
+          console.warn('Wishlist sync to Supabase error:', e.message);
+        }
+      }
+
+      return sendJson(res, 200, { success: true, count: wishlist.length, wishlist });
+    }
+
+    if (req.method === 'GET') {
+      const userId = parsedUrl.searchParams.get('userId');
+      if (!userId) {
+        return sendJson(res, 400, { success: false, message: 'User ID required' });
+      }
+
+      let list = [];
+      let customers = readJsonFile('customers.json', []);
+      const cust = customers.find(c => String(c.id) === String(userId));
+      if (cust && Array.isArray(cust.wishlist)) list = cust.wishlist;
+
+      if (supabase.isConfigured) {
+        try {
+          const cloudList = await supabase.wishlists.getByUserId(userId);
+          if (cloudList && cloudList.length > 0) {
+            list = Array.from(new Set([...list, ...cloudList]));
+          }
+        } catch (e) {}
+      }
+
+      return sendJson(res, 200, { success: true, count: list.length, wishlist: list });
     }
   }
 
@@ -2368,6 +2554,59 @@ async function sendOtpEmail(email, otpCode) {
   if (pathname === '/cart' || pathname === '/cart/') {
     res.writeHead(302, { 'Location': '/collections/shop?openCart=true' });
     return res.end();
+  }
+
+  // Handle Policy & Informational Pages (/pages/:page, /refund-policy, /privacy-policy, etc.)
+  const policyMap = {
+    '/refund-policy': 'refund-policy.html',
+    '/pages/refund-policy': 'refund-policy.html',
+    '/pages/refund-policy.html': 'refund-policy.html',
+    '/privacy-policy': 'privacy-policy.html',
+    '/pages/privacy-policy': 'privacy-policy.html',
+    '/pages/privacy-policy.html': 'privacy-policy.html',
+    '/terms-of-service': 'terms-of-service.html',
+    '/pages/terms-of-service': 'terms-of-service.html',
+    '/pages/terms-of-service.html': 'terms-of-service.html',
+    '/terms': 'terms-of-service.html',
+    '/shipping-policy': 'shipping-policy.html',
+    '/pages/shipping-policy': 'shipping-policy.html',
+    '/pages/shipping-policy.html': 'shipping-policy.html',
+    '/contact': 'contact.html',
+    '/contact-us': 'contact.html',
+    '/pages/contact': 'contact.html',
+    '/pages/contact.html': 'contact.html',
+    '/returns': 'returns.html',
+    '/pages/returns': 'returns.html',
+    '/pages/returns.html': 'returns.html',
+    '/reviews': 'reviews.html',
+    '/pages/reviews': 'reviews.html',
+    '/pages/reviews.html': 'reviews.html'
+  };
+
+  const normPolicyPath = pathname.toLowerCase().replace(/\/+$/, '');
+  if (policyMap[normPolicyPath] || policyMap[pathname]) {
+    const pageFileName = policyMap[normPolicyPath] || policyMap[pathname];
+    const pageFile = path.join(PUBLIC_DIR, 'pages', pageFileName);
+    if (fs.existsSync(pageFile)) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return fs.createReadStream(pageFile).pipe(res);
+    }
+  }
+
+  if (pathname.startsWith('/pages/')) {
+    let pName = pathname.replace('/pages/', '').split('?')[0];
+    if (!pName.endsWith('.html')) pName += '.html';
+    const pageFile = path.join(PUBLIC_DIR, 'pages', pName);
+    if (fs.existsSync(pageFile)) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return fs.createReadStream(pageFile).pipe(res);
+    }
   }
 
   // Serve Single Product Page

@@ -155,7 +155,7 @@ const GenrageApp = {
         </div>
 
         <div class="product-info">
-          <span class="product-vendor">${p.vendor || 'ALLY RICH'}</span>
+          <span class="product-vendor">${p.vendor || 'ALLYRICH'}</span>
           <a href="/product.html?handle=${p.handle}" class="product-title" title="${p.title}">${p.title}</a>
           <div class="product-rating">
             ★★★★★ <span class="count">(4.8)</span>
@@ -400,7 +400,7 @@ const GenrageApp = {
         </div>
 
         <div style="display: flex; flex-direction: column;">
-          <span style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">${product.vendor || 'ALLY RICH'}</span>
+          <span style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">${product.vendor || 'ALLYRICH'}</span>
           <h2 style="font-size: 1.5rem; margin-bottom: 0.75rem;">${product.title}</h2>
           
           <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.25rem;">
