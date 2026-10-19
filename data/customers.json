@@ -1,5 +1,107 @@
 [
   {
+    "id": "52cb0400-22b1-484b-9aa5-cb56324e1b02",
+    "name": "Original User",
+    "email": "dup_test_1792423198615@allyrichtest.com",
+    "phone": "+91 99999 00000",
+    "password": "SecurePassword123",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "2026-10-19T15:20:01.738Z",
+    "tags": [
+      "Storefront Member",
+      "Supabase Verified"
+    ],
+    "status": "Active",
+    "wishlist": [],
+    "cart": []
+  },
+  {
+    "id": "cust_cross_1792423191322",
+    "name": "Aarav Mehta",
+    "email": "cross_1792423191322@allyrichtest.com",
+    "phone": "9876543210",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Villa 14, Palm Meadows",
+    "locality": "Whitefield",
+    "pincode": "560066",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "hoodie-washed-black"
+    ],
+    "cart": [
+      {
+        "id": "item_1",
+        "handle": "boxy-tshirt-black",
+        "title": "Boxy Tee",
+        "price": 1299,
+        "quantity": 2,
+        "size": "L"
+      }
+    ]
+  },
+  {
+    "id": "44d0d1b7-e5e2-4b4d-a84b-fbc670a999f7",
+    "name": "Original User",
+    "email": "dup_test_1792423152640@allyrichtest.com",
+    "phone": "+91 99999 00000",
+    "password": "SecurePassword123",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "2026-10-19T15:19:15.069Z",
+    "tags": [
+      "Storefront Member",
+      "Supabase Verified"
+    ],
+    "status": "Active",
+    "wishlist": [],
+    "cart": []
+  },
+  {
+    "id": "cust_cross_1792423145075",
+    "name": "Aarav Mehta",
+    "email": "cross_1792423145075@allyrichtest.com",
+    "phone": "9876543210",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Villa 14, Palm Meadows",
+    "locality": "Whitefield",
+    "pincode": "560066",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "status": "Active",
+    "wishlist": [
+      "hoodie-washed-black"
+    ],
+    "cart": [
+      {
+        "id": "item_1",
+        "handle": "boxy-tshirt-black",
+        "title": "Boxy Tee",
+        "price": 1299,
+        "quantity": 2,
+        "size": "L"
+      }
+    ]
+  },
+  {
     "id": "test_device_user_1792418959191",
     "name": "Cross Device Tester",
     "email": "device_test_1792418959191@allyrich.com",

@@ -1002,6 +1002,30 @@
         this.loadCartFromStorage();
         this.parseUrlCategory();
         this.setupEventListeners();
+
+        // Instant 0ms Wishlist Pre-render: if opening wishlist view, immediately render cached items
+        if (this.activeCategory === 'wishlist') {
+          const cachedWishlist = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
+          if (cachedWishlist.length > 0) {
+            this.filteredProducts = cachedWishlist.map(item => {
+              const handle = typeof item === 'string' ? item : item.handle;
+              const title = (typeof item === 'object' && item.title) ? item.title : handle.replace(/-/g, ' ').toUpperCase();
+              const price = (typeof item === 'object' && item.price) ? item.price : '1899';
+              const img = (typeof item === 'object' && item.image) ? item.image : '';
+              return {
+                id: handle,
+                handle: handle,
+                title: title,
+                price: price,
+                images: [{ src: img }],
+                variants: [{ id: handle, price: price, title: 'Default' }]
+              };
+            });
+            this.updateActiveChip();
+            this.renderGrid();
+          }
+        }
+
         this.loadCatalog();
       },
 
@@ -1222,8 +1246,12 @@
           // 1. Category Filter
           if (this.activeCategory === 'wishlist') {
             const wishlist = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
-            const wishlistedHandles = new Set(wishlist.map(i => (typeof i === 'string' ? i : i.handle)));
-            if (!wishlistedHandles.has(p.handle)) return false;
+            const wishlistedHandles = new Set(wishlist.map(i => {
+              const h = typeof i === 'string' ? i : i.handle;
+              return h ? String(h).split('?')[0].split('#')[0].trim().toLowerCase() : '';
+            }).filter(Boolean));
+            const pHandle = p.handle ? String(p.handle).split('?')[0].split('#')[0].trim().toLowerCase() : '';
+            if (!wishlistedHandles.has(pHandle)) return false;
           } else if (this.activeCategory === 'babytee') {
             if (!(cat.includes('baby') || tags.includes('baby') || title.includes('baby'))) return false;
           } else if (this.activeCategory === 'basics') {
@@ -1259,6 +1287,27 @@
 
           return true;
         });
+
+        // Wishlist fallback: If filteredProducts is empty but user has wishlist items saved locally, render them immediately
+        if (this.activeCategory === 'wishlist') {
+          const localWishlist = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
+          if (this.filteredProducts.length === 0 && localWishlist.length > 0) {
+            this.filteredProducts = localWishlist.map(item => {
+              const handle = typeof item === 'string' ? item : item.handle;
+              const title = (typeof item === 'object' && item.title) ? item.title : handle.replace(/-/g, ' ').toUpperCase();
+              const price = (typeof item === 'object' && item.price) ? item.price : '1899';
+              const img = (typeof item === 'object' && item.image) ? item.image : '';
+              return {
+                id: handle,
+                handle: handle,
+                title: title,
+                price: price,
+                images: [{ src: img }],
+                variants: [{ id: handle, price: price, title: 'Default' }]
+              };
+            });
+          }
+        }
 
         // Graceful fallback: If filteredProducts is empty because of an unrecognized category (and not wishlist/search/price),
         // restore all catalog items so the customer never lands on an empty screen!
@@ -1366,7 +1415,7 @@
                 ${discountBadge}
                 
                 <!-- Wishlist Heart Button -->
-                <button type="button" class="wishlist-btn ${isWishlisted ? 'is-wishlisted' : ''}" data-wishlist-handle="${p.handle}" aria-label="Add to wishlist" onclick="WishlistEngine.toggle('${p.handle}', { title: '${safeTitle}', price: '${price}', image: '${primaryImg}' }, event)">
+                <button type="button" class="wishlist-btn ${isWishlisted ? 'is-wishlisted' : ''}" data-wishlist-handle="${p.handle}" aria-label="${isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}" aria-pressed="${isWishlisted ? 'true' : 'false'}">
                   ${window.WishlistEngine ? window.WishlistEngine.getHeartSvg(isWishlisted) : '♥'}
                 </button>
 

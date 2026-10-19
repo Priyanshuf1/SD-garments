@@ -34,14 +34,46 @@ const AuthEngine = {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     if (token) localStorage.setItem(this.TOKEN_KEY, token);
 
-    // Immediately persist user wishlist into localStorage so it is available synchronously on any device
-    if (Array.isArray(user.wishlist)) {
-      try {
-        const list = user.wishlist.map(i => typeof i === 'string' ? { handle: i, addedAt: new Date().toISOString() } : i);
-        localStorage.setItem('genrage_wishlist', JSON.stringify(list));
-        localStorage.setItem('wishlist', JSON.stringify(list));
-      } catch (e) {}
-    }
+    // Safely merge cloud wishlist with local wishlist (NEVER overwrite local wishlist with empty array)
+    try {
+      let localList = [];
+      const raw = localStorage.getItem('genrage_wishlist') || localStorage.getItem('wishlist');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) localList = parsed;
+        } catch (e) {}
+      }
+
+      const cloudList = Array.isArray(user.wishlist) ? user.wishlist : [];
+      const mergedHandles = new Set();
+      const mergedList = [];
+
+      // Preserve local items first
+      localList.forEach(item => {
+        const h = typeof item === 'string' ? item : item?.handle;
+        const cleanH = h ? String(h).split('?')[0].split('#')[0].trim() : '';
+        if (cleanH && !mergedHandles.has(cleanH)) {
+          mergedHandles.add(cleanH);
+          mergedList.push(typeof item === 'string' ? { handle: cleanH, addedAt: new Date().toISOString() } : item);
+        }
+      });
+
+      // Merge in cloud items
+      cloudList.forEach(item => {
+        const h = typeof item === 'string' ? item : item?.handle;
+        const cleanH = h ? String(h).split('?')[0].split('#')[0].trim() : '';
+        if (cleanH && !mergedHandles.has(cleanH)) {
+          mergedHandles.add(cleanH);
+          mergedList.push(typeof item === 'string' ? { handle: cleanH, addedAt: new Date().toISOString() } : item);
+        }
+      });
+
+      user.wishlist = Array.from(mergedHandles);
+      localStorage.setItem('genrage_wishlist', JSON.stringify(mergedList));
+      localStorage.setItem('wishlist', JSON.stringify(mergedList));
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    } catch (e) {}
 
     // Immediately persist user cart from cloud into localStorage across devices
     if (Array.isArray(user.cart) && user.cart.length > 0) {

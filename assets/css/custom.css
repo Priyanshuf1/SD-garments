@@ -700,7 +700,7 @@ button {
   position: absolute !important;
   top: 10px !important;
   right: 10px !important;
-  z-index: 25 !important;
+  z-index: 9999 !important;
   background-color: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(6px) !important;
   -webkit-backdrop-filter: blur(6px) !important;

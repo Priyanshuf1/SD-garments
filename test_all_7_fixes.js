@@ -53,16 +53,16 @@ async function runTests() {
     // ------------------------------------------------------------------------
     console.log('\n--- 1. Testing Wishlist Optimistic UI & CSS Touch Actions ---');
     const wishlistJs = fs.readFileSync(path.resolve(__dirname, 'assets/js/wishlist.js'), 'utf8');
-    assert(wishlistJs.includes('_syncTimer = setTimeout'), 'wishlist.js debounces server sync with timer');
-    assert(wishlistJs.includes('400'), 'wishlist.js debounce delay set to 400ms');
+    assert(wishlistJs.includes('_lastToggleMap'), 'wishlist.js contains duplicate toggle guard');
+    assert(wishlistJs.includes('keepalive: true'), 'wishlist.js syncWithServer uses keepalive: true');
     assert(wishlistJs.includes('this.updateButtons(cleanHandle, isAdded)'), 'wishlist.js performs instant optimistic DOM button update');
     assert(wishlistJs.includes('scale(1.25)'), 'wishlist.js applies tactile scale pulse');
     assert(!wishlistJs.includes('this._isUpdating = true'), 'wishlist.js removed restrictive multi-tap lock');
-    assert(wishlistJs.includes('touchstart') && wishlistJs.includes('wishlistTouchMoved'), 'wishlist.js implements touchstart and scroll-swipe suppression for mobile');
+    assert(wishlistJs.includes('handleWishlistTrigger(btn, e)'), 'wishlist.js implements unified instant click capture handler');
 
     const customCss = fs.readFileSync(path.resolve(__dirname, 'assets/css/custom.css'), 'utf8');
     assert(customCss.includes('touch-action: manipulation !important;'), 'custom.css enforces touch-action: manipulation on wishlist buttons');
-    assert(customCss.includes('.wishlist-btn:active'), 'custom.css defines active pulse animation for instant feedback');
+    assert(customCss.includes('z-index: 9999 !important;'), 'custom.css sets z-index: 9999 !important on .wishlist-btn');
 
     // Test /api/wishlist/sync endpoint
     const testUserId = 'test_wishlist_user_' + Date.now();

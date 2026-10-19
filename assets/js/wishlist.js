@@ -44,6 +44,8 @@ const WishlistEngine = {
     });
   },
 
+  _lastToggleMap: {},
+
   toggle(handle, productData = null, event = null) {
     if (event) {
       if (typeof event.preventDefault === 'function') event.preventDefault();
@@ -53,6 +55,13 @@ const WishlistEngine = {
     if (!handle) return false;
 
     const cleanHandle = String(handle).split('?')[0].split('#')[0].trim();
+
+    // Prevent duplicate toggle within 300ms for the same product (e.g. multi-events / rapid clicks)
+    const now = Date.now();
+    if (this._lastToggleMap[cleanHandle] && (now - this._lastToggleMap[cleanHandle] < 300)) {
+      return this.has(cleanHandle);
+    }
+    this._lastToggleMap[cleanHandle] = now;
 
     // Instant Optimistic Toggle
     let list = this.getWishlist();
@@ -64,7 +73,7 @@ const WishlistEngine = {
 
     if (existingIndex > -1) {
       list.splice(existingIndex, 1);
-      this.showToast('✕ Removed from Wishlist');
+      this.showToast('✕ Removed from Wishlist', false);
     } else {
       const itemToSave = productData ? {
         handle: cleanHandle,
@@ -76,13 +85,21 @@ const WishlistEngine = {
       } : { handle: cleanHandle, addedAt: new Date().toISOString() };
       list.push(itemToSave);
       isAdded = true;
-      this.showToast('♥ Saved to Wishlist!');
+      this.showToast('♥ Saved to Wishlist!', true);
     }
 
     // Immediately persist to localStorage
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(list));
       localStorage.setItem('wishlist', JSON.stringify(list));
+
+      // Synchronously update genrage_user.wishlist so other components never read stale state
+      const userRaw = localStorage.getItem('genrage_user');
+      if (userRaw) {
+        const u = JSON.parse(userRaw);
+        u.wishlist = list.map(item => typeof item === 'string' ? item : item.handle).filter(Boolean);
+        localStorage.setItem('genrage_user', JSON.stringify(u));
+      }
     } catch (e) {}
 
     // Instant UI DOM update
@@ -96,11 +113,8 @@ const WishlistEngine = {
       setTimeout(() => { btn.style.transform = ''; }, 160);
     });
 
-    // Debounce server synchronization with 400ms timer
-    clearTimeout(this._syncTimer);
-    this._syncTimer = setTimeout(() => {
-      this.syncWithServer();
-    }, 400);
+    // Synchronize to server immediately with keepalive so page unload won't cancel it
+    this.syncWithServer();
 
     // Notify listeners of change
     if (typeof window !== 'undefined') {
@@ -221,17 +235,23 @@ const WishlistEngine = {
       const cleanHandles = Array.from(new Set(wishlist.map(i => typeof i === 'string' ? i : i.handle).filter(Boolean)));
       const identifier = user.id || user.email;
 
-      await fetch('/api/wishlist/sync', {
+      // Ensure local genrage_user has the updated wishlist array
+      user.wishlist = cleanHandles;
+      try { localStorage.setItem('genrage_user', JSON.stringify(user)); } catch (e) {}
+
+      // Keepalive ensures request completes even if user navigates away or closes tab!
+      fetch('/api/wishlist/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: identifier, email: user.email, wishlist: cleanHandles })
+        body: JSON.stringify({ userId: identifier, email: user.email, wishlist: cleanHandles }),
+        keepalive: true
       }).catch(() => {});
     } catch (e) {
       console.warn('Could not sync wishlist to backend:', e.message);
     }
   },
 
-  showToast(message) {
+  showToast(message, isAdded = false) {
     let toast = document.getElementById('wishlist-toast');
     if (!toast) {
       toast = document.createElement('div');
@@ -242,27 +262,35 @@ const WishlistEngine = {
         right: 24px;
         background: #000;
         color: #fff;
-        padding: 12px 20px;
+        padding: 12px 18px;
         border-radius: 4px;
         font-family: inherit;
         font-size: 0.85rem;
         font-weight: 700;
         letter-spacing: 0.03em;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         z-index: 100000;
         display: flex;
         align-items: center;
-        gap: 10px;
-        border: 1px solid rgba(255,255,255,0.2);
+        gap: 12px;
+        border: 1px solid rgba(255,255,255,0.25);
         opacity: 0;
         transform: translateY(10px);
         transition: opacity 0.2s, transform 0.2s;
-        pointer-events: none;
+        pointer-events: auto;
       `;
       document.body.appendChild(toast);
     }
 
-    toast.textContent = message;
+    if (isAdded) {
+      toast.innerHTML = `
+        <span style="display:inline-flex; align-items:center; gap:6px;">${message}</span>
+        <a href="/collections/shop?view=wishlist" style="color:#ffffff; background:#e50914; padding:5px 12px; border-radius:2px; text-decoration:none; font-size:0.75rem; font-weight:800; letter-spacing:0.05em; text-transform:uppercase; margin-left:6px; white-space:nowrap; display:inline-block; transition: background 0.15s;" onmouseover="this.style.background='#ff1f2d'" onmouseout="this.style.background='#e50914'">VIEW WISHLIST →</a>
+      `;
+    } else {
+      toast.innerHTML = `<span>${message}</span>`;
+    }
+
     toast.style.opacity = '1';
     toast.style.transform = 'translateY(0)';
 
@@ -270,7 +298,7 @@ const WishlistEngine = {
     this._toastTimer = setTimeout(() => {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(10px)';
-    }, 2000);
+    }, 3200);
   },
 
   decorateCards() {
@@ -385,51 +413,12 @@ function handleWishlistTrigger(btn, e) {
   WishlistEngine.toggle(handle, { title, price, image }, e);
 }
 
-let lastWishlistTouchTs = 0;
-let wishlistTouchStartX = 0;
-let wishlistTouchStartY = 0;
-let wishlistTouchMoved = false;
-
-// Fast touch response on mobile (0ms delay on genuine taps)
-document.addEventListener('touchstart', (e) => {
-  const btn = e.target.closest('.wishlist-btn');
-  if (!btn) return;
-  const touch = e.touches[0];
-  if (touch) {
-    wishlistTouchStartX = touch.clientX;
-    wishlistTouchStartY = touch.clientY;
-    wishlistTouchMoved = false;
-  }
-}, { passive: true, capture: true });
-
-document.addEventListener('touchmove', (e) => {
-  if (e.touches && e.touches[0]) {
-    const dx = e.touches[0].clientX - wishlistTouchStartX;
-    const dy = e.touches[0].clientY - wishlistTouchStartY;
-    if (Math.hypot(dx, dy) > 10) {
-      wishlistTouchMoved = true;
-    }
-  }
-}, { passive: true, capture: true });
-
-document.addEventListener('touchend', (e) => {
-  const btn = e.target.closest('.wishlist-btn');
-  if (!btn) return;
-  // If user was scrolling/swiping through cards, ignore tap
-  if (wishlistTouchMoved) return;
-  lastWishlistTouchTs = Date.now();
-  handleWishlistTrigger(btn, e);
-}, { passive: false, capture: true });
-
-// Global click capture handler for desktop
+// Unified infallible click capture handler for all devices (laptops, desktops, touchscreens)
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.wishlist-btn');
   if (!btn) return;
-  if (Date.now() - lastWishlistTouchTs < 500) {
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
+  e.preventDefault();
+  e.stopPropagation();
   handleWishlistTrigger(btn, e);
 }, true);
 
