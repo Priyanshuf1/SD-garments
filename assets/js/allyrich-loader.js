@@ -77,10 +77,10 @@
 
     function finish() {
       loader.classList.add('loader--done');
+      loader.style.pointerEvents = 'none';
       document.documentElement.style.overflow = '';
       setTimeout(function () {
         loader.style.display = 'none';
-        loader.style.pointerEvents = 'none';
       }, 650);
     }
 

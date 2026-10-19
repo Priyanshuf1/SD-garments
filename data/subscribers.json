@@ -1,5 +1,19 @@
 [
   {
+    "id": "SUB-1792369820721",
+    "email": "innercircle_1792369820718@allyrich.com",
+    "subscribedAt": "2026-10-19T00:30:20.721Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792368534625",
+    "email": "innercircle_1792368534622@allyrich.com",
+    "subscribedAt": "2026-10-19T00:08:54.625Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
     "id": "SUB-1792368305075",
     "email": "innercircle_1792368305073@allyrich.com",
     "subscribedAt": "2026-10-19T00:05:05.075Z",

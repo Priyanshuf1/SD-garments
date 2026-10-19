@@ -174,10 +174,16 @@ const GenrageApp = {
     document.querySelectorAll('.quick-buy-btn').forEach(btn => {
       btn.onclick = (e) => {
         e.preventDefault();
-        e.stopPropagation();
         const id = parseInt(btn.dataset.id);
         const p = this.products.find(x => x.id === id);
-        if (p) this.openQuickView(p);
+        if (p) {
+          if (window.QuickBuyEngine && typeof window.QuickBuyEngine.open === 'function') {
+            e.stopPropagation();
+            window.QuickBuyEngine.open(p);
+          } else {
+            this.openQuickView(p);
+          }
+        }
       };
     });
 
@@ -369,6 +375,10 @@ const GenrageApp = {
   // Quick View Modal
   // -------------------------------------------------------------
   openQuickView(product) {
+    if (window.QuickBuyEngine && typeof window.QuickBuyEngine.open === 'function') {
+      window.QuickBuyEngine.open(product);
+      return;
+    }
     const modal = document.getElementById('quick-view-modal');
     const container = document.getElementById('quick-view-body');
     if (!modal || !container) return;

@@ -1217,6 +1217,11 @@
       </div>
 
       <div class="nav-label">Marketing & Media</div>
+      <div class="nav-item" data-section="subscribers">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        Inner Circle Newsletter
+        <span class="nav-badge" id="sidebar-sub-count">0</span>
+      </div>
       <div class="nav-item" data-section="discounts">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
         Discounts & Promos
@@ -1610,6 +1615,44 @@
                 </tr>
               </thead>
               <tbody id="customers-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- SECTION: INNER CIRCLE SUBSCRIBERS -->
+      <!-- ============================================================== -->
+      <section class="admin-section" id="sec-subscribers">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              Inner Circle Newsletter Subscribers
+              <span class="panel-title-badge" id="sub-total-count">0 Subscribers</span>
+            </div>
+            <div class="panel-actions">
+              <input type="text" id="sub-search-input" placeholder="Search email address..." style="width: 240px; height: 34px;">
+              <button class="btn btn-secondary btn-sm" onclick="Admin.exportSubscribersCSV()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Email Address</th>
+                  <th>Source</th>
+                  <th>Joined Date</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="subscribers-table-body">
                 <!-- Dynamically populated -->
               </tbody>
             </table>
@@ -2776,6 +2819,8 @@ const Admin = {
   filteredOrders: [],
   customers: [],
   filteredCustomers: [],
+  subscribers: [],
+  filteredSubscribers: [],
   reviews: [],
   filteredReviews: [],
   mediaFiles: [],
@@ -2801,6 +2846,7 @@ const Admin = {
     this.renderCollections();
     this.renderOrders();
     this.renderCustomers();
+    this.renderSubscribers();
     this.renderDiscounts();
     this.renderMedia();
     this.renderVideos();
@@ -2811,12 +2857,13 @@ const Admin = {
 
   async loadAllData() {
     try {
-      const [statsRes, prodRes, collRes, orderRes, custRes, discRes, revRes, settRes, mediaRes, vidRes] = await Promise.all([
+      const [statsRes, prodRes, collRes, orderRes, custRes, subRes, discRes, revRes, settRes, mediaRes, vidRes] = await Promise.all([
         fetch('/api/admin/stats').then(r => r.json()),
         fetch('/api/admin/products').then(r => r.json()),
         fetch('/api/admin/collections').then(r => r.json()),
         fetch('/api/admin/orders').then(r => r.json()),
         fetch('/api/admin/customers').then(r => r.json()),
+        fetch('/api/admin/subscribers').then(r => r.json()).catch(() => ({ success: false })),
         fetch('/api/admin/discounts').then(r => r.json()),
         fetch('/api/admin/reviews').then(r => r.json()),
         fetch('/api/admin/settings').then(r => r.json()),
@@ -2840,6 +2887,10 @@ const Admin = {
       if (custRes.success) {
         this.customers = custRes.customers || [];
         this.filteredCustomers = [...this.customers];
+      }
+      if (subRes && subRes.success) {
+        this.subscribers = subRes.subscribers || [];
+        this.filteredSubscribers = [...this.subscribers];
       }
       if (discRes.success) this.discounts = discRes.discounts || [];
       if (revRes.success) {
@@ -2959,6 +3010,11 @@ const Admin = {
       openModal('customer-modal');
     });
 
+    // Subscriber Search
+    document.getElementById('sub-search-input')?.addEventListener('input', (e) => {
+      this.filterSubscribers(e.target.value);
+    });
+
     // Settings
     document.getElementById('btn-save-settings')?.addEventListener('click', () => this.saveSettings());
   },
@@ -2974,6 +3030,8 @@ const Admin = {
     document.getElementById('sidebar-prod-count').textContent = this.products.length;
     document.getElementById('sidebar-order-count').textContent = this.orders.length;
     document.getElementById('sidebar-cust-count').textContent = this.customers.length;
+    const subCountEl = document.getElementById('sidebar-sub-count');
+    if (subCountEl) subCountEl.textContent = this.subscribers.length;
     document.getElementById('sidebar-disc-count').textContent = this.discounts.length;
     document.getElementById('sidebar-rev-count').textContent = this.reviews.length;
     document.getElementById('sidebar-coll-count').textContent = this.collections.length;
@@ -4500,6 +4558,85 @@ const Admin = {
   },
 
   // -------------------------------------------------------------
+  // Inner Circle Subscribers Management
+  // -------------------------------------------------------------
+  renderSubscribers() {
+    const tbody = document.getElementById('subscribers-table-body');
+    const totalCountEl = document.getElementById('sub-total-count');
+    const sidebarCountEl = document.getElementById('sidebar-sub-count');
+    const list = this.filteredSubscribers || [];
+
+    if (totalCountEl) totalCountEl.textContent = `${list.length} Subscribers`;
+    if (sidebarCountEl) sidebarCountEl.textContent = (this.subscribers || []).length;
+    if (!tbody) return;
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--text-muted);">No Inner Circle subscribers found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map((s, index) => {
+      const email = s.email || '';
+      const source = s.source || 'footer_newsletter';
+      const joinedDate = s.subscribedAt ? new Date(s.subscribedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+      const id = s.id || email;
+
+      return `
+        <tr>
+          <td style="color:var(--text-muted);font-weight:700;">${index + 1}</td>
+          <td style="font-weight:700;color:var(--text-main);">${email}</td>
+          <td><span class="badge badge-dark">${source}</span></td>
+          <td style="color:var(--text-muted);font-size:0.75rem;">${joinedDate}</td>
+          <td><span class="badge badge-success">Active Member</span></td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="Admin.deleteSubscriber('${id}')">Remove</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  filterSubscribers(query) {
+    query = (query || '').toLowerCase().trim();
+    this.filteredSubscribers = (this.subscribers || []).filter(s =>
+      !query || (s.email && s.email.toLowerCase().includes(query))
+    );
+    this.renderSubscribers();
+  },
+
+  async deleteSubscriber(id) {
+    if (!confirm('Are you sure you want to remove this subscriber from the Inner Circle?')) return;
+    try {
+      const res = await fetch(`/api/admin/subscribers/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        this.subscribers = (this.subscribers || []).filter(s => String(s.id) !== String(id) && s.email !== id);
+        this.filteredSubscribers = (this.filteredSubscribers || []).filter(s => String(s.id) !== String(id) && s.email !== id);
+        this.renderSubscribers();
+        this.showToast('✓ Subscriber removed from Inner Circle.');
+      } else {
+        this.showToast('⚠️ ' + (data.message || 'Failed to remove subscriber'));
+      }
+    } catch (e) {
+      this.showToast('⚠️ Network error deleting subscriber');
+    }
+  },
+
+  exportSubscribersCSV() {
+    let csv = 'ID,Email Address,Source,Joined Date,Status\n';
+    (this.subscribers || []).forEach((s, idx) => {
+      csv += `"${s.id || 'SUB-' + (idx+1)}","${s.email}","${s.source || 'footer_newsletter'}","${s.subscribedAt || ''}","${s.status || 'Active'}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inner_circle_subscribers_${Date.now()}.csv`;
+    a.click();
+    this.showToast('📥 Inner Circle Subscribers CSV exported.');
+  },
+
+  // -------------------------------------------------------------
   // Discounts Management
   // -------------------------------------------------------------
   renderDiscounts() {
@@ -5171,6 +5308,7 @@ function navigateToSection(target) {
     collections: 'COLLECTIONS & DROPS',
     orders: 'ORDERS & FULFILLMENT',
     customers: 'CUSTOMERS DIRECTORY',
+    subscribers: 'INNER CIRCLE NEWSLETTER',
     discounts: 'DISCOUNTS & PROMOTIONS',
     media: 'MEDIA & ASSETS GALLERY',
     videos: 'VIDEO STREAM HUB',

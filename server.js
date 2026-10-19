@@ -836,7 +836,9 @@ async function handleCreateOrder(req, res, isCheckout = false) {
       city: payload.customer?.city || 'Mumbai',
       state: payload.customer?.state || 'Maharashtra',
       address: payload.customer?.address || '',
-      pincode: payload.customer?.pincode || ''
+      locality: payload.customer?.locality || '',
+      pincode: payload.customer?.pincode || '',
+      country: payload.customer?.country || 'India'
     },
     items: processedItems,
     subtotal,
@@ -859,6 +861,28 @@ async function handleCreateOrder(req, res, isCheckout = false) {
   memoryOrdersLastFetch = Date.now();
   writeJsonFile('orders.json', orders);
   await syncOrderToSupabase(newOrder);
+
+  // Sync customer address and contact info to customers.json
+  try {
+    const custEmail = (payload.customer?.email || '').toLowerCase().trim();
+    if (custEmail) {
+      let customers = readJsonFile('customers.json', []);
+      let cust = customers.find(c => (c.email || '').toLowerCase().trim() === custEmail);
+      if (cust) {
+        if (payload.customer?.name && (!cust.name || cust.name === 'Walk-in Customer')) cust.name = payload.customer.name;
+        if (payload.customer?.phone) cust.phone = payload.customer.phone;
+        if (payload.customer?.address) cust.address = payload.customer.address;
+        if (payload.customer?.locality) cust.locality = payload.customer.locality;
+        if (payload.customer?.city) cust.city = payload.customer.city;
+        if (payload.customer?.state) cust.state = payload.customer.state;
+        if (payload.customer?.pincode) cust.pincode = payload.customer.pincode;
+        if (payload.customer?.country) cust.country = payload.customer.country;
+        cust.totalOrders = (cust.totalOrders || 0) + 1;
+        cust.totalSpent = (cust.totalSpent || 0) + total;
+        writeJsonFile('customers.json', customers);
+      }
+    }
+  } catch (e) {}
 
   return sendJson(res, 201, {
     success: true,

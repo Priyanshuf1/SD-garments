@@ -1924,14 +1924,23 @@ button {
 }
 
 .qb-qty-btn {
-  width: 38px;
+  width: 44px;
+  min-width: 44px;
   height: 100%;
+  min-height: 44px;
   border: none;
   background: none;
   font-size: 1.15rem;
   font-weight: 700;
   cursor: pointer;
   color: #111;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .qb-qty-val {

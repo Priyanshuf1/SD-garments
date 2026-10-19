@@ -70,7 +70,7 @@
     },
 
     bindTriggers() {
-      // Delegate click on document for any quick add button
+      // Delegate click on document for any quick add button (capture phase ensures no child swallows it)
       document.addEventListener('click', (e) => {
         const btn = e.target.closest('.product-card__quick-add-button, .quick-buy-btn, [data-quick-buy]');
         if (!btn) return;
@@ -79,7 +79,7 @@
         e.stopPropagation();
 
         this.handleTriggerClick(btn);
-      });
+      }, true);
     },
 
     async handleTriggerClick(btn) {
@@ -307,14 +307,36 @@
       localStorage.setItem('genrage_cart_v1', JSON.stringify(cart));
 
       // Trigger app hooks if present
+      let drawerOpened = false;
       if (window.GenrageApp) {
         window.GenrageApp.cart = cart;
         if (typeof window.GenrageApp.updateCartUI === 'function') window.GenrageApp.updateCartUI();
-        if (typeof window.GenrageApp.openCart === 'function') window.GenrageApp.openCart();
-      } else if (window.CollectionEngine) {
+        if (typeof window.GenrageApp.openCart === 'function') {
+          window.GenrageApp.openCart();
+          drawerOpened = true;
+        }
+      }
+      if (window.CollectionEngine) {
         window.CollectionEngine.cart = cart;
         if (typeof window.CollectionEngine.updateCartUi === 'function') window.CollectionEngine.updateCartUi();
-        if (typeof window.CollectionEngine.openCart === 'function') window.CollectionEngine.openCart();
+        if (typeof window.CollectionEngine.openCartDrawer === 'function') {
+          window.CollectionEngine.openCartDrawer();
+          drawerOpened = true;
+        } else if (typeof window.CollectionEngine.openCart === 'function') {
+          window.CollectionEngine.openCart();
+          drawerOpened = true;
+        }
+      }
+
+      // Fallback DOM activation if drawer not already opened
+      if (!drawerOpened) {
+        const cartDrawer = document.getElementById('cart-drawer');
+        const drawerBackdrop = document.getElementById('drawer-backdrop');
+        if (cartDrawer) {
+          cartDrawer.classList.add('active');
+          if (drawerBackdrop) drawerBackdrop.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
       }
 
       // Update badge counts on header

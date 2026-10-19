@@ -1,5 +1,45 @@
 [
   {
+    "id": "CUST-1792369819695",
+    "name": "Kabir Oberoi",
+    "email": "testuser_1792369817836@example.com",
+    "phone": "+91 98201 99999",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Penthouse 1401, Crescent Bay, Parel",
+    "locality": "Near ITC Grand Central",
+    "pincode": "400012",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
+    "id": "CUST-1792368534339",
+    "name": "Kabir Oberoi",
+    "email": "testuser_1792368533043@example.com",
+    "phone": "+91 98201 99999",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Penthouse 1401, Crescent Bay, Parel",
+    "locality": "Near ITC Grand Central",
+    "pincode": "400012",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "tags": [
+      "Storefront Member",
+      "6-Digit OTP Verified"
+    ],
+    "status": "Active",
+    "wishlist": []
+  },
+  {
     "id": "CUST-1792368304195",
     "name": "Kabir Oberoi",
     "email": "testuser_1792368302326@example.com",
