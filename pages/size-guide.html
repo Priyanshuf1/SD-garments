@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIZE GUIDE | ALLYRICH Architectural Streetwear Fit & Sizing</title>
+  <link rel="shortcut icon" href="/assets/ar-logo.png">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="/assets/css/allyrich.css">
+  <style>
+    .page-hero {
+      padding: 3.5rem 0 2rem;
+      border-bottom: 1px solid var(--color-border);
+      text-align: center;
+      background: #090909;
+    }
+    .page-content-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+      font-size: 0.95rem;
+      color: #ccc;
+      line-height: 1.8;
+    }
+    .page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
+      color: #fff;
+      margin: 2.25rem 0 1rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .page-content-wrapper p {
+      margin-bottom: 1.25rem;
+    }
+    .size-guide-card {
+      background: #111111;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0 2.5rem;
+    }
+    .size-guide-table-wrap {
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .size-guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+    .size-guide-table th {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      padding: 12px 14px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .size-guide-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: #cccccc;
+    }
+    .size-guide-table td:first-child {
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .size-guide-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .fit-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+      letter-spacing: 0.05em;
+    }
+    .measure-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 1.5rem;
+    }
+    .measure-item {
+      background: #141414;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .measure-item h4 {
+      color: #ffffff;
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .measure-item p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #999999;
+      line-height: 1.5;
+    }
+    .concierge-box {
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      margin-top: 3rem;
+    }
+    .concierge-box h3 {
+      margin-top: 0;
+      color: #ffffff;
+    }
+    .concierge-btn {
+      display: inline-block;
+      background: #ffffff;
+      color: #000000;
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px 28px;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .concierge-btn:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <!-- Left: Brand Logo & Mobile Menu Trigger -->
+      <div style="display:flex; align-items:center; gap: 1.25rem; flex-shrink: 0; min-width: max-content;">
+        <button class="mobile-menu-trigger action-touch-btn" id="mobile-menu-trigger" aria-label="Open Navigation Menu" style="background:none; border:none; color:#ffffff; cursor:pointer; align-items:center; justify-content:center; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <a href="/" class="allyrich-header-brand" aria-label="ALLYRICH Home" style="flex-shrink: 0; min-width: max-content;">
+          <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="30" height="38">
+          <span class="allyrich-header-brand-name">ALLYRICH</span>
+        </a>
+      </div>
+
+      <!-- Center: Desktop Navigation Links -->
+      <nav class="site-header__nav">
+        <a href="/collections/shop" class="header-nav-link">NEW ARRIVALS</a>
+        <a href="/collections/vest" class="header-nav-link">TANK TOP</a>
+        <a href="/collections/boxy-oversized-tshirt" class="header-nav-link">TSHIRT</a>
+        <a href="/collections/hoodies-for-men" class="header-nav-link">HOODIES</a>
+        <a href="/collections/baggy-pants" class="header-nav-link">BOTTOMS</a>
+        <a href="/collections/clearance-sale" class="header-nav-link" style="color:#e50914;">CLEARANCE SALE</a>
+        <a href="/pages/contact.html" class="header-nav-link" onclick="if(window.openChatModal){window.openChatModal(); return false;}">CHAT WITH US</a>
+      </nav>
+
+      <!-- Right: User Account, Wishlist, Search, Cart -->
+      <div class="header-actions-group">
+        <a href="/account" class="header-account-link action-touch-btn" data-account-trigger title="Account" style="color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke-miterlimit="10"/>
+          </svg>
+        </a>
+
+        <a href="/collections/shop" class="search-trigger action-touch-btn" title="Search & Filter" style="color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-miterlimit="10">
+            <path d="M10.364 3a7.364 7.364 0 1 0 0 14.727 7.364 7.364 0 0 0 0-14.727Z"/>
+            <path d="M15.857 15.858 21 21.001" stroke-linecap="round"/>
+          </svg>
+        </a>
+
+        <a href="/collections/shop?view=wishlist" class="action-touch-btn" title="Saved Wishlist" style="color:#ffffff; text-decoration:none; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span id="header-wishlist-badge" class="wishlist-count-badge" style="display:none; position:absolute; top:2px; right:2px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; align-items:center; justify-content:center; line-height:16px; text-align:center;">0</span>
+        </a>
+
+        <button type="button" class="cart-trigger action-touch-btn" data-open-cart="true" onclick="if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer();} return false;" aria-label="Open Shopping Bag" style="background:none; border:none; color:#ffffff; cursor:pointer; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span id="header-cart-badge" style="position:absolute; top:2px; right:2px; background:#e50914; color:#fff; font-size:0.65rem; font-weight:800; border-radius:999px; width:16px; height:16px; display:flex; align-items:center; justify-content:center;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-hero">
+    <div class="site-container">
+      <h1 class="hero-title" style="font-size: 2.25rem;">SIZE & FIT GUIDE</h1>
+      <p style="color: #888888; font-size: 0.9rem; margin-top: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase;">Engineered for Architectural Streetwear Silhouettes</p>
+    </div>
+  </div>
+
+  <main class="page-content-wrapper">
+
+    <p>Every ALLYRICH piece is patterned with our signature boxy, dropped-shoulder architecture and heavy drape. We recommend taking your <strong>true standard size</strong> to achieve the intended relaxed streetwear silhouette. If you prefer a more tailored, traditional fit, we recommend ordering one size down.</p>
+
+    <!-- 1. TOPS & TEES -->
+    <div class="size-guide-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">1. BOXY OVERSIZED TEES &amp; TANK TOPS <span class="fit-badge">BOXY FIT</span></h3>
+        <button type="button" onclick="if(window.openSizeGuideModal){window.openSizeGuideModal();}" style="background:none; border:none; color:#fff; text-decoration:underline; font-size:0.8rem; cursor:pointer;">Interactive View ↗</button>
+      </div>
+      <p style="font-size:0.85rem; color:#888; margin: 6px 0 16px;">Measurements in inches (and cm in brackets). Heavyweight 240+ GSM combed cotton.</p>
+      <div class="size-guide-table-wrap">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>SIZE</th>
+              <th>CHEST (WIDTH)</th>
+              <th>LENGTH</th>
+              <th>SHOULDER</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>S</td>
+              <td>42" (107 cm)</td>
+              <td>29" (74 cm)</td>
+              <td>21" (53 cm)</td>
+            </tr>
+            <tr>
+              <td>M</td>
+              <td>44" (112 cm)</td>
+              <td>30" (76 cm)</td>
+              <td>22" (56 cm)</td>
+            </tr>
+            <tr>
+              <td>L</td>
+              <td>46" (117 cm)</td>
+              <td>31" (79 cm)</td>
+              <td>23" (58 cm)</td>
+            </tr>
+            <tr>
+              <td>XL</td>
+              <td>48" (122 cm)</td>
+              <td>32" (81 cm)</td>
+              <td>24" (61 cm)</td>
+            </tr>
+            <tr>
+              <td>XXL</td>
+              <td>50" (127 cm)</td>
+              <td>33" (84 cm)</td>
+              <td>25" (64 cm)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. HOODIES -->
+    <div class="size-guide-card">
+      <h3 style="margin:0;">2. HEAVYWEIGHT HOODIES &amp; SWEATSHIRTS <span class="fit-badge">RELAXED DROP</span></h3>
+      <p style="font-size:0.85rem; color:#888; margin: 6px 0 16px;">Measurements in inches (and cm in brackets). 450+ GSM French terry with double-layered hood.</p>
+      <div class="size-guide-table-wrap">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>SIZE</th>
+              <th>CHEST</th>
+              <th>LENGTH</th>
+              <th>SLEEVE LENGTH</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>S</td>
+              <td>44" (112 cm)</td>
+              <td>27.5" (70 cm)</td>
+              <td>24" (61 cm)</td>
+            </tr>
+            <tr>
+              <td>M</td>
+              <td>46" (117 cm)</td>
+              <td>28.5" (72 cm)</td>
+              <td>25" (63 cm)</td>
+            </tr>
+            <tr>
+              <td>L</td>
+              <td>48" (122 cm)</td>
+              <td>29.5" (75 cm)</td>
+              <td>26" (66 cm)</td>
+            </tr>
+            <tr>
+              <td>XL</td>
+              <td>50" (127 cm)</td>
+              <td>30.5" (77 cm)</td>
+              <td>27" (69 cm)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. BOTTOMS -->
+    <div class="size-guide-card">
+      <h3 style="margin:0;">3. BAGGY PANTS, CARGOS &amp; BOTTOMS <span class="fit-badge">ARCHIVAL WIDE</span></h3>
+      <p style="font-size:0.85rem; color:#888; margin: 6px 0 16px;">Elasticated waistband with internal drawstrings. Flowing leg profile for clean sneaker stacking.</p>
+      <div class="size-guide-table-wrap">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>SIZE</th>
+              <th>WAIST</th>
+              <th>TOTAL LENGTH</th>
+              <th>INSEAM</th>
+              <th>THIGH</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>S</td>
+              <td>28 – 30" (71–76 cm)</td>
+              <td>41" (104 cm)</td>
+              <td>30" (76 cm)</td>
+              <td>26" (66 cm)</td>
+            </tr>
+            <tr>
+              <td>M</td>
+              <td>31 – 33" (78–84 cm)</td>
+              <td>42" (107 cm)</td>
+              <td>30.5" (77 cm)</td>
+              <td>27" (69 cm)</td>
+            </tr>
+            <tr>
+              <td>L</td>
+              <td>34 – 36" (86–91 cm)</td>
+              <td>43" (109 cm)</td>
+              <td>31" (79 cm)</td>
+              <td>28" (71 cm)</td>
+            </tr>
+            <tr>
+              <td>XL</td>
+              <td>37 – 40" (94–102 cm)</td>
+              <td>44" (112 cm)</td>
+              <td>31.5" (80 cm)</td>
+              <td>29" (74 cm)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4. HOW TO MEASURE -->
+    <h3>HOW TO MEASURE YOUR BODY</h3>
+    <div class="measure-grid">
+      <div class="measure-item">
+        <h4>CHEST / BUST</h4>
+        <p>Wrap the tape around the fullest part of your chest, keeping the tape level and under your arms.</p>
+      </div>
+      <div class="measure-item">
+        <h4>LENGTH</h4>
+        <p>Measure from the highest point of your shoulder seam down to the bottom hem of the garment.</p>
+      </div>
+      <div class="measure-item">
+        <h4>WAIST</h4>
+        <p>Measure around your natural waistline, where your trousers or pants normally sit comfortably.</p>
+      </div>
+      <div class="measure-item">
+        <h4>INSEAM</h4>
+        <p>Measure from the crotch seam straight down to the ankle hem along the inner leg seam.</p>
+      </div>
+    </div>
+
+    <!-- Concierge Box -->
+    <div class="concierge-box">
+      <h3>STILL UNSURE ABOUT YOUR SIZE?</h3>
+      <p style="max-width: 540px; margin: 0 auto 16px; font-size: 0.9rem; color: #aaa;">Our styling specialists are available to provide custom fit recommendations based on your height, weight, and preferred aesthetic.</p>
+      <button type="button" class="concierge-btn" onclick="if(window.openChatModal){window.openChatModal();}">Chat with Client Concierge</button>
+    </div>
+
+  </main>
+
+  <footer id="shopify-section-sections--footer" class="shopify-section shopify-section-group-footer-group site-footer-wrapper">
+    <div class="site-footer full-width">
+      <div class="site-footer__bg" aria-hidden="true">
+        <img src="/assets/footer-ruins.webp" alt="" loading="lazy">
+        <div class="site-footer__bg-gradient"></div>
+      </div>
+
+      <div class="site-footer__content">
+        <div class="site-footer__main-grid">
+          <div class="site-footer__brand-block">
+            <a class="site-footer__logo" href="/" aria-label="AllyRich Home">
+              <img src="/assets/ar-logo.png" alt="AllyRich Crest" width="62" height="78">
+              <span class="site-footer__brand-name">ALLYRICH</span>
+            </a>
+            <p class="site-footer__tagline">Architectural Streetwear &bull; Homegrown in India</p>
+            <div class="site-footer__newsletter">
+              <h4 class="site-footer__newsletter-heading">JOIN THE INNER CIRCLE</h4>
+              <p class="site-footer__newsletter-sub">Gain priority access to limited drops, archival releases, and invite-only showcases.</p>
+              <form class="site-footer__newsletter-form" onsubmit="window.submitNewsletter ? window.submitNewsletter(this, event) : event.preventDefault(); return false;">
+                <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
+                <button type="submit" class="site-footer__newsletter-btn">SUBSCRIBE</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="site-footer__columns">
+            <div class="site-footer__column">
+              <p class="site-footer__heading">CLIENT CARE</p>
+              <a href="/pages/contact.html" onclick="if(window.openChatModal){window.openChatModal(); return false;}">Chat with Us</a>
+              <a href="/track" target="_blank" rel="noopener">Track Order</a>
+              <a href="/pages/shipping-policy.html">Shipping Policy</a>
+              <a href="/pages/refund-policy.html">Returns &amp; Exchanges</a>
+              <a href="/pages/size-guide.html" onclick="if(window.openSizeGuideModal){window.openSizeGuideModal(); return false;}">Size Guide</a>
+            </div>
+
+            <div class="site-footer__column">
+              <p class="site-footer__heading">LEGAL &amp; POLICIES</p>
+              <a href="/pages/terms-of-service.html">Terms &amp; Conditions</a>
+              <a href="/pages/privacy-policy.html">Privacy Policy</a>
+              <a href="/pages/refund-policy.html">Refund Policy</a>
+              <a href="/pages/shipping-policy.html">Shipping Guidelines</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="site-footer__meta">
+          <div class="site-footer__social">
+            <a href="https://www.instagram.com/allyrich_" aria-label="Instagram" target="_blank" rel="noopener me" title="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="site-footer__bottom">
+          <p class="site-footer__copyright">&copy; 2026 ALLYRICH &bull; ALL RIGHTS RESERVED &bull; CRAFTED FOR THE FEW</p>
+          <div class="site-footer__legal">
+            <a href="/pages/terms-of-service.html">TERMS</a>
+            <a href="/pages/privacy-policy.html">PRIVACY</a>
+            <a href="/pages/refund-policy.html">REFUNDS</a>
+            <a href="/pages/shipping-policy.html">SHIPPING</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/wishlist.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/quick-buy.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/size-guide-modal.js"></script>
+</body>
+</html>

@@ -419,7 +419,7 @@
         <div style="margin-bottom: 1.75rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
             <label style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">SELECT SIZE:</label>
-            <button onclick="document.getElementById('size-guide-modal').classList.add('active')" style="color: #444444; font-size: 0.75rem; text-decoration: underline; text-transform: uppercase; font-weight: 700; background: none; border: none; cursor: pointer;">Size Guide</button>
+            <button onclick="if(window.openSizeGuideModal){window.openSizeGuideModal();}else{document.getElementById('size-guide-modal').classList.add('active');}" style="color: #444444; font-size: 0.75rem; text-decoration: underline; text-transform: uppercase; font-weight: 700; background: none; border: none; cursor: pointer;">Size Guide</button>
           </div>
           <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;" id="size-options-container">
             <!-- Injected -->
@@ -574,7 +574,7 @@
             <a href="/track" target="_blank" rel="noopener">Track Order</a>
             <a href="/pages/shipping-policy.html">Shipping Policy</a>
             <a href="/pages/refund-policy.html">Returns &amp; Exchanges</a>
-            <a href="/pages/contact.html">Size Guide</a>
+            <a href="/pages/size-guide.html" onclick="if(window.openSizeGuideModal){window.openSizeGuideModal(); return false;}">Size Guide</a>
           </div>
 
           <div class="site-footer__column">
@@ -858,5 +858,6 @@
   </script>
 <script src="/assets/js/allyrich-loader.js"></script>
 <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/size-guide-modal.js" defer></script>
 </body>
 </html>

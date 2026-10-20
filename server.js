@@ -61,7 +61,10 @@ const MIME_TYPES = {
   '.webm': 'video/webm',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf'
+  '.ttf': 'font/ttf',
+  '.wasm': 'application/wasm',
+  '.splinecode': 'application/octet-stream',
+  '.mp3': 'audio/mpeg'
 };
 
 function serveVideoWithRange(req, res, filePath) {
@@ -1319,6 +1322,20 @@ async function handleDeleteOrder(req, res, id) {
 async function appHandler(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
+
+  // Handle Shopify dummy telemetry, web-pixels & monorail to keep console clean
+  if (
+    pathname.startsWith('/web-pixels') ||
+    pathname.startsWith('/.well-known/shopify') ||
+    pathname.includes('monorail') ||
+    pathname.includes('shopify-app-pixel')
+  ) {
+    res.writeHead(200, {
+      'Content-Type': 'application/javascript; charset=utf-8',
+      'Access-Control-Allow-Origin': '*'
+    });
+    return res.end('// Shopify telemetry stub');
+  }
 
   // Handle OPTIONS for CORS
   if (req.method === 'OPTIONS') {
@@ -3162,7 +3179,13 @@ async function appHandler(req, res) {
     '/pages/returns.html': 'returns.html',
     '/reviews': 'reviews.html',
     '/pages/reviews': 'reviews.html',
-    '/pages/reviews.html': 'reviews.html'
+    '/pages/reviews.html': 'reviews.html',
+    '/size-guide': 'size-guide.html',
+    '/pages/size-guide': 'size-guide.html',
+    '/pages/size-guide.html': 'size-guide.html',
+    '/size-chart': 'size-guide.html',
+    '/pages/size-chart': 'size-guide.html',
+    '/pages/size-chart.html': 'size-guide.html'
   };
 
   const normPolicyPath = pathname.toLowerCase().replace(/\/+$/, '');
