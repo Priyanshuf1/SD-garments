@@ -33,6 +33,12 @@ const url = require('url');
 });
 
 const supabase = require('./lib/supabase.js');
+let db = null;
+try {
+  db = require('./lib/db.js');
+} catch (e) {
+  console.warn('AWS RDS adapter not loaded:', e.message);
+}
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = __dirname;
@@ -176,6 +182,14 @@ function writeJsonFile(filename, data) {
 }
 
 async function getUnifiedSubscribers() {
+  if (db && db.isConfigured) {
+    try {
+      const awsSubs = await db.subscribers.getAll();
+      if (Array.isArray(awsSubs) && awsSubs.length > 0) return awsSubs;
+    } catch (e) {
+      console.warn('AWS RDS subscribers fetch warning:', e.message);
+    }
+  }
   let localSubs = readJsonFile('subscribers.json', []);
   if (supabase.isConfigured && supabase.subscribers) {
     try {
@@ -321,6 +335,20 @@ async function getAllProducts() {
     return memoryProducts;
   }
 
+  if (db && db.isConfigured) {
+    try {
+      const awsProducts = await db.products.getAll();
+      if (Array.isArray(awsProducts) && awsProducts.length > 0) {
+        const filtered = filterOutGiftCards(awsProducts);
+        memoryProducts = filtered;
+        memoryProductsLastFetch = Date.now();
+        return filtered;
+      }
+    } catch (err) {
+      console.warn('AWS RDS products fetch warning:', err.message);
+    }
+  }
+
   const localList = getMemoryProducts();
   if (!supabase.isConfigured) return localList;
 
@@ -384,6 +412,19 @@ async function getAllOrders() {
     return memoryOrders;
   }
 
+  if (db && db.isConfigured) {
+    try {
+      const awsOrders = await db.orders.getAll();
+      if (Array.isArray(awsOrders)) {
+        memoryOrders = awsOrders;
+        memoryOrdersLastFetch = Date.now();
+        return awsOrders;
+      }
+    } catch (err) {
+      console.warn('AWS RDS orders fetch warning:', err.message);
+    }
+  }
+
   const localOrders = getMemoryOrders();
   if (!supabase.isConfigured) return localOrders;
 
@@ -403,6 +444,13 @@ async function getAllOrders() {
 }
 
 async function syncOrderToSupabase(order) {
+  if (db && db.isConfigured) {
+    try {
+      await db.orders.create(order);
+    } catch (e) {
+      console.warn('AWS RDS order create warning:', e.message);
+    }
+  }
   if (!supabase.isConfigured) return;
   try {
     const orderNo = order.id;
@@ -479,6 +527,13 @@ async function deleteOrderFromSupabase(orderId) {
 }
 
 async function syncProductToSupabase(product) {
+  if (db && db.isConfigured) {
+    try {
+      await db.products.upsert(product);
+    } catch (e) {
+      console.warn('AWS RDS product upsert warning:', e.message);
+    }
+  }
   if (!supabase.isConfigured) return null;
   try {
     const prodPayload = {
@@ -547,6 +602,13 @@ async function syncProductToSupabase(product) {
 }
 
 async function deleteProductFromSupabase(productIdOrHandle, fallbackHandle) {
+  if (db && db.isConfigured) {
+    try {
+      await db.products.delete(fallbackHandle || productIdOrHandle);
+    } catch (e) {
+      console.warn('AWS RDS product delete warning:', e.message);
+    }
+  }
   if (!supabase.isConfigured) return;
   try {
     let targetId = null;
@@ -2582,6 +2644,14 @@ async function appHandler(req, res) {
       localSubs.unshift(newSub);
       writeJsonFile('subscribers.json', localSubs);
 
+      if (db && db.isConfigured) {
+        try {
+          await db.subscribers.add(email, payload.source || 'footer_newsletter');
+        } catch (e) {
+          console.warn('Newsletter AWS RDS insert notice:', e.message);
+        }
+      }
+
       if (supabase.isConfigured && supabase.subscribers) {
         try {
           await supabase.subscribers.insert(newSub);
@@ -2828,6 +2898,15 @@ async function appHandler(req, res) {
         writeJsonFile('customers.json', customers);
       }
 
+      // Update AWS RDS PostgreSQL customer wishlist
+      if (db && db.isConfigured && (email || cust?.email)) {
+        try {
+          await db.customers.updateWishlist(email || cust?.email, wishlist);
+        } catch (e) {
+          console.warn('Wishlist sync to AWS RDS error:', e.message);
+        }
+      }
+
       // Update Supabase PostgreSQL wishlists and user_metadata
       if (supabase.isConfigured) {
         try {
@@ -2886,6 +2965,15 @@ async function appHandler(req, res) {
       if (cust) {
         cust.cart = cart;
         writeJsonFile('customers.json', customers);
+      }
+
+      // Update AWS RDS PostgreSQL customer cart
+      if (db && db.isConfigured && (email || cust?.email)) {
+        try {
+          await db.customers.updateCart(email || cust?.email, cart);
+        } catch (e) {
+          console.warn('Cart sync to AWS RDS error:', e.message);
+        }
       }
 
       // Update Supabase PostgreSQL profile with cart
