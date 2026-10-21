@@ -1922,33 +1922,6 @@ async function appHandler(req, res) {
       });
     }
 
-    if (apiRoute === 'media' && req.method === 'GET') {
-      const uploadDir = path.join(PUBLIC_DIR, 'assets', 'uploads');
-      let files = [];
-      if (fs.existsSync(uploadDir)) {
-        files = fs.readdirSync(uploadDir).map(name => {
-          const stat = fs.statSync(path.join(uploadDir, name));
-          return {
-            name,
-            url: `/assets/uploads/${name}`,
-            size: stat.size,
-            createdAt: stat.mtime
-          };
-        });
-      }
-      return sendJson(res, 200, { success: true, count: files.length, files });
-    }
-
-    if (apiRoute.startsWith('media/') && req.method === 'DELETE') {
-      const filename = path.basename(apiRoute.replace('media/', ''));
-      const filePath = path.join(PUBLIC_DIR, 'assets', 'uploads', filename);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        return sendJson(res, 200, { success: true, message: 'Media deleted' });
-      }
-      return sendJson(res, 404, { success: false, message: 'File not found' });
-    }
-
     // 10. Video Streaming Management API
     if (apiRoute === 'videos' && req.method === 'GET') {
       const videoDir = path.join(PUBLIC_DIR, 'assets', 'videos');
