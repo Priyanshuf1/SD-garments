@@ -6,6 +6,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": "images/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
@@ -13,7 +17,10 @@
           "*.html",
           "pages/**",
           "data/**",
-          "lib/**"
+          "lib/**",
+          "images/**",
+          "*.mp3",
+          "*.png"
         ]
       }
     }
@@ -22,6 +29,10 @@
     {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/images/$1"
     },
     {
       "src": "/(.*)",
