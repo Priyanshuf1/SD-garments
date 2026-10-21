@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node test_legal_policies.js && node test_security_abuse_controls.js"
   },
   "author": "GENRAGE",
   "license": "ISC",

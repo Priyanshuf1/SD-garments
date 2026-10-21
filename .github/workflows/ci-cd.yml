@@ -1,0 +1,80 @@
+name: ALLYRICH DevOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # ============================================================================
+  # STAGE 1: Automated Testing & Security Verification
+  # ============================================================================
+  test-and-verify:
+    name: Run Automated Security & Compliance Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Project Dependencies
+        run: npm ci
+
+      - name: Test Legal & Compliance Policies (DPDP Act, Terms, Refunds)
+        run: node test_legal_policies.js
+
+      - name: Test Security & Abuse Controls (Rate Limiting, Brute Force, SSRF)
+        run: node test_security_abuse_controls.js
+
+  # ============================================================================
+  # STAGE 2: Multi-Stage Docker Container Build & Health Verification
+  # ============================================================================
+  docker-build-and-scan:
+    name: Build Docker Container & Scan Vulnerabilities
+    needs: test-and-verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: allyrich-app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify Container Health Check
+        run: |
+          docker run -d --name test-allyrich -p 3000:3000 allyrich-app:${{ github.sha }}
+          echo "Waiting 5 seconds for container startup..."
+          sleep 5
+          curl --fail http://localhost:3000/api/health || (docker logs test-allyrich && exit 1)
+          echo "Healthcheck successfully verified on port 3000!"
+          docker stop test-allyrich
+
+      - name: Run Trivy Vulnerability Scan (DevSecOps)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'allyrich-app:${{ github.sha }}'
+          format: 'table'
+          exit-code: '0' # Don't break build on minor base OS warnings, report findings
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'

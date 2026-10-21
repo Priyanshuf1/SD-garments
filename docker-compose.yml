@@ -1,0 +1,79 @@
+version: '3.8'
+
+# ==============================================================================
+# ALLYRICH D2C Streetwear - Multi-Container Production Stack
+# Services: Node.js Web Storefront + PostgreSQL Database Container
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. ALLYRICH Web Application Server
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: allyrich-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://allyrich:allyrich_secret_db_pass@db:5432/allyrich_db
+      # Production keys injected via .env or Cloud Secret Manager
+      - ADMIN_KEY=${ADMIN_KEY:-allyrich_admin_super_secret_2026}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - CASHFREE_APP_ID=${CASHFREE_APP_ID:-}
+      - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - allyrich-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.75'
+        reservations:
+          memory: 128M
+
+  # ----------------------------------------------------------------------------
+  # 2. PostgreSQL Relational Database Container
+  # ----------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: allyrich-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: allyrich
+      POSTGRES_PASSWORD: allyrich_secret_db_pass
+      POSTGRES_DB: allyrich_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U allyrich -d allyrich_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - allyrich-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.50'
+
+# ------------------------------------------------------------------------------
+# Persistent Storage Volumes & Networks
+# ------------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  allyrich-network:
+    driver: bridge
