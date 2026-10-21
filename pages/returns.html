@@ -10,32 +10,176 @@
   <link rel="stylesheet" href="/assets/css/allyrich.css">
   <style>
     .page-hero {
-      padding: 3.5rem 0 2rem;
-      border-bottom: 1px solid var(--color-border);
+      padding: 4rem 1.5rem 2.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
-      background: #090909;
+      background: radial-gradient(circle at 50% 0%, #151515 0%, #080808 100%);
+    }
+    .page-hero .hero-title {
+      font-size: 2.25rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+    }
+    .page-hero .hero-subtitle {
+      color: #888888;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.75rem;
     }
     .page-content-wrapper {
-      max-width: 800px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 3rem 1.5rem 6rem;
+      padding: 3.5rem 1.5rem 6rem;
       font-size: 0.95rem;
-      color: #ccc;
-      line-height: 1.8;
+      color: #bbbbbb;
+      line-height: 1.85;
+      font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
+    .policy-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      margin-bottom: 2.5rem;
+      font-size: 0.82rem;
+      color: #888;
+    }
+    .policy-meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
-      margin: 2rem 0 1rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
-    .page-content-wrapper p {
-      margin-bottom: 1.25rem;
+    .policy-card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      transition: border-color 0.2s ease;
     }
-    .page-content-wrapper ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1.5rem;
+    .policy-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
     }
-    .page-content-wrapper li {
+    .policy-card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .policy-card h2 .section-num {
+      color: #e50914;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .policy-card h3 {
+      font-size: 1.02rem;
+      color: #e2e2e2;
+      margin: 1.25rem 0 0.5rem;
+      font-weight: 600;
+    }
+    .policy-card p {
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card p:last-child {
+      margin-bottom: 0;
+    }
+    .policy-card ul, .policy-card ol {
+      margin-left: 1.25rem;
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card li {
       margin-bottom: 0.5rem;
+    }
+    .policy-card strong {
+      color: #ffffff;
+    }
+    .policy-notice {
+      background: rgba(229, 9, 20, 0.06);
+      border-left: 3px solid #e50914;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      color: #dddddd;
+      font-size: 0.9rem;
+    }
+    .policy-notice--neutral {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid #ffffff;
+    }
+    .step-card {
+      display: flex;
+      gap: 18px;
+      padding: 18px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    .step-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e50914;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .step-content h4 {
+      margin: 0 0 6px;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .step-content p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: #999999;
+      line-height: 1.6;
+    }
+    @media (max-width: 768px) {
+      .page-hero {
+        padding: 2.75rem 1rem 1.75rem;
+      }
+      .page-hero .hero-title {
+        font-size: 1.65rem;
+      }
+      .page-content-wrapper {
+        padding: 2rem 1rem 4rem;
+      }
+      .policy-card {
+        padding: 20px 18px;
+      }
+      .policy-card h2 {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
@@ -107,29 +251,125 @@
 
   <div class="page-hero">
     <div class="site-container">
-      <h1 class="hero-title" style="font-size: 2.25rem;">EXCHANGE & RETURN POLICY</h1>
+      <h1 class="hero-title">EXCHANGE &amp; RETURNS</h1>
+      <p class="hero-subtitle">7-DAY FIT ASSURANCE &bull; DOORSTEP REVERSE PICKUP &bull; RAPID REPLACEMENT</p>
     </div>
   </div>
 
   <main class="page-content-wrapper">
 
-  <h3>ALLYRICH 7-DAY HASSLE-FREE EXCHANGE POLICY</h3>
-  <p>We want you to love what you ordered. If the fit isn't right, we offer a seamless size exchange within 7 days of delivery.</p>
+    <!-- Meta Information Header -->
+    <div class="policy-meta-bar">
+      <div>
+        <strong>EXCHANGE WINDOW:</strong> 7 DAYS FROM DELIVERY TIMESTAMP
+      </div>
+      <div class="policy-meta-badge">
+        <span>DOORSTEP REVERSE PICKUP VIA DELHIVERY</span>
+      </div>
+    </div>
 
-  <h3>EXCHANGE CRITERIA:</h3>
-  <ul>
-    <li>The item must be in unworn, unwashed condition with all original tags attached.</li>
-    <li>Footwear/garments must not carry perfume, smoke, or deodorant scents.</li>
-    <li>Clearance sale items marked "FINAL SALE" cannot be returned or refunded.</li>
-  </ul>
+    <div class="policy-notice policy-notice--neutral">
+      <strong>ARCHITECTURAL FIT ASSURANCE:</strong> We understand that luxury streetwear drape is paramount. If you ordered a size that doesn't fit your desired silhouette, ALLYRICH offers a seamless <strong>7-Day Size Exchange</strong> across all standard catalog products.
+    </div>
 
-  <h3>HOW TO INITIATE AN EXCHANGE:</h3>
-  <ol style="margin-left: 1.5rem; margin-bottom: 2rem;">
-    <li>Visit our exchange portal or email <strong>care@allyrich.com</strong> with your Order ID (#GR-XXXXX).</li>
-    <li>Select the replacement size required.</li>
-    <li>Our courier partner will pick up the package from your doorstep within 48-72 hours.</li>
-    <li>Once inspected, your replacement fit will be dispatched immediately.</li>
-  </ol>
+    <!-- Section 1: Step-by-Step Walkthrough -->
+    <div class="policy-card">
+      <h2><span class="section-num">01.</span> STEP-BY-STEP EXCHANGE PROCESS</h2>
+      
+      <div class="step-card">
+        <div class="step-badge">1</div>
+        <div class="step-content">
+          <h4>INITIATE YOUR REQUEST</h4>
+          <p>Email our concierge at <a href="mailto:care@allyrich.com" style="color:#ffffff; text-decoration:underline;">care@allyrich.com</a> or message our <a href="/pages/contact.html" style="color:#ffffff; text-decoration:underline;">WhatsApp Support Desk</a> with your Order ID (e.g. <code>#GR-10482</code>) and the desired replacement size.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge">2</div>
+        <div class="step-content">
+          <h4>DOORSTEP REVERSE PICKUP</h4>
+          <p>Once approved, our logistics partner (Delhivery Express) will arrange a reverse pickup from your doorstep within <strong>48 to 72 business hours</strong>. Place the garment in its original polybag with all tags attached.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge">3</div>
+        <div class="step-content">
+          <h4>WAREHOUSE QUALITY INSPECTION</h4>
+          <p>When the returned garment reaches our Mumbai fulfillment center, our QC team inspects the fabric, tags, and condition within <strong>24 working hours</strong> of arrival.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge">4</div>
+        <div class="step-content">
+          <h4>EXPRESS DISPATCH OF NEW SIZE</h4>
+          <p>Your newly sized garment is packed and dispatched immediately with priority express shipping. You will receive an SMS and email with fresh live tracking details.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Eligibility Checklist -->
+    <div class="policy-card">
+      <h2><span class="section-num">02.</span> MANDATORY RETURN CHECKLIST</h2>
+      <p>Before handing your parcel to the courier executive, please verify that your garment complies with our quality requirements:</p>
+      <ul>
+        <li><strong>Original Tags Attached:</strong> Woven brand neck label and branded hangtags must be intact and untampered.</li>
+        <li><strong>Unworn &amp; Unwashed:</strong> Garments must not show any signs of wear, stretching, washing, or dry-cleaning.</li>
+        <li><strong>Original Packaging:</strong> Garment must be enclosed inside its protective ALLYRICH polybag.</li>
+        <li><strong>Zero Scent or Blemish:</strong> Free from deodorant stains, makeup smudges, body odors, cologne scents, or pet hair.</li>
+      </ul>
+      <div class="policy-notice">
+        <em>Note:</em> Garments failing quality inspection upon arrival at our warehouse will be sent back to the customer, and the exchange request will be voided.
+      </div>
+    </div>
+
+    <!-- Section 3: Out of Stock Sizes -->
+    <div class="policy-card">
+      <h2><span class="section-num">03.</span> WHAT IF THE DESIRED SIZE IS OUT OF STOCK?</h2>
+      <p>Because ALLYRICH drops are produced in strictly limited quantities, your desired replacement size may occasionally sell out. In such cases, you will be offered your choice of:</p>
+      <ul>
+        <li><strong>Immediate 100% Refund:</strong> Processed back to your original source payment method (UPI, Card, Bank).</li>
+        <li><strong>Store Credit Wallet:</strong> Issued with lifetime validity, allowing you to secure any upcoming limited drop instantly.</li>
+        <li><strong>Alternate Silhouette:</strong> Exchange for any other product of equivalent value from our current collection.</li>
+      </ul>
+    </div>
+
+    <!-- Section 4: Self-Shipment Guidelines -->
+    <div class="policy-card">
+      <h2><span class="section-num">04.</span> SELF-SHIPMENT IN NON-SERVICEABLE PIN CODES</h2>
+      <p>In the rare event that your pin code is outside the reverse-pickup coverage network of Delhivery Express, our concierge team will notify you to self-ship the package via Speed Post or any trusted courier:</p>
+      <ul>
+        <li>Send the package to our Central Warehouse: <strong>ALLYRICH Fulfillment Hub, Mumbai, Maharashtra, India - 400001</strong>.</li>
+        <li>Share a photo of the courier receipt and tracking number with our team at <strong>care@allyrich.com</strong>.</li>
+        <li>ALLYRICH will reimburse your shipping costs up to <strong>₹100</strong> directly to your UPI/bank account upon parcel receipt.</li>
+      </ul>
+    </div>
+
+    <!-- Section 5: Common Questions -->
+    <div class="policy-card">
+      <h2><span class="section-num">05.</span> FREQUENTLY ASKED QUESTIONS</h2>
+      
+      <h3>How many times can I exchange an order?</h3>
+      <p>We provide <strong>1 (one) complimentary size exchange</strong> per order. Any subsequent exchanges on the same order will incur a nominal two-way courier shipping fee of ₹150.</p>
+
+      <h3>Can I return or exchange Clearance Sale items?</h3>
+      <p>Items purchased under the "CLEARANCE SALE" section with steep markdowns are strictly <strong>Final Sale</strong>. We do not accept returns on clearance items, although size adjustments can be accommodated if alternate sizes remain in stock.</p>
+
+      <h3>How long does the entire exchange cycle take?</h3>
+      <p>From initial pickup to delivery of your fresh size, the typical turnaround time is <strong>5 to 7 business days</strong> depending on your city location.</p>
+    </div>
+
+    <!-- Section 6: Concierge Contact -->
+    <div class="policy-card">
+      <h2><span class="section-num">06.</span> NEED ASSISTANCE? CONTACT CLIENT CONCIERGE</h2>
+      <p>Our client support specialists are available Monday through Saturday from 10:00 AM to 7:00 PM IST:</p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:care@allyrich.com" style="color:#ffffff; text-decoration:underline;">care@allyrich.com</a></li>
+        <li><strong>WhatsApp Concierge:</strong> <a href="/pages/contact.html" style="color:#ffffff; text-decoration:underline;">Connect on WhatsApp</a></li>
+        <li><strong>Response Time:</strong> All customer inquiries acknowledged within 24 working hours.</li>
+      </ul>
+    </div>
 
   </main>
 

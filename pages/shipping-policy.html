@@ -10,32 +10,161 @@
   <link rel="stylesheet" href="/assets/css/allyrich.css">
   <style>
     .page-hero {
-      padding: 3.5rem 0 2rem;
-      border-bottom: 1px solid var(--color-border);
+      padding: 4rem 1.5rem 2.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
-      background: #090909;
+      background: radial-gradient(circle at 50% 0%, #151515 0%, #080808 100%);
+    }
+    .page-hero .hero-title {
+      font-size: 2.25rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+    }
+    .page-hero .hero-subtitle {
+      color: #888888;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.75rem;
     }
     .page-content-wrapper {
-      max-width: 800px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 3rem 1.5rem 6rem;
+      padding: 3.5rem 1.5rem 6rem;
       font-size: 0.95rem;
-      color: #ccc;
-      line-height: 1.8;
+      color: #bbbbbb;
+      line-height: 1.85;
+      font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
+    .policy-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      margin-bottom: 2.5rem;
+      font-size: 0.82rem;
+      color: #888;
+    }
+    .policy-meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
-      margin: 2rem 0 1rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
-    .page-content-wrapper p {
-      margin-bottom: 1.25rem;
+    .policy-card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      transition: border-color 0.2s ease;
     }
-    .page-content-wrapper ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1.5rem;
+    .policy-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
     }
-    .page-content-wrapper li {
+    .policy-card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .policy-card h2 .section-num {
+      color: #e50914;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .policy-card h3 {
+      font-size: 1.02rem;
+      color: #e2e2e2;
+      margin: 1.25rem 0 0.5rem;
+      font-weight: 600;
+    }
+    .policy-card p {
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card p:last-child {
+      margin-bottom: 0;
+    }
+    .policy-card ul, .policy-card ol {
+      margin-left: 1.25rem;
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card li {
       margin-bottom: 0.5rem;
+    }
+    .policy-card strong {
+      color: #ffffff;
+    }
+    .policy-notice {
+      background: rgba(229, 9, 20, 0.06);
+      border-left: 3px solid #e50914;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      color: #dddddd;
+      font-size: 0.9rem;
+    }
+    .policy-notice--neutral {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid #ffffff;
+    }
+    .policy-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.88rem;
+    }
+    .policy-table th, .policy-table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 14px;
+      text-align: left;
+    }
+    .policy-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .policy-table td {
+      color: #cccccc;
+    }
+    @media (max-width: 768px) {
+      .page-hero {
+        padding: 2.75rem 1rem 1.75rem;
+      }
+      .page-hero .hero-title {
+        font-size: 1.65rem;
+      }
+      .page-content-wrapper {
+        padding: 2rem 1rem 4rem;
+      }
+      .policy-card {
+        padding: 20px 18px;
+      }
+      .policy-card h2 {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
@@ -107,19 +236,135 @@
 
   <div class="page-hero">
     <div class="site-container">
-      <h1 class="hero-title" style="font-size: 2.25rem;">SHIPPING POLICY</h1>
+      <h1 class="hero-title">SHIPPING POLICY</h1>
+      <p class="hero-subtitle">NATIONWIDE LOGISTICS &bull; REAL-TIME TRACKING &bull; DOORSTEP DELIVERY</p>
     </div>
   </div>
 
   <main class="page-content-wrapper">
 
-  <h3>DOMESTIC SHIPPING (INDIA)</h3>
-  <p>We offer nationwide doorstep shipping to all serviceable pincodes across India.</p>
-  <ul>
-    <li><strong>Processing Time:</strong> Orders are processed and dispatched within 24 to 48 working hours.</li>
-    <li><strong>Delivery Time:</strong> Metro cities: 2–4 working days. Rest of India: 4–6 working days.</li>
-    <li><strong>Shipping Charges:</strong> Free delivery on all prepaid orders pan India. Nominal fee applies to Cash on Delivery.</li>
-  </ul>
+    <!-- Meta Information Header -->
+    <div class="policy-meta-bar">
+      <div>
+        <strong>LOGISTICS SERVICE:</strong> EXPRESS AIR &amp; SURFACE &bull; DELHIVERY &amp; BLUEDART
+      </div>
+      <div class="policy-meta-badge">
+        <span>19,000+ PIN CODES SERVICED ACROSS INDIA</span>
+      </div>
+    </div>
+
+    <div class="policy-notice policy-notice--neutral">
+      <strong>FAST &amp; RELIABLE FULFILLMENT:</strong> ALLYRICH partners with India's premier logistics carriers (Delhivery Express, Bluedart, and Xpressbees) to ensure our heavyweight architectural garments arrive safely, securely, and swiftly at your doorstep.
+    </div>
+
+    <!-- Section 1 -->
+    <div class="policy-card">
+      <h2><span class="section-num">01.</span> DISPATCH &amp; WAREHOUSE PROCESSING</h2>
+      <p>All orders placed on <code>allyrich.com</code> are processed and packed at our Mumbai central fulfillment warehouse:</p>
+      <ul>
+        <li><strong>Standard Processing Window:</strong> Orders placed before 1:00 PM IST on business days are dispatched within <strong>24 working hours</strong>. All other orders are dispatched within <strong>24 to 48 working hours</strong>.</li>
+        <li><strong>Drop Days &amp; Festive Drops:</strong> During archival drop releases or high-volume seasonal launches, fulfillment may require an additional 24 hours due to bespoke double-tier QC inspection.</li>
+        <li><strong>Operating Schedule:</strong> Warehouse dispatch operations operate Monday through Saturday. Orders placed on Sunday or national holidays are dispatched on the subsequent business day.</li>
+      </ul>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="policy-card">
+      <h2><span class="section-num">02.</span> ESTIMATED DELIVERY TIMELINES</h2>
+      <p>Once dispatched from our fulfillment facility, estimated transit times across Indian geographies are as follows:</p>
+      <table class="policy-table">
+        <thead>
+          <tr>
+            <th>Destination Region</th>
+            <th>Sample Cities / Hubs</th>
+            <th>Estimated Transit Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Tier 1 Metro Hubs</strong></td>
+            <td>Mumbai, Delhi NCR, Bengaluru, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad</td>
+            <td><strong>2 to 4 Business Days</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Tier 2 Cities &amp; Capitals</strong></td>
+            <td>Jaipur, Chandigarh, Lucknow, Indore, Surat, Kochi, Bhopal, Patna</td>
+            <td><strong>3 to 5 Business Days</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Rest of India</strong></td>
+            <td>Tier 3 Towns, Suburban Districts, Regional Centers</td>
+            <td><strong>4 to 6 Business Days</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Special Geography Zones</strong></td>
+            <td>North-Eastern States, Jammu &amp; Kashmir, Island Territories</td>
+            <td><strong>6 to 9 Business Days</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <p><em>Note:</em> Transit timelines may be subject to minor delays during extreme adverse weather, regional transport strikes, or festive courier backlog.</p>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="policy-card">
+      <h2><span class="section-num">03.</span> SHIPPING CHARGES &amp; FREE DELIVERY THRESHOLD</h2>
+      <ul>
+        <li><strong>Prepaid Orders (UPI, Cards, Netbanking):</strong> <strong>FREE Express Doorstep Delivery</strong> across all serviceable PIN codes in India. Zero hidden handling fees.</li>
+        <li><strong>Cash on Delivery (COD) Orders:</strong> A nominal convenience handling fee of <strong>₹99</strong> is applied at checkout. This fee covers courier cash handling, secure cash transit insurance, and manual order verification.</li>
+      </ul>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="policy-card">
+      <h2><span class="section-num">04.</span> REAL-TIME ORDER TRACKING</h2>
+      <p>We provide continuous digital visibility from the moment your garment leaves our fulfillment facility:</p>
+      <ul>
+        <li>As soon as your shipment is scanned by the courier, you will receive an automated <strong>SMS and Email notification</strong> containing your unique Delhivery Air Waybill (AWB) tracking number.</li>
+        <li>You can track your live shipment milestone-by-milestone directly via our internal tracking portal at <a href="/track" target="_blank" rel="noopener" style="color:#ffffff; text-decoration:underline;">allyrich.com/track</a> or directly on the Delhivery website.</li>
+      </ul>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="policy-card">
+      <h2><span class="section-num">05.</span> CASH ON DELIVERY (COD) VERIFICATION</h2>
+      <p>To prevent malicious or accidental orders, ALLYRICH maintains a strict order verification protocol for COD shipments:</p>
+      <ul>
+        <li>Our automated verification system may send an SMS OTP or WhatsApp prompt to confirm your intention to receive the COD parcel.</li>
+        <li>Unverified COD orders may be placed on temporary hold. If confirmation is not received within 48 hours, the order will be cancelled to release inventory back to the storefront.</li>
+        <li>Please ensure exact cash is ready upon delivery, or scan the courier's official digital UPI QR code at the doorstep.</li>
+      </ul>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="policy-card">
+      <h2><span class="section-num">06.</span> DELIVERY ATTEMPTS &amp; RETURN TO ORIGIN (RTO)</h2>
+      <p>Our courier partners are mandated to make up to <strong>3 (three) consecutive delivery attempts</strong> before initiating Return-to-Origin (RTO):</p>
+      <ul>
+        <li>The delivery rider will call your registered contact phone number prior to arrival.</li>
+        <li>If you are unavailable, you may coordinate directly with the delivery executive to reschedule for the following business day.</li>
+        <li>If a shipment returns to our warehouse as undeliverable due to an incorrect address, wrong contact number, or refusal to accept without valid cause, subsequent re-dispatch will require payment of fresh courier charges.</li>
+      </ul>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="policy-card">
+      <h2><span class="section-num">07.</span> TAMPER-PROOF PACKAGING NOTICE</h2>
+      <div class="policy-notice">
+        <strong>IMPORTANT SECURITY NOTICE:</strong> Every ALLYRICH garment is dispatched in an official, tamper-evident security polybag with branded adhesive seals. If you notice that the outer parcel is torn, unsealed, or visibly tampered with upon courier handover:
+      </div>
+      <ul>
+        <li><strong>DO NOT ACCEPT THE DELIVERY.</strong> Instruct the courier executive to mark the parcel as "Damaged/Refused due to outer tampering".</li>
+        <li>Take immediate photos of the damaged outer bag and notify us at <strong>care@allyrich.com</strong> with your Order ID.</li>
+        <li>We will expedite a fresh replacement immediately without waiting for the courier investigation.</li>
+      </ul>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="policy-card">
+      <h2><span class="section-num">08.</span> INTERNATIONAL SHIPPING ROADMAP</h2>
+      <p>At present, ALLYRICH delivers exclusively across the Republic of India. Cross-border international shipping to North America, Europe, the United Kingdom, and the Middle East is currently in active development. Sign up for our <a href="#shopify-section-sections--footer" style="color:#ffffff; text-decoration:underline;">Inner Circle newsletter</a> to receive worldwide launch announcements.</p>
+    </div>
 
   </main>
 

@@ -10,32 +10,161 @@
   <link rel="stylesheet" href="/assets/css/allyrich.css">
   <style>
     .page-hero {
-      padding: 3.5rem 0 2rem;
-      border-bottom: 1px solid var(--color-border);
+      padding: 4rem 1.5rem 2.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
-      background: #090909;
+      background: radial-gradient(circle at 50% 0%, #151515 0%, #080808 100%);
+    }
+    .page-hero .hero-title {
+      font-size: 2.25rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+    }
+    .page-hero .hero-subtitle {
+      color: #888888;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.75rem;
     }
     .page-content-wrapper {
-      max-width: 800px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 3rem 1.5rem 6rem;
+      padding: 3.5rem 1.5rem 6rem;
       font-size: 0.95rem;
-      color: #ccc;
-      line-height: 1.8;
+      color: #bbbbbb;
+      line-height: 1.85;
+      font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
+    .policy-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      margin-bottom: 2.5rem;
+      font-size: 0.82rem;
+      color: #888;
+    }
+    .policy-meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
-      margin: 2rem 0 1rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
-    .page-content-wrapper p {
-      margin-bottom: 1.25rem;
+    .policy-card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      transition: border-color 0.2s ease;
     }
-    .page-content-wrapper ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1.5rem;
+    .policy-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
     }
-    .page-content-wrapper li {
+    .policy-card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .policy-card h2 .section-num {
+      color: #e50914;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .policy-card h3 {
+      font-size: 1.02rem;
+      color: #e2e2e2;
+      margin: 1.25rem 0 0.5rem;
+      font-weight: 600;
+    }
+    .policy-card p {
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card p:last-child {
+      margin-bottom: 0;
+    }
+    .policy-card ul, .policy-card ol {
+      margin-left: 1.25rem;
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card li {
       margin-bottom: 0.5rem;
+    }
+    .policy-card strong {
+      color: #ffffff;
+    }
+    .policy-notice {
+      background: rgba(229, 9, 20, 0.06);
+      border-left: 3px solid #e50914;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      color: #dddddd;
+      font-size: 0.9rem;
+    }
+    .policy-notice--neutral {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid #ffffff;
+    }
+    .policy-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.88rem;
+    }
+    .policy-table th, .policy-table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 14px;
+      text-align: left;
+    }
+    .policy-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .policy-table td {
+      color: #cccccc;
+    }
+    @media (max-width: 768px) {
+      .page-hero {
+        padding: 2.75rem 1rem 1.75rem;
+      }
+      .page-hero .hero-title {
+        font-size: 1.65rem;
+      }
+      .page-content-wrapper {
+        padding: 2rem 1rem 4rem;
+      }
+      .policy-card {
+        padding: 20px 18px;
+      }
+      .policy-card h2 {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
@@ -107,15 +236,144 @@
 
   <div class="page-hero">
     <div class="site-container">
-      <h1 class="hero-title" style="font-size: 2.25rem;">REFUND & CANCELLATION</h1>
+      <h1 class="hero-title">REFUND &amp; CANCELLATION</h1>
+      <p class="hero-subtitle">CLIENT CARE &bull; 7-DAY EXCHANGES &bull; ZERO-HASSLE REFUNDS</p>
     </div>
   </div>
 
   <main class="page-content-wrapper">
 
-  <h3>REFUND & CANCELLATION GUIDELINES</h3>
-  <p>Orders can be cancelled before they are dispatched by emailing care@allyrich.com.</p>
-  <p>If an item arrives damaged or defective, notify us within 48 hours of delivery with photographic evidence, and we will issue an immediate replacement or full store credit / refund.</p>
+    <!-- Meta Information Header -->
+    <div class="policy-meta-bar">
+      <div>
+        <strong>POLICY STATUS:</strong> ACTIVE &bull; LAST REVISED: CURRENT
+      </div>
+      <div class="policy-meta-badge">
+        <span>7-DAY EASY SIZE EXCHANGE PAN-INDIA</span>
+      </div>
+    </div>
+
+    <div class="policy-notice policy-notice--neutral">
+      <strong>OUR COMMITMENT:</strong> At <strong>ALLYRICH</strong>, we engineer architectural silhouettes designed to fit with exacting precision. If you are not completely satisfied with your fit, or if an item arrives with any defect, our dedicated Client Concierge is here to make your exchange or refund swift and effortless.
+    </div>
+
+    <!-- Section 1 -->
+    <div class="policy-card">
+      <h2><span class="section-num">01.</span> ORDER CANCELLATIONS</h2>
+      <p>We process orders swiftly to ensure rapid doorstep delivery. If you wish to cancel an order:</p>
+      <ul>
+        <li><strong>Cancellation Before Dispatch:</strong> You may cancel any order before it is handed over to our logistics partner by contacting us at <strong>care@allyrich.com</strong> or via WhatsApp support with your Order ID (#GR-XXXXX). A 100% refund will be initiated immediately to your original payment method.</li>
+        <li><strong>Cancellation After Dispatch:</strong> Once your package is scanned and dispatched with Delhivery Express, the transit cannot be recalled. You may refuse delivery at your doorstep or initiate a 7-day size exchange/return upon receipt.</li>
+      </ul>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="policy-card">
+      <h2><span class="section-num">02.</span> 7-DAY HASSLE-FREE SIZE EXCHANGES</h2>
+      <p>Streetwear fits are personal. If you need a different size (e.g. Medium instead of Large) or want to exchange for another silhouette:</p>
+      <ul>
+        <li>You may request a size exchange within <strong>7 (seven) days</strong> from the official delivery date recorded by our courier partner.</li>
+        <li>We provide convenient <strong>doorstep reverse pickup</strong> from your address across all serviceable Indian PIN codes.</li>
+        <li>Once the returned garment is picked up and passes our warehouse quality inspection, your replacement size is dispatched within 24 to 48 hours with fresh tracking details.</li>
+      </ul>
+      <p>For complete exchange instructions, visit our dedicated <a href="/pages/returns.html" style="color:#ffffff; text-decoration:underline;">Exchange &amp; Returns Guidelines</a>.</p>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="policy-card">
+      <h2><span class="section-num">03.</span> DAMAGED, DEFECTIVE OR WRONG GARMENTS</h2>
+      <p>Every ALLYRICH piece undergoes rigorous double-tier quality checks prior to dispatch. However, in the rare event of transit damage or manufacturing discrepancy:</p>
+      <ul>
+        <li>Please notify us within <strong>48 hours</strong> of receiving the parcel at <strong>care@allyrich.com</strong> or via our <a href="/pages/contact.html" style="color:#ffffff; text-decoration:underline;">Contact Desk</a>.</li>
+        <li>Please provide clear photos or a brief unboxing video highlighting the defective area along with your Order ID.</li>
+        <li>We will immediately arrange a complimentary priority reverse pickup and dispatch a brand-new replacement at zero cost, or issue a <strong>100% full refund</strong> (including any delivery charges paid).</li>
+      </ul>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="policy-card">
+      <h2><span class="section-num">04.</span> RETURN &amp; EXCHANGE ELIGIBILITY CRITERIA</h2>
+      <div class="policy-notice">
+        <strong>CRITICAL CONDITION REQUIREMENTS:</strong> To protect hygiene standards and ensure the integrity of our archival drops, returned garments must satisfy all of the following requirements:
+      </div>
+      <ul>
+        <li><strong>Unworn &amp; Unwashed:</strong> Garments must show zero signs of wear, stretching, alterations, washing, or dry-cleaning.</li>
+        <li><strong>Tags Intact:</strong> Original ALLYRICH woven neck labels, hangtags, and barcode labels must be attached and untampered.</li>
+        <li><strong>Original Packaging:</strong> The garment must be placed inside its original luxury branded polybag packaging.</li>
+        <li><strong>Odor &amp; Stain Free:</strong> Garments carrying perfume, deodorant, smoke odors, pet hair, or makeup smudges will not pass warehouse QC and will be returned to the sender.</li>
+      </ul>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="policy-card">
+      <h2><span class="section-num">05.</span> NON-RETURNABLE / FINAL SALE ITEMS</h2>
+      <p>The following categories are strictly excluded from returns and refunds:</p>
+      <ul>
+        <li>Items purchased during promotional flash events explicitly labelled <strong>"FINAL SALE"</strong> or <strong>"CLEARANCE SALE"</strong>. <em>(Size exchanges on sale items may be accommodated subject to inventory availability).</em></li>
+        <li>Gift cards, promotional merchandise, or complimentary drop accessories.</li>
+      </ul>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="policy-card">
+      <h2><span class="section-num">06.</span> REFUND PROCESSING MODES &amp; TIMELINES</h2>
+      <p>Once your returned item arrives at our Mumbai fulfillment center and successfully clears quality inspection (typically within 24–48 hours of receipt), your refund is approved and processed:</p>
+      <table class="policy-table">
+        <thead>
+          <tr>
+            <th>Payment Method Used</th>
+            <th>Refund Mechanism</th>
+            <th>Expected Credit Timeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>UPI (GPay / PhonePe / Paytm)</strong></td>
+            <td>Direct refund to source VPA/Bank Account via Cashfree</td>
+            <td><strong>24 to 48 hours</strong> after warehouse QC</td>
+          </tr>
+          <tr>
+            <td><strong>Credit / Debit Card</strong></td>
+            <td>Reversal to the issuing bank card</td>
+            <td><strong>5 to 7 business days</strong> (depending on bank)</td>
+          </tr>
+          <tr>
+            <td><strong>Net Banking</strong></td>
+            <td>Direct account credit via payment gateway</td>
+            <td><strong>3 to 5 business days</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Cash on Delivery (COD)</strong></td>
+            <td>Direct NEFT/IMPS bank transfer or Instant Store Credit</td>
+            <td><strong>2 to 4 business days</strong> upon bank details submission</td>
+          </tr>
+        </tbody>
+      </table>
+      <p><em>Note for COD Orders:</em> For Cash on Delivery orders, our support team will send you a secure link or email request to provide your beneficiary bank account number and IFSC code for NEFT processing.</p>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="policy-card">
+      <h2><span class="section-num">07.</span> REVERSE LOGISTICS &amp; PICKUP PROTOCOL</h2>
+      <p>Our courier partner (Delhivery Express) will make up to <strong>2 pickup attempts</strong> at your scheduled doorstep address.</p>
+      <ul>
+        <li>Please ensure the package is safely sealed before handing it over to the pickup executive.</li>
+        <li>Always request and collect a physical or digital pickup acknowledgment receipt from the courier agent.</li>
+        <li>In the event your location is outside the reverse-pickup coverage network of our logistics partners, you may self-ship the garment via any registered courier service (e.g. Speed Post / Bluedart). Upon receiving the package and courier receipt, ALLYRICH will reimburse standard courier costs up to ₹100.</li>
+      </ul>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="policy-card">
+      <h2><span class="section-num">08.</span> CLIENT CONCIERGE &amp; ESCALATION DESK</h2>
+      <p>We are dedicated to resolving any query promptly. For all refund, cancellation, or exchange assistance, contact us through any of our official channels:</p>
+      <ul>
+        <li><strong>Email Concierge:</strong> <a href="mailto:care@allyrich.com" style="color:#ffffff; text-decoration:underline;">care@allyrich.com</a></li>
+        <li><strong>Live Support Desk:</strong> <a href="/pages/contact.html" style="color:#ffffff; text-decoration:underline;">Chat with Us on WhatsApp</a></li>
+        <li><strong>Operating Hours:</strong> Monday through Saturday, 10:00 AM – 7:00 PM IST (Excluding National Holidays)</li>
+        <li><strong>Resolution Guarantee:</strong> Written acknowledgment within 24 hours; complete resolution within 5 to 7 working days.</li>
+      </ul>
+    </div>
 
   </main>
 

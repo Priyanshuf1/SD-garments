@@ -10,32 +10,161 @@
   <link rel="stylesheet" href="/assets/css/allyrich.css">
   <style>
     .page-hero {
-      padding: 3.5rem 0 2rem;
-      border-bottom: 1px solid var(--color-border);
+      padding: 4rem 1.5rem 2.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
-      background: #090909;
+      background: radial-gradient(circle at 50% 0%, #151515 0%, #080808 100%);
+    }
+    .page-hero .hero-title {
+      font-size: 2.25rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+    }
+    .page-hero .hero-subtitle {
+      color: #888888;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.75rem;
     }
     .page-content-wrapper {
-      max-width: 800px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 3rem 1.5rem 6rem;
+      padding: 3.5rem 1.5rem 6rem;
       font-size: 0.95rem;
-      color: #ccc;
-      line-height: 1.8;
+      color: #bbbbbb;
+      line-height: 1.85;
+      font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
+    .policy-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      margin-bottom: 2.5rem;
+      font-size: 0.82rem;
+      color: #888;
+    }
+    .policy-meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
-      margin: 2rem 0 1rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
-    .page-content-wrapper p {
-      margin-bottom: 1.25rem;
+    .policy-card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      transition: border-color 0.2s ease;
     }
-    .page-content-wrapper ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1.5rem;
+    .policy-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
     }
-    .page-content-wrapper li {
+    .policy-card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .policy-card h2 .section-num {
+      color: #e50914;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .policy-card h3 {
+      font-size: 1.02rem;
+      color: #e2e2e2;
+      margin: 1.25rem 0 0.5rem;
+      font-weight: 600;
+    }
+    .policy-card p {
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card p:last-child {
+      margin-bottom: 0;
+    }
+    .policy-card ul, .policy-card ol {
+      margin-left: 1.25rem;
+      margin-bottom: 1rem;
+      color: #cccccc;
+    }
+    .policy-card li {
       margin-bottom: 0.5rem;
+    }
+    .policy-card strong {
+      color: #ffffff;
+    }
+    .policy-notice {
+      background: rgba(229, 9, 20, 0.06);
+      border-left: 3px solid #e50914;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      color: #dddddd;
+      font-size: 0.9rem;
+    }
+    .policy-notice--neutral {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid #ffffff;
+    }
+    .policy-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.88rem;
+    }
+    .policy-table th, .policy-table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 14px;
+      text-align: left;
+    }
+    .policy-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .policy-table td {
+      color: #cccccc;
+    }
+    @media (max-width: 768px) {
+      .page-hero {
+        padding: 2.75rem 1rem 1.75rem;
+      }
+      .page-hero .hero-title {
+        font-size: 1.65rem;
+      }
+      .page-content-wrapper {
+        padding: 2rem 1rem 4rem;
+      }
+      .policy-card {
+        padding: 20px 18px;
+      }
+      .policy-card h2 {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
@@ -107,15 +236,181 @@
 
   <div class="page-hero">
     <div class="site-container">
-      <h1 class="hero-title" style="font-size: 2.25rem;">TERMS OF SERVICE</h1>
+      <h1 class="hero-title">TERMS OF SERVICE</h1>
+      <p class="hero-subtitle">TERMS &amp; CONDITIONS &bull; USER AGREEMENT &bull; LEGAL NOTICE</p>
     </div>
   </div>
 
   <main class="page-content-wrapper">
 
-  <h3>INTELLECTUAL PROPERTY & DESIGN PROTECTION NOTICE</h3>
-  <p>This website, allyrich.com, and all related brand assets, original textile designs, trademarks, and photography are proprietary to ALLYRICH Clothing.</p>
-  <p>By accessing or using any part of the site, you agree to be bound by these Terms of Service.</p>
+    <!-- Meta Information Header -->
+    <div class="policy-meta-bar">
+      <div>
+        <strong>EFFECTIVE DATE:</strong> October 2026 &bull; LAST REVISED: CURRENT
+      </div>
+      <div class="policy-meta-badge">
+        <span>GOVERNING LAW: REPUBLIC OF INDIA</span>
+      </div>
+    </div>
+
+    <div class="policy-notice policy-notice--neutral">
+      <strong>PLEASE READ CAREFULLY:</strong> These Terms of Service constitute a legally binding agreement between you ("User", "Customer", "You") and <strong>ALLYRICH</strong> (operated under SD Garments / ALLYRICH Apparels, Mumbai, Maharashtra, India). By accessing, browsing, registering for an account, or purchasing architectural garments on <code>allyrich.com</code>, you agree to be bound by these terms.
+    </div>
+
+    <!-- Section 1 -->
+    <div class="policy-card">
+      <h2><span class="section-num">01.</span> GENERAL OVERVIEW &amp; ELIGIBILITY</h2>
+      <p>This website is operated by ALLYRICH. Throughout the site, the terms "we", "us" and "our" refer to ALLYRICH. ALLYRICH offers this website, including all information, tools, garments, and services available from this site to you, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.</p>
+      <p>By agreeing to these Terms of Service, you represent that you are at least the age of majority in your state or province of residence (18 years of age in India), or that you are the age of majority and have given us your consent to allow any of your minor dependents to use this site under your direct supervision.</p>
+      <p>A breach or violation of any of the Terms will result in an immediate termination of your access to our Services and potential cancellation of unfulfilled orders.</p>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="policy-card">
+      <h2><span class="section-num">02.</span> INTELLECTUAL PROPERTY &amp; BRAND ASSETS</h2>
+      <p>All content included on or comprising this website—including but not limited to the <strong>ALLYRICH</strong> brand name, the proprietary "AR" crest trademark, original textile patterns, bespoke garment cuts, architectural silhouettes, product descriptions, photography, lookbooks, video sequences, user interface styling, software, and compilation of code—is the exclusive intellectual property of ALLYRICH and is protected under the Indian Copyright Act, 1957, the Trade Marks Act, 1999, and international copyright conventions.</p>
+      <div class="policy-notice">
+        <strong>STRICT PROHIBITION:</strong> You may not copy, reproduce, republish, download, post, broadcast, transmit, distribute, commercially exploit, create derivative garments from, reverse-engineer, or counterfeit any product, pattern, or asset from ALLYRICH without express written authorization from our legal directors.
+      </div>
+      <p>Unauthorized scraping, automated data harvesting, or frame injection of <code>allyrich.com</code> is strictly prohibited and constitutes a punishable offence under Section 43 and Section 66 of the Information Technology Act, 2000.</p>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="policy-card">
+      <h2><span class="section-num">03.</span> USER ACCOUNT, AUTHENTICATION &amp; SECURITY</h2>
+      <p>When you create an account, sign in via Instant OTP (One-Time Password), or place an order on ALLYRICH:</p>
+      <ul>
+        <li>You agree to provide true, accurate, current, and complete information regarding your legal name, billing address, doorstep shipping address, mobile phone number, and email address.</li>
+        <li>You are solely responsible for maintaining the confidentiality of your account credentials, login tokens, and OTP codes sent to your registered device.</li>
+        <li>You agree to notify us immediately at <strong>care@allyrich.com</strong> of any unauthorized use or security breach of your account.</li>
+        <li>We reserve the right to refuse service, terminate accounts, or cancel orders at our sole discretion if we suspect unauthorized account sharing, credential stuffing, or fraudulent activity.</li>
+      </ul>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="policy-card">
+      <h2><span class="section-num">04.</span> PRODUCT AVAILABILITY, LIMITED DROPS &amp; PRICING</h2>
+      <p>ALLYRICH operates on limited-batch archival drops and curated seasonal releases. All products are subject to strictly limited quantities and may sell out rapidly.</p>
+      <ul>
+        <li><strong>Pricing &amp; Taxes:</strong> All prices listed on the site are stated in Indian Rupees (INR ₹) and are inclusive of applicable Goods and Services Tax (GST) unless explicitly noted otherwise.</li>
+        <li><strong>Price Adjustments:</strong> Prices for our products are subject to change without prior notice. We reserve the right at any time to modify or discontinue any drop or product without liability.</li>
+        <li><strong>Color &amp; Texture Accuracy:</strong> We have made every effort to display the colors, custom washes, and textures of our garments as accurately as possible. However, because computer monitors, mobile screens, and ambient display profiles differ, we cannot guarantee that your monitor's display of any color will be 100% exact to the physical garment.</li>
+        <li><strong>Errors &amp; Omissions:</strong> In the rare event a product is listed at an incorrect price or with incorrect availability due to a typographical or system error, ALLYRICH reserves the right to refuse or cancel any order placed for that item. If your payment has already been processed, we will promptly issue a 100% refund to your original payment method.</li>
+      </ul>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="policy-card">
+      <h2><span class="section-num">05.</span> ORDER ACCEPTANCE, FRAUD PREVENTION &amp; CANCELLATION</h2>
+      <p>Receipt of an order confirmation (via screen, email, or SMS) does not signify our final acceptance of your order, nor does it constitute confirmation of our offer to sell. ALLYRICH reserves the right at any time after receipt of your order to accept or decline your order for legitimate commercial reasons, including but not limited to:</p>
+      <ul>
+        <li>Unavailability of raw textile stock or quality control failure during final garment inspection.</li>
+        <li>Suspicion of automated scalper bots, unauthorized bulk commercial reselling, or black-hat scraping.</li>
+        <li>Payment authorization failure or high-risk flags identified by our payment gateway fraud-detection systems.</li>
+        <li>Inaccurate or unserviceable delivery address or pin code.</li>
+        <li>Failure to verify Cash on Delivery (COD) orders via OTP or telephonic confirmation.</li>
+      </ul>
+      <p>If we cancel an order after you have been billed, we will issue a full refund to the original payment source within 24 to 48 working hours.</p>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="policy-card">
+      <h2><span class="section-num">06.</span> PAYMENT METHODS &amp; GATEWAY COMPLIANCE</h2>
+      <p>ALLYRICH offers multiple secure payment methods for your convenience:</p>
+      <ul>
+        <li><strong>Prepaid Gateways:</strong> We process credit cards, debit cards, UPI (Google Pay, PhonePe, Paytm, BHIM), and Netbanking via RBI-authorized, PCI-DSS Level 1 compliant payment gateways (Cashfree Payments). Your complete card numbers, CVVs, and banking passwords are never stored on ALLYRICH servers.</li>
+        <li><strong>Cash on Delivery (COD):</strong> COD is available across eligible pin codes in India. A nominal non-refundable convenience handling fee may apply to COD shipments. We reserve the right to disable COD for accounts with high historical Return-to-Origin (RTO) rates.</li>
+      </ul>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="policy-card">
+      <h2><span class="section-num">07.</span> SHIPPING, RISK OF LOSS &amp; TITLE</h2>
+      <p>All physical purchases from ALLYRICH are made pursuant to a standard shipment contract with our logistics carriers (Delhivery Express, Bluedart, Xpressbees).</p>
+      <ul>
+        <li>Title and risk of loss for products pass to you upon successful delivery of the parcel to your designated delivery address or upon digital OTP verification to the courier executive.</li>
+        <li>Detailed delivery timelines, shipping charges, and tracking instructions are set forth in our <a href="/pages/shipping-policy.html" style="color:#ffffff; text-decoration:underline;">Shipping Policy</a>, which is incorporated into these Terms by reference.</li>
+      </ul>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="policy-card">
+      <h2><span class="section-num">08.</span> RETURNS, EXCHANGES &amp; REFUNDS</h2>
+      <p>Our exchange and return procedures are governed exclusively by our dedicated <a href="/pages/refund-policy.html" style="color:#ffffff; text-decoration:underline;">Refund Policy</a> and <a href="/pages/returns.html" style="color:#ffffff; text-decoration:underline;">Returns Guidelines</a>.</p>
+      <ul>
+        <li>We offer a <strong>7-Day Size Exchange Policy</strong> on standard items to ensure your architectural fit is flawless.</li>
+        <li>Garments must be returned unworn, unwashed, odor-free, with all original tags attached and inside the original luxury packaging.</li>
+        <li>Items explicitly marked as "Clearance Sale" or "Final Sale" are non-returnable and non-refundable.</li>
+      </ul>
+    </div>
+
+    <!-- Section 9 -->
+    <div class="policy-card">
+      <h2><span class="section-num">09.</span> PROHIBITED PLATFORM USE &amp; ABUSE CONTROLS</h2>
+      <p>In addition to other prohibitions set forth in the Terms of Service, you are strictly prohibited from using the site or its content:</p>
+      <ul>
+        <li>For any unlawful purpose or to solicit others to perform or participate in any unlawful acts.</li>
+        <li>To violate any international, federal, provincial, or state regulations, rules, laws, or local ordinances.</li>
+        <li>To infringe upon or violate our intellectual property rights or the intellectual property rights of others.</li>
+        <li>To upload or transmit viruses, malicious code, or scripts that attempt to bypass rate limits, manipulate cart sessions, or exploit API endpoints.</li>
+        <li>To engage in distributed IP spoofing, credential brute-forcing, or denial-of-service attempts.</li>
+      </ul>
+      <p>We actively deploy automated security monitoring and reserve the right to block offending IP addresses and report malicious actors to the Indian Cyber Crime Coordination Centre (I4C).</p>
+    </div>
+
+    <!-- Section 10 -->
+    <div class="policy-card">
+      <h2><span class="section-num">10.</span> LIMITATION OF LIABILITY &amp; DISCLAIMER OF WARRANTIES</h2>
+      <p>We do not guarantee, represent, or warrant that your use of our service will be uninterrupted, timely, secure, or error-free. To the maximum extent permitted by applicable Indian law:</p>
+      <ul>
+        <li>All garments, merchandise, and digital services are provided on an "as is" and "as available" basis without warranties of any kind, either express or implied.</li>
+        <li>In no event shall ALLYRICH, our directors, officers, employees, affiliates, agents, contractors, suppliers, or logistics partners be liable for any injury, loss, claim, or any direct, indirect, incidental, punitive, special, or consequential damages of any kind, including without limitation lost profits, lost revenue, lost savings, or loss of data, arising from your use of any product procured using the service.</li>
+        <li>In any circumstance, ALLYRICH's maximum aggregate financial liability arising out of or related to an order shall be strictly limited to the actual amount paid by you for the specific garment order in dispute.</li>
+      </ul>
+    </div>
+
+    <!-- Section 11 -->
+    <div class="policy-card">
+      <h2><span class="section-num">11.</span> INDEMNIFICATION</h2>
+      <p>You agree to indemnify, defend, and hold harmless ALLYRICH, its parent entity SD Garments, subsidiaries, affiliates, partners, officers, directors, agents, contractors, licensors, service providers, subcontractors, suppliers, and employees from any claim or demand, including reasonable legal fees, made by any third party due to or arising out of your breach of these Terms of Service or your violation of any law or the rights of a third party.</p>
+    </div>
+
+    <!-- Section 12 -->
+    <div class="policy-card">
+      <h2><span class="section-num">12.</span> GOVERNING LAW &amp; STATUTORY GRIEVANCE REDRESSAL</h2>
+      <p>These Terms of Service and any separate agreements whereby we provide you garments or services shall be governed by and construed in accordance with the laws of the Republic of India. Any legal dispute, arbitration, or proceeding arising under these Terms shall be subject to the exclusive jurisdiction of the competent courts situated in <strong>Mumbai, Maharashtra, India</strong>.</p>
+      
+      <h3>CONSUMER PROTECTION (E-COMMERCE) RULES, 2020 COMPLIANCE</h3>
+      <p>In accordance with the Information Technology Act, 2000 and the Consumer Protection (E-Commerce) Rules, 2020, the details of our designated Grievance Officer are published below:</p>
+      <table class="policy-table">
+        <tbody>
+          <tr>
+            <th style="width: 35%;">Grievance Officer:</th>
+            <td>Designated Grievance &amp; Compliance Officer</td>
+          </tr>
+          <tr>
+            <th>Entity:</th>
+            <td>ALLYRICH / SD Garments</td>
+          </tr>
+          <tr>
+            <th>Registered Address:</th>
+            <td>Mumbai, Maharashtra, India - 400001</td>
+          </tr>
+          <tr>
+            <th>Contact Email:</th>
+            <td><a href="mailto:care@allyrich.com" style="color:#ffffff; text-decoration:underline;">care@allyrich.com</a> / <a href="mailto:legal@allyrich.com" style="color:#ffffff; text-decoration:underline;">legal@allyrich.com</a></td>
+          </tr>
+          <tr>
+            <th>Statutory Acknowledgment:</th>
+            <td>Within 48 hours of receipt of formal complaint</td>
+          </tr>
+          <tr>
+            <th>Statutory Resolution:</th>
+            <td>Within 30 days from the date of acknowledgment</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
   </main>
 
