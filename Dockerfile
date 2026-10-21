@@ -17,7 +17,7 @@ RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json* ./
 
 # Install only production dependencies
-RUN npm ci --only=production --ignore-scripts
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev --ignore-scripts; else npm install --omit=dev --ignore-scripts; fi
 
 # ------------------------------------------------------------------------------
 # STAGE 2: Production Runtime

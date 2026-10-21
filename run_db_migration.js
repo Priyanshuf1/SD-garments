@@ -7,8 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const { Client } = require('pg');
 
-const DB_PASS = 'Sdgarments#2244';
-const DB_HOST = 'db.shhjnxarewideotbhzby.supabase.co';
+const DB_PASS = process.env.DB_PASSWORD || process.env.SUPABASE_DB_PASSWORD || '';
+const DB_HOST = process.env.DB_HOST || 'db.shhjnxarewideotbhzby.supabase.co';
 
 async function migrate() {
   console.log('🔌 Connecting to Supabase PostgreSQL at:', DB_HOST);

@@ -78,3 +78,27 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+  # ============================================================================
+  # STAGE 3: Automated Production Deployment to AWS EC2
+  # ============================================================================
+  deploy-to-ec2:
+    name: Deploy Container to AWS EC2 Production
+    needs: docker-build-and-scan
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/SD-garments
+            git pull origin main
+            sudo docker compose up -d --build
+            sleep 5
+            curl --fail http://localhost:3000/api/health || exit 1
+            echo "🚀 Deployment successfully verified on AWS EC2!"
