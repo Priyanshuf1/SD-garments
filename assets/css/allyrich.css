@@ -43,7 +43,7 @@
 .allyrich-header-brand {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 12px !important;
+  gap: 14px !important;
   text-decoration: none !important;
   color: #ffffff !important;
   vertical-align: middle;
@@ -58,9 +58,9 @@
 }
 
 .allyrich-header-logo-img {
-  height: 34px !important;
-  width: 34px !important;
-  max-height: 36px !important;
+  height: 52px !important;
+  width: 52px !important;
+  max-height: 56px !important;
   object-fit: contain !important;
   display: inline-block !important;
 }
@@ -110,7 +110,8 @@
     gap: 8px !important;
   }
   .allyrich-header-logo-img {
-    height: 26px !important;
+    height: 38px !important;
+    width: 38px !important;
   }
   .allyrich-header-brand-name {
     font-size: 16px !important;
