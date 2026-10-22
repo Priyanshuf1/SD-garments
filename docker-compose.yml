@@ -26,6 +26,8 @@ services:
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - CASHFREE_APP_ID=${CASHFREE_APP_ID:-}
       - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
+      - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy

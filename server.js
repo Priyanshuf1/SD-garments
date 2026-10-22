@@ -1078,6 +1078,64 @@ async function handleAiChat(req, res) {
     return sendJson(res, 400, { success: false, reply: 'Please provide a question or message.' });
   }
 
+  // 0. Optional: Google Gemini AI Model Integration (gemini-2.5-flash)
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (geminiApiKey) {
+    try {
+      const orders = await getAllOrders();
+      let orderContext = '';
+      const orderIdMatch = userMsg.match(/(?:gr|ar)[#\s-]*([0-9]{4,6})/i) || userMsg.match(/#?([0-9]{4,6})/);
+      const phoneMatch = userMsg.match(/\b[6-9]\d{9}\b/);
+      if (orderIdMatch || phoneMatch) {
+        const query = orderIdMatch ? (orderIdMatch[0].toUpperCase()) : (phoneMatch ? phoneMatch[0] : '');
+        const cleanQ = query.replace(/\D/g, '');
+        const match = orders.find(o => {
+          const oId = String(o.id || '').toUpperCase();
+          if (oId.includes(query.toUpperCase())) return true;
+          const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
+          if (cleanQ.length >= 7 && oPhone.includes(cleanQ)) return true;
+          return false;
+        });
+        if (match) {
+          orderContext = `\nMatched Order in Atelier Database:\n- Order ID: ${match.id}\n- Status: ${match.orderStatus || 'Processing'}\n- Total: ₹${match.total}\n- Items: ${(match.items || []).map(i => i.title).join(', ')}\n- Tracking AWB: ${match.trackingNumber || 'Pending'}\n- Live Tracking URL: /pages/track-order.html?order=${match.id}\n`;
+        }
+      }
+
+      const prompt = `You are the official luxury AI Streetwear Concierge for ALLYRICH, an avant-garde D2C streetwear fashion label based in Mumbai, India.
+Brand Tone: High-fashion, modern, courteous, concise, minimalist.
+Key Brand Rules:
+1. Silhouettes: Boxy, architectural, oversized streetwear drape with dropped shoulders. Heavyweight 240-380 GSM French Terry cotton.
+2. Logistics: Pan-India express door-to-door shipping via Delhivery Express Air (2-4 business days).
+3. Exchange: 7-day doorstep exchange for size or style swaps with tags intact.
+4. Human Escalation: Direct WhatsApp Support at +91 9876543210 (care@allyrich.com).
+${orderContext}
+Customer Message: "${userMsg}"
+
+Provide an elegant, helpful, and concise response in markdown.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 500, temperature: 0.7 }
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const geminiReply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (geminiReply) {
+          return sendJson(res, 200, { success: true, reply: geminiReply, engine: 'gemini-2.5-flash' });
+        }
+      } else {
+        console.warn('Gemini API returned status:', response.status);
+      }
+    } catch (gErr) {
+      console.warn('Gemini API error, falling back to local intent engine:', gErr.message);
+    }
+  }
+
   const lower = userMsg.toLowerCase();
 
   // 1. Order Tracking Intent
