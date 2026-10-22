@@ -58,8 +58,8 @@
 }
 
 .allyrich-header-logo-img {
-  height: 32px !important;
-  width: auto !important;
+  height: 34px !important;
+  width: 34px !important;
   max-height: 36px !important;
   object-fit: contain !important;
   display: inline-block !important;
@@ -88,7 +88,7 @@
 }
 
 .allyrich-header-brand--dark .allyrich-header-logo-img {
-  filter: brightness(0) !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18)) !important;
 }
 
 /* Fancy Typography Utility Classes */
@@ -173,7 +173,7 @@
 
 .loader__mark img {
   width: 124px;
-  height: 157px;
+  height: 124px;
   object-fit: contain;
   display: block;
 }

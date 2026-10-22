@@ -324,7 +324,7 @@
     <div class="ar-size-modal" role="dialog" aria-modal="true" aria-labelledby="ar-size-title">
       <div class="ar-size-modal__header">
         <div class="ar-size-modal__title-group">
-          <img src="/assets/ar-logo.png" alt="AR" class="ar-size-modal__logo" width="24" height="30">
+          <img src="/assets/ar-logo.png" alt="AR" class="ar-size-modal__logo" width="26" height="26">
           <div>
             <h3 class="ar-size-modal__title" id="ar-size-title">Official Size Guide</h3>
             <p class="ar-size-modal__subtitle">Architectural Streetwear Sizing &bull; ALLYRICH</p>

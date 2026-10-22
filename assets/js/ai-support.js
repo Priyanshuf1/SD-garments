@@ -51,7 +51,7 @@
     modal.innerHTML = `
       <div class="ar-chat-header">
         <div class="ar-chat-brand">
-          <img src="/assets/ar-logo.png" width="22" height="28" alt="AR" style="object-fit:contain;">
+          <img src="/assets/ar-logo.png" width="26" height="26" alt="AR" style="object-fit:contain;">
           <div>
             <div class="ar-chat-brand-name">NEED HELP ?</div>
             <div class="ar-chat-status">

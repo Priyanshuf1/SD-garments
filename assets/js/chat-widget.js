@@ -390,7 +390,7 @@
       <!-- Header -->
       <div class="ar-chat-modal__header">
         <div class="ar-chat-modal__brand">
-          <img src="/assets/ar-logo.png" alt="AR" class="ar-chat-modal__crest" width="26" height="32">
+          <img src="/assets/ar-logo.png" alt="AR" class="ar-chat-modal__crest" width="28" height="28">
           <div class="ar-chat-modal__title-wrap">
             <h3 class="ar-chat-modal__brand-title" id="ar-chat-modal-title">Chat with Us</h3>
             <p class="ar-chat-modal__brand-subtitle">
