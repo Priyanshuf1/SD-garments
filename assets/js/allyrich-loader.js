@@ -27,6 +27,8 @@
   }
 
   function shouldRunLoader() {
+    var p = window.location.pathname || '';
+    if (p !== '/' && p !== '/index.html' && p !== '') return false;
     // 1. If user refreshed the page, always run
     if (isPageRefresh()) {
       return true;
@@ -47,6 +49,7 @@
 
   function hideLoaderImmediately() {
     if (!loader) return;
+    loader.classList.remove('is-active');
     loader.classList.add('loader--done');
     loader.style.display = 'none';
     loader.style.opacity = '0';
@@ -68,6 +71,7 @@
     clearTimeout(capTimer);
 
     // Reset classes and styles
+    loader.classList.add('is-active');
     loader.classList.remove('loader--done', 'loader--filling', 'loader--lit');
     loader.style.display = 'flex';
     loader.style.opacity = '1';
@@ -76,7 +80,8 @@
     var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function finish() {
-      loader.classList.add('loader--done');
+      loader.classList.remove('is-active');
+    loader.classList.add('loader--done');
       loader.style.pointerEvents = 'none';
       document.documentElement.style.overflow = '';
       setTimeout(function () {

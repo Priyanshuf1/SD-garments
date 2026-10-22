@@ -13,7 +13,7 @@
   const BrandConfig = {
     name: 'ALLYRICH',
     whatsAppNumber: '919876543210',
-    welcomeMessage: 'Welcome to **ALLYRICH**. I am your 24/7 Streetwear Concierge. Ask me about sizing, tracking your order, or garment specifications.'
+    welcomeMessage: 'Welcome to **ALLYRICH**. I am your 24/7 AI Help Assistant. Ask me about sizing, tracking your order, or garment specifications.'
   };
 
   let isChatOpen = false;
@@ -33,15 +33,15 @@
     const launcher = document.createElement('div');
     launcher.id = 'ar-ai-launcher';
     launcher.setAttribute('role', 'button');
-    launcher.setAttribute('aria-label', 'Open AI Concierge');
+    launcher.setAttribute('aria-label', 'Open AI Help Assistant');
     launcher.innerHTML = `
       <div class="ar-launcher-avatar">
         <img src="/assets/ar-logo.png" alt="AR">
         <div class="ar-online-dot"></div>
       </div>
       <div class="ar-launcher-text">
-        <span class="ar-launcher-title">AR Concierge</span>
-        <span class="ar-launcher-sub">24/7 AI Specialist</span>
+        <span class="ar-launcher-title">NEED HELP ?</span>
+        <span class="ar-launcher-sub">AI Help Assistant</span>
       </div>
     `;
 
@@ -53,9 +53,9 @@
         <div class="ar-chat-brand">
           <img src="/assets/ar-logo.png" width="22" height="28" alt="AR" style="object-fit:contain;">
           <div>
-            <div class="ar-chat-brand-name">AR Concierge</div>
+            <div class="ar-chat-brand-name">NEED HELP ?</div>
             <div class="ar-chat-status">
-              <span class="ar-chat-status-dot"></span> Online &bull; Streetwear Specialist
+              <span class="ar-chat-status-dot"></span> Online &bull; AI Help Assistant
             </div>
           </div>
         </div>

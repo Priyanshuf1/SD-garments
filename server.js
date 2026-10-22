@@ -1102,7 +1102,7 @@ async function handleAiChat(req, res) {
         }
       }
 
-      const prompt = `You are the official luxury AI Streetwear Concierge for ALLYRICH, an avant-garde D2C streetwear fashion label based in Mumbai, India.
+      const prompt = `You are the official luxury AI Help Assistant for ALLYRICH, an avant-garde D2C streetwear fashion label based in Mumbai, India.
 Brand Tone: High-fashion, modern, courteous, concise, minimalist.
 Key Brand Rules:
 1. Silhouettes: Boxy, architectural, oversized streetwear drape with dropped shoulders. Heavyweight 240-380 GSM French Terry cotton.
@@ -1869,7 +1869,7 @@ async function appHandler(req, res) {
     }
   }
 
-  // 2. 24/7 AI Streetwear Concierge Chat API
+  // 2. 24/7 AI Help Assistant Chat API
   if (pathname === '/api/ai/chat' || pathname === '/api/chat') {
     if (req.method === 'POST') {
       return await handleAiChat(req, res);
