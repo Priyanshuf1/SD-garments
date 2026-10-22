@@ -672,17 +672,22 @@
     if (window.QuickBuyEngine?.bindNewsletter) {
       window.QuickBuyEngine.bindNewsletter();
     }
-    const input = form.querySelector('input[type="email"], .site-footer__newsletter-input');
+    const emailInput = form.querySelector('input[type="email"], .site-footer__newsletter-input');
+    const phoneInput = form.querySelector('input[type="tel"], input[name="phone"], .site-footer__newsletter-phone');
     const submitBtn = form.querySelector('button[type="submit"], .site-footer__newsletter-btn');
-    const email = input ? input.value.trim() : '';
-    if (!email) return false;
+    
+    const email = emailInput ? emailInput.value.trim() : '';
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    
+    if (!email && !phone) return false;
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'JOINING...'; }
     try {
       const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, phone })
       });
+      const data = await res.json();
       let msgEl = form.parentElement.querySelector('.newsletter-feedback-msg');
       if (!msgEl) {
         msgEl = document.createElement('div');
@@ -691,7 +696,8 @@
         form.parentElement.appendChild(msgEl);
       }
       msgEl.textContent = '✓ Welcome to the Inner Circle. Exclusive drop access confirmed.';
-      if (input) input.value = '';
+      if (emailInput) emailInput.value = '';
+      if (phoneInput) phoneInput.value = '';
       if (submitBtn) { submitBtn.textContent = 'JOINED ✓'; submitBtn.style.background = '#2e7d32'; }
     } catch (e) {
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'SUBSCRIBE'; }

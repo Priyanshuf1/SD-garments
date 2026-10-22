@@ -2500,36 +2500,106 @@
   </div>
 </div>
 
-<!-- BROADCAST CAMPAIGN MODAL -->
+<!-- OMNICHANNEL BROADCAST CAMPAIGN MODAL (EMAIL + WHATSAPP) -->
 <div class="modal-backdrop" id="broadcast-modal">
-  <div class="modal" style="max-width: 620px; width: 95%;">
+  <div class="modal" style="max-width: 680px; width: 95%;">
     <div class="modal-header">
-      <div class="modal-title">✉️ Broadcast Custom Message / Campaign</div>
+      <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.1rem;">📢</span> Omnichannel Campaign & Marketing Hub
+      </div>
       <button class="modal-close" onclick="closeModal('broadcast-modal')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
-    <div class="modal-body">
-      <div id="broadcast-recipient-badge" style="background:var(--bg-secondary); border:1px solid var(--border-color); padding:10px 14px; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-bottom:1.25rem; display:flex; align-items:center; gap:8px;">
-        ✉️ Will send to active Inner Circle subscribers
+    <div class="modal-body" style="max-height:80vh;overflow-y:auto;">
+      <!-- Channel Selector Tabs -->
+      <div style="margin-bottom:1.25rem;">
+        <label style="font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;">Select Marketing Channel</label>
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;background:rgba(255,255,255,0.02);padding:6px;border-radius:6px;border:1px solid var(--border-color);">
+          <button type="button" class="btn btn-sm" id="chan-all" onclick="Admin.selectBroadcastChannel('all')" style="background:var(--accent-red);color:#fff;border:none;font-weight:800;font-size:0.8rem;padding:9px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <span>🚀</span> Blast Both
+          </button>
+          <button type="button" class="btn btn-sm" id="chan-email" onclick="Admin.selectBroadcastChannel('email')" style="background:transparent;color:var(--text-secondary);border:1px solid transparent;font-weight:700;font-size:0.8rem;padding:9px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <span>📧</span> Email Only
+          </button>
+          <button type="button" class="btn btn-sm" id="chan-wa" onclick="Admin.selectBroadcastChannel('whatsapp')" style="background:transparent;color:var(--text-secondary);border:1px solid transparent;font-weight:700;font-size:0.8rem;padding:9px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <span>💬</span> WhatsApp Only
+          </button>
+        </div>
       </div>
+
+      <!-- Recipient Counters Badge -->
+      <div id="broadcast-recipient-badge" style="background:var(--bg-secondary); border:1px solid var(--border-color); padding:10px 14px; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <span id="badge-email-count" style="display:inline-flex;align-items:center;gap:6px;">📧 <strong style="color:#fff;">0</strong> Email Subscribers</span>
+        <span style="color:var(--border-color);">|</span>
+        <span id="badge-wa-count" style="display:inline-flex;align-items:center;gap:6px;">💬 <strong style="color:#25D366;">0</strong> WhatsApp Contacts</span>
+      </div>
+
+      <!-- Form Inputs -->
+      <div class="form-group" style="margin-bottom:1rem;" id="grp-subject">
+        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Campaign Subject / Notification Title *</label>
+        <input type="text" id="broadcast-subject" class="form-control" placeholder="e.g. Secret Drop Access: 24-Hour VIP Archive" style="width:100%;" oninput="Admin.updateWhatsAppPreview()" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom:1rem;" id="grp-headline">
+        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Announcement Headline / Hook</label>
+        <input type="text" id="broadcast-headline" class="form-control" placeholder="e.g. 🔥 PRIVATE ARCHIVE ACCESS IS NOW LIVE" style="width:100%;" oninput="Admin.updateWhatsAppPreview()">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;">
+        <div class="form-group">
+          <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Promo Code (Optional)</label>
+          <input type="text" id="broadcast-code" class="form-control" placeholder="e.g. DROP40" style="width:100%;text-transform:uppercase;" oninput="Admin.updateWhatsAppPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Website / Drop URL</label>
+          <input type="text" id="broadcast-link" class="form-control" placeholder="https://genrage.vercel.app/collections/shop" style="width:100%;" oninput="Admin.updateWhatsAppPreview()">
+        </div>
+      </div>
+
       <div class="form-group" style="margin-bottom:1rem;">
-        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Email Subject *</label>
-        <input type="text" id="broadcast-subject" class="form-control" placeholder="e.g. Secret Drop Access: 24-Hour VIP Archive" style="width:100%;" required>
+        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Offer & Message Details *</label>
+        <textarea id="broadcast-message" class="form-control" rows="4" placeholder="Write your luxury announcement, discount details, or drop highlights here..." style="width:100%; line-height:1.6;" oninput="Admin.updateWhatsAppPreview()" required></textarea>
       </div>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Announcement Headline</label>
-        <input type="text" id="broadcast-headline" class="form-control" placeholder="e.g. PRIVATE ARCHIVE ACCESS IS NOW LIVE" style="width:100%;">
+
+      <!-- Live WhatsApp Chat Message Preview Box -->
+      <div id="wa-preview-container" style="margin-bottom:1.25rem;">
+        <label style="font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#25D366;display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span>💬</span> Live WhatsApp Message Preview
+        </label>
+        <div style="background:#0b141a;border:1px solid #1f2c34;border-radius:8px;padding:14px;position:relative;max-width:440px;">
+          <div style="background:#005c4b;color:#e9edef;padding:10px 12px;border-radius:8px 8px 0 8px;font-size:0.85rem;line-height:1.5;box-shadow:0 1px 2px rgba(0,0,0,0.3);position:relative;">
+            <div id="wa-preview-text" style="white-space:pre-wrap;word-break:break-word;">
+*ALLYRICH ARCHITECTURAL STREETWEAR*
+🔥 *SECRET DROP ACCESS IS LIVE*
+
+Get exclusive 40% OFF on all heavyweight tees and baggy pants. Limited quantities available.
+
+🏷️ *Use Code:* `DROP40`
+🔗 *Shop Now:* https://genrage.vercel.app/collections/shop
+
+_Limited archival drop • Ships under 48h • No restocks_
+            </div>
+            <div style="text-align:right;font-size:0.65rem;color:rgba(255,255,255,0.6);margin-top:6px;display:flex;align-items:center;justify-content:flex-end;gap:4px;">
+              <span>Just now</span>
+              <span style="color:#53bdeb;">✓✓</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Campaign Message Content *</label>
-        <textarea id="broadcast-message" class="form-control" rows="6" placeholder="Write your luxury announcement, discount code, or drop details here..." style="width:100%; line-height:1.6;" required></textarea>
-      </div>
-      <div id="broadcast-status" style="margin-top:8px; font-size:0.85rem; font-weight:700; display:none;"></div>
+
+      <!-- Status & Results Output Area -->
+      <div id="broadcast-status" style="margin-top:8px; font-size:0.85rem; font-weight:700; display:none; padding:10px; border-radius:4px;"></div>
+      <div id="wa-results-drawer" style="display:none;margin-top:12px;max-height:180px;overflow-y:auto;background:rgba(255,255,255,0.02);border:1px solid var(--border-color);border-radius:6px;padding:8px;"></div>
     </div>
-    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('broadcast-modal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" id="btn-send-broadcast" onclick="Admin.sendBroadcastCampaign()">Send Campaign</button>
+    <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+      <span style="font-size:0.75rem;color:var(--text-muted);">Encrypted & anti-spam guarded</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('broadcast-modal')">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="btn-send-broadcast" onclick="Admin.sendBroadcastCampaign()" style="display:flex;align-items:center;gap:6px;">
+          <span>🚀</span> <span id="btn-send-broadcast-text">Blast Both Channels</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -3687,9 +3757,10 @@ const Admin = {
           <td>${o.trackingNumber ? `<span class="badge badge-info">${o.trackingNumber}</span>` : '<span style="color:var(--text-muted);">-</span>'}</td>
           <td style="font-size:13px;color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
           <td>
-            <div style="display:flex;gap:0.4rem;">
+            <div style="display:flex;gap:0.35rem;align-items:center;">
               <button class="btn btn-secondary btn-sm" onclick="Admin.openOrderModal('${o.id}')">Manage</button>
               <button class="btn btn-secondary btn-sm" onclick="Admin.printDirectInvoice('${o.id}')" title="Print Invoice">🖨️</button>
+              <button class="btn btn-sm" style="background:#25D366;color:#ffffff;border:none;padding:5px 7px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;border-radius:4px;cursor:pointer;" onclick="Admin.openWhatsAppOrderChat('${o.id}')" title="Chat with Customer on WhatsApp">💬 WA</button>
             </div>
           </td>
         </tr>
@@ -4124,6 +4195,7 @@ const Admin = {
           ${(c.tags || []).map(t => `<span class="badge badge-dark" style="margin-right:2px;">${t}</span>`).join('')}
         </td>
         <td>
+          <button class="btn btn-sm" style="background:#25D366;color:#ffffff;border:none;padding:4px 8px;font-size:0.75rem;font-weight:700;margin-right:4px;border-radius:4px;cursor:pointer;" onclick="Admin.openWhatsAppCustomerChat('${c.id}')" title="WhatsApp Customer">💬 WA</button>
           <button class="btn btn-danger btn-sm" onclick="Admin.deleteCustomer('${c.id}')">Delete</button>
         </td>
       </tr>
@@ -4290,45 +4362,106 @@ const Admin = {
     this.showToast('📥 Inner Circle Subscribers CSV exported.');
   },
 
-  openBroadcastModal() {
-    const updateBadge = (cnt) => {
-      const badge = document.getElementById('broadcast-recipient-badge');
-      if (badge) {
-        badge.textContent = `✉️ Will broadcast campaign to ${cnt} active Inner Circle subscriber${cnt === 1 ? '' : 's'}`;
-      }
+  broadcastChannel: 'all',
+
+  selectBroadcastChannel(chan) {
+    this.broadcastChannel = chan;
+    const btnAll = document.getElementById('chan-all');
+    const btnEmail = document.getElementById('chan-email');
+    const btnWa = document.getElementById('chan-wa');
+    const btnText = document.getElementById('btn-send-broadcast-text');
+
+    const resetPill = (el) => {
+      if (!el) return;
+      el.style.background = 'transparent';
+      el.style.color = 'var(--text-secondary)';
+      el.style.border = '1px solid transparent';
     };
-    const count = (this.subscribers || []).length;
-    updateBadge(count);
-    if (!this.subscribers || this.subscribers.length === 0) {
-      this.fetchSubscribers().then(() => {
-        updateBadge((this.subscribers || []).length);
-      }).catch(() => {});
+
+    resetPill(btnAll);
+    resetPill(btnEmail);
+    resetPill(btnWa);
+
+    const activeStyle = (el, bg = 'var(--accent-red)') => {
+      if (!el) return;
+      el.style.background = bg;
+      el.style.color = '#fff';
+      el.style.border = 'none';
+    };
+
+    if (chan === 'all') {
+      activeStyle(btnAll, 'var(--accent-red)');
+      if (btnText) btnText.textContent = 'Blast Both Channels';
+    } else if (chan === 'email') {
+      activeStyle(btnEmail, '#2563eb');
+      if (btnText) btnText.textContent = 'Send Email Campaign';
+    } else if (chan === 'whatsapp') {
+      activeStyle(btnWa, '#25D366');
+      if (btnText) btnText.textContent = 'Send WhatsApp Broadcast';
     }
+
+    this.updateWhatsAppPreview();
+  },
+
+  updateWhatsAppPreview() {
+    const subject = document.getElementById('broadcast-subject')?.value?.trim() || 'SECRET DROP ACCESS IS LIVE';
+    const headline = document.getElementById('broadcast-headline')?.value?.trim();
+    const message = document.getElementById('broadcast-message')?.value?.trim() || 'Get exclusive 40% OFF on all heavyweight tees and baggy pants. Limited quantities available.';
+    const code = document.getElementById('broadcast-code')?.value?.trim() || 'DROP40';
+    const link = document.getElementById('broadcast-link')?.value?.trim() || 'https://genrage.vercel.app/collections/shop';
+
+    const prevEl = document.getElementById('wa-preview-text');
+    if (!prevEl) return;
+
+    let text = `*ALLYRICH ARCHITECTURAL STREETWEAR*\n🔥 *${(headline || subject).toUpperCase()}*\n\n${message}\n\n🏷️ *Use Code:* \`${code.toUpperCase()}\`\n🔗 *Shop Now:* ${link}\n\n_Limited archival drop • Ships under 48h • No restocks_`;
+    prevEl.textContent = text;
+  },
+
+  async openBroadcastModal() {
     const statusEl = document.getElementById('broadcast-status');
-    if (statusEl) {
-      statusEl.style.display = 'none';
-      statusEl.textContent = '';
-    }
+    const resultsEl = document.getElementById('wa-results-drawer');
+    if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
+    if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+
     const btn = document.getElementById('btn-send-broadcast');
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = 'Send Campaign';
-    }
+    if (btn) { btn.disabled = false; }
+
+    this.selectBroadcastChannel('all');
     openModal('broadcast-modal');
+
+    // Fetch marketing recipient counts
+    try {
+      const res = await fetch('/api/admin/marketing/recipients');
+      const data = await res.json();
+      if (data.success) {
+        this.marketingRecipients = data;
+        const bEmail = document.getElementById('badge-email-count');
+        const bWa = document.getElementById('badge-wa-count');
+        if (bEmail) bEmail.innerHTML = `📧 <strong style="color:#fff;">${data.totalEmails}</strong> Email Subscribers`;
+        if (bWa) bWa.innerHTML = `💬 <strong style="color:#25D366;">${data.totalPhones}</strong> WhatsApp Contacts`;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch marketing recipients:', e.message);
+    }
   },
 
   async sendBroadcastCampaign() {
     const subject = document.getElementById('broadcast-subject')?.value?.trim();
     const headline = document.getElementById('broadcast-headline')?.value?.trim();
     const message = document.getElementById('broadcast-message')?.value?.trim();
+    const code = document.getElementById('broadcast-code')?.value?.trim();
+    const link = document.getElementById('broadcast-link')?.value?.trim();
+    const channel = this.broadcastChannel || 'all';
 
-    if (!subject || !message) {
-      alert('Please fill in both the Email Subject and Campaign Message Content.');
+    if (!message && !subject) {
+      alert('Please fill in at least the Subject or Campaign Message Content.');
       return;
     }
 
     const btn = document.getElementById('btn-send-broadcast');
     const statusEl = document.getElementById('broadcast-status');
+    const resultsDrawer = document.getElementById('wa-results-drawer');
+
     if (btn) {
       btn.disabled = true;
       btn.textContent = 'Broadcasting...';
@@ -4336,32 +4469,57 @@ const Admin = {
     if (statusEl) {
       statusEl.style.display = 'block';
       statusEl.style.color = 'var(--text-secondary)';
-      statusEl.textContent = '🚀 Dispatching emails via Resend... Please wait.';
+      statusEl.style.background = 'rgba(255,255,255,0.05)';
+      statusEl.textContent = '🚀 Dispatching marketing campaign across selected channels... Please wait.';
     }
 
     try {
-      const res = await fetch('/api/admin/subscribers/broadcast', {
+      const res = await fetch('/api/admin/marketing/broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, headline, message })
+        body: JSON.stringify({ channel, subject, headline, message, code, link })
       });
       const data = await res.json();
+
       if (data.success) {
         if (statusEl) {
           statusEl.style.color = '#10b981';
-          statusEl.textContent = `✅ Successfully broadcasted to ${data.count} subscriber${data.count === 1 ? '' : 's'}!`;
+          statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
+          statusEl.innerHTML = `✅ <strong>Broadcast Success!</strong> Dispatched <strong>${data.emailSentCount}</strong> emails and reached <strong>${data.whatsappSentCount}</strong> WhatsApp numbers.`;
         }
-        this.showToast(`✉️ Broadcast sent to ${data.count} subscriber(s)!`);
+        this.showToast(`📢 Campaign sent! (${data.emailSentCount} Emails, ${data.whatsappSentCount} WhatsApp)`);
+
+        // If WhatsApp direct queue was returned, show 1-click links
+        if (resultsDrawer && data.waDispatchQueue && data.waDispatchQueue.length > 0) {
+          resultsDrawer.style.display = 'block';
+          resultsDrawer.innerHTML = `
+            <div style="font-size:0.75rem;font-weight:800;color:#25D366;margin-bottom:8px;text-transform:uppercase;">
+              💬 Quick WhatsApp Direct Launcher (${data.waDispatchQueue.length} Contacts):
+            </div>
+            ${data.waDispatchQueue.map(item => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.8rem;">
+                <div>
+                  <span style="font-weight:700;color:#fff;">${item.name || 'Customer'}</span>
+                  <span style="color:var(--text-muted);font-size:0.75rem;margin-left:6px;">+${item.phone}</span>
+                </div>
+                <a href="${item.waLink}" target="_blank" rel="noopener" style="background:#25D366;color:#fff;padding:4px 10px;border-radius:4px;font-size:0.7rem;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                  💬 Open Chat & Send
+                </a>
+              </div>
+            `).join('')}
+          `;
+        }
+
         setTimeout(() => {
-          closeModal('broadcast-modal');
           if (btn) {
             btn.disabled = false;
-            btn.textContent = 'Send Campaign';
+            btn.textContent = 'Campaign Sent ✓';
           }
         }, 1500);
       } else {
         if (statusEl) {
           statusEl.style.color = '#ef4444';
+          statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
           statusEl.textContent = `⚠️ Error: ${data.message || 'Failed to dispatch broadcast'}`;
         }
         alert(data.message || 'Broadcast failed');
@@ -4380,6 +4538,45 @@ const Admin = {
         btn.textContent = 'Send Campaign';
       }
     }
+  },
+
+  openWhatsAppOrderChat(orderId) {
+    const order = (this.orders || []).find(o => String(o.id) === String(orderId));
+    if (!order) {
+      this.showToast('⚠️ Order not found');
+      return;
+    }
+    const phone = order.customer?.phone;
+    if (!phone) {
+      this.showToast('⚠️ No phone number on this order.');
+      return;
+    }
+    const cleanPhone = String(phone).replace(/\D/g, '');
+    const normPhone = cleanPhone.length === 10 ? ('91' + cleanPhone) : cleanPhone;
+    const name = order.customer?.name || 'Customer';
+    const itemsTitle = (order.items || []).map(i => i.title).join(', ') || 'Streetwear order';
+    const msg = `Hi ${name}! Greeting from ALLYRICH Streetwear India.\nRegarding your order #${order.id} (${itemsTitle}):\nStatus: ${order.orderStatus || 'Processing'}\nTotal: ₹${order.total}\n\nLet us know if you need any assistance!`;
+    const waUrl = `https://wa.me/${normPhone}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+  },
+
+  openWhatsAppCustomerChat(customerId) {
+    const customer = (this.customers || []).find(c => String(c.id) === String(customerId));
+    if (!customer) {
+      this.showToast('⚠️ Customer not found');
+      return;
+    }
+    const phone = customer.phone;
+    if (!phone) {
+      this.showToast('⚠️ No phone number for this customer.');
+      return;
+    }
+    const cleanPhone = String(phone).replace(/\D/g, '');
+    const normPhone = cleanPhone.length === 10 ? ('91' + cleanPhone) : cleanPhone;
+    const name = customer.name || 'Member';
+    const msg = `Hi ${name}! Exclusive drop update from ALLYRICH Streetwear.\nCheck out our latest architectural drop now: https://genrage.vercel.app/collections/shop\nUse code ALLY10 for 10% off!`;
+    const waUrl = `https://wa.me/${normPhone}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
   },
 
   // -------------------------------------------------------------

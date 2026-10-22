@@ -36,6 +36,42 @@
     "cashfreePaymentId": null
   },
   {
+    "id": "GR-3790",
+    "customer": {
+      "name": "Kabir Streetwear",
+      "email": "kabir_live_demo@test.com",
+      "phone": "9820555123",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "address": "702 Platinum Heights",
+      "locality": "",
+      "pincode": "400053",
+      "country": "India"
+    },
+    "items": [
+      {
+        "id": "test-prod-1",
+        "title": "Heavyweight Boxy Tee",
+        "size": "XL",
+        "price": 1599,
+        "quantity": 1,
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+      }
+    ],
+    "subtotal": 1599,
+    "discount": 0,
+    "shipping": 0,
+    "total": 1599,
+    "paymentMethod": "Cash on Delivery (COD)",
+    "paymentStatus": "Pending COD",
+    "orderStatus": "Processing",
+    "trackingNumber": "",
+    "createdAt": "2026-10-21T19:13:41.095Z",
+    "updatedAt": "2026-10-21T19:13:41.096Z",
+    "cashfreeOrderId": null,
+    "cashfreePaymentId": null
+  },
+  {
     "id": "GR-9789",
     "supabaseId": "32c2d232-5320-41a8-81fd-59935a33ecfd",
     "customer": {

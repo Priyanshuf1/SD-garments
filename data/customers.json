@@ -1,5 +1,77 @@
 [
   {
+    "id": "CUST-4116",
+    "name": "Shivendra Awasthi",
+    "email": "shivendraawasthi333@gmail.com",
+    "phone": "+916392269330",
+    "password": "12345",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "",
+    "locality": "",
+    "pincode": "",
+    "country": "India",
+    "ordersCount": 0,
+    "totalSpent": 0,
+    "lastOrderDate": "2026-10-21T19:18:05.134Z",
+    "tags": [
+      "Storefront Member",
+      "Supabase Verified"
+    ],
+    "status": "Active",
+    "wishlist": [],
+    "cart": [
+      {
+        "id": "df88ced3-e2f7-4958-880a-1ae3bfe73b9c",
+        "handle": "fade-basic-black-baggy-pants",
+        "title": "Fade Black Balloon Pants",
+        "size": "XS",
+        "price": 1899,
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/fade-basic-black-baggy-pants-genrage-1.png?v=1788530014",
+        "quantity": 1
+      },
+      {
+        "id": "f3f00c13-aa3b-4a29-a994-e75fd93eb2f1",
+        "handle": "basic-grey-genrage-baggy-pants",
+        "title": "Basic Grey Baggy Pants",
+        "size": "M",
+        "price": 1699,
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/Untitled-2.png?v=1789549078",
+        "quantity": 1
+      },
+      {
+        "id": "df88ced3-e2f7-4958-880a-1ae3bfe73b9c",
+        "handle": "fade-basic-black-baggy-pants",
+        "title": "Fade Black Balloon Pants",
+        "size": "M",
+        "price": 1899,
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/fade-basic-black-baggy-pants-genrage-1.png?v=1788530014",
+        "quantity": 1
+      }
+    ]
+  },
+  {
+    "id": "cust_1792610021098",
+    "name": "Kabir Streetwear",
+    "email": "kabir_live_demo@test.com",
+    "phone": "9820555123",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "702 Platinum Heights",
+    "locality": "",
+    "pincode": "400053",
+    "country": "India",
+    "ordersCount": 1,
+    "totalSpent": 1599,
+    "status": "Active",
+    "tags": [
+      "Storefront Buyer",
+      "WhatsApp VIP"
+    ],
+    "wishlist": [],
+    "cart": []
+  },
+  {
     "id": "test_device_user_1792430097751",
     "name": "Cross Device Tester",
     "email": "device_test_1792430097751@allyrich.com",

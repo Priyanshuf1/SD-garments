@@ -1,36 +1,225 @@
 [
   {
-    "id": "SUB-1792683867221",
-    "email": "spam_1792683866671_4@test.com",
-    "subscribedAt": "2026-10-22T15:44:27.221Z",
+    "id": "SUB-1792697170148",
+    "email": "spam_1792697170148_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-22T19:26:10.148Z",
     "source": "footer_newsletter",
     "status": "Active"
   },
   {
-    "id": "SUB-1792683866266",
-    "email": "spam_1792683865436_3@test.com",
-    "subscribedAt": "2026-10-22T15:44:26.266Z",
+    "id": "SUB-1792697170147",
+    "email": "spam_1792697170147_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-22T19:26:10.147Z",
     "source": "footer_newsletter",
     "status": "Active"
   },
   {
-    "id": "SUB-1792683865143",
-    "email": "spam_1792683864712_2@test.com",
-    "subscribedAt": "2026-10-22T15:44:25.143Z",
+    "id": "SUB-1792697170147",
+    "email": "spam_1792697170146_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-22T19:26:10.147Z",
     "source": "footer_newsletter",
     "status": "Active"
   },
   {
-    "id": "SUB-1792683864321",
-    "email": "spam_1792683863711_1@test.com",
-    "subscribedAt": "2026-10-22T15:44:24.321Z",
+    "id": "SUB-1792697170146",
+    "email": "spam_1792697170145_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-22T19:26:10.146Z",
     "source": "footer_newsletter",
     "status": "Active"
   },
   {
-    "id": "SUB-1792683863482",
-    "email": "spam_1792683863025_0@test.com",
-    "subscribedAt": "2026-10-22T15:44:23.482Z",
+    "id": "SUB-1792697170145",
+    "email": "spam_1792697170143_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-22T19:26:10.145Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610959828",
+    "email": "spam_1792610959827_4@test.com",
+    "subscribedAt": "2026-10-21T19:29:19.828Z",
+    "phone": "",
+    "name": "",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610959826",
+    "email": "spam_1792610959825_3@test.com",
+    "subscribedAt": "2026-10-21T19:29:19.826Z",
+    "phone": "",
+    "name": "",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610959824",
+    "email": "spam_1792610959823_2@test.com",
+    "subscribedAt": "2026-10-21T19:29:19.824Z",
+    "phone": "",
+    "name": "",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610959822",
+    "email": "spam_1792610959821_1@test.com",
+    "subscribedAt": "2026-10-21T19:29:19.822Z",
+    "phone": "",
+    "name": "",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610959819",
+    "email": "spam_1792610959816_0@test.com",
+    "subscribedAt": "2026-10-21T19:29:19.819Z",
+    "phone": "",
+    "name": "",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610054923",
+    "email": "spam_1792610054923_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T19:14:14.923Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610054922",
+    "email": "spam_1792610054922_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T19:14:14.922Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610054921",
+    "email": "spam_1792610054921_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T19:14:14.921Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610054920",
+    "email": "spam_1792610054920_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T19:14:14.920Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792610054919",
+    "email": "spam_1792610054918_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T19:14:14.919Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608715827",
+    "email": "spam_1792608715827_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T18:51:55.827Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608715826",
+    "email": "spam_1792608715826_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T18:51:55.826Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608715825",
+    "email": "spam_1792608715825_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T18:51:55.825Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608715824",
+    "email": "spam_1792608715824_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T18:51:55.824Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608715823",
+    "email": "spam_1792608715821_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-21T18:51:55.823Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608585746",
+    "email": "wa_sub_1792608585745@test.com",
+    "phone": "919876543210",
+    "name": "WhatsApp VIP",
+    "subscribedAt": "2026-10-21T18:49:45.746Z",
+    "source": "footer_email_and_whatsapp",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608085211",
+    "email": "spam_1792608085211_4@test.com",
+    "subscribedAt": "2026-10-21T18:41:25.211Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608085210",
+    "email": "spam_1792608085209_3@test.com",
+    "subscribedAt": "2026-10-21T18:41:25.210Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608085206",
+    "email": "spam_1792608085205_2@test.com",
+    "subscribedAt": "2026-10-21T18:41:25.206Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608085203",
+    "email": "spam_1792608085201_1@test.com",
+    "subscribedAt": "2026-10-21T18:41:25.203Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792608085199",
+    "email": "spam_1792608085194_0@test.com",
+    "subscribedAt": "2026-10-21T18:41:25.199Z",
     "source": "footer_newsletter",
     "status": "Active"
   },

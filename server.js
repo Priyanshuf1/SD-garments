@@ -34,6 +34,7 @@ const url = require('url');
 
 const supabase = require('./lib/supabase.js');
 const security = require('./lib/security.js');
+const whatsapp = require('./lib/whatsapp.js');
 let db = null;
 try {
   db = require('./lib/db.js');
@@ -1615,8 +1616,28 @@ async function handleCreateOrder(req, res, isCheckout = false) {
         if (payload.customer?.country) cust.country = payload.customer.country;
         cust.totalOrders = (cust.totalOrders || 0) + 1;
         cust.totalSpent = (cust.totalSpent || 0) + total;
-        writeJsonFile('customers.json', customers);
+      } else {
+        const newCust = {
+          id: `cust_${Date.now()}`,
+          name: payload.customer?.name || 'Customer',
+          email: custEmail,
+          phone: payload.customer?.phone || '',
+          city: payload.customer?.city || 'Mumbai',
+          state: payload.customer?.state || 'Maharashtra',
+          address: payload.customer?.address || '',
+          locality: payload.customer?.locality || '',
+          pincode: payload.customer?.pincode || '',
+          country: payload.customer?.country || 'India',
+          ordersCount: 1,
+          totalSpent: total,
+          status: 'Active',
+          tags: ['Storefront Buyer', 'WhatsApp VIP'],
+          wishlist: [],
+          cart: []
+        };
+        customers.unshift(newCust);
       }
+      writeJsonFile('customers.json', customers);
     }
   } catch (e) {}
 
@@ -2494,6 +2515,140 @@ async function appHandler(req, res) {
       }
     }
 
+    // 12. Admin Omnichannel Marketing & WhatsApp APIs
+    if (apiRoute.startsWith('marketing')) {
+      // GET /api/admin/marketing/recipients
+      if (apiRoute === 'marketing/recipients' && req.method === 'GET') {
+        const subs = await getUnifiedSubscribers();
+        const customers = readJsonFile('customers.json', []);
+        const orders = await getAllOrders();
+        const aggregated = whatsapp.aggregateMarketingRecipients(subs, customers, orders);
+        return sendJson(res, 200, {
+          success: true,
+          totalEmails: aggregated.totalEmails,
+          totalPhones: aggregated.totalPhones,
+          emails: aggregated.emails,
+          phoneContacts: aggregated.phoneContacts
+        });
+      }
+
+      // POST /api/admin/marketing/broadcast
+      if (apiRoute === 'marketing/broadcast' && req.method === 'POST') {
+        const payload = await parseBody(req);
+        const channel = payload.channel || 'all'; // 'all', 'email', 'whatsapp'
+        const subject = (payload.subject || '').trim();
+        const headline = (payload.headline || '').trim();
+        const message = (payload.message || '').trim();
+        const code = (payload.code || '').trim();
+        const link = (payload.link || '').trim();
+
+        if (!message && !subject) {
+          return sendJson(res, 400, { success: false, message: 'Message content is required for campaign broadcast' });
+        }
+
+        const subs = await getUnifiedSubscribers();
+        const customers = readJsonFile('customers.json', []);
+        const orders = await getAllOrders();
+        const aggregated = whatsapp.aggregateMarketingRecipients(subs, customers, orders);
+
+        let emailSentCount = 0;
+        let whatsappSentCount = 0;
+        const waDispatchQueue = [];
+
+        // 1. Dispatch Emails if channel is 'all' or 'email'
+        if (channel === 'all' || channel === 'email') {
+          const resendApiKey = process.env.RESEND_API_KEY;
+          const emailSubject = subject || headline || 'New Streetwear Drop: ALLYRICH Exclusive Access';
+
+          for (const email of aggregated.emails) {
+            if (resendApiKey) {
+              try {
+                const emailRes = await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${resendApiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+                    to: [email],
+                    subject: emailSubject,
+                    html: `
+                      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
+                        <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
+                          <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLYRICH</h1>
+                          <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
+                        </div>
+                        <div style="padding:28px 0;">
+                          ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${headline}</h2>` : ''}
+                          <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
+                            ${message.replace(/\n/g, '<br>')}
+                          </div>
+                          ${code ? `<div style="background:#1a1a1a;border:1px dashed #444;padding:12px;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:24px;color:#fff;">USE CODE: ${code.toUpperCase()}</div>` : ''}
+                          <div style="text-align:center; margin:30px 0;">
+                            <a href="${link || 'https://genrage.vercel.app/collections/shop'}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                          </div>
+                        </div>
+                        <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
+                          You are receiving this communication as an exclusive member of the ALLYRICH Inner Circle.<br>
+                          &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                        </div>
+                      </div>
+                    `
+                  })
+                });
+                if (emailRes.ok) emailSentCount++;
+              } catch (e) {
+                console.warn(`Failed to dispatch broadcast email to ${email}:`, e.message);
+              }
+            } else {
+              emailSentCount++;
+            }
+          }
+        }
+
+        // 2. Dispatch WhatsApp if channel is 'all' or 'whatsapp'
+        if (channel === 'all' || channel === 'whatsapp') {
+          const promoText = whatsapp.buildWhatsAppPromoMessage({
+            headline: headline || subject,
+            subject: subject || headline,
+            message: message,
+            code: code,
+            link: link || 'https://genrage.vercel.app/collections/shop',
+            brandName: 'ALLYRICH'
+          });
+
+          for (const contact of aggregated.phoneContacts) {
+            const dispatchRes = await whatsapp.dispatchWhatsAppMessage(contact.phone, promoText);
+            if (dispatchRes.success) {
+              whatsappSentCount++;
+              waDispatchQueue.push({
+                phone: contact.phone,
+                rawPhone: contact.rawPhone,
+                name: contact.name,
+                source: contact.source,
+                mode: dispatchRes.mode,
+                waLink: dispatchRes.waLink
+              });
+            }
+          }
+        }
+
+        console.log(`📢 [OMNICHANNEL BROADCAST] Dispatched Channel: ${channel} (Emails: ${emailSentCount}/${aggregated.totalEmails}, WhatsApp: ${whatsappSentCount}/${aggregated.totalPhones})`);
+
+        return sendJson(res, 200, {
+          success: true,
+          channel,
+          emailSentCount,
+          totalEmails: aggregated.totalEmails,
+          whatsappSentCount,
+          totalPhones: aggregated.totalPhones,
+          waDispatchQueue: waDispatchQueue.slice(0, 50),
+          message: `Campaign broadcast completed! Dispatched ${emailSentCount} emails and reached ${whatsappSentCount} WhatsApp contacts.`
+        });
+      }
+    }
+
     return sendJson(res, 404, { success: false, message: 'API route not found' });
   }
 
@@ -3148,12 +3303,19 @@ async function appHandler(req, res) {
 
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
-      if (!email || !email.includes('@')) {
+      const rawPhone = payload.phone || payload.whatsapp || '';
+      const phone = rawPhone ? whatsapp.normalizeIndianPhoneNumber(rawPhone) : null;
+      const name = (payload.name || '').trim();
+
+      if (!email && !phone) {
+        return sendJson(res, 400, { success: false, message: 'Valid email address or WhatsApp phone number is required' });
+      }
+      if (email && !email.includes('@')) {
         return sendJson(res, 400, { success: false, message: 'Valid email address is required' });
       }
 
       const currentSubs = await getUnifiedSubscribers();
-      const existing = currentSubs.find(s => (s.email || '').toLowerCase() === email);
+      const existing = currentSubs.find(s => (email && (s.email || '').toLowerCase() === email) || (phone && s.phone === phone));
       if (existing) {
         return sendJson(res, 200, {
           success: true,
@@ -3164,9 +3326,11 @@ async function appHandler(req, res) {
 
       const newSub = {
         id: `SUB-${Date.now()}`,
-        email: email,
+        email: email || '',
+        phone: phone || '',
+        name: name || '',
         subscribedAt: new Date().toISOString(),
-        source: payload.source || 'footer_newsletter',
+        source: payload.source || (phone ? (email ? 'footer_email_and_whatsapp' : 'footer_whatsapp_vip') : 'footer_newsletter'),
         status: 'Active'
       };
 
