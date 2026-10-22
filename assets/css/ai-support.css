@@ -1,0 +1,337 @@
+/* ==============================================================================
+ * ALLYRICH - 24/7 AI Streetwear Support Concierge CSS
+ * Luxury Minimalist Dark Mode Floating Chat Interface
+ * ============================================================================== */
+
+/* Floating Launcher Button */
+#ar-ai-launcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  padding: 10px 18px 10px 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 255, 255, 0.08);
+  font-family: 'Nunito', -apple-system, sans-serif;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#ar-ai-launcher:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.15);
+}
+
+.ar-launcher-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.ar-launcher-avatar img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.ar-online-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #25D366;
+  border: 2px solid #000;
+}
+
+.ar-launcher-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.ar-launcher-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ar-launcher-sub {
+  font-size: 0.68rem;
+  color: #888;
+}
+
+/* Chat Drawer / Window */
+#ar-ai-modal {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: 380px;
+  height: 580px;
+  max-height: calc(100vh - 120px);
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 0, 0, 0.5);
+  font-family: 'Nunito', -apple-system, sans-serif;
+  overflow: hidden;
+  animation: arSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes arSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal Header */
+.ar-chat-header {
+  padding: 16px 18px;
+  background: #000000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ar-chat-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ar-chat-brand-name {
+  font-family: 'Shippori Mincho B1', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.ar-chat-status {
+  font-size: 0.7rem;
+  color: #25D366;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ar-chat-status-dot {
+  width: 6px;
+  height: 6px;
+  background: #25D366;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(37, 211, 102, 0.8);
+}
+
+.ar-chat-close-btn {
+  background: transparent;
+  border: none;
+  color: #777;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.ar-chat-close-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Chat Messages Stream */
+.ar-chat-messages {
+  flex: 1;
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+.ar-chat-messages::-webkit-scrollbar {
+  width: 5px;
+}
+.ar-chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Message Bubbles */
+.ar-message {
+  max-width: 84%;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  border-radius: 10px;
+  word-break: break-word;
+}
+
+.ar-message.bot {
+  align-self: flex-start;
+  background: #181818;
+  color: #e5e5e5;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom-left-radius: 2px;
+}
+
+.ar-message.bot a {
+  color: #fff;
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.ar-message.user {
+  align-self: flex-end;
+  background: #ffffff;
+  color: #000000;
+  font-weight: 600;
+  border-bottom-right-radius: 2px;
+}
+
+/* Quick Action Suggestion Chips */
+.ar-chips-container {
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
+  scrollbar-width: none;
+}
+.ar-chips-container::-webkit-scrollbar {
+  display: none;
+}
+
+.ar-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #bbb;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.ar-chip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Chat Input Footer */
+.ar-chat-input-bar {
+  padding: 12px 14px;
+  background: #000;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ar-chat-input-bar input {
+  flex: 1;
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  color: #fff;
+  outline: none;
+  font-family: inherit;
+}
+
+.ar-chat-input-bar input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ar-chat-input-bar input::placeholder {
+  color: #666;
+}
+
+.ar-chat-send-btn {
+  background: #fff;
+  color: #000;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 800;
+  transition: all 0.2s;
+}
+
+.ar-chat-send-btn:hover {
+  background: #e50914;
+  color: #fff;
+}
+
+/* Typing Indicator */
+.ar-typing-dots {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+.ar-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #777;
+  animation: arBlink 1.4s infinite both;
+}
+.ar-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.ar-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes arBlink {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  #ar-ai-modal {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  #ar-ai-launcher {
+    bottom: 16px;
+    right: 16px;
+    padding: 8px 14px 8px 10px;
+  }
+}

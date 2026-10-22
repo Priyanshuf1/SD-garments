@@ -1,5 +1,76 @@
 [
   {
+    "id": "GR-1437",
+    "customer": {
+      "name": "Kabir Khanna",
+      "email": "kabir.khanna.test@gmail.com",
+      "phone": "+91 98200 88776",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "address": "Flat 402, Skyline Towers",
+      "locality": "",
+      "pincode": "400050",
+      "country": "India"
+    },
+    "items": [
+      {
+        "id": 1792683780462,
+        "title": "Heavyweight Drop Shoulder Boxy Hoodie",
+        "size": "XL",
+        "price": 2499,
+        "quantity": 1,
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+      }
+    ],
+    "subtotal": 2499,
+    "discount": 0,
+    "shipping": 0,
+    "total": 2499,
+    "paymentMethod": "Cash on Delivery (COD)",
+    "paymentStatus": "Pending COD",
+    "orderStatus": "Processing",
+    "trackingNumber": "",
+    "createdAt": "2026-10-22T15:43:00.462Z",
+    "updatedAt": "2026-10-22T15:43:00.463Z",
+    "cashfreeOrderId": null,
+    "cashfreePaymentId": null
+  },
+  {
+    "id": "GR-9789",
+    "supabaseId": "32c2d232-5320-41a8-81fd-59935a33ecfd",
+    "customer": {
+      "name": "Automated Test Shopper",
+      "email": "tester_1792427844459@sdgarments.in",
+      "phone": "+91 98888 77777",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "address": "42 Fashion Street, Indiranagar",
+      "pincode": "560038"
+    },
+    "items": [
+      {
+        "id": "3755b5a3-0b16-4de2-96c1-f1e32440df3e",
+        "size": "XL",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png",
+        "price": 2199,
+        "title": "Automated Test Gothic Cyber Oversized Tee (V2 Gold Edition)",
+        "quantity": 2
+      }
+    ],
+    "subtotal": 4398,
+    "discount": 0,
+    "shipping": 0,
+    "total": 4398,
+    "paymentMethod": "Cash on Delivery (COD)",
+    "paymentStatus": "Pending",
+    "orderStatus": "Processing",
+    "trackingNumber": "",
+    "delhiveryWaybill": "",
+    "trackingUrl": "",
+    "createdAt": "2026-10-19T16:37:24.46+00:00",
+    "updatedAt": "2026-10-19T16:37:24.736+00:00"
+  },
+  {
     "id": "GR-4703",
     "supabaseId": "c24478eb-ba94-4eda-b0e4-6717cc84ddd3",
     "customer": {

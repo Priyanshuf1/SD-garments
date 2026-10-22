@@ -1,5 +1,40 @@
 [
   {
+    "id": "SUB-1792683867221",
+    "email": "spam_1792683866671_4@test.com",
+    "subscribedAt": "2026-10-22T15:44:27.221Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792683866266",
+    "email": "spam_1792683865436_3@test.com",
+    "subscribedAt": "2026-10-22T15:44:26.266Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792683865143",
+    "email": "spam_1792683864712_2@test.com",
+    "subscribedAt": "2026-10-22T15:44:25.143Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792683864321",
+    "email": "spam_1792683863711_1@test.com",
+    "subscribedAt": "2026-10-22T15:44:24.321Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792683863482",
+    "email": "spam_1792683863025_0@test.com",
+    "subscribedAt": "2026-10-22T15:44:23.482Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
     "id": "SUB-1792369820721",
     "email": "innercircle_1792369820718@allyrich.com",
     "subscribedAt": "2026-10-19T00:30:20.721Z",

@@ -80,10 +80,13 @@
       </div>
 
       <div style="display:flex; flex-direction:column; gap:10px; margin-bottom: 0.5rem;">
-        <a id="btn-track-delhivery" href="/track" target="_blank" rel="noopener" style="background:#e50914; color:#fff; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px; display:block;">TRACK SHIPMENT WITH DELHIVERY ↗</a>
-        <div style="display:flex; gap:10px; justify-content:center;">
-          <a href="/account" style="flex:1; background:#000; color:#fff; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">VIEW MY ACCOUNT</a>
-          <a href="/collections/shop" style="flex:1; background:#f0f0f0; color:#111; text-decoration:none; padding:12px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:3px;">CONTINUE SHOPPING</a>
+        <a id="btn-track-delhivery" href="/pages/track-order.html" style="background:#000; color:#fff; text-decoration:none; padding:13px; font-weight:800; font-size:0.85rem; letter-spacing:0.05em; text-transform:uppercase; border-radius:3px; display:block; text-align:center;">TRACK SHIPMENT LIVE ➔</a>
+        <a id="btn-whatsapp-updates" href="https://wa.me/919876543210?text=Hi%20ALLYRICH,%20please%20send%20live%20WhatsApp%20updates" target="_blank" rel="noopener" style="background:#25D366; color:#000; text-decoration:none; padding:13px; font-weight:800; font-size:0.85rem; letter-spacing:0.05em; text-transform:uppercase; border-radius:3px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span>💬 GET LIVE UPDATES ON WHATSAPP</span>
+        </a>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:4px;">
+          <a href="/account" style="flex:1; background:#f0f0f0; color:#111; text-decoration:none; padding:12px; font-weight:800; font-size:0.8rem; text-transform:uppercase; border-radius:3px;">VIEW MY ACCOUNT</a>
+          <a href="/collections/shop" style="flex:1; background:#f0f0f0; color:#111; text-decoration:none; padding:12px; font-weight:800; font-size:0.8rem; text-transform:uppercase; border-radius:3px;">CONTINUE SHOPPING</a>
         </div>
       </div>
     </div>
@@ -95,7 +98,11 @@
     document.getElementById('display-order-id').textContent = orderId;
     const trackBtn = document.getElementById('btn-track-delhivery');
     if (trackBtn && orderId) {
-      trackBtn.href = '/track?id=' + encodeURIComponent(orderId);
+      trackBtn.href = '/pages/track-order.html?order=' + encodeURIComponent(orderId);
+    }
+    const waBtn = document.getElementById('btn-whatsapp-updates');
+    if (waBtn && orderId) {
+      waBtn.href = 'https://wa.me/919876543210?text=' + encodeURIComponent('Hi ALLYRICH, please send live WhatsApp delivery updates for order #' + orderId + '.');
     }
   </script>
 </body>

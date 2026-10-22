@@ -774,20 +774,72 @@ async function sendOtpEmail(email, otpCode) {
   return emailDispatched;
 }
 
-// Order Confirmation Email Service via Resend
+
+// n8n Webhook Dispatch Service
+async function dispatchN8nOrderWebhook(order) {
+  const n8nUrl = process.env.N8N_ORDER_WEBHOOK_URL;
+  if (!n8nUrl) return false;
+
+  try {
+    const res = await fetch(n8nUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'order.created',
+        orderId: order.id,
+        createdAt: order.createdAt || new Date().toISOString(),
+        customer: order.customer,
+        items: order.items,
+        total: order.total,
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        orderStatus: order.orderStatus,
+        trackingNumber: order.trackingNumber || '',
+        trackingUrl: `http://${process.env.APP_DOMAIN || 'allyrich-alb-1951227217.ap-southeast-2.elb.amazonaws.com'}/pages/track-order.html?order=${encodeURIComponent(order.id)}`
+      })
+    });
+    if (res.ok) {
+      console.log(`🚀 [N8N WEBHOOK DISPATCH] Successfully triggered n8n workflow for order ${order.id}`);
+      return true;
+    } else {
+      const err = await res.text();
+      console.warn(`⚠️ [N8N WEBHOOK ERROR]:`, err);
+    }
+  } catch (err) {
+    console.warn(`⚠️ [N8N WEBHOOK EXCEPTION]:`, err.message);
+  }
+  return false;
+}
+
+// Order Confirmation Tax Invoice Email Service via Resend
 async function sendOrderConfirmationEmail(order) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const email = (order.customer?.email || '').trim();
   if (!resendApiKey || !email || !email.includes('@')) return false;
 
+  const domain = process.env.APP_DOMAIN || 'allyrich-alb-1951227217.ap-southeast-2.elb.amazonaws.com';
+  const trackUrl = `http://${domain}/pages/track-order.html?order=${encodeURIComponent(order.id)}`;
+  const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi ALLYRICH, please send live WhatsApp delivery updates for my order #${order.id}.`)}`;
+
   const itemsHtml = (order.items || []).map(item => `
     <tr>
-      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee;">
-        <div style="font-weight: 700; color: #111;">${item.title || item.name || 'ALLYRICH Streetwear Item'}</div>
-        <div style="font-size: 12px; color: #777;">Size: ${item.size || 'M'} &bull; Qty: ${item.quantity || 1}</div>
-      </td>
-      <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; text-align: right; font-weight: 700; color: #111;">
-        ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
+      <td style="padding: 12px 0; border-bottom: 1px solid #222222;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="width: 54px; vertical-align: top; padding-right: 12px;">
+              <img src="${item.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png'}" width="48" height="60" style="object-fit: cover; border-radius: 4px; display: block; background: #222;" alt="${item.title || 'Streetwear'}">
+            </td>
+            <td style="vertical-align: top;">
+              <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${item.title || item.name || 'ALLYRICH Streetwear Item'}</div>
+              <div style="font-size: 12px; color: #888888; margin-top: 4px;">Size: <span style="color:#ffffff;">${item.size || 'L'}</span> &bull; Qty: <span style="color:#ffffff;">${item.quantity || 1}</span></div>
+            </td>
+            <td style="vertical-align: top; text-align: right; font-weight: 800; color: #ffffff; font-size: 14px;">
+              ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   `).join('');
@@ -802,71 +854,322 @@ async function sendOrderConfirmationEmail(order) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
         to: [email],
-        subject: `Order Confirmed: #${order.id} - ALLYRICH`,
+        subject: `Order Confirmed: #${order.id} | ALLYRICH Official Atelier`,
         html: `
-          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:560px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
-            <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-              <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
-              <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #f5f5f5; border: 1px solid #222222; border-radius: 8px; overflow: hidden;">
+            <div style="background: #000000; padding: 28px 24px; text-align: center; border-bottom: 1px solid #1a1a1a;">
+              <h1 style="font-size: 24px; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase; margin: 0; color: #ffffff;">ALLYRICH</h1>
+              <p style="font-size: 11px; letter-spacing: 0.15em; color: #888888; margin: 6px 0 0; text-transform: uppercase;">Handcrafted In India &bull; Express Dispatch</p>
             </div>
-            <div style="padding:24px 0;">
-              <h2 style="font-size:18px; margin:0 0 8px; color:#000;">Thank You for Your Order</h2>
-              <p style="font-size:14px; color:#555; margin:0 0 20px;">Order <strong>#${order.id}</strong> has been received and is being prepared for dispatch.</p>
-              
-              <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
-                <thead>
-                  <tr style="border-bottom:2px solid #000; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">
-                    <th style="text-align:left; padding:8px 0;">Item</th>
-                    <th style="text-align:right; padding:8px 0;">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
+
+            <div style="padding: 28px 24px;">
+              <div style="background: rgba(46, 125, 50, 0.15); border: 1px solid rgba(46, 125, 50, 0.3); border-radius: 6px; padding: 14px 18px; margin-bottom: 24px; text-align: center;">
+                <span style="color: #4caf50; font-size: 14px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">✓ Order Confirmed #${order.id}</span>
+                <p style="margin: 4px 0 0; color: #cccccc; font-size: 12px;">We're handcrafting and quality-checking your pieces at our atelier.</p>
+              </div>
+
+              <div style="margin-bottom: 24px;">
+                <h3 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin: 0 0 12px;">Order Summary</h3>
+                <table style="width: 100%; border-collapse: collapse;">
                   ${itemsHtml}
-                </tbody>
-              </table>
+                </table>
+              </div>
 
-              <div style="background:#f9f9f9; padding:16px; border-radius:6px; margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
-                  <span>Subtotal:</span>
-                  <span>₹${(order.subtotal || 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#555;">
-                  <span>Shipping:</span>
-                  <span>${order.shipping === 0 ? 'FREE' : '₹' + order.shipping}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:#000; padding-top:8px; border-top:1px solid #ddd;">
-                  <span>Order Total:</span>
-                  <span>₹${(order.total || 0).toLocaleString('en-IN')}</span>
+              <div style="background: #141414; padding: 16px; border-radius: 6px; border: 1px solid #222222; margin-bottom: 24px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                  <tr>
+                    <td style="color: #888888; padding: 4px 0;">Subtotal</td>
+                    <td style="color: #ffffff; text-align: right; padding: 4px 0;">₹${(order.subtotal || 0).toLocaleString('en-IN')}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #888888; padding: 4px 0;">Express Shipping (19,000+ PIN Codes)</td>
+                    <td style="color: #4caf50; text-align: right; padding: 4px 0; font-weight: 700;">FREE</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #888888; padding: 4px 0;">Payment Method</td>
+                    <td style="color: #ffffff; text-align: right; padding: 4px 0;">${order.paymentMethod || 'Cash on Delivery (COD)'}</td>
+                  </tr>
+                  <tr style="border-top: 1px solid #262626;">
+                    <td style="color: #ffffff; font-weight: 800; font-size: 16px; padding: 12px 0 4px;">Total Bill</td>
+                    <td style="color: #ffffff; font-weight: 800; font-size: 16px; text-align: right; padding: 12px 0 4px;">₹${(order.total || 0).toLocaleString('en-IN')}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="background: #141414; padding: 16px; border-radius: 6px; border: 1px solid #222222; margin-bottom: 28px; font-size: 13px; line-height: 1.6;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin-bottom: 6px;">Delivery Destination</div>
+                <div style="color: #ffffff; font-weight: 700;">${order.customer?.name || 'Valued Client'}</div>
+                <div style="color: #cccccc;">
+                  ${order.customer?.address || ''}${order.customer?.locality ? ', ' + order.customer.locality : ''}<br>
+                  ${order.customer?.city || 'Mumbai'}, ${order.customer?.state || 'Maharashtra'} ${order.customer?.pincode || ''}<br>
+                  Phone: ${order.customer?.phone || '+91 99999 99999'}
                 </div>
               </div>
 
-              <div style="font-size:13px; color:#444; line-height:1.6;">
-                <strong>Shipping Address:</strong><br>
-                ${order.customer?.name || ''}<br>
-                ${order.customer?.address || ''}${order.customer?.locality ? ', ' + order.customer.locality : ''}<br>
-                ${order.customer?.city || ''}, ${order.customer?.state || ''} ${order.customer?.pincode || ''}<br>
-                ${order.customer?.country || 'India'}
+              <div style="text-align: center; margin-bottom: 12px;">
+                <a href="${trackUrl}" style="background: #ffffff; color: #000000; text-decoration: none; padding: 14px 28px; font-weight: 800; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px; display: block; margin-bottom: 10px;">
+                  TRACK SHIPMENT IN REAL TIME ➔
+                </a>
+                <a href="${whatsappUrl}" style="background: #25D366; color: #000000; text-decoration: none; padding: 12px 24px; font-weight: 800; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; display: block;">
+                  💬 RECEIVE LIVE UPDATES ON WHATSAPP
+                </a>
               </div>
             </div>
-            <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
-              If you have questions about your order, reply to this email or visit our website.<br>
-              &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+
+            <div style="background: #000000; border-top: 1px solid #1a1a1a; padding: 20px 24px; text-align: center; font-size: 11px; color: #666666; line-height: 1.6;">
+              7-Day Doorstep Exchange Guarantee &bull; 100% Cotton Bio-Washed Apparel<br>
+              Need assistance? Reply directly to this email or chat with our 24/7 AI Concierge.<br>
+              &copy; ${new Date().getFullYear()} ALLYRICH India. All rights reserved.
             </div>
           </div>
         `
       })
     });
     if (res.ok) {
-      console.log(`✅ [ORDER CONFIRMATION EMAIL] Delivered to ${email} for order ${order.id}`);
+      console.log(`✅ [TAX INVOICE EMAIL] Delivered to ${email} for order ${order.id}`);
       return true;
     } else {
       const errText = await res.text();
-      console.warn(`⚠️ [ORDER CONFIRMATION EMAIL ERROR]:`, errText);
+      console.warn(`⚠️ [TAX INVOICE EMAIL ERROR]:`, errText);
     }
   } catch (err) {
-    console.warn(`⚠️ [ORDER EMAIL EXCEPTION]:`, err.message);
+    console.warn(`⚠️ [TAX INVOICE EMAIL EXCEPTION]:`, err.message);
   }
   return false;
+}
+
+// Order Tracking Public Handler
+async function handleTrackOrder(req, res, parsedUrl) {
+  const query = (
+    parsedUrl.searchParams.get('id') ||
+    parsedUrl.searchParams.get('order') ||
+    parsedUrl.searchParams.get('orderId') ||
+    parsedUrl.searchParams.get('query') ||
+    parsedUrl.searchParams.get('phone') ||
+    parsedUrl.searchParams.get('q') || ''
+  ).trim();
+
+  if (!query) {
+    return sendJson(res, 400, {
+      success: false,
+      message: 'Please provide an Order ID (e.g. GR-4891) or phone number to track your shipment.'
+    });
+  }
+
+  const cleanQuery = query.toLowerCase().replace(/^[#]/, '').trim();
+  const digitsQuery = query.replace(/\D/g, '');
+
+  const orders = await getAllOrders();
+  let matchedOrder = orders.find(o => {
+    const oId = String(o.id || '').toLowerCase().replace(/^[#]/, '');
+    if (oId === cleanQuery || cleanQuery.includes(oId) || oId.includes(cleanQuery)) return true;
+
+    // Match phone
+    const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
+    if (digitsQuery.length >= 7 && oPhone.includes(digitsQuery)) return true;
+
+    // Match AWB / tracking number
+    const trk = String(o.trackingNumber || o.delhiveryWaybill || '').toLowerCase();
+    if (trk && trk === cleanQuery) return true;
+
+    return false;
+  });
+
+  if (!matchedOrder && supabase && supabase.isConfigured) {
+    try {
+      const supaOrders = await supabase.orders.getAll(100);
+      matchedOrder = supaOrders.find(o => {
+        const oId = String(o.id || '').toLowerCase().replace(/^[#]/, '');
+        if (oId === cleanQuery || cleanQuery.includes(oId) || oId.includes(cleanQuery)) return true;
+        const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
+        if (digitsQuery.length >= 7 && oPhone.includes(digitsQuery)) return true;
+        const trk = String(o.trackingNumber || o.delhiveryWaybill || '').toLowerCase();
+        if (trk && trk === cleanQuery) return true;
+        return false;
+      });
+    } catch (e) {}
+  }
+
+  if (!matchedOrder) {
+    return sendJson(res, 404, {
+      success: false,
+      message: `No shipment found for "${query}". Please check your Order ID or phone number.`
+    });
+  }
+
+  // Build visual timeline steps based on orderStatus
+  const status = matchedOrder.orderStatus || 'Processing';
+  const isDelivered = status.toLowerCase() === 'delivered';
+  const isOutForDelivery = status.toLowerCase().includes('out');
+  const isShipped = status.toLowerCase() === 'shipped' || isOutForDelivery || isDelivered;
+
+  const orderTimeStr = new Date(matchedOrder.createdAt || Date.now()).toLocaleDateString('en-IN', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+
+  const steps = [
+    {
+      title: 'Order Confirmed',
+      status: 'completed',
+      description: 'Order registered in atelier queue and payment verified',
+      time: orderTimeStr
+    },
+    {
+      title: 'Artisan Crafting & QC',
+      status: isShipped ? 'completed' : 'current',
+      description: 'Handcrafted and inspected at Mumbai studio',
+      time: isShipped ? 'Quality Inspection Passed' : 'In Progress'
+    },
+    {
+      title: 'Dispatched via Carrier',
+      status: isOutForDelivery || isDelivered ? 'completed' : (isShipped ? 'current' : 'pending'),
+      description: matchedOrder.trackingNumber ? `Delhivery Express Air (AWB: ${matchedOrder.trackingNumber})` : 'Delhivery Express Air',
+      time: isShipped ? 'Dispatched' : 'Estimated Dispatch: 24-48h'
+    },
+    {
+      title: 'Out for Delivery',
+      status: isDelivered ? 'completed' : (isOutForDelivery ? 'current' : 'pending'),
+      description: 'Courier partner out for doorstep delivery',
+      time: isOutForDelivery ? 'Today' : 'Pending'
+    },
+    {
+      title: 'Delivered',
+      status: isDelivered ? 'completed' : 'pending',
+      description: 'Package successfully delivered',
+      time: isDelivered ? 'Delivered' : 'Estimated Delivery: 2-4 Days'
+    }
+  ];
+
+  return sendJson(res, 200, {
+    success: true,
+    order: {
+      id: matchedOrder.id,
+      createdAt: matchedOrder.createdAt,
+      orderStatus: matchedOrder.orderStatus || 'Processing',
+      paymentStatus: matchedOrder.paymentStatus || 'Pending',
+      paymentMethod: matchedOrder.paymentMethod || 'Cash on Delivery (COD)',
+      total: matchedOrder.total,
+      subtotal: matchedOrder.subtotal,
+      shipping: matchedOrder.shipping,
+      customer: {
+        name: matchedOrder.customer?.name || 'Customer',
+        city: matchedOrder.customer?.city || 'Mumbai',
+        state: matchedOrder.customer?.state || 'Maharashtra',
+        address: matchedOrder.customer?.address || '',
+        locality: matchedOrder.customer?.locality || '',
+        pincode: matchedOrder.customer?.pincode || '',
+        country: matchedOrder.customer?.country || 'India'
+      },
+      items: matchedOrder.items || [],
+      trackingNumber: matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill || '',
+      carrier: 'Delhivery Express Air Priority',
+      estimatedDelivery: '2 - 4 Business Days',
+      steps
+    }
+  });
+}
+
+// 24/7 AI Streetwear Support Concierge Handler
+async function handleAiChat(req, res) {
+  const payload = await parseBody(req);
+  const userMsg = (payload.message || '').trim();
+
+  if (!userMsg) {
+    return sendJson(res, 400, { success: false, reply: 'Please provide a question or message.' });
+  }
+
+  const lower = userMsg.toLowerCase();
+
+  // 1. Order Tracking Intent
+  const orderIdMatch = userMsg.match(/(?:gr|ar)[#\s-]*([0-9]{4,6})/i) || userMsg.match(/#?([0-9]{4,6})/);
+  const phoneMatch = userMsg.match(/\b[6-9]\d{9}\b/);
+
+  if (orderIdMatch || phoneMatch || lower.includes('track') || lower.includes('where is my order') || lower.includes('status')) {
+    const query = orderIdMatch ? (orderIdMatch[0].toUpperCase()) : (phoneMatch ? phoneMatch[0] : '');
+    if (query) {
+      const orders = await getAllOrders();
+      const cleanQ = query.replace(/\D/g, '');
+      const match = orders.find(o => {
+        const oId = String(o.id || '').toUpperCase();
+        if (oId.includes(query.toUpperCase())) return true;
+        const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
+        if (cleanQ.length >= 7 && oPhone.includes(cleanQ)) return true;
+        return false;
+      });
+
+      if (match) {
+        const itemsSummary = (match.items || []).map(it => `${it.title} (${it.size || 'L'} x${it.quantity || 1})`).join(', ');
+        const reply = `📦 **Order #${match.id}** is currently **${match.orderStatus || 'Processing'}**!\n\n` +
+          `• **Items**: ${itemsSummary}\n` +
+          `• **Destination**: ${match.customer?.city || 'Mumbai'}, ${match.customer?.state || 'India'}\n` +
+          `• **Carrier**: Delhivery Express Air ${match.trackingNumber ? `(AWB: ${match.trackingNumber})` : ''}\n` +
+          `• **Payment**: ${match.paymentMethod || 'COD'} (Total: ₹${(match.total || 0).toLocaleString('en-IN')})\n\n` +
+          `🔗 [Click here to view live tracking timeline](/pages/track-order.html?order=${encodeURIComponent(match.id)})`;
+        return sendJson(res, 200, { success: true, reply });
+      }
+    }
+
+    if (lower.includes('track') || lower.includes('order')) {
+      return sendJson(res, 200, {
+        success: true,
+        reply: "To track your shipment, please type your **Order ID** (e.g. `GR-4821`) or your 10-digit mobile number, or visit our [Shipment Tracker](/pages/track-order.html)."
+      });
+    }
+  }
+
+  // 2. Sizing & Fit Advisor Intent
+  if (lower.includes('size') || lower.includes('fit') || lower.includes('height') || lower.includes('weight') || lower.includes('chest') || lower.includes('should i buy') || lower.includes('small') || lower.includes('large') || lower.includes('medium')) {
+    let rec = "Our silhouettes are engineered with an **authentic architectural boxy streetwear fit** with pronounced dropped shoulders and a heavy 240+ GSM drape.\n\n";
+    if (lower.includes('tall') || lower.includes('ft') || lower.includes('feet') || lower.includes('kg')) {
+      rec += "• **Over 5'10\" or 75kg+**: We recommend **Size XL** for the signature exaggerated streetwear drape, or **Size L** for a clean relaxed fit.\n" +
+             "• **5'6\" to 5'10\" or 60–75kg**: We recommend **Size L** for an oversized look, or **Size M** for a structured fit.\n" +
+             "• **Under 5'6\" or under 60kg**: We recommend **Size S** or **M**.\n\n" +
+             "View our full measurements on the [Size Guide](/pages/size-guide.html).";
+    } else {
+      rec += "• **Standard Streetwear Fit**: Take your normal size.\n" +
+             "• **Dramatic Statement Drop**: Size up one size.\n\n" +
+             "You can check precise chest and length measurements on our [Size Guide](/pages/size-guide.html).";
+    }
+    return sendJson(res, 200, { success: true, reply: rec });
+  }
+
+  // 3. Return & Exchange Policy Intent
+  if (lower.includes('return') || lower.includes('exchange') || lower.includes('refund') || lower.includes('cancel')) {
+    const reply = "🔄 **ALLYRICH 7-Day Doorstep Exchange Policy**:\n\n" +
+      "• We offer hassle-free exchanges within **7 days** of delivery for size or style swaps.\n" +
+      "• Garments must be unworn with original tags and luxury packaging intact.\n" +
+      "• Reverse pickup is arranged by Delhivery across 19,000+ PIN codes in India.\n\n" +
+      "Read full details on our [Refund & Exchange Policy](/pages/refund-policy.html).";
+    return sendJson(res, 200, { success: true, reply });
+  }
+
+  // 4. Fabric & Garment Specifications Intent
+  if (lower.includes('fabric') || lower.includes('material') || lower.includes('wash') || lower.includes('quality') || lower.includes('gsm') || lower.includes('cotton')) {
+    const reply = "🧵 **Atelier Fabric Specifications**:\n\n" +
+      "• **Cotton**: 100% Super-Combed French Terry Cotton (240–380 GSM).\n" +
+      "• **Finish**: Pre-shrunk, bio-washed, luxury silicon softened hand-feel.\n" +
+      "• **Care Instructions**: Machine wash cold inside-out, hang dry in shade, do not iron directly on graphics.";
+    return sendJson(res, 200, { success: true, reply });
+  }
+
+  // 5. Human Support / WhatsApp Intent
+  if (lower.includes('human') || lower.includes('agent') || lower.includes('talk') || lower.includes('whatsapp') || lower.includes('call') || lower.includes('phone') || lower.includes('support') || lower.includes('help')) {
+    const reply = "💬 You can speak directly with our atelier human care team:\n\n" +
+      "• **WhatsApp Direct**: [Chat with ALLYRICH Support](https://wa.me/919876543210?text=Hi%20ALLYRICH%20Support,%20I%20need%20assistance)\n" +
+      "• **Email**: care@allyrich.com\n" +
+      "• **Hours**: Mon – Sat, 10:00 AM – 7:00 PM IST";
+    return sendJson(res, 200, { success: true, reply });
+  }
+
+  // Fallback / General Welcome
+  const reply = "Welcome to **ALLYRICH**. I can assist you with:\n\n" +
+    "1. 📦 **Live Order Tracking** (Type your Order ID or phone)\n" +
+    "2. 📏 **Size & Fit Recommendations** (Tell me your height & weight)\n" +
+    "3. 🔄 **7-Day Exchange Policy**\n" +
+    "4. 💬 **Chat with Human Support on WhatsApp**\n\n" +
+    "How can I help you today?";
+
+  return sendJson(res, 200, { success: true, reply });
 }
 
 async function handleGetSingleProduct(req, res, idOrHandle) {
@@ -1259,6 +1562,9 @@ async function handleCreateOrder(req, res, isCheckout = false) {
   sendOrderConfirmationEmail(newOrder).catch(err => {
     console.warn('⚠️ [ASYNC ORDER EMAIL WARNING]:', err.message);
   });
+  dispatchN8nOrderWebhook(newOrder).catch(err => {
+    console.warn('⚠️ [N8N WEBHOOK WARNING]:', err.message);
+  });
 
   return sendJson(res, 201, {
     success: true,
@@ -1470,6 +1776,20 @@ async function appHandler(req, res) {
     }
     if (req.method === 'DELETE' && prodId) {
       return await handleDeleteProduct(req, res, prodId);
+    }
+  }
+
+  // 1. Live Public Order Tracking API
+  if (pathname === '/api/orders/track' || pathname === '/api/track-order') {
+    if (req.method === 'GET') {
+      return await handleTrackOrder(req, res, parsedUrl);
+    }
+  }
+
+  // 2. 24/7 AI Streetwear Concierge Chat API
+  if (pathname === '/api/ai/chat' || pathname === '/api/chat') {
+    if (req.method === 'POST') {
+      return await handleAiChat(req, res);
     }
   }
 
@@ -3235,47 +3555,6 @@ async function appHandler(req, res) {
     }
   }
 
-  // Handle /track Route (Redirect to Delhivery logistics package tracking)
-  if (pathname === '/track' || pathname === '/track/' || pathname === '/track-order' || pathname === '/api/track') {
-    const rawId = parsedUrl.searchParams.get('id') ||
-                  parsedUrl.searchParams.get('orderId') ||
-                  parsedUrl.searchParams.get('awb') ||
-                  parsedUrl.searchParams.get('waybill') ||
-                  parsedUrl.searchParams.get('q');
-
-    if (rawId) {
-      const cleanId = String(rawId).trim().replace(/^#/, '');
-      let orders = readJsonFile('orders.json', []);
-      let matchedOrder = orders.find(o =>
-        (o.id && (o.id.toLowerCase() === cleanId.toLowerCase() || o.id.toLowerCase() === '#' + cleanId.toLowerCase())) ||
-        (o.trackingNumber && o.trackingNumber.toLowerCase() === cleanId.toLowerCase()) ||
-        (o.delhiveryWaybill && o.delhiveryWaybill.toLowerCase() === cleanId.toLowerCase())
-      );
-
-      if (!matchedOrder && supabase && supabase.isConfigured) {
-        try {
-          const supaOrders = await supabase.orders.getAll(100);
-          matchedOrder = supaOrders.find(o =>
-            (o.id && (String(o.id).toLowerCase() === cleanId.toLowerCase() || String(o.id).toLowerCase() === '#' + cleanId.toLowerCase())) ||
-            (o.trackingNumber && String(o.trackingNumber).toLowerCase() === cleanId.toLowerCase()) ||
-            (o.delhiveryWaybill && String(o.delhiveryWaybill).toLowerCase() === cleanId.toLowerCase())
-          );
-        } catch (e) {}
-      }
-
-      const targetIdentifier = matchedOrder && (matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill)
-        ? (matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill)
-        : cleanId;
-
-      res.writeHead(302, { 'Location': `https://www.delhivery.com/track/package/${encodeURIComponent(targetIdentifier)}` });
-      return res.end();
-    }
-
-    // Direct redirection to official Delhivery package tracking portal
-    res.writeHead(302, { 'Location': 'https://www.delhivery.com/track/package/' });
-    return res.end();
-  }
-
   // Handle /cart Route (Redirect to collections with openCart drawer)
   if (pathname === '/cart' || pathname === '/cart/') {
     res.writeHead(302, { 'Location': '/collections/shop?openCart=true' });
@@ -3284,6 +3563,11 @@ async function appHandler(req, res) {
 
   // Handle Policy & Informational Pages (/pages/:page, /refund-policy, /privacy-policy, etc.)
   const policyMap = {
+    '/track': 'track-order.html',
+    '/track-order': 'track-order.html',
+    '/pages/track': 'track-order.html',
+    '/pages/track-order': 'track-order.html',
+    '/pages/track-order.html': 'track-order.html',
     '/refund-policy': 'refund-policy.html',
     '/pages/refund-policy': 'refund-policy.html',
     '/pages/refund-policy.html': 'refund-policy.html',
