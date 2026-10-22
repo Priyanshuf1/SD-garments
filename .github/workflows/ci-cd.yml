@@ -98,7 +98,9 @@ jobs:
           script: |
             cd ~/SD-garments
             git pull origin main
-            sudo docker compose up -d --build --force-recreate
+            sudo docker compose build --no-cache web
+            sudo docker compose up -d --force-recreate
             sleep 5
             curl --fail http://localhost:3000/api/health || exit 1
+            curl --fail http://localhost:3000/pages/track-order.html || exit 1
             echo "🚀 Deployment successfully verified on AWS EC2!"
