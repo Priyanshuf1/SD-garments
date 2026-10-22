@@ -27,7 +27,7 @@ services:
       - CASHFREE_APP_ID=${CASHFREE_APP_ID:-}
       - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
       - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-https://priyanshuf1.app.n8n.cloud/webhook/allyrich-orders}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6JcEYdvyuc4tChf6GlbisryTPcEPdHGJz8UwKEQbr2SYQ}
     depends_on:
       db:
         condition: service_healthy

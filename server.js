@@ -1113,23 +1113,23 @@ Customer Message: "${userMsg}"
 
 Provide an elegant, helpful, and concise response in markdown.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 500, temperature: 0.7 }
-        })
-      });
+      for (const m of ['gemini-3.5-flash', 'gemini-3.8-flash']) {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${geminiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 500, temperature: 0.7 }
+          })
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const geminiReply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (geminiReply) {
-          return sendJson(res, 200, { success: true, reply: geminiReply, engine: 'gemini-2.5-flash' });
+        if (response.ok) {
+          const data = await response.json();
+          const geminiReply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (geminiReply) {
+            return sendJson(res, 200, { success: true, reply: geminiReply, engine: m });
+          }
         }
-      } else {
-        console.warn('Gemini API returned status:', response.status);
       }
     } catch (gErr) {
       console.warn('Gemini API error, falling back to local intent engine:', gErr.message);
