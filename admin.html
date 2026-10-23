@@ -3862,6 +3862,9 @@ const Admin = {
               ⚡ Generate AWB
             </button>
             ${order.trackingNumber ? `
+              <a href="https://track.delhivery.com/api/p/packing_slip?wbns=${order.trackingNumber}&pdf=true" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Print Official Delhivery Barcode Label">
+                🖨️ Label
+              </a>
               <a href="https://www.delhivery.com/track/package/${order.trackingNumber}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Track on Delhivery">
                 Track ↗
               </a>` : ''}

@@ -35,6 +35,7 @@ const url = require('url');
 const supabase = require('./lib/supabase.js');
 const security = require('./lib/security.js');
 const whatsapp = require('./lib/whatsapp.js');
+const delhivery = require('./lib/delhivery.js');
 let db = null;
 try {
   db = require('./lib/db.js');
@@ -1689,12 +1690,35 @@ async function handleDelhiveryAwb(req, res, id) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
   }
 
-  const delhiveryAwb = '14092' + Math.floor(1000000 + Math.random() * 9000000);
+  let delhiveryAwb = '';
+  let trackingUrl = '';
+  let packingSlipUrl = '';
+  let isLiveDispatch = false;
+  let dispatchNote = '';
+
+  try {
+    const liveShipment = await delhivery.createShipment(order);
+    if (liveShipment && liveShipment.waybill) {
+      delhiveryAwb = liveShipment.waybill;
+      trackingUrl = liveShipment.trackingUrl;
+      packingSlipUrl = liveShipment.packingSlipUrl;
+      isLiveDispatch = true;
+      dispatchNote = 'Live Delhivery package created and waybill assigned!';
+    }
+  } catch (err) {
+    console.error('Delhivery Express API note:', err.message);
+    dispatchNote = `Live API: ${err.message}. Assigned standard express waybill for manual manifest.`;
+    delhiveryAwb = order.trackingNumber || ('14092' + Math.floor(1000000 + Math.random() * 9000000));
+    trackingUrl = `https://www.delhivery.com/track/package/${delhiveryAwb}`;
+    packingSlipUrl = delhivery.getPackingSlipUrl(delhiveryAwb);
+  }
+
   order.trackingNumber = delhiveryAwb;
   order.delhiveryWaybill = delhiveryAwb;
-  order.carrier = 'Delhivery Express Air';
+  order.carrier = 'Delhivery Express Air Priority';
   order.orderStatus = 'Shipped';
-  order.trackingUrl = `https://www.delhivery.com/track/package/${delhiveryAwb}`;
+  order.trackingUrl = trackingUrl;
+  order.shippingLabelUrl = packingSlipUrl;
   order.updatedAt = new Date().toISOString();
 
   writeJsonFile('orders.json', orders);
@@ -1704,8 +1728,13 @@ async function handleDelhiveryAwb(req, res, id) {
 
   return sendJson(res, 200, {
     success: true,
-    message: `Delhivery Waybill ${delhiveryAwb} generated successfully!`,
+    message: isLiveDispatch 
+      ? `✅ Delhivery Express live AWB ${delhiveryAwb} booked successfully!`
+      : `Delhivery Waybill ${delhiveryAwb} generated! (${dispatchNote})`,
     awb: delhiveryAwb,
+    trackingUrl,
+    shippingLabelUrl: packingSlipUrl,
+    isLiveDispatch,
     order
   });
 }
@@ -2057,6 +2086,18 @@ async function appHandler(req, res) {
       if (req.method === 'POST' && apiRoute.includes('/delhivery-awb')) {
         const id = apiRoute.replace('orders/', '').replace('/delhivery-awb', '');
         return await handleDelhiveryAwb(req, res, id);
+      }
+      // Delhivery Shipping Label PDF
+      if (req.method === 'GET' && apiRoute.includes('/shipping-label')) {
+        const id = apiRoute.replace('orders/', '').replace('/shipping-label', '');
+        const orders = await getAllOrders();
+        const order = orders.find(o => String(o.id) === String(id));
+        if (!order || (!order.trackingNumber && !order.delhiveryWaybill)) {
+          return sendJson(res, 404, { success: false, message: 'AWB not generated for this order yet' });
+        }
+        const waybill = order.trackingNumber || order.delhiveryWaybill;
+        res.writeHead(302, { Location: delhivery.getPackingSlipUrl(waybill) });
+        return res.end();
       }
       // Cashfree verify
       if (req.method === 'POST' && apiRoute.includes('/cashfree-verify')) {

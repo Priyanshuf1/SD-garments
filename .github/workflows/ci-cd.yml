@@ -112,6 +112,16 @@ jobs:
               sed -i '/^N8N_ORDER_WEBHOOK_URL=/d' .env
               echo "N8N_ORDER_WEBHOOK_URL=$N8N_ORDER_WEBHOOK_URL" >> .env
             fi
+            sed -i '/^DELHIVERY_API_TOKEN=/d' .env
+            echo "DELHIVERY_API_TOKEN=5b89b0734b0d4daa1655ea178e432c33f1964d80" >> .env
+            sed -i '/^DELHIVERY_WAREHOUSE_NAME=/d' .env
+            echo "DELHIVERY_WAREHOUSE_NAME=SD Garments" >> .env
+            sed -i '/^DELHIVERY_WAREHOUSE_PINCODE=/d' .env
+            echo "DELHIVERY_WAREHOUSE_PINCODE=209721" >> .env
+            sed -i '/^DELHIVERY_CLIENT_NAME=/d' .env
+            echo "DELHIVERY_CLIENT_NAME=SD Garments" >> .env
+            sed -i '/^DELHIVERY_ENV=/d' .env
+            echo "DELHIVERY_ENV=production" >> .env
             # Cleanly stop and remove any old/orphan containers to prevent port collisions
             sudo docker compose down --remove-orphans || true
             sudo docker stop allyrich-web allyrich-db alleyrich-storefront alleyrich-db 2>/dev/null || true
