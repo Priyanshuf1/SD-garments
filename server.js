@@ -2673,6 +2673,10 @@ async function appHandler(req, res) {
 
       // Check whether email exists in local customers.json OR in Supabase
       const existing = customers.find(c => (c.email || '').toLowerCase() === email);
+      let rdsUser = null;
+      if (db && db.isConfigured) {
+        try { rdsUser = await db.customers.getByEmail(email); } catch (e) {}
+      }
       let cloudUser = null;
       if (supabase.isConfigured) {
         try {
@@ -2680,7 +2684,7 @@ async function appHandler(req, res) {
         } catch (e) {}
       }
 
-      if (existing || cloudUser) {
+      if (existing || rdsUser || cloudUser) {
         return sendJson(res, 400, {
           success: false,
           error: 'An account with this email address already exists. Please sign in with your password or Instant OTP.',
@@ -2739,6 +2743,15 @@ async function appHandler(req, res) {
       };
       customers.unshift(customerRecord);
       writeJsonFile('customers.json', customers);
+
+      // Sync customer to AWS RDS PostgreSQL
+      if (db && db.isConfigured) {
+        try {
+          await db.customers.upsert(customerRecord);
+        } catch (dbErr) {
+          console.warn('AWS RDS customer signup error:', dbErr.message);
+        }
+      }
 
       const safeUser = { ...customerRecord };
       delete safeUser.password;
@@ -2838,6 +2851,25 @@ async function appHandler(req, res) {
           writeJsonFile('customers.json', customers);
         }
         authedUser = { ...localCustomer, ...authedUser };
+      }
+
+      // Merge profile from AWS RDS PostgreSQL first
+      if (db && db.isConfigured && (authedUser.email || authedUser.id)) {
+        try {
+          const rdsProfile = await db.customers.getByEmail(email) || await db.customers.getById(authedUser.id);
+          if (rdsProfile) {
+            if (rdsProfile.name) authedUser.name = rdsProfile.name;
+            if (rdsProfile.phone) authedUser.phone = rdsProfile.phone;
+            if (rdsProfile.address) authedUser.address = rdsProfile.address;
+            if (rdsProfile.locality) authedUser.locality = rdsProfile.locality;
+            if (rdsProfile.city) authedUser.city = rdsProfile.city;
+            if (rdsProfile.state) authedUser.state = rdsProfile.state;
+            if (rdsProfile.pincode) authedUser.pincode = rdsProfile.pincode;
+            if (rdsProfile.country) authedUser.country = rdsProfile.country;
+            if (Array.isArray(rdsProfile.wishlist)) authedUser.wishlist = Array.from(new Set([...(authedUser.wishlist || []), ...rdsProfile.wishlist]));
+            if (Array.isArray(rdsProfile.cart)) authedUser.cart = rdsProfile.cart;
+          }
+        } catch (e) {}
       }
 
       // Merge full cloud profile (address, locality, city, state, pincode, country, wishlist, cart)
@@ -3506,6 +3538,15 @@ async function appHandler(req, res) {
       if (payload.country !== undefined) customer.country = payload.country;
 
       writeJsonFile('customers.json', customers);
+
+      // Sync directly to AWS RDS PostgreSQL
+      if (db && db.isConfigured) {
+        try {
+          await db.customers.upsert(customer);
+        } catch (dbErr) {
+          console.warn('AWS RDS customer update error:', dbErr.message);
+        }
+      }
 
       // Sync to Supabase PostgreSQL & Auth user_metadata (ONLY explicitly provided fields to protect saved address!)
       if (supabase.isConfigured && custId) {
