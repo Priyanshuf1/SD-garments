@@ -1866,7 +1866,7 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // Delhivery Live Pincode Serviceability Check
   if (pathname === '/api/shipping/pincode-check' && req.method === 'GET') {
-    const pin = parsedUrl.query.pin || parsedUrl.query.pincode;
+    const pin = parsedUrl.searchParams?.get('pin') || parsedUrl.searchParams?.get('pincode') || (parsedUrl.query && parsedUrl.query.pin);
     const result = await delhivery.checkPincodeServiceability(pin);
     return sendJson(res, 200, { success: true, ...result });
   }
