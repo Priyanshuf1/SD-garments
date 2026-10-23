@@ -1864,6 +1864,13 @@ async function appHandler(req, res) {
   }
 
   // -------------------------------------------------------------
+  // Delhivery Live Pincode Serviceability Check
+  if (pathname === '/api/shipping/pincode-check' && req.method === 'GET') {
+    const pin = parsedUrl.query.pin || parsedUrl.query.pincode;
+    const result = await delhivery.checkPincodeServiceability(pin);
+    return sendJson(res, 200, { success: true, ...result });
+  }
+
   // Storefront & Public REST APIs for Products & Orders
   // -------------------------------------------------------------
   if (pathname === '/api/products' || pathname.startsWith('/api/products/')) {
