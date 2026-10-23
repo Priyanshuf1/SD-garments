@@ -3800,6 +3800,7 @@ const Admin = {
 
     document.getElementById('order-modal-title').textContent = `Manage Order #${order.id}`;
     const container = document.getElementById('order-modal-content');
+    const adminKey = localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026';
 
     const items = (order.items && order.items.length > 0) ? order.items : [{
       title: 'Streetwear Apparel',
@@ -3862,12 +3863,15 @@ const Admin = {
               ⚡ Generate AWB
             </button>
             ${order.trackingNumber ? `
-              <a href="https://track.delhivery.com/api/p/packing_slip?wbns=${order.trackingNumber}&pdf=true" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Print Official Delhivery Barcode Label">
+              <a href="/api/admin/orders/${order.id}/shipping-label?key=${encodeURIComponent(adminKey)}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Print Official Delhivery Barcode Label">
                 🖨️ Label
               </a>
               <a href="https://www.delhivery.com/track/package/${order.trackingNumber}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Track on Delhivery">
                 Track ↗
-              </a>` : ''}
+              </a>
+              <button type="button" class="btn btn-outline btn-sm" style="padding:4px 8px; font-size:13px; color:#ff6b6b; border-color:rgba(255,107,107,0.3);" onclick="Admin.cancelDelhiveryShipment('${order.id}')" title="Cancel Delhivery Courier Pickup">
+                🚫 Cancel Courier
+              </button>` : ''}
           </div>
         </div>
       </div>
@@ -3940,6 +3944,33 @@ const Admin = {
       }
     } catch (err) {
       this.showToast('❌ Failed to reach Delhivery API');
+    }
+  },
+
+  async cancelDelhiveryShipment(orderId) {
+    if (!confirm('Are you sure you want to cancel this Delhivery courier dispatch? The AWB will be cleared and courier pickup cancelled.')) {
+      return;
+    }
+    try {
+      this.showToast('🚫 Cancelling Delhivery courier dispatch...');
+      const adminKey = localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026';
+      const res = await fetch(`/api/admin/orders/${orderId}/delhivery-cancel`, {
+        method: 'POST',
+        headers: {
+          'x-admin-key': adminKey,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        this.showToast('✅ ' + (data.message || 'Delhivery shipment cancelled successfully'));
+        await this.loadAllData();
+        this.openOrderModal(orderId);
+      } else {
+        this.showToast('❌ Error: ' + (data.message || 'Failed to cancel shipment'));
+      }
+    } catch (err) {
+      this.showToast('❌ Failed to reach Delhivery cancel API');
     }
   },
 

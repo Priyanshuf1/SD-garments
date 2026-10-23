@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node test_legal_policies.js && node test_security_abuse_controls.js"
+    "test": "node test_legal_policies.js && node test_security_abuse_controls.js && node test_complete_fixes.js"
   },
   "author": "GENRAGE",
   "license": "ISC",
