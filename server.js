@@ -798,7 +798,7 @@ async function dispatchN8nOrderWebhook(order) {
         paymentStatus: order.paymentStatus,
         orderStatus: order.orderStatus,
         trackingNumber: order.trackingNumber || '',
-        trackingUrl: `http://${process.env.APP_DOMAIN || '3.27.70.186'}/pages/track-order.html?order=${encodeURIComponent(order.id)}`
+        trackingUrl: `http://${process.env.APP_DOMAIN || 'alleyrich.com'}/pages/track-order.html?order=${encodeURIComponent(order.id)}`
       })
     });
     if (res.ok) {
@@ -820,7 +820,7 @@ async function sendOrderConfirmationEmail(order) {
   const email = (order.customer?.email || '').trim();
   if (!resendApiKey || !email || !email.includes('@')) return false;
 
-  const domain = process.env.APP_DOMAIN || '3.27.70.186';
+  const domain = process.env.APP_DOMAIN || 'alleyrich.com';
   const trackUrl = `http://${domain}/pages/track-order.html?order=${encodeURIComponent(order.id)}`;
   const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi ALLYRICH, please send live WhatsApp delivery updates for my order #${order.id}.`)}`;
 
