@@ -1634,6 +1634,13 @@ async function handleCreateOrder(req, res, isCheckout = false) {
   memoryOrders = orders;
   memoryOrdersLastFetch = Date.now();
   writeJsonFile('orders.json', orders);
+  if (db && db.orders && typeof db.orders.create === 'function') {
+    try {
+      await db.orders.create(newOrder);
+    } catch (e) {
+      console.warn('AWS RDS order create warning:', e.message);
+    }
+  }
   await syncOrderToSupabase(newOrder);
 
   // Sync customer address and contact info to customers.json
@@ -1714,6 +1721,13 @@ async function handleUpdateOrder(req, res, id) {
   writeJsonFile('orders.json', orders);
   memoryOrders = orders;
   memoryOrdersLastFetch = Date.now();
+  if (db && db.orders && typeof db.orders.create === 'function') {
+    try {
+      await db.orders.create(order);
+    } catch (e) {
+      console.warn('DB order update warning:', e.message);
+    }
+  }
   await syncOrderToSupabase(order);
 
   return sendJson(res, 200, { success: true, order });
@@ -1760,6 +1774,13 @@ async function handleDelhiveryAwb(req, res, id) {
   writeJsonFile('orders.json', orders);
   memoryOrders = orders;
   memoryOrdersLastFetch = Date.now();
+  if (db && db.orders && typeof db.orders.create === 'function') {
+    try {
+      await db.orders.create(order);
+    } catch (e) {
+      console.warn('DB order update on AWB warning:', e.message);
+    }
+  }
   await syncOrderToSupabase(order);
 
   return sendJson(res, 200, {
@@ -1989,25 +2010,28 @@ function generatePrintablePackingSlip(order, waybill) {
 }
 
 async function handleShippingLabel(req, res, id) {
+  const cleanId = String(decodeURIComponent(id || '')).replace(/\/shipping-label\/?$/, '').replace(/^\/+|\/+$/g, '').trim();
   const orders = await getAllOrders();
-  let order = orders.find(o => String(o.id) === String(id));
+  let order = orders.find(o => String(o.id) === cleanId);
 
   // If id is awb-XXXX, lookup by waybill
-  if (!order && String(id).startsWith('awb-')) {
-    const rawAwb = String(id).replace('awb-', '');
+  if (!order && cleanId.startsWith('awb-')) {
+    const rawAwb = cleanId.replace('awb-', '').trim();
     order = orders.find(o => o.trackingNumber === rawAwb || o.delhiveryWaybill === rawAwb);
   }
 
   // If still not found, check if id is a waybill directly
   if (!order) {
-    order = orders.find(o => o.trackingNumber === String(id) || o.delhiveryWaybill === String(id));
+    order = orders.find(o => o.trackingNumber === cleanId || o.delhiveryWaybill === cleanId);
   }
 
-  if (!order || (!order.trackingNumber && !order.delhiveryWaybill)) {
+  let waybill = (order && (order.trackingNumber || order.delhiveryWaybill))
+    ? String(order.trackingNumber || order.delhiveryWaybill).trim()
+    : (cleanId.startsWith('awb-') ? cleanId.replace('awb-', '').trim() : (/^\d{10,}$/.test(cleanId) ? cleanId : ''));
+
+  if (!waybill) {
     return sendJson(res, 404, { success: false, message: 'AWB tracking number not generated for this order yet' });
   }
-
-  const waybill = String(order.trackingNumber || order.delhiveryWaybill).trim();
 
   try {
     const pdfUrl = await delhivery.getPackingSlipPdfUrl(waybill);
@@ -2023,6 +2047,10 @@ async function handleShippingLabel(req, res, id) {
     console.warn(`Delhivery live packing slip note for ${waybill}:`, err.message);
   }
 
+  if (!order) {
+    return sendJson(res, 404, { success: false, message: 'Delhivery packing slip not found for waybill ' + waybill });
+  }
+
   // Fallback: If Delhivery API returns packages_found: 0 (e.g. simulated waybill during testing/staging),
   // render an official high-fidelity printable Delhivery Express barcode packing sticker with zero errors.
   const htmlSlip = generatePrintablePackingSlip(order, waybill);
@@ -2034,8 +2062,9 @@ async function handleShippingLabel(req, res, id) {
 }
 
 async function handleDelhiveryCancel(req, res, id) {
+  const cleanId = String(decodeURIComponent(id || '')).replace(/\/delhivery-cancel\/?$/, '').replace(/^\/+|\/+$/g, '').trim();
   const orders = await getAllOrders();
-  const order = orders.find(o => String(o.id) === String(id));
+  const order = orders.find(o => String(o.id) === cleanId);
   if (!order) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
   }
@@ -2130,6 +2159,13 @@ async function handleDeleteOrder(req, res, id) {
   memoryOrders = filtered;
   memoryOrdersLastFetch = Date.now();
   writeJsonFile('orders.json', filtered);
+  if (db && db.orders && typeof db.orders.delete === 'function') {
+    try {
+      await db.orders.delete(id);
+    } catch (e) {
+      console.warn('DB order delete warning:', e.message);
+    }
+  }
   await deleteOrderFromSupabase(id);
 
   return sendJson(res, 200, { success: true, message: 'Order deleted' });
@@ -2272,7 +2308,7 @@ async function appHandler(req, res) {
 
   if (pathname === '/api/orders' || pathname.startsWith('/api/orders/')) {
     if (pathname.includes('/shipping-label') && req.method === 'GET') {
-      const id = pathname.replace('/api/orders/', '').replace('/shipping-label', '');
+      const id = pathname.replace('/api/orders/', '').replace(/\/shipping-label\/?$/, '');
       return await handleShippingLabel(req, res, id);
     }
     const orderId = pathname.replace('/api/orders', '').replace(/^\//, '');
@@ -2458,12 +2494,12 @@ async function appHandler(req, res) {
       }
       // Delhivery Shipping Label PDF (Internal Authenticated Proxy)
       if (req.method === 'GET' && apiRoute.includes('/shipping-label')) {
-        const id = apiRoute.replace('orders/', '').replace('/shipping-label', '');
+        const id = apiRoute.replace('orders/', '').replace(/\/shipping-label\/?$/, '');
         return await handleShippingLabel(req, res, id);
       }
       // Delhivery Courier Cancellation (1-Click in Admin)
       if (req.method === 'POST' && apiRoute.includes('/delhivery-cancel')) {
-        const id = apiRoute.replace('orders/', '').replace('/delhivery-cancel', '');
+        const id = apiRoute.replace('orders/', '').replace(/\/delhivery-cancel\/?$/, '');
         return await handleDelhiveryCancel(req, res, id);
       }
       // Cashfree verify

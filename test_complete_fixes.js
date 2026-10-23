@@ -140,6 +140,18 @@ async function runTests() {
     assert(pubLabelRes.status === 200 || pubLabelRes.status === 302, `Public route should succeed, got ${pubLabelRes.status}`);
     logPass('Public /api/orders/:id/shipping-label works for customer order tracking');
 
+    // 1.5 Test shipping label endpoint with trailing slash
+    totalTests++;
+    const labelResSlash = await request('GET', `/api/admin/orders/${testOrderId}/shipping-label/?key=${ADMIN_KEY}`);
+    assert(labelResSlash.status === 200 || labelResSlash.status === 302, `Label request with trailing slash should succeed, got ${labelResSlash.status}`);
+    logPass('Shipping label request with trailing slash handled seamlessly');
+
+    // 1.6 Test shipping label endpoint by waybill directly (awb-XXXX)
+    totalTests++;
+    const labelResAwb = await request('GET', `/api/admin/orders/awb-${testWaybill}/shipping-label?key=${ADMIN_KEY}`);
+    assert(labelResAwb.status === 200 || labelResAwb.status === 302, `Label request by waybill should succeed, got ${labelResAwb.status}`);
+    logPass('Shipping label requested via awb-XXXX waybill parameter succeeds');
+
     // -----------------------------------------------------------------
     // TEST SUITE 2: Delhivery Courier Cancellation Endpoint
     // -----------------------------------------------------------------
@@ -159,6 +171,14 @@ async function runTests() {
     assert(updatedOrder.orderStatus === 'Processing', `Order status should be Processing, got ${updatedOrder.orderStatus}`);
     assert(!updatedOrder.trackingNumber, `trackingNumber should be cleared, got ${updatedOrder.trackingNumber}`);
     logPass('Order status reverted to Processing and AWB tracking cleared');
+
+    // 2.3 Non-existent order cancellation returns HTTP 404
+    totalTests++;
+    const cancel404Res = await request('POST', '/api/admin/orders/NON_EXISTENT_ORDER_9999/delhivery-cancel', {}, {
+      'x-admin-key': ADMIN_KEY
+    });
+    assert(cancel404Res.status === 404, `Cancellation on non-existent order should return HTTP 404, got ${cancel404Res.status}`);
+    logPass('Cancellation on non-existent order correctly returns HTTP 404');
 
     // -----------------------------------------------------------------
     // TEST SUITE 3: OTP System (send-otp & verify-otp)
@@ -191,6 +211,16 @@ async function runTests() {
     assert(goodVerifyRes.status === 200, `Valid OTP should return HTTP 200, got ${goodVerifyRes.status}`);
     assert(goodVerifyRes.json && goodVerifyRes.json.user, 'Verification response must contain authenticated user profile');
     logPass('Valid OTP successfully authenticated customer and created session');
+
+    // 3.4 Email case-insensitivity verification (mixed case send vs lowercase verify)
+    totalTests++;
+    const mixedEmail = `Test.Customer_${Date.now()}@AlleyRich.com`;
+    const mixedSendRes = await request('POST', '/api/auth/send-otp', { email: mixedEmail });
+    assert(mixedSendRes.status === 200, 'Mixed-case email dispatch succeeds');
+    const mixedCode = mixedSendRes.json.devCode;
+    const mixedVerifyRes = await request('POST', '/api/auth/verify-otp', { email: mixedEmail.toLowerCase(), token: mixedCode });
+    assert(mixedVerifyRes.status === 200, 'Normalized lowercase verification succeeds against mixed-case dispatch');
+    logPass('OTP email case-normalization verified successfully');
 
     // -----------------------------------------------------------------
     // TEST SUITE 4: Order Creation & n8n Webhook Dispatch
@@ -229,6 +259,18 @@ async function runTests() {
     assert(cashfreeRes.status === 200, `Cashfree verify should return HTTP 200, got ${cashfreeRes.status}`);
     assert(cashfreeRes.json && cashfreeRes.json.order.paymentStatus === 'Paid', 'Order paymentStatus should be Paid');
     logPass('Cashfree verification successfully updated order and triggered n8n invoice webhook');
+
+    // 4.3 Test empty cart validation (cannot create order with 0 items)
+    totalTests++;
+    const emptyOrderRes = await request('POST', '/api/orders', { customer: { name: 'Empty Tester' }, items: [] });
+    assert(emptyOrderRes.status === 400, `Empty cart order should be rejected with 400, got ${emptyOrderRes.status}`);
+    logPass('Empty cart order rejection correctly returns HTTP 400');
+
+    // 4.4 PostgreSQL db.orders.delete method parity
+    totalTests++;
+    const dbModule = require('./lib/db.js');
+    assert(typeof dbModule.orders.delete === 'function', 'db.orders.delete must be a valid function for complete CRUD parity');
+    logPass('db.orders.delete method exists and maintains full DB CRUD parity');
 
     // Clean up test orders & customers
     orders = JSON.parse(fs.readFileSync(ordersPath, 'utf8'));

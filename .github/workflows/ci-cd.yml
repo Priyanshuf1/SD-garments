@@ -98,11 +98,12 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           N8N_ORDER_WEBHOOK_URL: ${{ secrets.N8N_ORDER_WEBHOOK_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: GEMINI_API_KEY,N8N_ORDER_WEBHOOK_URL,RESEND_API_KEY
+          envs: GEMINI_API_KEY,N8N_ORDER_WEBHOOK_URL,RESEND_API_KEY,BREVO_API_KEY
           script: |
             cd ~/SD-garments
             git fetch origin main
@@ -135,6 +136,12 @@ jobs:
             echo "DELHIVERY_CLIENT_NAME=SD Garments" >> .env
             sed -i '/^DELHIVERY_ENV=/d' .env
             echo "DELHIVERY_ENV=production" >> .env
+            sed -i '/^BREVO_API_KEY=/d' .env
+            echo "BREVO_API_KEY=${BREVO_API_KEY:-}" >> .env
+            sed -i '/^BREVO_SENDER_EMAIL=/d' .env
+            echo "BREVO_SENDER_EMAIL=support@allyrich.com" >> .env
+            sed -i '/^N8N_OTP_WEBHOOK_URL=/d' .env
+            echo "N8N_OTP_WEBHOOK_URL=${N8N_OTP_WEBHOOK_URL:-}" >> .env
             # Cleanly stop and remove any old/orphan containers to prevent port collisions
             sudo docker compose down --remove-orphans || true
             sudo docker stop allyrich-web allyrich-db alleyrich-storefront alleyrich-db 2>/dev/null || true

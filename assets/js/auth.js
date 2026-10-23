@@ -420,15 +420,23 @@ const AuthEngine = {
 
       if (res.success) {
         const cleanEmail = emailInput.value.trim();
+        let devBadge = '';
+        if (res.devCode) {
+          devBadge = `<div style="margin-top:8px; padding:6px 10px; background:#fff3cd; color:#856404; border-radius:4px; font-size:0.75rem; font-weight:700;">Demo / Fallback Code: <span style="font-size:1rem; letter-spacing:0.12em; color:#000;">${res.devCode}</span></div>`;
+        }
         successBox.innerHTML = `
           <div style="line-height:1.5;">
             <div style="font-weight:800; font-size:0.9rem; margin-bottom:4px;">📧 Login Code Dispatched</div>
             <div>A 6-digit verification code has been dispatched to <strong>${cleanEmail}</strong>.</div>
             <div style="font-size:0.75rem; color:#444; margin-top:6px;">Please check your Gmail inbox (and Spam or Promotions folder) and enter the 6-digit code below.</div>
+            ${devBadge}
           </div>
         `;
         successBox.style.display = 'block';
         codeContainer.style.display = 'block';
+        if (res.devCode) {
+          codeInput.value = res.devCode;
+        }
         emailInput.readOnly = true;
         submitBtn.textContent = 'VERIFY & SIGN IN';
         codeInput.focus();

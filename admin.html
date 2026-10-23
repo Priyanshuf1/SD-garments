@@ -2876,6 +2876,7 @@ const Admin = {
         <td style="color:var(--text-muted);font-size:13px;">${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
         <td>
           <button class="btn btn-secondary btn-sm" onclick="Admin.openOrderModal('${o.id}')">Manage</button>
+              ${(o.trackingNumber || o.delhiveryWaybill) ? `<a href="/api/admin/orders/${o.id}/shipping-label?key=${encodeURIComponent(localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026')}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 7px;font-size:12px;" title="Print Delhivery Label">🏷️ Label</a>` : ''}
         </td>
       </tr>
     `).join('');
@@ -3754,7 +3755,7 @@ const Admin = {
               <option value="Cancelled" ${o.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
             </select>
           </td>
-          <td>${o.trackingNumber ? `<span class="badge badge-info">${o.trackingNumber}</span>` : '<span style="color:var(--text-muted);">-</span>'}</td>
+          <td>${(o.trackingNumber || o.delhiveryWaybill) ? `<span class="badge badge-info">${o.trackingNumber || o.delhiveryWaybill}</span>` : '<span style="color:var(--text-muted);">-</span>'}</td>
           <td style="font-size:13px;color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
           <td>
             <div style="display:flex;gap:0.35rem;align-items:center;">
@@ -3801,6 +3802,7 @@ const Admin = {
     document.getElementById('order-modal-title').textContent = `Manage Order #${order.id}`;
     const container = document.getElementById('order-modal-content');
     const adminKey = localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026';
+    const currentAwb = order.trackingNumber || order.delhiveryWaybill || '';
 
     const items = (order.items && order.items.length > 0) ? order.items : [{
       title: 'Streetwear Apparel',
@@ -3856,17 +3858,17 @@ const Admin = {
             <span class="badge badge-info" style="font-size:11.5px;">Pincode Verified</span>
           </div>
           <div style="font-size:0.8rem; margin-top:4px; color:var(--text-main);">
-            Waybill (AWB): <strong style="color:var(--accent-blue);">${order.trackingNumber || 'Not Generated'}</strong>
+            Waybill (AWB): <strong style="color:var(--accent-blue);">${currentAwb || 'Not Generated'}</strong>
           </div>
           <div style="display:flex; gap:0.4rem; margin-top:6px;">
             <button type="button" class="btn btn-primary btn-sm" style="flex:1; font-size:13px;" onclick="Admin.generateDelhiveryAwb('${order.id}')">
               ⚡ Generate AWB
             </button>
-            ${order.trackingNumber ? `
+            ${currentAwb ? `
               <a href="/api/admin/orders/${order.id}/shipping-label?key=${encodeURIComponent(adminKey)}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Print Official Delhivery Barcode Label">
                 🖨️ Label
               </a>
-              <a href="https://www.delhivery.com/track/package/${order.trackingNumber}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Track on Delhivery">
+              <a href="https://www.delhivery.com/track/package/${currentAwb}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Track on Delhivery">
                 Track ↗
               </a>
               <button type="button" class="btn btn-outline btn-sm" style="padding:4px 8px; font-size:13px; color:#ff6b6b; border-color:rgba(255,107,107,0.3);" onclick="Admin.cancelDelhiveryShipment('${order.id}')" title="Cancel Delhivery Courier Pickup">
@@ -3919,7 +3921,7 @@ const Admin = {
         </div>
         <div class="form-group">
           <label class="form-label">Delhivery Tracking AWB</label>
-          <input type="text" id="modal-order-tracking" value="${order.trackingNumber || ''}" placeholder="e.g. 1409218294104">
+          <input type="text" id="modal-order-tracking" value="${currentAwb}" placeholder="e.g. 1409218294104">
         </div>
       </div>
     `;
