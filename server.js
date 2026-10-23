@@ -1386,11 +1386,27 @@ async function handleCreateProduct(req, res) {
     }
   }
 
+  const sellingPrice = String(
+    payload.price ??
+    payload.selling_price ??
+    payload.sellingPrice ??
+    (payload.variants?.[0]?.price) ??
+    '1000'
+  ).trim();
+  const rawRealPrice = payload.compare_at_price ??
+    payload.comparePrice ??
+    payload.compare_price ??
+    payload.real_price ??
+    payload.realPrice ??
+    payload.mrp ??
+    (payload.variants?.[0]?.compare_at_price);
+  const realPrice = (rawRealPrice !== undefined && rawRealPrice !== null) ? String(rawRealPrice).trim() : '';
+
   const newProduct = {
     id: Date.now(),
     title: payload.title || 'Untitled Product',
     handle: payload.handle || (payload.title ? payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`),
-    body_html: payload.description || '',
+    body_html: payload.description || payload.body_html || '',
     vendor: payload.vendor || 'GENRAGE',
     category: prodCategory,
     product_type: payload.product_type || prodCategory,
@@ -1399,17 +1415,29 @@ async function handleCreateProduct(req, res) {
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    variants: [
-      {
-        id: Date.now() + 1,
-        title: payload.size || 'Default',
-        price: String(payload.price || '1299.00'),
-        compare_at_price: String(payload.compare_at_price || '1999.00'),
-        sku: payload.sku || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
-        available: payload.available !== false,
-        inventory_quantity: Number(payload.stock) || 100
-      }
-    ],
+    price: sellingPrice,
+    compare_at_price: realPrice,
+    variants: (Array.isArray(payload.variants) && payload.variants.length > 0)
+      ? payload.variants.map((v, i) => ({
+          id: v.id || Date.now() + i + 1,
+          title: v.title || payload.size || 'Default',
+          price: String(v.price ?? sellingPrice).trim(),
+          compare_at_price: String(v.compare_at_price ?? realPrice).trim(),
+          sku: v.sku || payload.sku || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
+          available: v.available !== false,
+          inventory_quantity: Number(v.inventory_quantity ?? payload.stock) || 100
+        }))
+      : [
+          {
+            id: Date.now() + 1,
+            title: payload.size || 'Default',
+            price: sellingPrice,
+            compare_at_price: realPrice,
+            sku: payload.sku || `GR-${Math.floor(1000 + Math.random() * 9000)}`,
+            available: payload.available !== false,
+            inventory_quantity: Number(payload.stock) || 100
+          }
+        ],
     images: productImages
   };
 
@@ -1444,8 +1472,28 @@ async function handleUpdateProduct(req, res, id) {
   if (payload.category) current.category = payload.category;
   if (payload.product_type) current.product_type = payload.product_type;
   if (payload.homepage_section !== undefined) current.homepage_section = payload.homepage_section;
-  if (payload.price && current.variants?.[0]) current.variants[0].price = String(payload.price);
-  if (payload.compare_at_price && current.variants?.[0]) current.variants[0].compare_at_price = String(payload.compare_at_price);
+
+  const sellingPrice = payload.price !== undefined ? payload.price : (payload.selling_price !== undefined ? payload.selling_price : (payload.sellingPrice !== undefined ? payload.sellingPrice : (payload.variants?.[0]?.price)));
+  const realPrice = payload.compare_at_price !== undefined ? payload.compare_at_price : (payload.comparePrice !== undefined ? payload.comparePrice : (payload.compare_price !== undefined ? payload.compare_price : (payload.real_price !== undefined ? payload.real_price : (payload.realPrice !== undefined ? payload.realPrice : (payload.mrp !== undefined ? payload.mrp : (payload.variants?.[0]?.compare_at_price))))));
+
+  if (sellingPrice !== undefined && sellingPrice !== null && sellingPrice !== '') {
+    const cleanSelling = String(sellingPrice).trim();
+    current.price = cleanSelling;
+    if (!current.variants || current.variants.length === 0) {
+      current.variants = [{ id: Date.now() + 1, title: 'Default', price: cleanSelling, compare_at_price: current.compare_at_price || '' }];
+    } else {
+      current.variants.forEach(v => { v.price = cleanSelling; });
+    }
+  }
+  if (realPrice !== undefined && realPrice !== null) {
+    const cleanReal = String(realPrice).trim();
+    current.compare_at_price = cleanReal;
+    if (!current.variants || current.variants.length === 0) {
+      current.variants = [{ id: Date.now() + 1, title: 'Default', price: current.price || '1000', compare_at_price: cleanReal }];
+    } else {
+      current.variants.forEach(v => { v.compare_at_price = cleanReal; });
+    }
+  }
   if (payload.stock !== undefined && current.variants?.[0]) current.variants[0].inventory_quantity = Number(payload.stock);
   if (payload.available !== undefined && current.variants?.[0]) current.variants[0].available = Boolean(payload.available);
   if (payload.tags) current.tags = Array.isArray(payload.tags) ? payload.tags : payload.tags.split(',').map(s => s.trim());

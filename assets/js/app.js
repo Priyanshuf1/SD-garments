@@ -125,8 +125,8 @@ const GenrageApp = {
     const secondaryImg = p.images && p.images[1] ? p.images[1].src : primaryImg;
     const variant = p.variants && p.variants[0] ? p.variants[0] : null;
     
-    const price = variant ? parseFloat(variant.price) : 1499;
-    const comparePrice = variant && variant.compare_at_price ? parseFloat(variant.compare_at_price) : 0;
+    const price = variant && variant.price !== undefined ? parseFloat(variant.price) : (p.price !== undefined ? parseFloat(p.price) : 1499);
+    const comparePrice = variant && variant.compare_at_price !== undefined ? parseFloat(variant.compare_at_price) : (p.compare_at_price !== undefined ? parseFloat(p.compare_at_price) : 0);
     const hasDiscount = comparePrice > price && comparePrice > 0;
     const discountPercent = hasDiscount ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
 

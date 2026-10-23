@@ -1,6 +1,185 @@
 {
   "products": [
     {
+      "id": 1792792091289,
+      "title": "RAW ESSENTIALS MINIMAL BALLOON PANT",
+      "handle": "raw-essentials-minimal-balloon-pant",
+      "body_html": "",
+      "vendor": "GENRAGE",
+      "category": "Pants & Bottoms",
+      "product_type": "Pants & Bottoms",
+      "homepage_section": "genrage_basics",
+      "tags": [
+        "Shop",
+        "Basics",
+        "Pants",
+        "Unisex"
+      ],
+      "published_at": "2026-10-23T21:48:11.289Z",
+      "created_at": "2026-10-23T21:48:11.289Z",
+      "updated_at": "2026-10-23T21:48:11.289Z",
+      "price": "1299",
+      "compare_at_price": "2599",
+      "variants": [
+        {
+          "id": 1792792091290,
+          "title": "Default",
+          "price": "1299",
+          "compare_at_price": "2599",
+          "sku": "GR-2317",
+          "available": true,
+          "inventory_quantity": 100
+        }
+      ],
+      "images": [
+        {
+          "id": 1792792091291,
+          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-1.png?v=1788529155&width=800",
+          "position": 1
+        },
+        {
+          "id": 1792792091292,
+          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-2.png?v=1788529155&width=800",
+          "position": 2
+        }
+      ]
+    },
+    {
+      "id": 1792792091276,
+      "title": "CYBERPUNK OVERSIZED HEAVY HOODIE",
+      "handle": "cyberpunk-oversized-heavy-hoodie",
+      "body_html": "",
+      "vendor": "GENRAGE",
+      "category": "Hoodies",
+      "product_type": "Hoodies",
+      "homepage_section": "new_arrivals",
+      "tags": [
+        "Shop",
+        "New Arrivals",
+        "Hoodies",
+        "Tops",
+        "Unisex"
+      ],
+      "published_at": "2026-10-23T21:48:11.276Z",
+      "created_at": "2026-10-23T21:48:11.276Z",
+      "updated_at": "2026-10-23T21:48:11.276Z",
+      "price": "1499",
+      "compare_at_price": "2999",
+      "variants": [
+        {
+          "id": 1792792091277,
+          "title": "Default",
+          "price": "1499",
+          "compare_at_price": "2999",
+          "sku": "GR-7750",
+          "available": true,
+          "inventory_quantity": 100
+        }
+      ],
+      "images": [
+        {
+          "id": 1792792091278,
+          "src": "/assets/uploads/genrage_1792772231587_Screenshot_2026-10-11_003704_w.webp",
+          "position": 1
+        },
+        {
+          "id": 1792792091279,
+          "src": "/assets/uploads/genrage_1792772248666_Screenshot_2026-10-11_003804_w.webp",
+          "position": 2
+        }
+      ]
+    },
+    {
+      "id": 1792792091262,
+      "title": "PHANTOM CARGO SKATER PANTS",
+      "handle": "phantom-cargo-skater-pants",
+      "body_html": "",
+      "vendor": "GENRAGE",
+      "category": "Pants & Bottoms",
+      "product_type": "Pants & Bottoms",
+      "homepage_section": "just_dropped",
+      "tags": [
+        "Shop",
+        "Just Dropped",
+        "Pants",
+        "Bottoms",
+        "Unisex"
+      ],
+      "published_at": "2026-10-23T21:48:11.262Z",
+      "created_at": "2026-10-23T21:48:11.262Z",
+      "updated_at": "2026-10-23T21:48:11.262Z",
+      "price": "1799",
+      "compare_at_price": "2999",
+      "variants": [
+        {
+          "id": 1792792091263,
+          "title": "Default",
+          "price": "1799",
+          "compare_at_price": "2999",
+          "sku": "GR-5985",
+          "available": true,
+          "inventory_quantity": 100
+        }
+      ],
+      "images": [
+        {
+          "id": 1792792091264,
+          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-1.png?v=1788529155&width=800",
+          "position": 1
+        },
+        {
+          "id": 1792792091265,
+          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-2.png?v=1788529155&width=800",
+          "position": 2
+        }
+      ]
+    },
+    {
+      "id": 1792792091249,
+      "title": "VORTEX ACID WASH BOX TEE",
+      "handle": "vortex-acid-wash-box-tee",
+      "body_html": "",
+      "vendor": "GENRAGE",
+      "category": "T-Shirts & Boxy Tees",
+      "product_type": "T-Shirts & Boxy Tees",
+      "homepage_section": "new_arrivals",
+      "tags": [
+        "Shop",
+        "New Arrivals",
+        "Tops",
+        "Boxy Tees",
+        "Unisex"
+      ],
+      "published_at": "2026-10-23T21:48:11.249Z",
+      "created_at": "2026-10-23T21:48:11.249Z",
+      "updated_at": "2026-10-23T21:48:11.249Z",
+      "price": "1199",
+      "compare_at_price": "2399",
+      "variants": [
+        {
+          "id": 1792792091250,
+          "title": "Default",
+          "price": "1199",
+          "compare_at_price": "2399",
+          "sku": "GR-9664",
+          "available": true,
+          "inventory_quantity": 100
+        }
+      ],
+      "images": [
+        {
+          "id": 1792792091251,
+          "src": "https://genrage.com/cdn/shop/files/quill-black-tshirt-genrage-6.png?v=1786176078&width=800",
+          "position": 1
+        },
+        {
+          "id": 1792792091252,
+          "src": "https://genrage.com/cdn/shop/files/quill-black-tshirt-genrage-7.png?v=1786176081&width=800",
+          "position": 2
+        }
+      ]
+    },
+    {
       "id": 1792772266549,
       "title": "STREATBEAR HOODIES",
       "handle": "streatbear-hoodies",
@@ -16,13 +195,14 @@
       ],
       "published_at": "2026-10-23T16:17:46.549Z",
       "created_at": "2026-10-23T16:17:46.549Z",
-      "updated_at": "2026-10-23T16:17:46.549Z",
+      "price": "1000",
+      "compare_at_price": "2000",
       "variants": [
         {
           "id": 1792772266550,
           "title": "Default",
           "price": "1000",
-          "compare_at_price": "1000",
+          "compare_at_price": "2000",
           "sku": "GR-6589",
           "available": true,
           "inventory_quantity": 10

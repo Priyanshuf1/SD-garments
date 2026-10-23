@@ -45,8 +45,9 @@
 
         function parseVal(el) {
           if (!el) return 0;
-          const cleaned = el.textContent.replace(/Rs\.?/gi, '').replace(/₹/g, '').replace(/[^\d]/g, '');
-          return cleaned ? parseFloat(cleaned) : 0;
+          const cleaned = el.textContent.replace(/Rs\.?/gi, '').replace(/₹/g, '').replace(/,/g, '').trim();
+          const m = cleaned.match(/\d+(?:\.\d+)?/);
+          return m ? parseFloat(m[0]) : 0;
         }
         let salePrice = parseVal(saleEl);
         let comparePrice = parseVal(compareEl);
@@ -235,11 +236,11 @@
           const match = priceEl.textContent.replace(/[^\d.]/g, '');
           if (match) price = parseFloat(match);
         }
-        const compEl = card.querySelector('.compare-at-price .money, .price-compare');
-        let comparePrice = Math.round(price * 1.5);
+        const compEl = card.querySelector('.compare-at-price .money, .price-compare, .product-card__compare-price .money');
+        let comparePrice = 0;
         if (compEl) {
-          const matchComp = compEl.textContent.replace(/[^\d.]/g, '');
-          if (matchComp) comparePrice = parseFloat(matchComp);
+          const matchComp = compEl.textContent.replace(/Rs\.?/gi, '').replace(/₹/g, '').replace(/,/g, '').trim().match(/\d+(?:\.\d+)?/);
+          if (matchComp) comparePrice = parseFloat(matchComp[0]);
         }
 
         product = {
@@ -248,14 +249,14 @@
           title: title,
           vendor: 'ALLEYRICH',
           price: price,
-          compare_at_price: comparePrice,
+          compare_at_price: comparePrice || '',
           images: [{ src: img }],
           variants: [
-            { title: 'S', price: price },
-            { title: 'M', price: price },
-            { title: 'L', price: price },
-            { title: 'XL', price: price },
-            { title: 'XXL', price: price }
+            { title: 'S', price: price, compare_at_price: comparePrice || '' },
+            { title: 'M', price: price, compare_at_price: comparePrice || '' },
+            { title: 'L', price: price, compare_at_price: comparePrice || '' },
+            { title: 'XL', price: price, compare_at_price: comparePrice || '' },
+            { title: 'XXL', price: price, compare_at_price: comparePrice || '' }
           ]
         };
       }
@@ -274,9 +275,10 @@
       if (!content) return;
 
       const variant = (product.variants && product.variants[0]) ? product.variants[0] : {};
-      const price = Number(variant.price || product.price || 1899);
-      const comparePrice = Number(variant.compare_at_price || product.compare_at_price || Math.round(price * 1.45));
-      const hasDiscount = comparePrice > price;
+      const price = Number(variant.price || product.price || 1000);
+      const rawCompare = variant.compare_at_price !== undefined ? variant.compare_at_price : (product.compare_at_price !== undefined ? product.compare_at_price : null);
+      const comparePrice = (rawCompare !== null && rawCompare !== '') ? Number(rawCompare) : 0;
+      const hasDiscount = comparePrice > price && comparePrice > 0;
       const discountPct = hasDiscount ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
       const img = (product.images && product.images[0]) ? (product.images[0].src || product.images[0]) : (product.image || '');
 
@@ -291,9 +293,9 @@
             <div class="qb-vendor">${product.vendor || 'ALLEYRICH'}</div>
             <div class="qb-title" title="${product.title}">${product.title}</div>
             <div class="qb-pricing">
-              <span class="qb-price-current">Rs. ${price.toLocaleString('en-IN')}</span>
-              ${hasDiscount ? `<span class="qb-price-compare">Rs. ${comparePrice.toLocaleString('en-IN')}</span>` : ''}
-              ${hasDiscount ? `<span class="qb-save-badge">SAVE ${discountPct}%</span>` : ''}
+              <span class="qb-price-current">₹ ${price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              ${hasDiscount ? `<span class="qb-price-compare">₹ ${comparePrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>` : ''}
+              ${hasDiscount ? `<span class="qb-save-badge">-${discountPct}%</span>` : ''}
             </div>
           </div>
         </div>

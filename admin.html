@@ -1915,12 +1915,18 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Selling Price (₹)</label>
-          <input type="number" id="edit-prod-price" placeholder="1599">
+          <label class="form-label" style="display:flex; justify-content:space-between;">
+            <span>Selling Price (₹)</span>
+            <span style="font-size:11.5px; color:var(--accent-green); font-weight:normal;">Discounted / Offer Price</span>
+          </label>
+          <input type="number" id="edit-prod-price" placeholder="1000">
         </div>
         <div class="form-group">
-          <label class="form-label">Compare At / MRP (₹)</label>
-          <input type="number" id="edit-prod-compare" placeholder="2499">
+          <label class="form-label" style="display:flex; justify-content:space-between;">
+            <span>Real Price / MRP (₹)</span>
+            <span style="font-size:11.5px; color:var(--text-muted); font-weight:normal;">Strikethrough Original</span>
+          </label>
+          <input type="number" id="edit-prod-compare" placeholder="2000">
         </div>
       </div>
 
@@ -2952,8 +2958,8 @@ const Admin = {
     }
 
     tbody.innerHTML = pageItems.map(p => {
-      const price = p.variants?.[0]?.price || '1299.00';
-      const comparePrice = p.variants?.[0]?.compare_at_price || '';
+      const price = p.variants?.[0]?.price || p.price || '1000';
+      const comparePrice = p.variants?.[0]?.compare_at_price || p.compare_at_price || '';
       const stock = p.variants?.[0]?.inventory_quantity ?? 100;
       const img = p.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
       const hoverImg = p.images?.[1]?.src || p.hoverImage || '';
@@ -3241,8 +3247,8 @@ const Admin = {
     document.getElementById('product-modal-title').textContent = 'Add New Streetwear Item';
     document.getElementById('edit-prod-id').value = '';
     document.getElementById('edit-prod-title').value = '';
-    document.getElementById('edit-prod-price').value = '1499';
-    document.getElementById('edit-prod-compare').value = '2199';
+    document.getElementById('edit-prod-price').value = '1000';
+    document.getElementById('edit-prod-compare').value = '2000';
     document.getElementById('edit-prod-category').value = 'T-Shirts & Boxy Tees';
     document.getElementById('edit-prod-stock').value = '100';
     document.getElementById('edit-prod-homepage-section').value = 'none';
@@ -3270,8 +3276,8 @@ const Admin = {
     document.getElementById('product-modal-title').textContent = 'Edit Product';
     document.getElementById('edit-prod-id').value = p.id;
     document.getElementById('edit-prod-title').value = p.title || '';
-    document.getElementById('edit-prod-price').value = p.variants?.[0]?.price || '1299';
-    document.getElementById('edit-prod-compare').value = p.variants?.[0]?.compare_at_price || '';
+    document.getElementById('edit-prod-price').value = p.variants?.[0]?.price ?? p.price ?? '1000';
+    document.getElementById('edit-prod-compare').value = p.variants?.[0]?.compare_at_price ?? p.compare_at_price ?? '';
     document.getElementById('edit-prod-category').value = p.category || 'T-Shirts & Boxy Tees';
     document.getElementById('edit-prod-stock').value = p.variants?.[0]?.inventory_quantity ?? 100;
     
@@ -3380,8 +3386,8 @@ const Admin = {
   async saveProduct() {
     const id = document.getElementById('edit-prod-id').value;
     const title = document.getElementById('edit-prod-title').value.trim();
-    const price = document.getElementById('edit-prod-price').value;
-    const compare_at_price = document.getElementById('edit-prod-compare').value;
+    const price = document.getElementById('edit-prod-price').value.trim();
+    const compare_at_price = document.getElementById('edit-prod-compare').value.trim();
     const category = document.getElementById('edit-prod-category').value;
     const stock = document.getElementById('edit-prod-stock').value;
     const homepage_section = document.getElementById('edit-prod-homepage-section').value;
@@ -3405,8 +3411,10 @@ const Admin = {
 
     const payload = {
       title,
-      price,
-      compare_at_price,
+      price: price || '1000',
+      compare_at_price: compare_at_price,
+      selling_price: price || '1000',
+      real_price: compare_at_price,
       category,
       product_type: category,
       stock,

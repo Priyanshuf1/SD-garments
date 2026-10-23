@@ -865,15 +865,16 @@
 
       <!-- Center: Desktop Navigation Links with Sub-Category Dropdowns (Hidden on Mobile <= 900px) -->
       <nav class="site-header__nav">
-        <a href="/collections/shop" class="header-nav-link">NEW ARRIVALS</a>
+        <a href="/collections/new-arrivals" class="header-nav-link" data-cat="newarrivals">NEW ARRIVALS</a>
 
         <!-- TOPS Dropdown -->
         <div class="nav-item-dropdown">
-          <a href="/collections/tank-top-men" class="header-nav-link" style="display:inline-flex; align-items:center; gap:4px;">
+          <a href="/collections/tops" class="header-nav-link" data-cat="tops" style="display:inline-flex; align-items:center; gap:4px;">
             TOPS
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
           </a>
           <div class="nav-dropdown-menu">
+            <a href="/collections/tops" class="nav-dropdown-link" data-cat="tops" style="font-weight:800;">ALL TOPS</a>
             <a href="/collections/tank-top-men" class="nav-dropdown-link">TANK TOP</a>
             <a href="/collections/boxy-oversized-tshirt" class="nav-dropdown-link">TSHIRT</a>
             <a href="/collections/hoodies-for-men" class="nav-dropdown-link">HOODIES</a>
@@ -885,11 +886,12 @@
 
         <!-- BOTTOMS Dropdown -->
         <div class="nav-item-dropdown">
-          <a href="/collections/baggy-pants" class="header-nav-link" style="display:inline-flex; align-items:center; gap:4px;">
+          <a href="/collections/bottoms" class="header-nav-link" data-cat="bottoms" style="display:inline-flex; align-items:center; gap:4px;">
             BOTTOMS
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
           </a>
           <div class="nav-dropdown-menu">
+            <a href="/collections/bottoms" class="nav-dropdown-link" data-cat="bottoms" style="font-weight:800;">ALL BOTTOMS</a>
             <a href="/collections/baggy-pants" class="nav-dropdown-link">PANTS</a>
             <a href="/collections/baggy-jeans" class="nav-dropdown-link">JEANS</a>
             <a href="/collections/shorts-for-men" class="nav-dropdown-link">SHORTS</a>
@@ -948,7 +950,10 @@
   <!-- ============================================================== -->
   <nav class="collection-subnav" aria-label="Sub-category Navigation">
     <div class="collection-subnav__inner" id="category-chips">
-      <a href="/collections/shop" class="category-chip active" data-cat="all">New In</a>
+      <a href="/collections/shop" class="category-chip active" data-cat="all">All Drops</a>
+      <a href="/collections/new-arrivals" class="category-chip" data-cat="newarrivals">New Arrivals</a>
+      <a href="/collections/tops" class="category-chip" data-cat="tops">Tops</a>
+      <a href="/collections/hoodies-for-men" class="category-chip" data-cat="hoodies">Hoodies</a>
       <a href="/collections/baggy-pants" class="category-chip" data-cat="bottoms">Pants</a>
       <a href="/collections/vest" class="category-chip" data-cat="vests">Tank Tops</a>
       <a href="/collections/basics-genrage" class="category-chip" data-cat="basics">Basics</a>
@@ -1243,6 +1248,8 @@
 
       categoryMap: {
         'all': 'ALL STREETWEAR',
+        'newarrivals': 'NEW ARRIVALS',
+        'tops': 'TOPS & TEES',
         'bottoms': 'PANTS & BOTTOMS',
         'vests': 'VESTS & TANKS',
         'tshirts': 'T-SHIRTS & BOXY TEES',
@@ -1313,7 +1320,9 @@
         if (viewMode === 'wishlist' || queryCat === 'wishlist') {
           this.activeCategory = 'wishlist';
         } else if (queryCat) {
-          if (queryCat.includes('baby')) this.activeCategory = 'babytee';
+          if (queryCat.includes('new-arrival') || queryCat.includes('new_arrival') || queryCat.includes('newarrival')) this.activeCategory = 'newarrivals';
+          else if (queryCat === 'tops' || queryCat === 'top') this.activeCategory = 'tops';
+          else if (queryCat.includes('baby')) this.activeCategory = 'babytee';
           else if (queryCat.includes('basic')) this.activeCategory = 'basics';
           else if (queryCat.includes('clearance') || queryCat.includes('sale')) this.activeCategory = 'clearance';
           else if (queryCat.includes('short')) this.activeCategory = 'shorts';
@@ -1326,6 +1335,10 @@
           else if (queryCat.includes('jacket')) this.activeCategory = 'jackets';
           else if (queryCat.includes('access') || queryCat.includes('jewel')) this.activeCategory = 'accessories';
           else this.activeCategory = 'all';
+        } else if (path.includes('new-arrival') || path.includes('new_arrival') || path.includes('newarrivals')) {
+          this.activeCategory = 'newarrivals';
+        } else if (path.includes('/tops') || path.includes('/top') || path.endsWith('/tops')) {
+          this.activeCategory = 'tops';
         } else if (path.includes('baby-tee') || path.includes('baby_tee')) {
           this.activeCategory = 'babytee';
         } else if (path.includes('basic')) {
@@ -1357,7 +1370,7 @@
 
       setupEventListeners() {
         // Sub-category Navigation & Header Dropdown Link Handling
-        document.querySelectorAll('.category-chip, .nav-dropdown-link').forEach(link => {
+        document.querySelectorAll('.category-chip, .nav-dropdown-link, .header-nav-link').forEach(link => {
           link.addEventListener('click', (e) => {
             const href = link.getAttribute('href');
             if (href && (href.startsWith('/collections/') || href.includes('collections.html'))) {
@@ -1365,7 +1378,9 @@
               const catFromChip = link.dataset.cat;
               let targetCat = catFromChip;
               if (!targetCat) {
-                if (href.includes('baby-tee')) targetCat = 'babytee';
+                if (href.includes('new-arrival') || href.includes('new_arrival')) targetCat = 'newarrivals';
+                else if (href.includes('tops') || href.includes('/top')) targetCat = 'tops';
+                else if (href.includes('baby-tee')) targetCat = 'babytee';
                 else if (href.includes('tank') || href.includes('vest')) targetCat = 'vests';
                 else if (href.includes('boxy') || href.includes('tshirt')) targetCat = 'tshirts';
                 else if (href.includes('hoodie')) targetCat = 'hoodies';
@@ -1512,15 +1527,35 @@
             }).filter(Boolean));
             const pHandle = p.handle ? String(p.handle).split('?')[0].split('#')[0].trim().toLowerCase() : '';
             if (!wishlistedHandles.has(pHandle)) return false;
+          } else if (this.activeCategory === 'newarrivals') {
+            const isNew = p.homepage_section === 'new_arrivals' ||
+                          tags.includes('new arrival') ||
+                          tags.includes('new arrivals') ||
+                          tags.includes('new in') ||
+                          tags.includes('new') ||
+                          cat.includes('new');
+            if (!isNew) return false;
+          } else if (this.activeCategory === 'tops') {
+            const isTop = cat.includes('t-shirt') || cat.includes('tee') || cat.includes('boxy') ||
+                          cat.includes('hoodie') || cat.includes('jacket') || cat.includes('full sleeve') ||
+                          cat.includes('long sleeve') || cat.includes('vest') || cat.includes('tank') ||
+                          cat.includes('top') ||
+                          tags.includes('top') || tags.includes('tee') || tags.includes('hoodie') ||
+                          title.includes('tshirt') || title.includes('t-shirt') || title.includes('tee') ||
+                          title.includes('hoodie') || title.includes('top') || title.includes('jacket') ||
+                          title.includes('sleeve') || title.includes('vest') || title.includes('tank');
+            if (!isTop) return false;
           } else if (this.activeCategory === 'babytee') {
             if (!(cat.includes('baby') || tags.includes('baby') || title.includes('baby'))) return false;
           } else if (this.activeCategory === 'basics') {
             if (!(p.homepage_section === 'genrage_basics' || tags.includes('basic') || title.includes('basic') || title.includes('balloon'))) return false;
           } else if (this.activeCategory === 'clearance') {
-            const hasSale = (p.variants && p.variants[0] && p.variants[0].compare_at_price && Number(p.variants[0].compare_at_price) > Number(p.variants[0].price)) || tags.includes('clearance') || tags.includes('sale');
+            const rawPr = Number(p.variants?.[0]?.price || p.price || 0);
+            const rawComp = p.variants?.[0]?.compare_at_price ? Number(p.variants[0].compare_at_price) : (p.compare_at_price ? Number(p.compare_at_price) : 0);
+            const hasSale = (rawComp > rawPr && rawComp > 0) || tags.includes('clearance') || tags.includes('sale');
             if (!hasSale) return false;
           } else if (this.activeCategory === 'bottoms') {
-            if (!(cat.includes('pant') || cat.includes('bottom') || tags.includes('pant') || tags.includes('bottom'))) return false;
+            if (!(cat.includes('pant') || cat.includes('bottom') || tags.includes('pant') || tags.includes('bottom') || title.includes('pant') || title.includes('cargo') || title.includes('trouser'))) return false;
           } else if (this.activeCategory === 'jeans') {
             if (!(cat.includes('jean') || tags.includes('jean') || title.includes('jean') || title.includes('denim'))) return false;
           } else if (this.activeCategory === 'shorts') {
@@ -1656,10 +1691,10 @@
         grid.innerHTML = this.filteredProducts.map((p, idx) => {
           const primaryImg = p.images?.[0]?.src || p.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
           const secondaryImg = p.images?.[1]?.src || p.hoverImage || '';
-          const rawPrice = Number(p.variants?.[0]?.price || p.price || 1899);
-          const rawCompare = p.variants?.[0]?.compare_at_price ? Number(p.variants[0].compare_at_price) : 0;
+          const rawPrice = Number(p.variants?.[0]?.price || p.price || 1000);
+          const rawCompare = p.variants?.[0]?.compare_at_price ? Number(p.variants[0].compare_at_price) : (p.compare_at_price ? Number(p.compare_at_price) : 0);
           
-          const hasDiscount = rawCompare > rawPrice;
+          const hasDiscount = rawCompare > rawPrice && rawCompare > 0;
           const discountPct = hasDiscount ? Math.round(((rawCompare - rawPrice) / rawCompare) * 100) : 0;
           
           const formattedPrice = `₹ ${rawPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

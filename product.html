@@ -115,12 +115,12 @@
     }
     .pdp-badge {
       display: inline-block;
-      background: #e50914;
+      background: #000000;
       color: #ffffff;
       font-weight: 800;
       font-size: 0.7rem;
       padding: 0.25rem 0.6rem;
-      border-radius: 2px;
+      border-radius: 0;
       margin-bottom: 0.75rem;
       align-self: flex-start;
       letter-spacing: 0.05em;
@@ -758,19 +758,33 @@
       document.getElementById('breadcrumb-title').textContent = currentProduct.title;
       document.getElementById('product-title').textContent = currentProduct.title;
 
-      const variant = currentProduct.variants[0] || {};
-      const price = parseFloat(variant.price || 1499);
-      const comparePrice = variant.compare_at_price ? parseFloat(variant.compare_at_price) : (price * 1.5).toFixed(0);
-      const discount = Math.round(((comparePrice - price) / comparePrice) * 100);
+      const formatCurrency = (val) => '₹ ' + Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-      document.getElementById('product-price').textContent = `Rs. ${price.toLocaleString('en-IN')}`;
-      if (comparePrice > price) {
-        document.getElementById('product-compare-price').textContent = `Rs. ${parseFloat(comparePrice).toLocaleString('en-IN')}`;
-        document.getElementById('product-save-badge').textContent = `SAVE ${discount}%`;
-      } else {
-        document.getElementById('product-compare-price').style.display = 'none';
-        document.getElementById('product-save-badge').style.display = 'none';
+      const defaultVariant = (currentProduct.variants && currentProduct.variants[0]) || {};
+      const basePrice = parseFloat(defaultVariant.price ?? currentProduct.price ?? 1000);
+      const rawBaseCompare = defaultVariant.compare_at_price !== undefined ? defaultVariant.compare_at_price : currentProduct.compare_at_price;
+      const baseComparePrice = (rawBaseCompare !== undefined && rawBaseCompare !== null && rawBaseCompare !== '') ? parseFloat(rawBaseCompare) : 0;
+
+      const priceEl = document.getElementById('product-price');
+      const compareEl = document.getElementById('product-compare-price');
+      const saveBadgeEl = document.getElementById('product-save-badge');
+
+      function renderPricing(priceVal, compareVal) {
+        priceEl.textContent = formatCurrency(priceVal);
+        const hasDiscount = compareVal > priceVal && compareVal > 0;
+        if (hasDiscount) {
+          const discountPct = Math.round(((compareVal - priceVal) / compareVal) * 100);
+          compareEl.style.display = 'inline-block';
+          compareEl.textContent = formatCurrency(compareVal);
+          saveBadgeEl.style.display = 'inline-block';
+          saveBadgeEl.textContent = `-${discountPct}%`;
+        } else {
+          compareEl.style.display = 'none';
+          saveBadgeEl.style.display = 'none';
+        }
       }
+
+      renderPricing(basePrice, baseComparePrice);
 
       if (currentProduct.body_html) {
         document.getElementById('pdp-description').innerHTML = currentProduct.body_html;
@@ -792,20 +806,31 @@
         `).join('');
       }
 
-      // Sizes
-      const sizes = currentProduct.variants && currentProduct.variants.length > 1
+      // Sizes & Variants
+      const sizes = currentProduct.variants && currentProduct.variants.length > 0
         ? currentProduct.variants
         : [{title: 'S'}, {title: 'M'}, {title: 'L'}, {title: 'XL'}, {title: 'XXL'}];
 
-      let selectedSize = sizes[0].title;
+      let selectedSize = sizes[0].title || 'Default';
+      let selectedVariantPrice = basePrice;
       const sizeContainer = document.getElementById('size-options-container');
       sizeContainer.innerHTML = sizes.map((s, i) => `
-        <button class="size-option-pill ${i === 0 ? 'active' : ''}" onclick="
-          document.querySelectorAll('.size-option-pill').forEach(p => p.classList.remove('active'));
-          this.classList.add('active');
-          selectedSize = '${s.title}';
-        ">${s.title}</button>
+        <button type="button" class="size-option-pill ${i === 0 ? 'active' : ''}" data-idx="${i}">${s.title || 'Default'}</button>
       `).join('');
+
+      sizeContainer.querySelectorAll('.size-option-pill').forEach((btn, idx) => {
+        btn.onclick = () => {
+          sizeContainer.querySelectorAll('.size-option-pill').forEach(p => p.classList.remove('active'));
+          btn.classList.add('active');
+          const variantObj = sizes[idx];
+          selectedSize = variantObj.title || 'Default';
+          const vPrice = parseFloat(variantObj.price ?? basePrice);
+          selectedVariantPrice = vPrice;
+          const vRawComp = variantObj.compare_at_price !== undefined ? variantObj.compare_at_price : rawBaseCompare;
+          const vCompare = (vRawComp !== undefined && vRawComp !== null && vRawComp !== '') ? parseFloat(vRawComp) : 0;
+          renderPricing(vPrice, vCompare);
+        };
+      });
 
       // Quantity
       let qty = 1;
@@ -819,7 +844,7 @@
 
       // Add to Cart
       document.getElementById('pdp-add-cart-btn').onclick = () => {
-        GenrageApp.addToCart(currentProduct, { title: selectedSize, price: price }, qty);
+        GenrageApp.addToCart(currentProduct, { title: selectedSize, price: selectedVariantPrice }, qty);
       };
 
       // PDP Wishlist Button
@@ -835,7 +860,7 @@
           const mainImgSrc = images[0] ? images[0].src : '';
           WishlistEngine.toggle(currentProduct.handle, {
             title: currentProduct.title,
-            price: price,
+            price: selectedVariantPrice,
             image: mainImgSrc
           }, e);
           updatePdpHeart();
@@ -846,7 +871,7 @@
       const pdpBuyNowBtn = document.getElementById('pdp-buy-now-btn');
       if (pdpBuyNowBtn) {
         pdpBuyNowBtn.onclick = () => {
-          GenrageApp.addToCart(currentProduct, { title: selectedSize, price: price }, qty);
+          GenrageApp.addToCart(currentProduct, { title: selectedSize, price: selectedVariantPrice }, qty);
           window.location.href = '/checkout';
         };
       }
