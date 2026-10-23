@@ -1,7 +1,7 @@
 /* ==========================================================================
    AllyRich Loader Controller
-   Plays ONLY ONCE when page is opened or refreshed.
-   Never replays on button taps or internal link navigations.
+   Plays on website initial open or page refresh/reload.
+   Never plays on in-page taps or collection/product sections.
    ========================================================================== */
 (function () {
   var loader = document.getElementById('ForumLoader');
@@ -11,45 +11,16 @@
   var animationTimer2 = null;
   var capTimer = null;
 
-  function isPageRefresh() {
-    try {
-      if (window.performance && typeof performance.getEntriesByType === 'function') {
-        var navEntries = performance.getEntriesByType('navigation');
-        if (navEntries && navEntries.length > 0) {
-          return navEntries[0].type === 'reload';
-        }
-      }
-      if (window.performance && window.performance.navigation) {
-        return window.performance.navigation.type === 1; // TYPE_RELOAD
-      }
-    } catch (e) {}
-    return false;
-  }
-
   function shouldRunLoader() {
     var p = window.location.pathname || '';
     if (p !== '/' && p !== '/index.html' && p !== '') return false;
-    // 1. If user refreshed the page, always run
-    if (isPageRefresh()) {
-      return true;
-    }
-    // 2. If opening page for first time in session, run
-    try {
-      var hasSeen = sessionStorage.getItem('allyrich_loader_seen');
-      if (!hasSeen) {
-        sessionStorage.setItem('allyrich_loader_seen', 'true');
-        return true;
-      }
-    } catch (e) {
-      return false;
-    }
-    // 3. Otherwise (clicking buttons, internal page browsing), do not run
-    return false;
+    // Always run on the homepage when opened or refreshed
+    return true;
   }
 
   function hideLoaderImmediately() {
     if (!loader) return;
-    loader.classList.remove('is-active');
+    loader.classList.remove('is-active', 'loader--filling', 'loader--lit');
     loader.classList.add('loader--done');
     loader.style.display = 'none';
     loader.style.opacity = '0';
@@ -65,14 +36,16 @@
       return;
     }
 
+    try { document.documentElement.classList.remove('no-loader'); } catch (e) {}
+
     // Clear existing timers if replaying
     clearTimeout(animationTimer1);
     clearTimeout(animationTimer2);
     clearTimeout(capTimer);
 
     // Reset classes and styles
+    loader.classList.remove('loader--done');
     loader.classList.add('is-active');
-    loader.classList.remove('loader--done', 'loader--filling', 'loader--lit');
     loader.style.display = 'flex';
     loader.style.opacity = '1';
     loader.style.pointerEvents = 'auto';
@@ -80,8 +53,8 @@
     var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function finish() {
-      loader.classList.remove('is-active');
-    loader.classList.add('loader--done');
+      loader.classList.remove('is-active', 'loader--filling', 'loader--lit');
+      loader.classList.add('loader--done');
       loader.style.pointerEvents = 'none';
       document.documentElement.style.overflow = '';
       setTimeout(function () {
@@ -121,7 +94,6 @@
 
   // Expose function for manual developer testing if needed
   window.replayAllyRichLoader = function () {
-    try { sessionStorage.removeItem('allyrich_loader_seen'); } catch (e) {}
     runLoaderAnimation();
   };
 })();

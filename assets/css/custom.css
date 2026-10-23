@@ -2118,3 +2118,17 @@ button {
     text-decoration: line-through !important;
   }
 
+
+/* ALLEYRICH Core Brand Background #C4C4C4 (RGB: 196, 196, 196) */
+body.color-scheme--scheme-1,
+body.color-scheme--scheme-2,
+.collections-page,
+.collection-main,
+.collection-subnav,
+.collection-toolbar-bar,
+.product-card,
+.product-card__figure,
+.product-card__info,
+.pdp-container {
+  background-color: #c4c4c4 !important;
+}

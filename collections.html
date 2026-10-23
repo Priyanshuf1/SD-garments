@@ -15,8 +15,8 @@
 
   <style>
     :root {
-      --bg-page: #f5f5f5;
-      --bg-card: #ffffff;
+      --bg-page: #c4c4c4;
+      --bg-card: #c4c4c4;
       --text-main: #111111;
       --text-sub: #777777;
       --border-light: rgba(0, 0, 0, 0.08);
@@ -146,7 +146,7 @@
 
     /* Secondary Horizontal Sub-Category Navigation Bar */
     .collection-subnav {
-      background: #e8e8e8;
+      background: #c4c4c4 !important;
       border-bottom: 1px solid #dcdcdc;
       position: relative;
       z-index: 90;
@@ -235,7 +235,7 @@
     .layout-btn:hover, .layout-btn.active {
       color: #000;
       border-color: #000;
-      background: #fff;
+      background: rgba(0,0,0,0.1);
     }
     .collection-toolbar__products-count {
       position: absolute;
@@ -253,8 +253,8 @@
       pointer-events: none;
     }
     .btn-filter-toggle {
-      background: #ffffff;
-      border: 1px solid #ccc;
+      background: #c4c4c4;
+      border: 1.5px solid #111111;
       color: #111;
       padding: 7px 16px;
       font-family: var(--heading-font-family);
@@ -280,6 +280,7 @@
       max-width: 1440px;
       margin: 0 auto 5rem;
       padding: 0 1.5rem;
+      background-color: #c4c4c4 !important;
     }
     .product-grid {
       display: grid;
@@ -309,7 +310,7 @@
 
     /* Product Card Styling */
     .product-card {
-      background: var(--bg-card);
+      background: #c4c4c4 !important;
       border-radius: 3px;
       overflow: hidden;
       display: flex;
@@ -328,7 +329,7 @@
       width: 100%;
       aspect-ratio: 3/4;
       overflow: hidden;
-      background: #ebebeb;
+      background: #c4c4c4 !important;
     }
     .product-card__media {
       display: block;
@@ -471,7 +472,7 @@
     .product-card__info {
       padding: 0.9rem 0.85rem 1rem;
       text-align: center;
-      background: #ffffff;
+      background: #c4c4c4 !important;
     }
     .product-title {
       color: #111111;
@@ -518,7 +519,7 @@
       right: 0;
       bottom: 0;
       width: min(380px, 100vw);
-      background: #ffffff;
+      background: #c4c4c4;
       border-left: 1px solid var(--border-light);
       z-index: 9999;
       transform: translateX(100%);
@@ -566,7 +567,7 @@
       right: 0;
       bottom: 0;
       width: min(420px, 100vw);
-      background: #ffffff;
+      background: #c4c4c4;
       border-left: 1px solid var(--border-light);
       z-index: 9999;
       transform: translateX(100%);
@@ -1461,7 +1462,7 @@
         if (this.filteredProducts.length === 0) {
           if (this.activeCategory === 'wishlist') {
             grid.innerHTML = `
-              <div style="grid-column: 1/-1; background:#fff; border-radius:4px; padding:4rem 2rem; text-align:center; color:#777; border:1px solid #e5e5e5;">
+              <div style="grid-column: 1/-1; background:#c4c4c4; border-radius:4px; padding:4rem 2rem; text-align:center; color:#111; border:1px solid rgba(0,0,0,0.12);">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e50914" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 12px; display:block;">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
@@ -1475,7 +1476,7 @@
 
           if (this.searchQuery) {
             grid.innerHTML = `
-              <div style="grid-column: 1/-1; background:#fff; border-radius:4px; padding:4rem 2rem; text-align:center; color:#777; border:1px solid #e5e5e5;">
+              <div style="grid-column: 1/-1; background:#c4c4c4; border-radius:4px; padding:4rem 2rem; text-align:center; color:#111; border:1px solid rgba(0,0,0,0.12);">
                 <h3 style="margin:0 0 8px; text-transform:uppercase; color:#111; font-weight:800;">No Drops Found for "${this.searchQuery}"</h3>
                 <p style="font-size:0.85rem; margin-bottom:1.5rem; color:#666;">Try searching for generic terms like "hoodie", "pants", "tee", or "black".</p>
                 <button onclick="CollectionEngine.clearSearch();" style="background:#000; color:#fff; border:none; padding:12px 24px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; cursor:pointer; letter-spacing:0.04em;">VIEW ALL 244 PRODUCTS</button>
@@ -1485,7 +1486,7 @@
           }
 
           grid.innerHTML = `
-            <div style="grid-column: 1/-1; background:#fff; border-radius:4px; padding:4rem 2rem; text-align:center; color:#777; border:1px solid #e5e5e5;">
+            <div style="grid-column: 1/-1; background:#c4c4c4; border-radius:4px; padding:4rem 2rem; text-align:center; color:#111; border:1px solid rgba(0,0,0,0.12);">
               <h3 style="margin:0 0 8px; text-transform:uppercase; color:#111; font-weight:800;">No Streetwear Items Found</h3>
               <p style="font-size:0.85rem; margin-bottom:1.5rem; color:#666;">There are no products matching this filter combination.</p>
               <button onclick="CollectionEngine.clearFilters(); CollectionEngine.setCategory('all', '/collections/shop');" style="background:#000; color:#fff; border:none; padding:12px 24px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; cursor:pointer; letter-spacing:0.04em;">BROWSE ALL DROPS</button>
