@@ -332,7 +332,7 @@ function formatSupabaseProductToLocal(s) {
     handle: s.handle,
     title: s.title,
     body_html: s.description || '',
-    vendor: s.vendor || 'ALLYRICH',
+    vendor: s.vendor || 'ALLEYRICH',
     category: s.category || 'T-Shirts & Boxy Tees',
     product_type: s.product_type || s.category || 'Streetwear',
     homepage_section: s.homepage_section || 'none',
@@ -674,13 +674,13 @@ async function sendOtpEmail(email, otpCode) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+          from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
           to: [email],
-          subject: `Your ALLYRICH Login Code: ${otpCode}`,
+          subject: `Your ALLEYRICH Login Code: ${otpCode}`,
           html: `
             <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
               <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLEYRICH</h1>
                 <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
               </div>
               <div style="padding:28px 0; text-align:center;">
@@ -692,7 +692,7 @@ async function sendOtpEmail(email, otpCode) {
               </div>
               <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
                 If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
               </div>
             </div>
           `
@@ -721,13 +721,13 @@ async function sendOtpEmail(email, otpCode) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          sender: { name: 'ALLYRICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
+          sender: { name: 'ALLEYRICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
           to: [{ email }],
-          subject: `Your ALLYRICH Login Code: ${otpCode}`,
+          subject: `Your ALLEYRICH Login Code: ${otpCode}`,
           htmlContent: `
             <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
               <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLYRICH</h1>
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLEYRICH</h1>
                 <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
               </div>
               <div style="padding:28px 0; text-align:center;">
@@ -739,7 +739,7 @@ async function sendOtpEmail(email, otpCode) {
               </div>
               <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
                 If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
               </div>
             </div>
           `
@@ -822,7 +822,7 @@ async function sendOrderConfirmationEmail(order) {
 
   const domain = process.env.APP_DOMAIN || 'alleyrich.com';
   const trackUrl = `http://${domain}/pages/track-order.html?order=${encodeURIComponent(order.id)}`;
-  const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi ALLYRICH, please send live WhatsApp delivery updates for my order #${order.id}.`)}`;
+  const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi ALLEYRICH, please send live WhatsApp delivery updates for my order #${order.id}.`)}`;
 
   const itemsHtml = (order.items || []).map(item => `
     <tr>
@@ -833,7 +833,7 @@ async function sendOrderConfirmationEmail(order) {
               <img src="${item.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png'}" width="48" height="60" style="object-fit: cover; border-radius: 4px; display: block; background: #222;" alt="${item.title || 'Streetwear'}">
             </td>
             <td style="vertical-align: top;">
-              <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${item.title || item.name || 'ALLYRICH Streetwear Item'}</div>
+              <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${item.title || item.name || 'ALLEYRICH Streetwear Item'}</div>
               <div style="font-size: 12px; color: #888888; margin-top: 4px;">Size: <span style="color:#ffffff;">${item.size || 'L'}</span> &bull; Qty: <span style="color:#ffffff;">${item.quantity || 1}</span></div>
             </td>
             <td style="vertical-align: top; text-align: right; font-weight: 800; color: #ffffff; font-size: 14px;">
@@ -853,13 +853,13 @@ async function sendOrderConfirmationEmail(order) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
         to: [email],
-        subject: `Order Confirmed: #${order.id} | ALLYRICH Official Atelier`,
+        subject: `Order Confirmed: #${order.id} | ALLEYRICH Official Atelier`,
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #f5f5f5; border: 1px solid #222222; border-radius: 8px; overflow: hidden;">
             <div style="background: #000000; padding: 28px 24px; text-align: center; border-bottom: 1px solid #1a1a1a;">
-              <h1 style="font-size: 24px; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase; margin: 0; color: #ffffff;">ALLYRICH</h1>
+              <h1 style="font-size: 24px; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase; margin: 0; color: #ffffff;">ALLEYRICH</h1>
               <p style="font-size: 11px; letter-spacing: 0.15em; color: #888888; margin: 6px 0 0; text-transform: uppercase;">Handcrafted In India &bull; Express Dispatch</p>
             </div>
 
@@ -920,7 +920,7 @@ async function sendOrderConfirmationEmail(order) {
             <div style="background: #000000; border-top: 1px solid #1a1a1a; padding: 20px 24px; text-align: center; font-size: 11px; color: #666666; line-height: 1.6;">
               7-Day Doorstep Exchange Guarantee &bull; 100% Cotton Bio-Washed Apparel<br>
               Need assistance? Reply directly to this email or chat with our 24/7 AI Concierge.<br>
-              &copy; ${new Date().getFullYear()} ALLYRICH India. All rights reserved.
+              &copy; ${new Date().getFullYear()} ALLEYRICH India. All rights reserved.
             </div>
           </div>
         `
@@ -1102,7 +1102,7 @@ async function handleAiChat(req, res) {
         }
       }
 
-      const prompt = `You are the official luxury AI Help Assistant for ALLYRICH, an avant-garde D2C streetwear fashion label based in Mumbai, India.
+      const prompt = `You are the official luxury AI Help Assistant for ALLEYRICH, an avant-garde D2C streetwear fashion label based in Mumbai, India.
 Brand Tone: High-fashion, modern, courteous, concise, minimalist.
 Key Brand Rules:
 1. Silhouettes: Boxy, architectural, oversized streetwear drape with dropped shoulders. Heavyweight 240-380 GSM French Terry cotton.
@@ -1198,7 +1198,7 @@ Provide an elegant, helpful, and concise response in markdown.`;
 
   // 3. Return & Exchange Policy Intent
   if (lower.includes('return') || lower.includes('exchange') || lower.includes('refund') || lower.includes('cancel')) {
-    const reply = "🔄 **ALLYRICH 7-Day Doorstep Exchange Policy**:\n\n" +
+    const reply = "🔄 **ALLEYRICH 7-Day Doorstep Exchange Policy**:\n\n" +
       "• We offer hassle-free exchanges within **7 days** of delivery for size or style swaps.\n" +
       "• Garments must be unworn with original tags and luxury packaging intact.\n" +
       "• Reverse pickup is arranged by Delhivery across 19,000+ PIN codes in India.\n\n" +
@@ -1218,14 +1218,14 @@ Provide an elegant, helpful, and concise response in markdown.`;
   // 5. Human Support / WhatsApp Intent
   if (lower.includes('human') || lower.includes('agent') || lower.includes('talk') || lower.includes('whatsapp') || lower.includes('call') || lower.includes('phone') || lower.includes('support') || lower.includes('help')) {
     const reply = "💬 You can speak directly with our atelier human care team:\n\n" +
-      "• **WhatsApp Direct**: [Chat with ALLYRICH Support](https://wa.me/919876543210?text=Hi%20ALLYRICH%20Support,%20I%20need%20assistance)\n" +
+      "• **WhatsApp Direct**: [Chat with ALLEYRICH Support](https://wa.me/919876543210?text=Hi%20ALLEYRICH%20Support,%20I%20need%20assistance)\n" +
       "• **Email**: care@allyrich.com\n" +
       "• **Hours**: Mon – Sat, 10:00 AM – 7:00 PM IST";
     return sendJson(res, 200, { success: true, reply });
   }
 
   // Fallback / General Welcome
-  const reply = "Welcome to **ALLYRICH**. I can assist you with:\n\n" +
+  const reply = "Welcome to **ALLEYRICH**. I can assist you with:\n\n" +
     "1. 📦 **Live Order Tracking** (Type your Order ID or phone)\n" +
     "2. 📏 **Size & Fit Recommendations** (Tell me your height & weight)\n" +
     "3. 🔄 **7-Day Exchange Policy**\n" +
@@ -2452,13 +2452,13 @@ async function appHandler(req, res) {
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                  from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+                  from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
                   to: [email],
                   subject: subject,
                   html: `
                     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
                       <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
-                        <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLYRICH</h1>
+                        <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
                         <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
                       </div>
                       <div style="padding:28px 0;">
@@ -2471,8 +2471,8 @@ async function appHandler(req, res) {
                         </div>
                       </div>
                       <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
-                        You are receiving this communication as an exclusive member of the ALLYRICH Inner Circle.<br>
-                        &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                        You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
+                        &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
                       </div>
                     </div>
                   `
@@ -2558,7 +2558,7 @@ async function appHandler(req, res) {
         // 1. Dispatch Emails if channel is 'all' or 'email'
         if (channel === 'all' || channel === 'email') {
           const resendApiKey = process.env.RESEND_API_KEY;
-          const emailSubject = subject || headline || 'New Streetwear Drop: ALLYRICH Exclusive Access';
+          const emailSubject = subject || headline || 'New Streetwear Drop: ALLEYRICH Exclusive Access';
 
           for (const email of aggregated.emails) {
             if (resendApiKey) {
@@ -2570,13 +2570,13 @@ async function appHandler(req, res) {
                     'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({
-                    from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+                    from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
                     to: [email],
                     subject: emailSubject,
                     html: `
                       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
                         <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
-                          <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLYRICH</h1>
+                          <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
                           <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
                         </div>
                         <div style="padding:28px 0;">
@@ -2590,8 +2590,8 @@ async function appHandler(req, res) {
                           </div>
                         </div>
                         <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
-                          You are receiving this communication as an exclusive member of the ALLYRICH Inner Circle.<br>
-                          &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                          You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
+                          &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
                         </div>
                       </div>
                     `
@@ -2615,7 +2615,7 @@ async function appHandler(req, res) {
             message: message,
             code: code,
             link: link || 'https://genrage.vercel.app/collections/shop',
-            brandName: 'ALLYRICH'
+            brandName: 'ALLEYRICH'
           });
 
           for (const contact of aggregated.phoneContacts) {
@@ -3430,13 +3430,13 @@ async function appHandler(req, res) {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                from: process.env.RESEND_FROM_EMAIL || 'ALLYRICH <onboarding@resend.dev>',
+                from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
                 to: [email],
                 subject: subject,
                 html: `
                   <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
                     <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
-                      <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLYRICH</h1>
+                      <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
                       <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
                     </div>
                     <div style="padding:28px 0;">
@@ -3449,8 +3449,8 @@ async function appHandler(req, res) {
                       </div>
                     </div>
                     <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
-                      You are receiving this communication as an exclusive member of the ALLYRICH Inner Circle.<br>
-                      &copy; ${new Date().getFullYear()} ALLYRICH. All rights reserved.
+                      You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
+                      &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
                     </div>
                   </div>
                 `

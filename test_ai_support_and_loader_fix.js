@@ -18,7 +18,7 @@ async function verify() {
   assert(jsRes.body.includes('NEED HELP ?'), 'ai-support.js contains NEED HELP ?');
   assert(jsRes.body.includes('Online &bull; AI Help Assistant'), 'ai-support.js contains Online • AI Help Assistant');
   assert(jsRes.body.includes('<span class="ar-launcher-sub">AI Help Assistant</span>'), 'Launcher sub contains AI Help Assistant');
-  assert(jsRes.body.includes('Welcome to **ALLYRICH**. I am your 24/7 AI Help Assistant.'), 'Welcome message updated');
+  assert(jsRes.body.includes('Welcome to **ALLEYRICH**. I am your 24/7 AI Help Assistant.'), 'Welcome message updated');
   assert(!jsRes.body.includes('AR Concierge'), 'ai-support.js has no legacy AR Concierge text');
   assert(!jsRes.body.includes('Streetwear Specialist'), 'ai-support.js has no legacy Streetwear Specialist text');
   console.log('✅ Chat widget text verified: NEED HELP ? & AI Help Assistant present, old text removed.');

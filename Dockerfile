@@ -1,5 +1,5 @@
 # ==============================================================================
-# ALLYRICH D2C Streetwear Platform - Production Dockerfile
+# ALLEYRICH D2C Streetwear Platform - Production Dockerfile
 # Multi-Stage, Minimalist Alpine Linux base with Non-Root Security & Healthcheck
 # ==============================================================================
 

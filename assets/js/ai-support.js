@@ -1,5 +1,5 @@
 /**
- * ALLYRICH - 24/7 AI Streetwear Support Concierge Client
+ * ALLEYRICH - 24/7 AI Streetwear Support Concierge Client
  * Handles floating launcher, instant UI interaction, and /api/ai/chat calls.
  */
 
@@ -11,9 +11,9 @@
   window.__AR_AI_CONCIERGE_INITIALIZED__ = true;
 
   const BrandConfig = {
-    name: 'ALLYRICH',
+    name: 'ALLEYRICH',
     whatsAppNumber: '919876543210',
-    welcomeMessage: 'Welcome to **ALLYRICH**. I am your 24/7 AI Help Assistant. Ask me about sizing, tracking your order, or garment specifications.'
+    welcomeMessage: 'Welcome to **ALLEYRICH**. I am your 24/7 AI Help Assistant. Ask me about sizing, tracking your order, or garment specifications.'
   };
 
   let isChatOpen = false;
@@ -211,7 +211,7 @@
 
     } catch (err) {
       removeTypingIndicator();
-      appendMessage('bot', `I'm having trouble connecting to atelier servers right now. You can reach our human care team directly on [WhatsApp](https://wa.me/${BrandConfig.whatsAppNumber}?text=Hi%20ALLYRICH%20Support,%20I%20need%20assistance).`);
+      appendMessage('bot', `I'm having trouble connecting to atelier servers right now. You can reach our human care team directly on [WhatsApp](https://wa.me/${BrandConfig.whatsAppNumber}?text=Hi%20ALLEYRICH%20Support,%20I%20need%20assistance).`);
     }
   }
 

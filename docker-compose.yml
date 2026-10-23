@@ -1,83 +1,69 @@
 version: '3.8'
 
 # ==============================================================================
-# ALLYRICH D2C Streetwear - Multi-Container Production Stack (Option 2: EC2 Local)
+# ALLEYRICH D2C Streetwear - Multi-Container Production Stack (Option 2: EC2 Local)
 # Services: Node.js Web Storefront + Internal PostgreSQL Database Container
 # ==============================================================================
 
 services:
-  # ----------------------------------------------------------------------------
-  # 1. ALLYRICH Web Application Server
-  # ----------------------------------------------------------------------------
+  # 1. Main Node.js E-Commerce Application Service
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: allyrich-web
-    restart: unless-stopped
+    container_name: alleyrich-storefront
+    restart: always
     ports:
       - "80:3000"
-      - "3000:3000"
+      - "443:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://allyrich:allyrich_secret_db_pass@db:5432/allyrich_db
-      # Production keys injected via .env or Cloud Secret Manager
-      - ADMIN_KEY=${ADMIN_KEY:-allyrich_admin_super_secret_2026}
-      - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - CASHFREE_APP_ID=${CASHFREE_APP_ID:-}
-      - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
-      - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - DB_TYPE=postgres
+      - DATABASE_URL=postgres://alleyrich_admin:AlleyRichSecurePass2026@postgres:5432/alleyrich_production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=alleyrich_production
+      - DB_USER=alleyrich_admin
+      - DB_PASSWORD=AlleyRichSecurePass2026
+      - CASHFREE_ENV=production
+      - CASHFREE_APP_ID=${CASHFREE_APP_ID:-TEST10769932ad8d390237739989ba6e23996701}
+      - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-cfsk_ma_test_c9b8832a8dd9f57560da4c693a129ef9_41f649ba}
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
     networks:
-      - allyrich-network
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.75'
-        reservations:
-          memory: 128M
-
-  # ----------------------------------------------------------------------------
-  # 2. PostgreSQL Relational Database Container
-  # ----------------------------------------------------------------------------
-  db:
-    image: postgres:16-alpine
-    container_name: allyrich-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: allyrich
-      POSTGRES_PASSWORD: allyrich_secret_db_pass
-      POSTGRES_DB: allyrich_db
-    ports:
-      - "5432:5432"
+      - alleyrich-network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./data:/app/data
+      - ./assets/uploads:/app/assets/uploads
+
+  # 2. Local Containerized PostgreSQL Database (Option 2 Deployment)
+  postgres:
+    image: postgres:16-alpine
+    container_name: alleyrich-db
+    restart: always
+    environment:
+      - POSTGRES_DB=alleyrich_production
+      - POSTGRES_USER=alleyrich_admin
+      - POSTGRES_PASSWORD=AlleyRichSecurePass2026
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./data/backups:/backups
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U allyrich -d allyrich_db"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U alleyrich_admin -d alleyrich_production"]
+      interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - allyrich-network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.50'
-
-# ------------------------------------------------------------------------------
-# Persistent Storage Volumes & Networks
-# ------------------------------------------------------------------------------
-volumes:
-  postgres_data:
-    driver: local
+      - alleyrich-network
 
 networks:
-  allyrich-network:
+  alleyrich-network:
     driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

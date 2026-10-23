@@ -1,13 +1,13 @@
 #!/bin/bash
 # ==============================================================================
-# ALLYRICH D2C Streetwear - End-to-End AWS Automated Infrastructure Deployment
+# ALLEYRICH D2C Streetwear - End-to-End AWS Automated Infrastructure Deployment
 # Provisions: VPC Discovery, Security Groups, EC2 Docker Server, Target Group, ALB
 # ==============================================================================
 
 set -e
 
 echo "======================================================================"
-echo "🚀 Starting ALLYRICH Automated AWS Infrastructure Provisioning"
+echo "🚀 Starting ALLEYRICH Automated AWS Infrastructure Provisioning"
 echo "======================================================================"
 
 # 1. Detect Active AWS Region
@@ -129,7 +129,7 @@ INSTANCE_CHECK=$(aws ec2 describe-instances --region "$REGION" \
   --query "Reservations[0].Instances[0].InstanceId" --output text || true)
 
 if [ "$INSTANCE_CHECK" == "None" ] || [ -z "$INSTANCE_CHECK" ]; then
-  # Prepare User Data Script to install Docker and launch ALLYRICH automatically
+  # Prepare User Data Script to install Docker and launch ALLEYRICH automatically
   USER_DATA=$(cat << 'EOF' | base64
 #!/bin/bash
 apt-get update -y

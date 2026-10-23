@@ -1,5 +1,5 @@
 /**
- * ALLYRICH Luxury Client Concierge & Direct Chat Widget
+ * ALLEYRICH Luxury Client Concierge & Direct Chat Widget
  * Matches exact 1:1 card design from user screenshot:
  * 1. "Let's talk on Instagram" (Official IG gradient icon + chevron)
  * 2. "Lets talk on WhatsApp" (Official WhatsApp green circle + chevron)
@@ -15,7 +15,7 @@
   window.__allyrichChatWidgetInitialized = true;
 
   const WHATSAPP_NUMBER = '919876543210';
-  const WHATSAPP_MESSAGE = encodeURIComponent('Hi ALLYRICH Team, I have a query regarding my order / product.');
+  const WHATSAPP_MESSAGE = encodeURIComponent('Hi ALLEYRICH Team, I have a query regarding my order / product.');
   const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
   const INSTAGRAM_URL = 'https://ig.me/m/allyrich_';
   const INSTAGRAM_WEB_URL = 'https://www.instagram.com/allyrich_/';
@@ -496,7 +496,7 @@
 
         <!-- Operating Hours Note -->
         <p class="ar-chat-modal__footer-note">
-          ALLYRICH Client Concierge &bull; Mon &ndash; Sat, 10 AM &ndash; 7 PM IST
+          ALLEYRICH Client Concierge &bull; Mon &ndash; Sat, 10 AM &ndash; 7 PM IST
         </p>
 
       </div>

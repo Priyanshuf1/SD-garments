@@ -1,5 +1,5 @@
 /**
- * ALLYRICH Architectural Streetwear - Global Size Guide Modal
+ * ALLEYRICH Architectural Streetwear - Global Size Guide Modal
  * Provides interactive size chart dialog with category tabs (Tees/Tanks, Hoodies, Bottoms),
  * unit switcher (Inches / CM), and measurement instructions.
  */
@@ -327,7 +327,7 @@
           <img src="/assets/ar-logo.png" alt="AR" class="ar-size-modal__logo" width="26" height="26">
           <div>
             <h3 class="ar-size-modal__title" id="ar-size-title">Official Size Guide</h3>
-            <p class="ar-size-modal__subtitle">Architectural Streetwear Sizing &bull; ALLYRICH</p>
+            <p class="ar-size-modal__subtitle">Architectural Streetwear Sizing &bull; ALLEYRICH</p>
           </div>
         </div>
         <button type="button" class="ar-size-modal__close" id="ar-size-modal-close" aria-label="Close Size Guide">✕</button>

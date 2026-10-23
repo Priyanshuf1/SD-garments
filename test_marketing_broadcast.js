@@ -1,5 +1,5 @@
 /**
- * ALLYRICH Omnichannel Marketing & WhatsApp Verification Suite
+ * ALLEYRICH Omnichannel Marketing & WhatsApp Verification Suite
  * 
  * Verifies:
  * 1. Indian Phone Number Normalization
@@ -91,14 +91,14 @@ async function runTests() {
     code: 'FLASH40',
     link: 'https://genrage.vercel.app/collections/shop'
   });
-  assert(promo.includes('*ALLYRICH ARCHITECTURAL STREETWEAR*'), 'Message includes brand header');
+  assert(promo.includes('*ALLEYRICH ARCHITECTURAL STREETWEAR*'), 'Message includes brand header');
   assert(promo.includes('*40% OFF FLASH SALE*'), 'Message includes headline');
   assert(promo.includes('FLASH40'), 'Message includes promo code');
   assert(promo.includes('https://genrage.vercel.app/collections/shop'), 'Message includes shop link');
 
-  const waLink = whatsapp.buildDirectWhatsAppLink('9876543210', 'Hello from ALLYRICH');
+  const waLink = whatsapp.buildDirectWhatsAppLink('9876543210', 'Hello from ALLEYRICH');
   assert(waLink.startsWith('https://wa.me/919876543210?text='), 'wa.me link has correct schema');
-  assert(waLink.includes('Hello%20from%20ALLYRICH'), 'wa.me text is properly URI encoded');
+  assert(waLink.includes('Hello%20from%20ALLEYRICH'), 'wa.me text is properly URI encoded');
 
   // 2. Integration Tests with Local HTTP Server
   console.log('\n--- Integration Tests on Server ---');

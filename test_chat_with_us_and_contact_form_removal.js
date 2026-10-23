@@ -4,7 +4,7 @@
  * 2. Complete removal of the generic "Contact Us" form
  * 3. Global floating chat widget (assets/js/chat-widget.js) presence across templates
  * 4. Server routes (/chat, /chat-with-us, /contact, /pages/contact.html)
- * 5. Zero regressions on brand name ("ALLYRICH") and "Contact Concierge"
+ * 5. Zero regressions on brand name ("ALLEYRICH") and "Contact Concierge"
  */
 
 const fs = require('fs');
@@ -125,7 +125,7 @@ async function run() {
     for (const r of routesToTest) {
       const res = await request({ hostname: 'localhost', port: testPort, path: r, method: 'GET' });
       assert(res.status === 200, `Route ${r} returned HTTP 200 OK`);
-      assert(res.raw.includes('ALLYRICH'), `Route ${r} returns ALLYRICH branded page`);
+      assert(res.raw.includes('ALLEYRICH'), `Route ${r} returns ALLEYRICH branded page`);
       assert(res.raw.includes('CHAT WITH US'), `Route ${r} contains "CHAT WITH US" hero`);
       assert(res.raw.includes('https://wa.me/919876543210'), `Route ${r} contains WhatsApp link`);
     }

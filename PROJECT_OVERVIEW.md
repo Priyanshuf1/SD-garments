@@ -1,4 +1,4 @@
-# ALLYRICH — Luxury D2C Streetwear Platform & Cloud Infrastructure
+# ALLEYRICH — Luxury D2C Streetwear Platform & Cloud Infrastructure
 ## Complete System Architecture, Tech Stack & Project Status
 
 > **Live Production Store**: [https://genrage.vercel.app](https://genrage.vercel.app)  
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary & Brand Identity
 
-**ALLYRICH** is a high-end Direct-to-Consumer (D2C) streetwear e-commerce platform engineered from scratch. The brand operates on limited-batch archival drops and architectural garment silhouettes (heavyweight 380+ GSM cotton, boxy tees, balloon cargo pants, hoodies, and vests).
+**ALLEYRICH** is a high-end Direct-to-Consumer (D2C) streetwear e-commerce platform engineered from scratch. The brand operates on limited-batch archival drops and architectural garment silhouettes (heavyweight 380+ GSM cotton, boxy tees, balloon cargo pants, hoodies, and vests).
 
 ### Core Brand Attributes
 - **Visual Aesthetic**: Monochromatic luxury dark palette (`#000000`, `#0a0a0a`, `#111111`) with high-contrast typography and signature red accents (`#e50914`).

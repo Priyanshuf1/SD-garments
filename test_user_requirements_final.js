@@ -2,7 +2,7 @@
  * Comprehensive Automated Verification Suite for ALL User Requirements:
  * 1. Newsletter Subscription Persistence (Supabase cloud webhook_events + Admin Portal /api/admin/subscribers)
  * 2. Policy Pages Functionality (all 7 policy pages accessible via direct and clean routes with 200 OK)
- * 3. Brand Name Unification ("ALLY RICH" -> "ALLYRICH" across all HTML, JS, CSS, Admin, and Policy pages)
+ * 3. Brand Name Unification ("ALLY RICH" -> "ALLEYRICH" across all HTML, JS, CSS, Admin, and Policy pages)
  * 4. Header Flex Constraints & Badge Truncation (prevent element collision)
  * 5. Multi-Device Cloud Wishlist & Address Sync (cross-device session simulation with Supabase)
  */
@@ -112,11 +112,11 @@ async function runTests() {
     for (const route of policyRoutes) {
       const res = await request({ hostname: 'localhost', port: testPort, path: route, method: 'GET' });
       assert(res.status === 200, `Route ${route} returned HTTP 200 OK`);
-      assert(res.raw && res.raw.includes('ALLYRICH'), `Route ${route} contains unified brand name 'ALLYRICH'`);
+      assert(res.raw && res.raw.includes('ALLEYRICH'), `Route ${route} contains unified brand name 'ALLEYRICH'`);
     }
 
     // ------------------------------------------------------------------------
-    // REQUIREMENT 3: Brand Name Unification ("ALLY RICH" -> "ALLYRICH")
+    // REQUIREMENT 3: Brand Name Unification ("ALLY RICH" -> "ALLEYRICH")
     // ------------------------------------------------------------------------
     console.log('\n--- 3. Testing Brand Name Unification (Zero "ALLY RICH" across repo) ---');
     const filesToAudit = [
@@ -156,7 +156,7 @@ async function runTests() {
           console.error(`Found ${matches.length} 'ALLY RICH' in ${file}`);
         }
       }
-      assert(content.includes('ALLYRICH'), `${file} contains unified brand name 'ALLYRICH'`);
+      assert(content.includes('ALLEYRICH'), `${file} contains unified brand name 'ALLEYRICH'`);
     });
     assert(spaceCount === 0, `Audit confirmed 0 unwanted 'ALLY RICH' strings across ${filesToAudit.length} files`);
 
