@@ -3,7 +3,7 @@
  * Ported directly from https://github.com/RitikPal26/allyrich-loader
  */
 
-import { Application } from 'https://unpkg.com/@splinetool/runtime/build/runtime.js';
+import { Application } from '/assets/spline/runtime.js';
 
 (function initAllyrich3DHero() {
   const canvas = document.getElementById('allyrich-spline-canvas');
@@ -433,9 +433,16 @@ import { Application } from 'https://unpkg.com/@splinetool/runtime/build/runtime
       canvas.addEventListener('touchmove', handleTouchMove, { passive: true });
     }
 
-    // 4. Smooth Animation Loop
+    // 4. Smooth Animation Loop with Viewport Visibility Observer (Zero CPU/GPU when scrolled off-screen)
+    let isHeroVisible = true;
+    let motionRafId = null;
+
     function animateMotion() {
-      requestAnimationFrame(animateMotion);
+      if (!isHeroVisible) {
+        motionRafId = null;
+        return;
+      }
+      motionRafId = requestAnimationFrame(animateMotion);
 
       currentRotY += (targetRotY - currentRotY) * 0.10;
       currentRotX += (targetRotX - currentRotX) * 0.10;
@@ -455,6 +462,27 @@ import { Application } from 'https://unpkg.com/@splinetool/runtime/build/runtime
     }
 
     animateMotion();
+
+    if ('IntersectionObserver' in window && container) {
+      const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          isHeroVisible = entry.isIntersecting;
+          if (isHeroVisible) {
+            if (typeof splineApp.play === 'function') {
+              try { splineApp.play(); } catch (e) {}
+            }
+            if (!motionRafId) {
+              motionRafId = requestAnimationFrame(animateMotion);
+            }
+          } else {
+            if (typeof splineApp.stop === 'function') {
+              try { splineApp.stop(); } catch (e) {}
+            }
+          }
+        });
+      }, { threshold: 0.05 });
+      heroObserver.observe(container);
+    }
     console.log('[AllyRich 3D] Motion interaction (Laptop mouse + Phone gyroscope) initialized successfully.');
   }
 
@@ -470,6 +498,9 @@ import { Application } from 'https://unpkg.com/@splinetool/runtime/build/runtime
       }
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
+      if (window.innerWidth < 768 && splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
+        splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      }
       updateAll(splineApp);
 
       // Initialize Laptop Mouse & Phone Gyroscope 3D Hand Motion Tracking

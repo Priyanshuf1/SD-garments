@@ -21,7 +21,7 @@
   function hideLoaderImmediately() {
     if (!loader) return;
     loader.classList.remove('is-active', 'loader--filling', 'loader--lit');
-    loader.classList.add('loader--done');
+    loader.classList.add('loader--done', 'loader--hidden');
     loader.style.display = 'none';
     loader.style.opacity = '0';
     loader.style.pointerEvents = 'none';
@@ -44,7 +44,7 @@
     clearTimeout(capTimer);
 
     // Reset classes and styles
-    loader.classList.remove('loader--done');
+    loader.classList.remove('loader--done', 'loader--hidden');
     loader.classList.add('is-active');
     loader.style.display = 'flex';
     loader.style.opacity = '1';
@@ -53,11 +53,13 @@
     var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function finish() {
-      loader.classList.remove('is-active', 'loader--filling', 'loader--lit');
+      loader.classList.remove('loader--filling');
       loader.classList.add('loader--done');
       loader.style.pointerEvents = 'none';
       document.documentElement.style.overflow = '';
       setTimeout(function () {
+        loader.classList.remove('is-active', 'loader--lit');
+        loader.classList.add('loader--hidden');
         loader.style.display = 'none';
       }, 650);
     }
@@ -69,18 +71,21 @@
     }
 
     document.documentElement.style.overflow = 'hidden';
-    capTimer = setTimeout(finish, 1200);
+    capTimer = setTimeout(finish, 3200);
 
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         loader.classList.add('loader--filling');
+        // The CSS transition for progress bar and logo clip-path is 1400ms.
+        // Wait for 1420ms so it fully unclips and completes progress to 100%,
+        // then trigger --lit illumination and hold for 500ms before smooth fade-out.
         animationTimer1 = setTimeout(function () {
           loader.classList.add('loader--lit');
           animationTimer2 = setTimeout(function () {
             clearTimeout(capTimer);
             finish();
-          }, 400);
-        }, 450);
+          }, 600);
+        }, 1500);
       });
     });
   }

@@ -126,44 +126,35 @@ const GenrageApp = {
     const variant = p.variants && p.variants[0] ? p.variants[0] : null;
     
     const price = variant ? parseFloat(variant.price) : 1499;
-    const comparePrice = variant && variant.compare_at_price ? parseFloat(variant.compare_at_price) : (price * 1.5).toFixed(0);
-    const discountPercent = Math.round(((comparePrice - price) / comparePrice) * 100);
-    
-    const isWishlisted = this.wishlist.includes(p.id);
+    const comparePrice = variant && variant.compare_at_price ? parseFloat(variant.compare_at_price) : 0;
+    const hasDiscount = comparePrice > price && comparePrice > 0;
+    const discountPercent = hasDiscount ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
+
+    const formattedPrice = '₹ ' + price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formattedCompare = hasDiscount ? '₹ ' + comparePrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
 
     return `
       <div class="product-card" data-id="${p.id}" data-handle="${p.handle}">
-        <div class="product-media">
-          <div class="product-badges">
-            ${discountPercent > 0 ? `<span class="badge-sale">SAVE ${discountPercent}%</span>` : ''}
-          </div>
-          <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" data-id="${p.id}" title="Wishlist">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? '#ff3b30' : 'none'}" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-          </button>
-          
-          <a href="/product.html?handle=${p.handle}">
-            <img class="img-primary" src="${primaryImg}" alt="${p.title}" loading="lazy">
-            <img class="img-secondary" src="${secondaryImg}" alt="${p.title}" loading="lazy">
+        <div class="product-card__figure">
+          <a href="/products/${p.handle}" class="product-card__media">
+            <img class="product-card__image product-card__image--primary object-cover aspect-tall" src="${primaryImg}" alt="${p.title}" loading="lazy">
+            ${secondaryImg ? `<img class="product-card__image product-card__image--secondary" src="${secondaryImg}" alt="${p.title}" loading="lazy">` : ''}
           </a>
-
-          <button class="quick-buy-btn" data-id="${p.id}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            QUICK VIEW / BUY
-          </button>
         </div>
-
-        <div class="product-info">
-          <span class="product-vendor">${p.vendor || 'ALLEYRICH'}</span>
-          <a href="/product.html?handle=${p.handle}" class="product-title" title="${p.title}">${p.title}</a>
-          <div class="product-rating">
-            ★★★★★ <span class="count">(4.8)</span>
+        <div class="product-card__info">
+          <div class="product-card__title-row">
+            <a href="/products/${p.handle}" class="product-title" title="${p.title}">${p.title}</a>
+            <button type="button" class="product-card__quick-add-button quick-buy-btn" data-id="${p.id}" title="Quick Add" aria-label="Quick Add">+</button>
           </div>
-          <div class="product-pricing">
-            <span class="price-current">Rs. ${price.toLocaleString('en-IN')}</span>
-            ${comparePrice > price ? `<span class="price-compare">Rs. ${parseFloat(comparePrice).toLocaleString('en-IN')}</span>` : ''}
-          </div>
+          ${hasDiscount ? `
+            <div class="product-card__compare-price"><span class="price-compare money">${formattedCompare}</span></div>
+            <div class="product-card__discount-tag">
+              <span class="zara-pct">-${discountPercent}%</span>
+              <span class="zara-price price money">${formattedPrice}</span>
+            </div>
+          ` : `
+            <div class="product-card__regular-price"><span class="price money">${formattedPrice}</span></div>
+          `}
         </div>
       </div>
     `;

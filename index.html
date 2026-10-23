@@ -481,8 +481,8 @@ snaptr('init', '1056c3b0-8251-4aaf-a8aa-43d388d1a4ae');
     --page-background: ;
 
     /* Product colors */
-    --on-sale-text: 197 49 45;
-    --on-sale-badge-background: 197 49 45;
+    --on-sale-text: 0 0 0;
+    --on-sale-badge-background: 0 0 0;
     --on-sale-badge-text: 255 255 255;
     --sold-out-badge-background: 255 255 255;
     --sold-out-badge-text: 0 0 0 / 0.65;
@@ -4329,6 +4329,13 @@ first.parentNode.insertBefore(script, first);
       overflow: hidden;
       background-color: #c4c4c4;
     }
+    @media (max-width: 768px) {
+      #shopify-section-allyrich-3d-hero {
+        height: 72vh;
+        min-height: 480px;
+        max-height: 600px;
+      }
+    }
     .allyrich-hero-page {
       position: relative;
       width: 100%;
@@ -4351,7 +4358,7 @@ first.parentNode.insertBefore(script, first);
       display: block;
       outline: none;
       cursor: grab;
-      touch-action: none;
+      touch-action: pan-y !important;
       background: transparent !important;
       background-color: transparent !important;
     }
@@ -6713,17 +6720,16 @@ first.parentNode.insertBefore(script, first);
         });
         if (foundInTarget) return;
 
-        // If not already present in the section, prepend it
+        // If not already present in the section, prepend it using Zara minimalist card layout
         const primaryImg = p.images?.[0]?.src || p.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
         const secondaryImg = p.images?.[1]?.src || p.hoverImage || '';
-        const price = p.variants?.[0]?.price || '1299';
-        const comparePrice = p.variants?.[0]?.compare_at_price || '';
+        const rawPrice = Number(p.variants?.[0]?.price || 1299);
+        const rawCompare = p.variants?.[0]?.compare_at_price ? Number(p.variants[0].compare_at_price) : 0;
+        const hasDiscount = rawCompare > rawPrice && rawCompare > 0;
+        const pct = hasDiscount ? Math.round(((rawCompare - rawPrice) / rawCompare) * 100) : 0;
 
-        let discountBadge = '';
-        if (comparePrice && Number(comparePrice) > Number(price)) {
-          const pct = Math.round(((Number(comparePrice) - Number(price)) / Number(comparePrice)) * 100);
-          discountBadge = `<badge-list class="badge-list badge-list--vertical"><on-sale-badge class="badge badge--on-sale">Save ${pct}%</on-sale-badge></badge-list>`;
-        }
+        const formattedPrice = '₹ ' + rawPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formattedCompare = hasDiscount ? '₹ ' + rawCompare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
 
         const card = document.createElement('product-card');
         card.className = 'product-card';
@@ -6732,35 +6738,25 @@ first.parentNode.insertBefore(script, first);
         card.style.visibility = 'visible';
         card.innerHTML = `
           <div class="product-card__figure">
-            ${discountBadge}
             <a href="/products/${p.handle}" class="product-card__media" draggable="false" data-instant>
               <img src="${primaryImg}" alt="${p.title}" decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall">
               ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary">` : ''}
             </a>
-            <button type="button" class="product-card__quick-add-button" onclick="window.location.href='/products/${p.handle}'">
-              <span class="sr-only">Choose options</span>
-              <svg aria-hidden="true" focusable="false" fill="none" width="12" class="icon icon-plus" viewBox="0 0 12 12">
-                <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </button>
           </div>
           <div class="product-card__info empty:hidden">
-            <div class="v-stack justify-items-center gap-2">
-              <div class="v-stack justify-items-center gap-1">
-                <a href="/products/${p.handle}" class="product-title h6" data-instant>${p.title}</a>
-                <price-list class="price-list">
-                  <sale-price class="h6 text-on-sale">
-                    <span class="sr-only">Sale price</span>
-                    <span class="money">Rs. ${Number(price).toLocaleString('en-IN')}</span>
-                  </sale-price>
-                  ${comparePrice ? `
-                  <compare-at-price class="h6 text-subdued line-through">
-                    <span class="sr-only">Regular price</span>
-                    <span class="money">Rs. ${Number(comparePrice).toLocaleString('en-IN')}</span>
-                  </compare-at-price>` : ''}
-                </price-list>
-              </div>
+            <div class="product-card__title-row">
+              <a href="/products/${p.handle}" class="product-title" data-instant title="${p.title}">${p.title}</a>
+              <button type="button" class="product-card__quick-add-button" data-handle="${p.handle}" onclick="window.location.href='/products/${p.handle}'" title="Quick Add" aria-label="Quick Add">+</button>
             </div>
+            ${hasDiscount ? `
+              <div class="product-card__compare-price"><span class="price-compare money">${formattedCompare}</span></div>
+              <div class="product-card__discount-tag">
+                <span class="zara-pct">-${pct}%</span>
+                <span class="zara-price price money">${formattedPrice}</span>
+              </div>
+            ` : `
+              <div class="product-card__regular-price"><span class="price money">${formattedPrice}</span></div>
+            `}
           </div>
         `;
 
