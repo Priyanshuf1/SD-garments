@@ -791,83 +791,161 @@ Shopify.SignInWithShop.User.recognized = false;</script>
     opacity: 1;
   }
 
-  /* Streetwear Price Tag Size & Strict Center Alignment */
+  /* Zara Minimalist Product Card Layout */
+  .product-card {
+    background: #000000 !important;
+    border-radius: 2px !important;
+    overflow: hidden !important;
+  }
+  .product-card__figure {
+    background: #0d0d0d !important;
+    position: relative !important;
+  }
+  .product-card__figure .badge-list,
+  .product-card__figure badge-list,
+  .product-card__figure on-sale-badge,
+  .product-card__figure .badge--on-sale,
+  .product-card__figure > .product-card__quick-add-button {
+    display: none !important;
+  }
+
   .product-card__info {
-    text-align: center !important;
-    justify-items: center !important;
-    align-items: center !important;
-    padding: 0.85rem 0.5rem 1rem !important;
+    text-align: left !important;
+    justify-items: flex-start !important;
+    align-items: flex-start !important;
+    padding: 0.65rem 0.65rem 0.85rem !important;
     background-color: #000000 !important;
-  }
-  .product-card__info .v-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.15rem !important;
     width: 100% !important;
-    justify-items: center !important;
-    align-items: center !important;
-    text-align: center !important;
-    gap: 0.35rem !important;
+    box-sizing: border-box !important;
   }
-  .product-card__info .product-title {
-    color: #ffffff !important;
-    text-align: center !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    width: 100% !important;
-    display: block !important;
-  }
-  .price-list,
-  .product-card__info .price-list,
-  price-list.price-list {
+
+  /* Row 1: Product Title & '+' Quick Add Button */
+  .product-card__title-row {
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
+    justify-content: space-between !important;
     width: 100% !important;
-    margin: 4px auto 0 !important;
-    column-gap: 8px !important;
-    row-gap: 4px !important;
-    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  sale-price.h6,
-  .price-list sale-price,
-  .price-list .sale-price,
-  .price-list .text-on-sale,
-  .product-card__info sale-price {
-    font-size: 1.05rem !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.02em !important;
-    color: #ff3b30 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1.2 !important;
-  }
-  sale-price .money,
-  .price-list .text-on-sale .money,
-  .price-list .money {
-    font-size: inherit !important;
-    font-weight: inherit !important;
-    color: inherit !important;
-  }
-  compare-at-price.h6,
-  .price-list compare-at-price,
-  .price-list .compare-at-price,
-  .price-list .text-subdued,
-  .price-list .line-through,
-  .product-card__info compare-at-price {
-    font-size: 0.88rem !important;
+
+  .product-card__title-row .product-title,
+  .product-card__info .product-title {
+    color: #ffffff !important;
+    text-align: left !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 0.78rem !important;
     font-weight: 500 !important;
-    color: #888888 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    line-height: 1.3 !important;
+    text-decoration: none !important;
+  }
+
+  .product-card__title-row .product-card__quick-add-button,
+  .product-card__info .product-card__quick-add-button {
+    position: static !important;
+    flex-shrink: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
+    background: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 1.35rem !important;
+    font-weight: 300 !important;
+    line-height: 1 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    text-decoration: line-through !important;
-    line-height: 1.2 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transition: transform 0.15s ease, opacity 0.15s ease !important;
   }
-  compare-at-price .money,
-  .price-list .line-through .money {
-    font-size: inherit !important;
-    color: inherit !important;
+  .product-card__title-row .product-card__quick-add-button:hover,
+  .product-card__info .product-card__quick-add-button:hover {
+    transform: scale(1.25) !important;
+    opacity: 0.8 !important;
+  }
+
+  /* Row 2: Strikethrough Compare-At Price */
+  .product-card__compare-price,
+  .product-card__info .product-card__compare-price {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 0.76rem !important;
+    font-weight: 400 !important;
+    color: #888888 !important;
     text-decoration: line-through !important;
+    text-align: left !important;
+    line-height: 1.2 !important;
+    margin-top: 2px !important;
+    margin-bottom: 0 !important;
+    display: block !important;
+  }
+  .product-card__compare-price .money {
+    color: inherit !important;
+    font-size: inherit !important;
+    text-decoration: line-through !important;
+  }
+
+  /* Row 3: Black Tag with % and Sale Price */
+  .product-card__discount-tag,
+  .product-card__info .product-card__discount-tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    padding: 2px 6px !important;
+    margin-top: 3px !important;
+    margin-bottom: 0 !important;
+    border-radius: 0px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 0.76rem !important;
+    line-height: 1.2 !important;
+    width: fit-content !important;
+    text-align: left !important;
+  }
+  .product-card__discount-tag .zara-pct {
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    letter-spacing: 0.02em !important;
+  }
+  .product-card__discount-tag .zara-price,
+  .product-card__discount-tag .money,
+  .product-card__discount-tag .price {
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  /* Regular Price (when no discount) */
+  .product-card__regular-price,
+  .product-card__info .product-card__regular-price {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+    color: #ffffff !important;
+    text-align: left !important;
+    margin-top: 3px !important;
+    line-height: 1.2 !important;
   }
 
 </style>
@@ -1795,15 +1873,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--8898853601518"
             aria-label="Choose options for Basic Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-black-genrage-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-black-genrage-baggy-pants" class="product-title" data-instant title="Basic Black Baggy Pants">Basic Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-black-genrage-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -1822,15 +1903,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--8898854289646"
             aria-label="Choose options for Basic Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-grey-genrage-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-grey-genrage-baggy-pants" class="product-title" data-instant title="Basic Grey Baggy Pants">Basic Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-grey-genrage-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -1849,15 +1933,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9305106317550"
             aria-label="Choose options for Fade Black Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/fade-basic-black-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Fade Black Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/fade-basic-black-baggy-pants" class="product-title" data-instant title="Fade Black Balloon Pants">Fade Black Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="fade-basic-black-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -1876,15 +1963,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9238158967022"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-melange-balloon-supper-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-melange-balloon-supper-baggy-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-melange-balloon-supper-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -1903,15 +1993,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9113458508014"
             aria-label="Choose options for Dark Grey Basic Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/dark-grey-basic-genrage-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Dark Grey Basic Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/dark-grey-basic-genrage-baggy-pants" class="product-title" data-instant title="Dark Grey Basic Baggy Pants">Dark Grey Basic Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="dark-grey-basic-genrage-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -1930,15 +2023,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9177192268014"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-balloon-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-balloon-baggy-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-balloon-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -1957,15 +2053,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9504634339566"
             aria-label="Choose options for Basic Beige Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-beige-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic Beige Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-beige-baggy-pants" class="product-title" data-instant title="Basic Beige Baggy Pants">Basic Beige Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-beige-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -1984,15 +2083,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9324111626478"
             aria-label="Choose options for Fade Grey Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/fade-grey-balloon-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Fade Grey Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/fade-grey-balloon-pants" class="product-title" data-instant title="Fade Grey Balloon Pants">Fade Grey Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="fade-grey-balloon-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2011,15 +2113,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9485995475182"
             aria-label="Choose options for Basic Brown Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-brown-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic Brown Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-brown-baggy-pants" class="product-title" data-instant title="Basic Brown Baggy Pants">Basic Brown Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-brown-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2038,15 +2143,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9316162601198"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-white-balloon-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-white-balloon-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-white-balloon-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2065,15 +2173,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9485996687598"
             aria-label="Choose options for Basic Navy Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-blue-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic Navy Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-blue-baggy-pants" class="product-title" data-instant title="Basic Navy Baggy Pants">Basic Navy Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-blue-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2092,15 +2203,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9549144850670"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-beige-balloon-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-beige-balloon-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-beige-balloon-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2119,15 +2233,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_kRBRyR-collection_yNYHYj--9574421823726"
             aria-label="Choose options for Basic White Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-white-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic White Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-white-baggy-pants" class="product-title" data-instant title="Basic White Baggy Pants">Basic White Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-white-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 </scroll-carousel>
 
@@ -2173,15 +2290,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581724467438"
             aria-label="Choose options for Sigma Corduroy Full Sleeves"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/sigma-corduroy-full-sleeves"
-                class="product-title h6 "
-                
-                data-instant
-              >Sigma Corduroy Full Sleeves</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,599</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/sigma-corduroy-full-sleeves" class="product-title" data-instant title="Sigma Corduroy Full Sleeves">Sigma Corduroy Full Sleeves</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="sigma-corduroy-full-sleeves" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-36%</span>
+    <span class="zara-price price money">₹ 1,599.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2200,15 +2320,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581728628974"
             aria-label="Choose options for Mutant Beige Boxy Hoodie"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/mutant-beige-boxy-hoodie"
-                class="product-title h6 "
-                
-                data-instant
-              >Mutant Beige Boxy Hoodie</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/mutant-beige-boxy-hoodie" class="product-title" data-instant title="Mutant Beige Boxy Hoodie">Mutant Beige Boxy Hoodie</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="mutant-beige-boxy-hoodie" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-20%</span>
+    <span class="zara-price price money">₹ 1,999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2227,15 +2350,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581788266734"
             aria-label="Choose options for Thesis Black Zipper Hoodie"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/thesis-black-zipper-hoodie"
-                class="product-title h6 "
-                
-                data-instant
-              >Thesis Black Zipper Hoodie</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 2,199</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/thesis-black-zipper-hoodie" class="product-title" data-instant title="Thesis Black Zipper Hoodie">Thesis Black Zipper Hoodie</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="thesis-black-zipper-hoodie" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-12%</span>
+    <span class="zara-price price money">₹ 2,199.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2254,15 +2380,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581733019886"
             aria-label="Choose options for Aether Dark Grey Full Sleeves"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/aether-dark-grey-full-sleeves"
-                class="product-title h6 "
-                
-                data-instant
-              >Aether Dark Grey Full Sleeves</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,499</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,299</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/aether-dark-grey-full-sleeves" class="product-title" data-instant title="Aether Dark Grey Full Sleeves">Aether Dark Grey Full Sleeves</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="aether-dark-grey-full-sleeves" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,299.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,499.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2281,15 +2410,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581790494958"
             aria-label="Choose options for Vicious Grey Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/vicious-grey-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Vicious Grey Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/vicious-grey-vest" class="product-title" data-instant title="Vicious Grey Vest">Vicious Grey Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="vicious-grey-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2308,15 +2440,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581788627182"
             aria-label="Choose options for Ornate Navy Zipper Hoodie"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/ornate-navy-zipper-hoodie"
-                class="product-title h6 "
-                
-                data-instant
-              >Ornate Navy Zipper Hoodie</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 2,199</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/ornate-navy-zipper-hoodie" class="product-title" data-instant title="Ornate Navy Zipper Hoodie">Ornate Navy Zipper Hoodie</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="ornate-navy-zipper-hoodie" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-12%</span>
+    <span class="zara-price price money">₹ 2,199.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2335,15 +2470,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581797310702"
             aria-label="Choose options for Aeris Black Tshirt"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/aeris-black-tshirt"
-                class="product-title h6 "
-                
-                data-instant
-              >Aeris Black Tshirt</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,299</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/aeris-black-tshirt" class="product-title" data-instant title="Aeris Black Tshirt">Aeris Black Tshirt</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="aeris-black-tshirt" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,299.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2362,15 +2500,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581728923886"
             aria-label="Choose options for Nexus Melange Boxy Hoodie"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/nexus-melange-boxy-hoodie"
-                class="product-title h6 "
-                
-                data-instant
-              >Nexus Melange Boxy Hoodie</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/nexus-melange-boxy-hoodie" class="product-title" data-instant title="Nexus Melange Boxy Hoodie">Nexus Melange Boxy Hoodie</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="nexus-melange-boxy-hoodie" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-20%</span>
+    <span class="zara-price price money">₹ 1,999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2389,15 +2530,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581724270830"
             aria-label="Choose options for Hexen Corduroy Full Sleeves"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/hexen-corduroy-full-sleeves"
-                class="product-title h6 "
-                
-                data-instant
-              >Hexen Corduroy Full Sleeves</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,599</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/hexen-corduroy-full-sleeves" class="product-title" data-instant title="Hexen Corduroy Full Sleeves">Hexen Corduroy Full Sleeves</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="hexen-corduroy-full-sleeves" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-36%</span>
+    <span class="zara-price price money">₹ 1,599.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2416,15 +2560,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9582184759534"
             aria-label="Choose options for Feyra Beige Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/feyra-beige-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Feyra Beige Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/feyra-beige-vest" class="product-title" data-instant title="Feyra Beige Vest">Feyra Beige Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="feyra-beige-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2443,15 +2590,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581732856046"
             aria-label="Choose options for Vexil Black Full Sleeves"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/vexil-black-full-sleeves"
-                class="product-title h6 "
-                
-                data-instant
-              >Vexil Black Full Sleeves</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,499</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,299</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/vexil-black-full-sleeves" class="product-title" data-instant title="Vexil Black Full Sleeves">Vexil Black Full Sleeves</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="vexil-black-full-sleeves" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,299.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,499.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2470,15 +2620,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581723877614"
             aria-label="Choose options for Zaraki Corduroy Full Sleeves"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/zaraki-corduroy-full-sleeves"
-                class="product-title h6 "
-                
-                data-instant
-              >Zaraki Corduroy Full Sleeves</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,599</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/zaraki-corduroy-full-sleeves" class="product-title" data-instant title="Zaraki Corduroy Full Sleeves">Zaraki Corduroy Full Sleeves</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="zaraki-corduroy-full-sleeves" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-36%</span>
+    <span class="zara-price price money">₹ 1,599.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2497,15 +2650,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9581790036206"
             aria-label="Choose options for Mortem Black Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/mortem-black-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Mortem Black Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/mortem-black-vest" class="product-title" data-instant title="Mortem Black Vest">Mortem Black Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="mortem-black-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2524,15 +2680,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9582184366318"
             aria-label="Choose options for Tigra Beige Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/tigra-beige-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Tigra Beige Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/tigra-beige-vest" class="product-title" data-instant title="Tigra Beige Vest">Tigra Beige Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="tigra-beige-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2540,15 +2699,18 @@ first.parentNode.insertBefore(script, first);
     reveal-on-scroll="true"
   
   handle="lunaris-black-boxy-jacket"
-><div class="product-card__figure"><badge-list class="badge-list badge-list--vertical"><sold-out-badge class="badge badge--sold-out">Sold out</sold-out-badge><on-sale-badge class="badge badge--on-sale">Save 27%</on-sale-badge></badge-list><a href="/products/lunaris-black-boxy-jacket" class="product-card__media" draggable="false" data-instant><img src="https://genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=4096" alt="Lunaris Black Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=200 200w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=300 300w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=400 400w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=500 500w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=600 600w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=700 700w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=800 800w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1000 1000w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1200 1200w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1400 1400w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1600 1600w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1800 1800w" width="4096" height="4096" loading="lazy" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" class="product-card__image product-card__image--primary object-cover aspect-tall"><img src="https://genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1500" alt="Lunaris Black Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=200 200w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=300 300w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=400 400w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=500 500w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=600 600w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=700 700w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=800 800w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1000 1000w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1200 1200w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1400 1400w" width="1500" height="2000" class="product-card__image product-card__image--secondary" decoding="async" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" aria-hidden="true"></a></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/lunaris-black-boxy-jacket"
-                class="product-title h6 "
-                
-                data-instant
-              >Lunaris Black Boxy Jacket</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 2,199</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+><div class="product-card__figure"><badge-list class="badge-list badge-list--vertical"><sold-out-badge class="badge badge--sold-out">Sold out</sold-out-badge><on-sale-badge class="badge badge--on-sale">Save 27%</on-sale-badge></badge-list><a href="/products/lunaris-black-boxy-jacket" class="product-card__media" draggable="false" data-instant><img src="https://genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=4096" alt="Lunaris Black Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=200 200w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=300 300w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=400 400w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=500 500w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=600 600w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=700 700w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=800 800w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1000 1000w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1200 1200w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1400 1400w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1600 1600w, //genrage.com/cdn/shop/files/1_e3798a9b-fcf5-4a5e-ba67-fdd94449bfcd.png?v=1792137502&amp;width=1800 1800w" width="4096" height="4096" loading="lazy" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" class="product-card__image product-card__image--primary object-cover aspect-tall"><img src="https://genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1500" alt="Lunaris Black Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=200 200w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=300 300w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=400 400w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=500 500w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=600 600w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=700 700w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=800 800w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1000 1000w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1200 1200w, //genrage.com/cdn/shop/files/Artboard13_c589742d-0f4a-4074-a3c2-1f3e4e2c3f84.png?v=1792247083&amp;width=1400 1400w" width="1500" height="2000" class="product-card__image product-card__image--secondary" decoding="async" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" aria-hidden="true"></a></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/lunaris-black-boxy-jacket" class="product-title" data-instant title="Lunaris Black Boxy Jacket">Lunaris Black Boxy Jacket</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="lunaris-black-boxy-jacket" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-27%</span>
+    <span class="zara-price price money">₹ 2,199.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2556,15 +2718,18 @@ first.parentNode.insertBefore(script, first);
     reveal-on-scroll="true"
   
   handle="solaris-melange-boxy-jacket"
-><div class="product-card__figure"><badge-list class="badge-list badge-list--vertical"><sold-out-badge class="badge badge--sold-out">Sold out</sold-out-badge><on-sale-badge class="badge badge--on-sale">Save 27%</on-sale-badge></badge-list><a href="/products/solaris-melange-boxy-jacket" class="product-card__media" draggable="false" data-instant><img src="https://genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=3500" alt="Solaris Melange Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=200 200w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=300 300w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=400 400w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=500 500w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=600 600w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=700 700w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=800 800w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1000 1000w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1200 1200w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1400 1400w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1600 1600w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1800 1800w" width="3500" height="3500" loading="lazy" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" class="product-card__image product-card__image--primary object-cover aspect-tall"><img src="https://genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1536" alt="Solaris Melange Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=200 200w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=300 300w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=400 400w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=500 500w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=600 600w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=700 700w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=800 800w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1000 1000w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1200 1200w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1400 1400w" width="1536" height="2048" class="product-card__image product-card__image--secondary" decoding="async" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" aria-hidden="true"></a></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/solaris-melange-boxy-jacket"
-                class="product-title h6 "
-                
-                data-instant
-              >Solaris Melange Boxy Jacket</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 2,199</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+><div class="product-card__figure"><badge-list class="badge-list badge-list--vertical"><sold-out-badge class="badge badge--sold-out">Sold out</sold-out-badge><on-sale-badge class="badge badge--on-sale">Save 27%</on-sale-badge></badge-list><a href="/products/solaris-melange-boxy-jacket" class="product-card__media" draggable="false" data-instant><img src="https://genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=3500" alt="Solaris Melange Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=200 200w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=300 300w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=400 400w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=500 500w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=600 600w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=700 700w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=800 800w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1000 1000w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1200 1200w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1400 1400w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1600 1600w, //genrage.com/cdn/shop/files/FrontOpen_09c237eb-9a08-4765-a910-10e910dabd3e.png?v=1792137980&amp;width=1800 1800w" width="3500" height="3500" loading="lazy" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" class="product-card__image product-card__image--primary object-cover aspect-tall"><img src="https://genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1536" alt="Solaris Melange Boxy Jacket" srcset="https://genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=200 200w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=300 300w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=400 400w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=500 500w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=600 600w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=700 700w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=800 800w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1000 1000w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1200 1200w, //genrage.com/cdn/shop/files/Artboard37.png?v=1792137969&amp;width=1400 1400w" width="1536" height="2048" class="product-card__image product-card__image--secondary" decoding="async" sizes="(max-width: 699px) 74vw, (max-width: 999px) 38vw, calc((100vw - 96px) / 4 - (24px / 4 * 3))" draggable="false" aria-hidden="true"></a></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/solaris-melange-boxy-jacket" class="product-title" data-instant title="Solaris Melange Boxy Jacket">Solaris Melange Boxy Jacket</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="solaris-melange-boxy-jacket" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-27%</span>
+    <span class="zara-price price money">₹ 2,199.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2583,15 +2748,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9574421823726"
             aria-label="Choose options for Basic White Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-white-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic White Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-white-baggy-pants" class="product-title" data-instant title="Basic White Baggy Pants">Basic White Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-white-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2610,15 +2778,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9549144850670"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-beige-balloon-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-beige-balloon-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-beige-balloon-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2637,15 +2808,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_MAzpBk-collection_GdCQKb--9546427564270"
             aria-label="Choose options for Mrityu Dark Grey Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/mrityu-dark-grey-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Mrityu Dark Grey Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/mrityu-dark-grey-vest" class="product-title" data-instant title="Mrityu Dark Grey Vest">Mrityu Dark Grey Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="mrityu-dark-grey-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 </product-list></div></featured-collections-carousel>
       </div>
@@ -2696,15 +2870,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9238158967022"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-melange-balloon-supper-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-melange-balloon-supper-baggy-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-melange-balloon-supper-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2723,15 +2900,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9452635422958"
             aria-label="Choose options for Quill Black Tshirt"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/quill-black-tshirt"
-                class="product-title h6 "
-                
-                data-instant
-              >Quill Black Tshirt</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,299</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/quill-black-tshirt" class="product-title" data-instant title="Quill Black Tshirt">Quill Black Tshirt</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="quill-black-tshirt" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,299.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2750,15 +2930,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9051925479662"
             aria-label="Choose options for Witch Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/witch-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Witch Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,799</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,699</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/witch-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Witch Black Baggy Pants">Witch Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="witch-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,699.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 1,799.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2777,15 +2960,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9113449988334"
             aria-label="Choose options for Haven Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/haven-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Haven Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/haven-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Haven Black Baggy Pants">Haven Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="haven-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2799,15 +2985,18 @@ first.parentNode.insertBefore(script, first);
               <button type="button" class="product-card__quick-add-button">
                 <span class="sr-only">Add to cart</span><svg aria-hidden="true" focusable="false" fill="none" width="12" class="icon icon-plus" viewBox="0 0 12 12">
       <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/>
-    </svg></button><input type="hidden" name="product-id" value="9219723034862" /><input type="hidden" name="section-id" value="template--23671271489774__featured_collections_gVeHcw" /></form></product-form></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/leather-bagpack"
-                class="product-title h6 "
-                
-                data-instant
-              >LEATHER BAGPACK</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,699</span></compare-at-price></price-list>
-</div></div></div>
+    </svg></button><input type="hidden" name="product-id" value="9219723034862" /><input type="hidden" name="section-id" value="template--23671271489774__featured_collections_gVeHcw" /></form></product-form></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/leather-bagpack" class="product-title" data-instant title="LEATHER BAGPACK">LEATHER BAGPACK</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="leather-bagpack" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,699.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-26%</span>
+    <span class="zara-price price money">₹ 1,999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2826,15 +3015,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9257082224878"
             aria-label="Choose options for Throne Brown Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/throne-brown-boxy-unisex-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Throne Brown Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/throne-brown-boxy-unisex-vest" class="product-title" data-instant title="Throne Brown Vest">Throne Brown Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="throne-brown-boxy-unisex-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2853,15 +3045,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9067729191150"
             aria-label="Choose options for Scripture Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/scripture-grey-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Scripture Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,799</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/scripture-grey-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Scripture Grey Baggy Pants">Scripture Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="scripture-grey-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-31%</span>
+    <span class="zara-price price money">₹ 1,799.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2880,15 +3075,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9123814637806"
             aria-label="Choose options for Rhino Black Full Sleeves"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/rhino-black-full-sleeve-t-shirt"
-                class="product-title h6 "
-                
-                data-instant
-              >Rhino Black Full Sleeves</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,499</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,299</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/rhino-black-full-sleeve-t-shirt" class="product-title" data-instant title="Rhino Black Full Sleeves">Rhino Black Full Sleeves</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="rhino-black-full-sleeve-t-shirt" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,299.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,499.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2907,15 +3105,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9452521521390"
             aria-label="Choose options for Atlas Grey Tshirt"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/atlas-grey-tshirt"
-                class="product-title h6 "
-                
-                data-instant
-              >Atlas Grey Tshirt</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,299</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/atlas-grey-tshirt" class="product-title" data-instant title="Atlas Grey Tshirt">Atlas Grey Tshirt</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="atlas-grey-tshirt" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,299.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2934,15 +3135,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9324111626478"
             aria-label="Choose options for Fade Grey Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/fade-grey-balloon-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Fade Grey Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/fade-grey-balloon-pants" class="product-title" data-instant title="Fade Grey Balloon Pants">Fade Grey Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="fade-grey-balloon-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2961,15 +3165,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9452538724590"
             aria-label="Choose options for Ignite Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/ignite-black-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Ignite Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,799</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/ignite-black-baggy-pants" class="product-title" data-instant title="Ignite Black Baggy Pants">Ignite Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="ignite-black-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-31%</span>
+    <span class="zara-price price money">₹ 1,799.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -2988,15 +3195,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9452518670574"
             aria-label="Choose options for Angel White Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/angel-white-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Angel White Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/angel-white-vest" class="product-title" data-instant title="Angel White Vest">Angel White Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="angel-white-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3015,15 +3225,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--8898854289646"
             aria-label="Choose options for Basic Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-grey-genrage-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-grey-genrage-baggy-pants" class="product-title" data-instant title="Basic Grey Baggy Pants">Basic Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-grey-genrage-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3042,15 +3255,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9452731007214"
             aria-label="Choose options for Signature Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/signature-black-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Signature Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/signature-black-baggy-pants" class="product-title" data-instant title="Signature Black Baggy Pants">Signature Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="signature-black-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3069,15 +3285,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9298492621038"
             aria-label="Choose options for Sacred Grey Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/sacred-grey-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Sacred Grey Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/sacred-grey-vest" class="product-title" data-instant title="Sacred Grey Vest">Sacred Grey Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="sacred-grey-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3096,15 +3315,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9327129395438"
             aria-label="Choose options for Curse Black Full Sleeves"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/curse-black-full-sleeves"
-                class="product-title h6 "
-                
-                data-instant
-              >Curse Black Full Sleeves</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,499</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,299</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/curse-black-full-sleeves" class="product-title" data-instant title="Curse Black Full Sleeves">Curse Black Full Sleeves</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="curse-black-full-sleeves" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,299.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,499.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3123,15 +3345,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9574421823726"
             aria-label="Choose options for Basic White Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-white-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic White Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-white-baggy-pants" class="product-title" data-instant title="Basic White Baggy Pants">Basic White Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-white-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3150,15 +3375,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9324135284974"
             aria-label="Choose options for Grey Haven Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/grey-haven-black-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Grey Haven Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/grey-haven-black-baggy-pants" class="product-title" data-instant title="Grey Haven Baggy Pants">Grey Haven Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="grey-haven-black-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3177,15 +3405,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9546427564270"
             aria-label="Choose options for Mrityu Dark Grey Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/mrityu-dark-grey-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Mrityu Dark Grey Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/mrityu-dark-grey-vest" class="product-title" data-instant title="Mrityu Dark Grey Vest">Mrityu Dark Grey Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="mrityu-dark-grey-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3204,15 +3435,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9177192268014"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-balloon-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-balloon-baggy-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-balloon-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3231,15 +3465,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9498095157486"
             aria-label="Choose options for Mortal Dark Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/mortal-dark-grey-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Mortal Dark Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/mortal-dark-grey-baggy-pants" class="product-title" data-instant title="Mortal Dark Grey Baggy Pants">Mortal Dark Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="mortal-dark-grey-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3253,15 +3490,18 @@ first.parentNode.insertBefore(script, first);
               <button type="button" class="product-card__quick-add-button">
                 <span class="sr-only">Add to cart</span><svg aria-hidden="true" focusable="false" fill="none" width="12" class="icon icon-plus" viewBox="0 0 12 12">
       <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/>
-    </svg></button><input type="hidden" name="product-id" value="9140501676270" /><input type="hidden" name="section-id" value="template--23671271489774__featured_collections_gVeHcw" /></form></product-form></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/leather-duffle-bag"
-                class="product-title h6 "
-                
-                data-instant
-              >LEATHER DUFFLE BAG</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,499</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,199</span></compare-at-price></price-list>
-</div></div></div>
+    </svg></button><input type="hidden" name="product-id" value="9140501676270" /><input type="hidden" name="section-id" value="template--23671271489774__featured_collections_gVeHcw" /></form></product-form></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/leather-duffle-bag" class="product-title" data-instant title="LEATHER DUFFLE BAG">LEATHER DUFFLE BAG</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="leather-duffle-bag" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,199.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-32%</span>
+    <span class="zara-price price money">₹ 1,499.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3280,15 +3520,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9298500321518"
             aria-label="Choose options for Cure Brown Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/cure-brown-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Cure Brown Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/cure-brown-vest" class="product-title" data-instant title="Cure Brown Vest">Cure Brown Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="cure-brown-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3307,15 +3550,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9549144850670"
             aria-label="Choose options for AlleyRich  Balloon Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/genrage-beige-balloon-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >AlleyRich  Balloon Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,899</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/genrage-beige-balloon-pants" class="product-title" data-instant title="AlleyRich  Balloon Pants">AlleyRich  Balloon Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="genrage-beige-balloon-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-37%</span>
+    <span class="zara-price price money">₹ 1,899.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3334,15 +3580,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9297282138350"
             aria-label="Choose options for Burial Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/burial-black-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Burial Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/burial-black-baggy-pants" class="product-title" data-instant title="Burial Black Baggy Pants">Burial Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="burial-black-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3361,15 +3610,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9117347774702"
             aria-label="Choose options for Grey Nemesis Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/grey-nemesis-unisex-boxy-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Grey Nemesis Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/grey-nemesis-unisex-boxy-vest" class="product-title" data-instant title="Grey Nemesis Vest">Grey Nemesis Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="grey-nemesis-unisex-boxy-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3388,15 +3640,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9550159511790"
             aria-label="Choose options for Mia Blue Baggy Raw Denim"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/mia-blue-baggy-raw-denim"
-                class="product-title h6 "
-                
-                data-instant
-              >Mia Blue Baggy Raw Denim</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 2,299</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 3,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/mia-blue-baggy-raw-denim" class="product-title" data-instant title="Mia Blue Baggy Raw Denim">Mia Blue Baggy Raw Denim</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="mia-blue-baggy-raw-denim" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 3,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-43%</span>
+    <span class="zara-price price money">₹ 2,299.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3415,15 +3670,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9437480222958"
             aria-label="Choose options for Mortis Black Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/mortis-black-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Mortis Black Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/mortis-black-vest" class="product-title" data-instant title="Mortis Black Vest">Mortis Black Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="mortis-black-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3442,15 +3700,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9324132106478"
             aria-label="Choose options for Grey Beast Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/grey-beast-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Grey Beast Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/grey-beast-baggy-pants" class="product-title" data-instant title="Grey Beast Baggy Pants">Grey Beast Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="grey-beast-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3469,15 +3730,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--8898853601518"
             aria-label="Choose options for Basic Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/basic-black-genrage-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Basic Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/basic-black-genrage-baggy-pants" class="product-title" data-instant title="Basic Black Baggy Pants">Basic Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="basic-black-genrage-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3496,15 +3760,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9498111246574"
             aria-label="Choose options for Stare Grey Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/stare-grey-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Stare Grey Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/stare-grey-vest" class="product-title" data-instant title="Stare Grey Vest">Stare Grey Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="stare-grey-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3523,15 +3790,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9452543213806"
             aria-label="Choose options for Forge Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/forge-black-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Forge Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,799</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/forge-black-baggy-pants" class="product-title" data-instant title="Forge Black Baggy Pants">Forge Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="forge-black-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-31%</span>
+    <span class="zara-price price money">₹ 1,799.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3550,15 +3820,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9513958932718"
             aria-label="Choose options for Ruin White Tshirt"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/ruin-white-tshirt"
-                class="product-title h6 "
-                
-                data-instant
-              >Ruin White Tshirt</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/ruin-white-tshirt" class="product-title" data-instant title="Ruin White Tshirt">Ruin White Tshirt</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="ruin-white-tshirt" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-50%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3577,15 +3850,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9498116784366"
             aria-label="Choose options for Doomed Brown Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/doomed-brown-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Doomed Brown Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/doomed-brown-vest" class="product-title" data-instant title="Doomed Brown Vest">Doomed Brown Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="doomed-brown-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3604,15 +3880,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9289100951790"
             aria-label="Choose options for Dawn Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/dawn-melange-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Dawn Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/dawn-melange-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Dawn Grey Baggy Pants">Dawn Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="dawn-melange-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3631,15 +3910,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9220408443118"
             aria-label="Choose options for Bruise Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/bruise-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Bruise Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,799</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/bruise-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Bruise Black Baggy Pants">Bruise Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="bruise-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-31%</span>
+    <span class="zara-price price money">₹ 1,799.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3658,15 +3940,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9257088516334"
             aria-label="Choose options for Kyron Brown Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/kyron-brown-boxy-unisex-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Kyron Brown Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/kyron-brown-boxy-unisex-vest" class="product-title" data-instant title="Kyron Brown Vest">Kyron Brown Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="kyron-brown-boxy-unisex-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3685,15 +3970,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9158484132078"
             aria-label="Choose options for Forsaken Black Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/forsaken-black-boxy-unisex-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Forsaken Black Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/forsaken-black-boxy-unisex-vest" class="product-title" data-instant title="Forsaken Black Vest">Forsaken Black Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="forsaken-black-boxy-unisex-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3712,15 +4000,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9256628715758"
             aria-label="Choose options for Solace Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/solace-grey-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Solace Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/solace-grey-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Solace Grey Baggy Pants">Solace Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="solace-grey-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3739,15 +4030,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9504673431790"
             aria-label="Choose options for Vixen Black Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/vixen-black-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Vixen Black Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/vixen-black-vest" class="product-title" data-instant title="Vixen Black Vest">Vixen Black Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="vixen-black-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3766,15 +4060,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9452523094254"
             aria-label="Choose options for Vigil Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/vigil-black-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Vigil Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/vigil-black-baggy-pants" class="product-title" data-instant title="Vigil Black Baggy Pants">Vigil Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="vigil-black-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3788,15 +4085,18 @@ first.parentNode.insertBefore(script, first);
               <button type="button" class="product-card__quick-add-button">
                 <span class="sr-only">Add to cart</span><svg aria-hidden="true" focusable="false" fill="none" width="12" class="icon icon-plus" viewBox="0 0 12 12">
       <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/>
-    </svg></button><input type="hidden" name="product-id" value="9490060017902" /><input type="hidden" name="section-id" value="template--23671271489774__featured_collections_gVeHcw" /></form></product-form></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/grind-leather-duffle-bag"
-                class="product-title h6 "
-                
-                data-instant
-              >GRIND LEATHER DUFFLE BAG</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,199</span></compare-at-price></price-list>
-</div></div></div>
+    </svg></button><input type="hidden" name="product-id" value="9490060017902" /><input type="hidden" name="section-id" value="template--23671271489774__featured_collections_gVeHcw" /></form></product-form></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/grind-leather-duffle-bag" class="product-title" data-instant title="GRIND LEATHER DUFFLE BAG">GRIND LEATHER DUFFLE BAG</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="grind-leather-duffle-bag" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,199.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-23%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3815,15 +4115,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9504671334638"
             aria-label="Choose options for Strain Black Vest"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/strain-black-vest"
-                class="product-title h6 "
-                
-                data-instant
-              >Strain Black Vest</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 999</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,499</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/strain-black-vest" class="product-title" data-instant title="Strain Black Vest">Strain Black Vest</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="strain-black-vest" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,499.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-33%</span>
+    <span class="zara-price price money">₹ 999.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3842,15 +4145,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9498007601390"
             aria-label="Choose options for Moth Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/moth-grey-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Moth Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,799</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/moth-grey-baggy-pants" class="product-title" data-instant title="Moth Grey Baggy Pants">Moth Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="moth-grey-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-31%</span>
+    <span class="zara-price price money">₹ 1,799.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3869,15 +4175,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9186736865518"
             aria-label="Choose options for Strix Dark Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/strix-dark-grey-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Strix Dark Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/strix-dark-grey-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Strix Dark Grey Baggy Pants">Strix Dark Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="strix-dark-grey-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3896,15 +4205,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9257013870830"
             aria-label="Choose options for Ivory Dark Brown Tshirt"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/ivory-dark-brown-boxy-oversized-tshirt"
-                class="product-title h6 "
-                
-                data-instant
-              >Ivory Dark Brown Tshirt</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,299</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 1,999</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/ivory-dark-brown-boxy-oversized-tshirt" class="product-title" data-instant title="Ivory Dark Brown Tshirt">Ivory Dark Brown Tshirt</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="ivory-dark-brown-boxy-oversized-tshirt" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 1,999.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,299.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3923,15 +4235,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9186757476590"
             aria-label="Choose options for Pain Grey Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/pain-grey-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Pain Grey Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,699</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/pain-grey-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Pain Grey Baggy Pants">Pain Grey Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="pain-grey-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-35%</span>
+    <span class="zara-price price money">₹ 1,699.00</span>
+  </div>
+</div>
 </product-card>
 <product-card
   class="product-card"
@@ -3950,15 +4265,18 @@ first.parentNode.insertBefore(script, first);
             id="product-quick-buy-template--23671271489774__featured_collections_gVeHcw-collection_hMhMwj--9256816902382"
             aria-label="Choose options for Beast Black Baggy Pants"
           >
-          </quick-buy-modal></div><div class="product-card__info empty:hidden"><div class="v-stack justify-items-center gap-2"><div class="v-stack justify-items-center gap-1"><a
-                href="/products/beast-unisex-straight-fit-baggy-pants"
-                class="product-title h6 "
-                
-                data-instant
-              >Beast Black Baggy Pants</a><price-list class="price-list "><sale-price class="h6 text-on-sale">
-        <span class="sr-only">Sale price</span><span class=money>Rs. 1,799</span></sale-price><compare-at-price class="h6 text-subdued line-through">
-        <span class="sr-only">Regular price</span><span class=money>Rs. 2,599</span></compare-at-price></price-list>
-</div></div></div>
+          </quick-buy-modal></div><div class="product-card__info empty:hidden">
+  <div class="product-card__title-row">
+    <a href="/products/beast-unisex-straight-fit-baggy-pants" class="product-title" data-instant title="Beast Black Baggy Pants">Beast Black Baggy Pants</a>
+    <button type="button" class="product-card__quick-add-button" data-handle="beast-unisex-straight-fit-baggy-pants" title="Quick Add" aria-label="Quick Add">+</button>
+  </div>
+  
+  <div class="product-card__compare-price"><span class="price-compare money">₹ 2,599.00</span></div>
+  <div class="product-card__discount-tag">
+    <span class="zara-pct">-31%</span>
+    <span class="zara-price price money">₹ 1,799.00</span>
+  </div>
+</div>
 </product-card>
 </scroll-carousel>
 

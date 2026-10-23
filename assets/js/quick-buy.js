@@ -15,6 +15,7 @@
     async init() {
       this.injectDom();
       this.injectCartDrawer();
+      this.enhanceZaraCards();
       this.bindTriggers();
       this.bindCartTriggers();
       this.bindNewsletter();
@@ -22,6 +23,81 @@
       this.updateAllBadges();
       this.checkUrlForCart();
       this.fetchCatalog();
+    },
+
+    enhanceZaraCards() {
+      function formatZaraCurrency(num) {
+        return '₹ ' + Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      document.querySelectorAll('product-card, .product-card').forEach(card => {
+        if (card.querySelector('.product-card__title-row')) return;
+
+        const info = card.querySelector('.product-card__info');
+        if (!info) return;
+
+        const titleEl = card.querySelector('.product-title');
+        if (!titleEl) return;
+
+        const quickAddBtn = card.querySelector('.product-card__quick-add-button');
+        const saleEl = card.querySelector('sale-price .money, .price-current, .text-on-sale .money, .price');
+        const compareEl = card.querySelector('compare-at-price .money, .price-compare, .text-subdued .money');
+
+        function parseVal(el) {
+          if (!el) return 0;
+          const cleaned = el.textContent.replace(/Rs\.?/gi, '').replace(/₹/g, '').replace(/[^\d]/g, '');
+          return cleaned ? parseFloat(cleaned) : 0;
+        }
+        let salePrice = parseVal(saleEl);
+        let comparePrice = parseVal(compareEl);
+
+        const hasDiscount = comparePrice > salePrice && comparePrice > 0;
+        const pct = hasDiscount ? Math.round(((comparePrice - salePrice) / comparePrice) * 100) : 0;
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'product-card__title-row';
+
+        const newTitle = titleEl.cloneNode(true);
+        newTitle.className = 'product-title';
+        newTitle.removeAttribute('style');
+        titleRow.appendChild(newTitle);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'product-card__quick-add-button';
+        btn.setAttribute('aria-label', 'Quick add');
+        btn.title = 'Quick Add';
+        btn.textContent = '+';
+        if (quickAddBtn) {
+          if (quickAddBtn.dataset.id) btn.dataset.id = quickAddBtn.dataset.id;
+          if (quickAddBtn.dataset.handle) btn.dataset.handle = quickAddBtn.dataset.handle;
+          if (quickAddBtn.getAttribute('aria-controls')) btn.setAttribute('aria-controls', quickAddBtn.getAttribute('aria-controls'));
+          quickAddBtn.style.display = 'none';
+        } else if (card.getAttribute('handle')) {
+          btn.dataset.handle = card.getAttribute('handle');
+        }
+        titleRow.appendChild(btn);
+
+        info.innerHTML = '';
+        info.appendChild(titleRow);
+
+        if (hasDiscount) {
+          const compareDiv = document.createElement('div');
+          compareDiv.className = 'product-card__compare-price';
+          compareDiv.innerHTML = '<span class="money price-compare">' + formatZaraCurrency(comparePrice) + '</span>';
+          info.appendChild(compareDiv);
+
+          const tagDiv = document.createElement('div');
+          tagDiv.className = 'product-card__discount-tag';
+          tagDiv.innerHTML = '<span class="zara-pct">-' + pct + '%</span><span class="zara-price money price">' + formatZaraCurrency(salePrice) + '</span>';
+          info.appendChild(tagDiv);
+        } else if (salePrice > 0) {
+          const regDiv = document.createElement('div');
+          regDiv.className = 'product-card__regular-price';
+          regDiv.innerHTML = '<span class="money price">' + formatZaraCurrency(salePrice) + '</span>';
+          info.appendChild(regDiv);
+        }
+      });
     },
 
     async hydrateCloudCart() {
