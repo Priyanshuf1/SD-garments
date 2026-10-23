@@ -1,3 +1,5 @@
+process.on('uncaughtException', (err) => { console.error('[UNCAUGHT EXCEPTION GUARD]', err.message); });
+process.on('unhandledRejection', (reason) => { console.error('[UNHANDLED REJECTION GUARD]', reason); });
 /**
  * GENRAGE - 1:1 Ditto Server with Full Video Streaming, Proxy, and Admin Control Hub API
  */
@@ -125,7 +127,9 @@ function proxyRequest(req, res, targetUrl) {
 
   proxy.on('error', (err) => {
     console.error('Proxy error:', err.message);
-    res.writeHead(502, { 'Content-Type': 'text/plain' });
+    if (!res.headersSent) {
+      res.writeHead(502, { 'Content-Type': 'text/plain' });
+    }
     res.end('Proxy Error');
   });
 
