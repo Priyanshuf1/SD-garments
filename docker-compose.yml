@@ -1,8 +1,8 @@
 version: '3.8'
 
 # ==============================================================================
-# ALLYRICH D2C Streetwear - Multi-Container Production Stack
-# Services: Node.js Web Storefront + PostgreSQL Database Container
+# ALLYRICH D2C Streetwear - Multi-Container Production Stack (Option 2: EC2 Local)
+# Services: Node.js Web Storefront + Internal PostgreSQL Database Container
 # ==============================================================================
 
 services:
@@ -21,12 +21,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:AllyrichAWS2026!@allyrich-db.cleweq2a0akh.ap-southeast-2.rds.amazonaws.com:5432/allyrich}
-      - RDS_HOST=allyrich-db.cleweq2a0akh.ap-southeast-2.rds.amazonaws.com
-      - RDS_PORT=5432
-      - RDS_USER=postgres
-      - RDS_PASSWORD=AllyrichAWS2026!
-      - RDS_DATABASE=allyrich
+      - DATABASE_URL=postgresql://allyrich:allyrich_secret_db_pass@db:5432/allyrich_db
       # Production keys injected via .env or Cloud Secret Manager
       - ADMIN_KEY=${ADMIN_KEY:-allyrich_admin_super_secret_2026}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
@@ -34,6 +29,9 @@ services:
       - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
       - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - allyrich-network
     deploy:
@@ -59,9 +57,10 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U allyrich -d allyrich_db"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
     networks:
@@ -69,7 +68,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256M
           cpus: '0.50'
 
 # ------------------------------------------------------------------------------
