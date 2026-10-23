@@ -16,11 +16,17 @@ services:
     container_name: allyrich-web
     restart: unless-stopped
     ports:
+      - "80:3000"
       - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://allyrich:allyrich_secret_db_pass@db:5432/allyrich_db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:AllyrichAWS2026!@allyrich-db.cleweq2a0akh.ap-southeast-2.rds.amazonaws.com:5432/allyrich}
+      - RDS_HOST=allyrich-db.cleweq2a0akh.ap-southeast-2.rds.amazonaws.com
+      - RDS_PORT=5432
+      - RDS_USER=postgres
+      - RDS_PASSWORD=AllyrichAWS2026!
+      - RDS_DATABASE=allyrich
       # Production keys injected via .env or Cloud Secret Manager
       - ADMIN_KEY=${ADMIN_KEY:-allyrich_admin_super_secret_2026}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
@@ -28,9 +34,6 @@ services:
       - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
       - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - allyrich-network
     deploy:
