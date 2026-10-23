@@ -112,9 +112,14 @@ jobs:
               sed -i '/^N8N_ORDER_WEBHOOK_URL=/d' .env
               echo "N8N_ORDER_WEBHOOK_URL=$N8N_ORDER_WEBHOOK_URL" >> .env
             fi
+            # Cleanly stop and remove any old/orphan containers to prevent port collisions
+            sudo docker compose down --remove-orphans || true
+            sudo docker stop allyrich-web allyrich-db alleyrich-storefront alleyrich-db 2>/dev/null || true
+            sudo docker rm allyrich-web allyrich-db alleyrich-storefront alleyrich-db 2>/dev/null || true
             sudo docker compose build --no-cache web
-            sudo docker compose up -d --force-recreate
-            sleep 5
-            curl --fail http://localhost:3000/api/health || exit 1
-            curl --fail http://localhost:3000/pages/track-order.html || exit 1
+            sudo docker compose up -d --remove-orphans
+            echo "Waiting for services to initialize..."
+            sleep 10
+            curl --fail http://localhost:3000/api/health || curl --fail http://localhost/api/health || exit 1
+            curl --fail http://localhost:3000/pages/track-order.html || curl --fail http://localhost/pages/track-order.html || exit 1
             echo "🚀 Deployment successfully verified on AWS EC2!"

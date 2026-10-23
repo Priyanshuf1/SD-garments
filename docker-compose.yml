@@ -15,12 +15,13 @@ services:
     restart: always
     ports:
       - "80:3000"
+      - "3000:3000"
       - "443:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
       - DB_TYPE=postgres
-      - DATABASE_URL=postgres://alleyrich_admin:AlleyRichSecurePass2026@postgres:5432/alleyrich_production
+      - DATABASE_URL=postgres://alleyrich_admin:AlleyRichSecurePass2026@postgres:5432/alleyrich_production?sslmode=disable
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=alleyrich_production
