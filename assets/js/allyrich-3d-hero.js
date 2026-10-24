@@ -519,9 +519,12 @@ import { Application } from '/assets/spline/runtime.js';
       setTimeout(() => updateAll(splineApp), 1400);
       setTimeout(() => updateAll(splineApp), 3000);
 
-      // Keep canvas resolution synced to viewport for crisp Retina rendering
+      // Keep canvas resolution synced to viewport for crisp Retina rendering without GPU overloads
       if ('ResizeObserver' in window && container) {
         const resizeObs = new ResizeObserver(() => {
+          if (splineApp?._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
+            splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+          }
           if (splineApp && typeof splineApp.requestRender === 'function') {
             splineApp.requestRender();
           }

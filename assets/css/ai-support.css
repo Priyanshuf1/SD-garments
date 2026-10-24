@@ -335,3 +335,11 @@
     padding: 8px 14px 8px 10px;
   }
 }
+
+@media (max-width: 768px) {
+  body.pdp-sticky-active #ar-ai-launcher,
+  body:has(.pdp-mobile-sticky-bar.visible) #ar-ai-launcher {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    transition: bottom 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}

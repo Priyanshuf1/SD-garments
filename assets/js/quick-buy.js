@@ -752,8 +752,10 @@
             const isPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
             if (isPast) {
               stickyBar.classList.add('visible');
+              document.body.classList.add('pdp-sticky-active');
             } else {
               stickyBar.classList.remove('visible');
+              document.body.classList.remove('pdp-sticky-active');
             }
           });
         }, { threshold: 0 });

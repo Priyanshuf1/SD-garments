@@ -74,7 +74,16 @@ async function runTests() {
     check('Warehouse pincode 209721 is serviceable', pinRes2.json && pinRes2.json.serviceable === true);
 
     const pinResInvalid = await get('/api/shipping/pincode-check?pin=123');
-    check('Invalid pincode length handled correctly', pinResInvalid.json && (pinResInvalid.json.serviceable === false || pinResInvalid.json.success === true));
+    check('Invalid pincode length returns serviceable: false', pinResInvalid.json && pinResInvalid.json.serviceable === false);
+
+    const pinResEmpty = await get('/api/shipping/pincode-check?pin=');
+    check('Empty pincode returns serviceable: false with error message', pinResEmpty.json && pinResEmpty.json.serviceable === false && pinResEmpty.json.message.includes('required'));
+
+    const pinResMissing = await get('/api/shipping/pincode-check');
+    check('Missing pincode query returns serviceable: false', pinResMissing.json && pinResMissing.json.serviceable === false);
+
+    const pinResNonServiceable = await get('/api/shipping/pincode-check?pin=999999');
+    check('Non-existent 999999 returns serviceable: false', pinResNonServiceable.json && pinResNonServiceable.json.serviceable === false);
 
     // -----------------------------------------------------------------
     // 2. allyrich-3d-hero.js Performance & 60 FPS Engine
@@ -207,6 +216,38 @@ async function runTests() {
 
     check('quick-buy.js integrates PDP sticky bar initialization', 
       quickBuyCode.includes('initPdpStickyBar')
+    );
+
+    // -----------------------------------------------------------------
+    // 7. Robustness & Multi-device D2C Integration
+    // -----------------------------------------------------------------
+    console.log('\n[7] Testing D2C Multi-Device Robustness & Checkout Integration:');
+    const checkoutHtml = fs.readFileSync(path.join(__dirname, 'checkout.html'), 'utf8');
+    const aiSupportCss = fs.readFileSync(path.join(__dirname, 'assets/css/ai-support.css'), 'utf8');
+
+    check('3D Hero ResizeObserver preserves DPR clamping on resize', 
+      heroCode.includes('resizeObs') && heroCode.includes('setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))')
+    );
+
+    check('PDP mobile sticky bar has z-index: 9999 and coordinates pdp-sticky-active on body', 
+      pdpHtml.includes('z-index: 9999') && pdpHtml.includes('pdp-sticky-active')
+    );
+
+    check('AI Support widget shifts up when sticky bar is active on mobile to avoid overlap', 
+      aiSupportCss.includes('body.pdp-sticky-active #ar-ai-launcher')
+    );
+
+    check('Sticky bar size badge is interactive for thumb size cycling', 
+      pdpHtml.includes('stickySize.onclick') && pdpHtml.includes('pills[nextIdx].click()')
+    );
+
+    check('checkout.html parses URL method parameter for 1-click Express UPI/COD dispatch', 
+      checkoutHtml.includes("urlParams.get('method')") && 
+      checkoutHtml.includes("selectPayment('cod')")
+    );
+
+    check('product.html static cart drawer displays Rs. 1,999 free express shipping threshold', 
+      pdpHtml.includes('Add Rs. 1,999 for <strong>FREE EXPRESS SHIPPING</strong>')
     );
 
     console.log('\n======================================================');

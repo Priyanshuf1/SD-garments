@@ -310,7 +310,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      z-index: 999;
+      z-index: 9999;
       background: #ffffff;
       border-top: 1px solid #e0e0e0;
       padding: 10px 16px;
@@ -358,9 +358,20 @@
     }
     .pdp-sticky-size {
       font-size: 0.75rem;
-      color: #666666;
+      color: #111111;
       font-weight: 700;
       text-transform: uppercase;
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 2px;
+      border: 1px dashed #bbb;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .pdp-sticky-size:active {
+      background: #e0e0e0;
     }
     .pdp-sticky-add-btn {
       background: #000000;
@@ -379,6 +390,13 @@
     }
     .pdp-sticky-add-btn:active {
       background: #222222;
+    }
+    @media (max-width: 768px) {
+      body.pdp-sticky-active #ar-ai-launcher,
+      body:has(.pdp-mobile-sticky-bar.visible) #ar-ai-launcher {
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+        transition: bottom 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      }
     }
     @media (min-width: 769px) {
       .pdp-mobile-sticky-bar {
@@ -755,7 +773,7 @@
       <button class="close-btn" id="cart-close">✕</button>
     </div>
     <div class="free-shipping-bar">
-      <div class="shipping-msg" id="shipping-msg">Add Rs. 999 for FREE DELIVERY</div>
+      <div class="shipping-msg" id="shipping-msg">Add Rs. 1,999 for <strong>FREE EXPRESS SHIPPING</strong></div>
       <div class="progress-track"><div class="progress-fill" id="shipping-progress"></div></div>
     </div>
     <div class="cart-items-list" id="cart-items-list"></div>
@@ -1022,6 +1040,18 @@
         };
       });
 
+      if (stickySize) {
+        stickySize.title = 'Tap to switch size';
+        stickySize.onclick = () => {
+          const pills = sizeContainer.querySelectorAll('.size-option-pill');
+          if (pills.length > 1) {
+            const activeIdx = Array.from(pills).findIndex(p => p.classList.contains('active'));
+            const nextIdx = (activeIdx + 1) % pills.length;
+            pills[nextIdx].click();
+          }
+        };
+      }
+
       if (stickyAddBtn) {
         stickyAddBtn.onclick = () => {
           const mainAddBtn = document.getElementById('pdp-add-cart-btn');
@@ -1042,8 +1072,10 @@
               const isPastButton = !entry.isIntersecting && entry.boundingClientRect.top < 0;
               if (isPastButton) {
                 stickyBar.classList.add('visible');
+                document.body.classList.add('pdp-sticky-active');
               } else {
                 stickyBar.classList.remove('visible');
+                document.body.classList.remove('pdp-sticky-active');
               }
             });
           }, { threshold: 0 });
@@ -1053,8 +1085,10 @@
             const rect = mainAddBtn.getBoundingClientRect();
             if (rect.bottom < 0) {
               stickyBar.classList.add('visible');
+              document.body.classList.add('pdp-sticky-active');
             } else {
               stickyBar.classList.remove('visible');
+              document.body.classList.remove('pdp-sticky-active');
             }
           }, { passive: true });
         }
@@ -1110,6 +1144,7 @@
           }
         };
         pinInput.oninput = () => {
+          pinInput.value = pinInput.value.replace(/\D/g, '').slice(0, 6);
           if (pinInput.value.length === 6) {
             checkDelhiveryPincode(pinInput.value);
           }

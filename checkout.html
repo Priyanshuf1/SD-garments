@@ -413,6 +413,15 @@
         }
       }
 
+      // Check URL params for express checkout payment method
+      const urlParams = new URLSearchParams(window.location.search);
+      const methodParam = (urlParams.get('method') || '').toLowerCase();
+      if (methodParam === 'cod') {
+        selectPayment('cod');
+      } else if (methodParam === 'upi' || methodParam === 'cashfree') {
+        selectPayment('cashfree');
+      }
+
       renderSummary();
     }
 
