@@ -127,6 +127,14 @@ jobs:
             echo "APP_DOMAIN=alleyrich.com" >> .env
             sed -i '/^ADMIN_SECRET_KEY=/d' .env
             echo "ADMIN_SECRET_KEY=genrage_super_admin_secret_key_2026" >> .env
+            sed -i '/^ADMIN_USERNAME=/d' .env
+            echo "ADMIN_USERNAME=Deepak_is_admin" >> .env
+            sed -i '/^ADMIN_PASSWORD=/d' .env
+            echo "ADMIN_PASSWORD=#99882211@" >> .env
+            sed -i '/^ADMIN_2FA_SECRET=/d' .env
+            echo "ADMIN_2FA_SECRET=4I543GYJL7LAMAC7UPPL" >> .env
+            sed -i '/^ADMIN_SLUG=/d' .env
+            echo "ADMIN_SLUG=/allyrich-hq" >> .env
             sed -i '/^DELHIVERY_API_TOKEN=/d' .env
             echo "DELHIVERY_API_TOKEN=5b89b0734b0d4daa1655ea178e432c33f1964d80" >> .env
             sed -i '/^DELHIVERY_WAREHOUSE_NAME=/d' .env
