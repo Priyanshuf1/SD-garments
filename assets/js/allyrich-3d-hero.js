@@ -3,7 +3,7 @@
  * Ported directly from https://github.com/RitikPal26/allyrich-loader
  */
 
-import { Application } from '/assets/spline/runtime.js';
+import { Application } from '/assets/spline/runtime.js?v=60fps';
 
 (function initAllyrich3DHero() {
   const canvas = document.getElementById('allyrich-spline-canvas');
