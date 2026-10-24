@@ -13,6 +13,7 @@ import { Application } from '/assets/spline/runtime.js';
   const loaderBadge = document.getElementById('spline-loader-indicator');
 
   let canvasPromise = null;
+  let cachedDataUrl = null;
 
   // Cached AR canvas generator matching https://github.com/RitikPal26/allyrich-loader
   function getARCanvas() {
@@ -129,16 +130,28 @@ import { Application } from '/assets/spline/runtime.js';
     // 1. Enforce opaque screen materials
     ensureOpaqueScreen(splineApp);
 
-    // 2. Await the fully drawn AR canvas
-    const arCanvas = await getARCanvas();
+    // Skip redundant texture decode and re-upload if already applied
+    if (screenObj.userData && screenObj.userData.__arApplied) {
+      removeWatermark(splineApp);
+      if (typeof splineApp.requestRender === 'function') {
+        splineApp.requestRender();
+      }
+      return;
+    }
 
-    // Pause all video elements in document
-    document.querySelectorAll('video').forEach((v) => {
-      try {
-        v.pause();
-        v.currentTime = 0;
-      } catch (e) {}
-    });
+    // 2. Await the fully drawn AR canvas and cache dataUrl
+    const arCanvas = await getARCanvas();
+    if (!cachedDataUrl) {
+      cachedDataUrl = arCanvas.toDataURL('image/jpeg', 0.98);
+    }
+    const dataUrl = cachedDataUrl;
+
+    // 2. Await the fully drawn AR canvas and cache dataUrl
+    const arCanvas = await getARCanvas();
+    if (!cachedDataUrl) {
+      cachedDataUrl = arCanvas.toDataURL('image/jpeg', 0.98);
+    }
+    const dataUrl = cachedDataUrl;
 
     const mat = screenObj.material;
 
@@ -188,6 +201,8 @@ import { Application } from '/assets/spline/runtime.js';
 
     // Remove "Built with Spline" watermark
     removeWatermark(splineApp);
+    screenObj.userData = screenObj.userData || {};
+    screenObj.userData.__arApplied = true;
 
     if (splineApp.requestRender) {
       splineApp.requestRender();
@@ -409,6 +424,36 @@ import { Application } from '/assets/spline/runtime.js';
       }
     } catch (e) {}
 
+    let cachedContainerRect = null;
+    let lastInteractionTime = performance.now();
+
+    function wakeMotionLoop() {
+      if (!isHeroVisible) return;
+      if (typeof splineApp.play === 'function') {
+        try { splineApp.play(); } catch (e) {}
+      }
+      if (!motionRafId) {
+        motionRafId = requestAnimationFrame(animateMotion);
+      }
+      if (typeof splineApp.requestRender === 'function') {
+        splineApp.requestRender();
+      }
+    }
+
+    // Wake motion loop on user scroll and touch interactions when hero is visible
+    window.addEventListener('scroll', () => {
+      if (isHeroVisible && motionRafId === null) {
+        lastInteractionTime = performance.now();
+        wakeMotionLoop();
+      }
+    }, { passive: true });
+    window.addEventListener('touchstart', () => {
+      if (isHeroVisible && motionRafId === null) {
+        lastInteractionTime = performance.now();
+        wakeMotionLoop();
+      }
+    }, { passive: true });
+
     // 1. Mobile Gyroscope ("Zyro") Motion Tracking (DeviceOrientation gamma & beta)
     function handleDeviceOrientation(e) {
       if (!e) return;
@@ -421,6 +466,7 @@ import { Application } from '/assets/spline/runtime.js';
 
       lastInteractionType = 'gyro';
       lastGyroTime = performance.now();
+      lastInteractionTime = lastGyroTime;
 
       const gamma = rawGamma !== null ? rawGamma : 0;
       const beta = rawBeta !== null ? rawBeta : 45;
@@ -438,12 +484,7 @@ import { Application } from '/assets/spline/runtime.js';
       targetPosX = basePosX + normX * 38;
       targetPosY = basePosY - normY * 22;
 
-      if (!motionRafId) {
-        motionRafId = requestAnimationFrame(animateMotion);
-      }
-      if (typeof splineApp.requestRender === 'function') {
-        splineApp.requestRender();
-      }
+      wakeMotionLoop();
     }
 
     // Register device orientation events (both standard and absolute)
@@ -459,6 +500,7 @@ import { Application } from '/assets/spline/runtime.js';
         const rawBeta = typeof beta === 'number' ? beta : 45;
         lastInteractionType = 'gyro';
         lastGyroTime = performance.now();
+        lastInteractionTime = lastGyroTime;
         const maxTilt = 24;
         const normX = Math.max(-1, Math.min(1, rawGamma / maxTilt));
         const normY = Math.max(-1, Math.min(1, (rawBeta - 45) / maxTilt));
@@ -467,8 +509,7 @@ import { Application } from '/assets/spline/runtime.js';
         targetRotZ = baseRotZ - normX * 0.14;
         targetPosX = basePosX + normX * 38;
         targetPosY = basePosY - normY * 22;
-        if (!motionRafId) motionRafId = requestAnimationFrame(animateMotion);
-        if (typeof splineApp.requestRender === 'function') splineApp.requestRender();
+        wakeMotionLoop();
         return;
       }
       handleDeviceOrientation({ gamma, beta, alpha });
@@ -534,6 +575,7 @@ import { Application } from '/assets/spline/runtime.js';
       if (e.pointerType && e.pointerType !== 'mouse') return;
 
       lastInteractionType = 'mouse';
+      lastInteractionTime = performance.now();
       pendingMouseX = e.clientX;
       pendingMouseY = e.clientY;
 
@@ -542,11 +584,13 @@ import { Application } from '/assets/spline/runtime.js';
         requestAnimationFrame(() => {
           mouseRafPending = false;
           if (pendingMouseX === null || pendingMouseY === null) return;
-          const rect = container
-            ? container.getBoundingClientRect()
-            : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
+          if (!cachedContainerRect) {
+            cachedContainerRect = container
+              ? container.getBoundingClientRect()
+              : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+          }
+          const centerX = cachedContainerRect.left + cachedContainerRect.width / 2;
+          const centerY = cachedContainerRect.top + cachedContainerRect.height / 2;
 
           const normX = Math.max(-1, Math.min(1, (pendingMouseX - centerX) / (window.innerWidth * 0.5)));
           const normY = Math.max(-1, Math.min(1, (pendingMouseY - centerY) / (window.innerHeight * 0.5)));
@@ -556,13 +600,15 @@ import { Application } from '/assets/spline/runtime.js';
           targetRotZ = baseRotZ - normX * 0.14;
           targetPosX = basePosX + normX * 36;
           targetPosY = basePosY - normY * 22;
+
+          wakeMotionLoop();
         });
       }
     }
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-    // 4. Smooth Animation Loop with Viewport Visibility Observer (Zero CPU/GPU when scrolled off-screen)
+    // 4. Smooth Animation Loop with Viewport Visibility Observer (Zero CPU/GPU when idle or off-screen)
     let isHeroVisible = true;
     let motionRafId = null;
 
@@ -571,22 +617,72 @@ import { Application } from '/assets/spline/runtime.js';
         motionRafId = null;
         return;
       }
-      motionRafId = requestAnimationFrame(animateMotion);
 
-      // Subtle ambient breathing sway if no active gyro tilt
+      const now = performance.now();
+      const timeSinceInteraction = now - lastInteractionTime;
+
+      // Subtle ambient breathing sway if no active gyro tilt (fades out after 1.8s of idle)
       let ambientRotX = 0;
       let ambientRotY = 0;
-      if (lastInteractionType === 'none' || (lastInteractionType === 'gyro' && performance.now() - lastGyroTime > 1800)) {
-        const t = performance.now() * 0.001;
-        ambientRotX = Math.sin(t * 0.8) * 0.02;
-        ambientRotY = Math.cos(t * 0.7) * 0.025;
+      if (lastInteractionType === 'none' || (lastInteractionType === 'gyro' && now - lastGyroTime > 1500)) {
+        if (timeSinceInteraction < 1800) {
+          const t = now * 0.001;
+          const fade = Math.max(0, 1 - (timeSinceInteraction / 1800));
+          ambientRotX = Math.sin(t * 0.8) * (0.015 * fade);
+          ambientRotY = Math.cos(t * 0.7) * (0.02 * fade);
+        }
       }
 
-      currentRotY += (targetRotY + ambientRotY - currentRotY) * 0.10;
-      currentRotX += (targetRotX + ambientRotX - currentRotX) * 0.10;
-      currentRotZ += (targetRotZ - currentRotZ) * 0.10;
-      currentPosX += (targetPosX - currentPosX) * 0.10;
-      currentPosY += (targetPosY - currentPosY) * 0.10;
+      const effTargetRotY = targetRotY + ambientRotY;
+      const effTargetRotX = targetRotX + ambientRotX;
+      const effTargetRotZ = targetRotZ;
+      const effTargetPosX = targetPosX;
+      const effTargetPosY = targetPosY;
+
+      const dRotY = effTargetRotY - currentRotY;
+      const dRotX = effTargetRotX - currentRotX;
+      const dRotZ = effTargetRotZ - currentRotZ;
+      const dPosX = effTargetPosX - currentPosX;
+      const dPosY = effTargetPosY - currentPosY;
+
+      // Convergence / sleep threshold check: stops GPU rendering once at rest
+      const isSettled =
+        Math.abs(dRotY) < 0.0015 &&
+        Math.abs(dRotX) < 0.0015 &&
+        Math.abs(dRotZ) < 0.0015 &&
+        Math.abs(dPosX) < 0.15 &&
+        Math.abs(dPosY) < 0.15;
+
+      if (isSettled && (timeSinceInteraction > 1800 || lastInteractionType === 'mouse')) {
+        currentRotY = effTargetRotY;
+        currentRotX = effTargetRotX;
+        currentRotZ = effTargetRotZ;
+        currentPosX = effTargetPosX;
+        currentPosY = effTargetPosY;
+
+        phoneHand.rotation.y = currentRotY;
+        phoneHand.rotation.x = currentRotX;
+        phoneHand.rotation.z = currentRotZ;
+        phoneHand.position.x = currentPosX;
+        phoneHand.position.y = currentPosY;
+
+        if (typeof splineApp.requestRender === 'function') {
+          splineApp.requestRender();
+        }
+
+        // GO TO SLEEP: completely stop Spline WebGL render loop and RAF at rest (true 0% GPU)
+        if (typeof splineApp.stop === 'function') {
+          try { splineApp.stop(); } catch (e) {}
+        }
+        motionRafId = null;
+        return;
+      }
+
+      currentRotY += dRotY * 0.10;
+      currentRotX += dRotX * 0.10;
+      currentRotZ += dRotZ * 0.10;
+      currentPosX += dPosX * 0.10;
+      currentPosY += dPosY * 0.10;
 
       phoneHand.rotation.y = currentRotY;
       phoneHand.rotation.x = currentRotX;
@@ -597,6 +693,8 @@ import { Application } from '/assets/spline/runtime.js';
       if (typeof splineApp.requestRender === 'function') {
         splineApp.requestRender();
       }
+
+      motionRafId = requestAnimationFrame(animateMotion);
     }
 
     animateMotion();
@@ -609,10 +707,13 @@ import { Application } from '/assets/spline/runtime.js';
             if (typeof splineApp.play === 'function') {
               try { splineApp.play(); } catch (e) {}
             }
-            if (!motionRafId) {
-              motionRafId = requestAnimationFrame(animateMotion);
-            }
+            lastInteractionTime = performance.now();
+            wakeMotionLoop();
           } else {
+            if (motionRafId) {
+              cancelAnimationFrame(motionRafId);
+              motionRafId = null;
+            }
             if (typeof splineApp.stop === 'function') {
               try { splineApp.stop(); } catch (e) {}
             }
@@ -622,9 +723,16 @@ import { Application } from '/assets/spline/runtime.js';
             }
           }
         });
-      }, { threshold: 0.05 });
+      }, { threshold: 0 });
       heroObserver.observe(container);
     }
+    window.__allyrichHeroState = {
+      get isMotionSleeping() { return motionRafId === null; },
+      get isVisible() { return isHeroVisible; },
+      get lastInteractionTime() { return lastInteractionTime; },
+      wake() { wakeMotionLoop(); }
+    };
+
     console.log('[AllyRich 3D] Motion interaction (Laptop mouse + Phone gyroscope) initialized successfully.');
   }
 
@@ -632,6 +740,13 @@ import { Application } from '/assets/spline/runtime.js';
     try {
       const splineApp = new Application(canvas, { renderer: 'webgl' });
       window.__splineApp = splineApp;
+
+      // Cap pixel ratio across all devices to prevent choking high-DPI GPUs
+      splineApp._getPixelRatio = function() {
+        const isMobile = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        return Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2.0);
+      };
+
       await splineApp.load('https://prod.spline.design/VVdTRfsKk3fopW3m/scene.splinecode');
 
       if (loaderBadge) {
@@ -640,9 +755,21 @@ import { Application } from '/assets/spline/runtime.js';
       }
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
-      // Clamp WebGL renderer pixelRatio across ALL devices (laptops, desktops, phones) to avoid high-res GPU overloads
+      const isMobile = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const targetDpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2.0);
       if (splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
-        splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        splineApp._renderer.setPixelRatio(targetDpr);
+      }
+      if (canvas && container) {
+        const rect = container.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          canvas.width = Math.round(rect.width * targetDpr);
+          canvas.height = Math.round(rect.height * targetDpr);
+          if (typeof splineApp.setSize === 'function') {
+            splineApp.setSize(rect.width, rect.height);
+          }
+        }
+      }
       }
       updateAll(splineApp);
 
@@ -654,14 +781,36 @@ import { Application } from '/assets/spline/runtime.js';
       setTimeout(() => updateAll(splineApp), 1400);
       setTimeout(() => updateAll(splineApp), 3000);
 
-      // Keep canvas resolution synced to viewport for crisp Retina rendering without GPU overloads
+      let lastObsW = 0, lastObsH = 0;
       if ('ResizeObserver' in window && container) {
-        const resizeObs = new ResizeObserver(() => {
-          if (splineApp?._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
-            splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        const resizeObs = new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            const cr = entry.contentRect;
+            const w = Math.round(cr.width);
+            const h = Math.round(cr.height);
+            if (w === lastObsW && h === lastObsH) continue;
+            lastObsW = w;
+            lastObsH = h;
+            const isMob = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const dpr = Math.min(window.devicePixelRatio || 1, isMob ? 1.5 : 2.0);
+            if (splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
+              splineApp._renderer.setPixelRatio(dpr);
+            }
+            if (canvas && w > 0 && h > 0) {
+              const targetW = Math.round(w * dpr);
+              const targetH = Math.round(h * dpr);
+              if (canvas.width !== targetW || canvas.height !== targetH) {
+                canvas.width = targetW;
+                canvas.height = targetH;
+              }
+            }
+            if (splineApp && typeof splineApp.requestRender === 'function') {
+              splineApp.requestRender();
+            }
           }
-          if (splineApp && typeof splineApp.requestRender === 'function') {
-            splineApp.requestRender();
+        });
+        resizeObs.observe(container);
+      }
           }
         });
         resizeObs.observe(container);

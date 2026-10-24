@@ -466,7 +466,7 @@ button {
   text-transform: uppercase;
   padding: 0.85rem 2rem;
   border-radius: 2px;
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.4);
   transition: all var(--transition-fast);
 }
 
@@ -714,10 +714,8 @@ button {
   position: absolute !important;
   top: 10px !important;
   right: 10px !important;
-  z-index: 25 !important;
-  background-color: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 9999 !important;
+  background-color: rgba(18, 18, 18, 0.88) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
   color: #ffffff !important;
   width: 38px !important;
@@ -1702,7 +1700,6 @@ button {
   transition: opacity 0.12s ease-in-out, transform 0.25s ease !important;
   display: block;
   width: 100%;
-  will-change: opacity;
 }
 
 .product-card__image--secondary {
@@ -1715,7 +1712,6 @@ button {
   opacity: 0 !important;
   pointer-events: none;
   transition: opacity 0.12s ease-in-out, transform 0.25s ease !important;
-  will-change: opacity;
 }
 
 .product-card:hover .product-card__image--secondary,
@@ -2272,4 +2268,23 @@ body.color-scheme--scheme-2,
 .collection-toolbar-bar,
 .pdp-container {
   background-color: #c4c4c4 !important;
+}
+
+/* Performance containment for grid products, 3D hero, and heavy footer */
+.product-card,
+product-card {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 450px;
+}
+
+#shopify-section-sections--footer,
+#shopify-section-footer {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
+}
+
+#shopify-section-allyrich-3d-hero {
+  contain: layout style;
 }

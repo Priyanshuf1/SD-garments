@@ -368,6 +368,9 @@
       opacity: 1 !important;
       border: none !important;
       box-shadow: none !important;
+      contain: layout style paint;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 450px;
     }
     .product-card:hover {
       box-shadow: none !important;
@@ -397,7 +400,6 @@
       object-fit: cover;
       display: block;
       transition: opacity 0.12s ease-in-out, transform 0.25s ease;
-      will-change: opacity;
     }
     .product-card__image--primary {
       opacity: 1;
@@ -421,9 +423,7 @@
       top: 10px !important;
       right: 10px !important;
       z-index: 999999 !important;
-      background: rgba(0, 0, 0, 0.65) !important;
-      backdrop-filter: blur(8px) !important;
-      -webkit-backdrop-filter: blur(8px) !important;
+      background: rgba(18, 18, 18, 0.88) !important;
       border: 1px solid rgba(255, 255, 255, 0.4) !important;
       width: 38px !important;
       height: 38px !important;

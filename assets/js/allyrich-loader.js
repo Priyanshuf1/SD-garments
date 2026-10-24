@@ -20,6 +20,7 @@
 
   function hideLoaderImmediately() {
     if (!loader) return;
+    loader.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (e) {} });
     loader.classList.remove('is-active', 'loader--filling', 'loader--lit');
     loader.classList.add('loader--done', 'loader--hidden');
     loader.style.display = 'none';
@@ -53,6 +54,7 @@
     var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function finish() {
+      loader.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (e) {} });
       loader.classList.remove('loader--filling');
       loader.classList.add('loader--done');
       loader.style.pointerEvents = 'none';
@@ -71,21 +73,18 @@
     }
 
     document.documentElement.style.overflow = 'hidden';
-    capTimer = setTimeout(finish, 3200);
+    capTimer = setTimeout(finish, 1200);
 
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         loader.classList.add('loader--filling');
-        // The CSS transition for progress bar and logo clip-path is 1400ms.
-        // Wait for 1420ms so it fully unclips and completes progress to 100%,
-        // then trigger --lit illumination and hold for 500ms before smooth fade-out.
         animationTimer1 = setTimeout(function () {
           loader.classList.add('loader--lit');
           animationTimer2 = setTimeout(function () {
             clearTimeout(capTimer);
             finish();
-          }, 600);
-        }, 1500);
+          }, 400);
+        }, 450);
       });
     });
   }

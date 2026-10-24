@@ -571,6 +571,7 @@ const GenrageApp = {
     target.setMinutes(target.getMinutes() + 59);
 
     const update = () => {
+      if (document.hidden) return;
       const now = new Date().getTime();
       const diff = target.getTime() - now;
 
@@ -613,7 +614,10 @@ const GenrageApp = {
     document.getElementById('ann-prev')?.addEventListener('click', () => goSlide(index - 1));
     document.getElementById('ann-next')?.addEventListener('click', () => goSlide(index + 1));
 
-    setInterval(() => goSlide(index + 1), 4000);
+    setInterval(() => {
+      if (document.hidden) return;
+      goSlide(index + 1);
+    }, 4000);
   },
 
   // -------------------------------------------------------------

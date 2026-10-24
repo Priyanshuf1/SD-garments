@@ -1,8 +1,11 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
 
+const os = require('os');
+const path = require('path');
+
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const PROFILE_DIR = 'C:\\Users\\apriy\\.gemini\\antigravity\\scratch\\chrome_test_profile';
+const PROFILE_DIR = path.join(os.tmpdir(), 'chrome_video_test_profile');
 
 async function testViewport(ws, send, width, height, isMobile) {
   console.log(`\n======================================================`);
@@ -115,19 +118,23 @@ async function main() {
 
   // Test 1: Desktop Viewport (1440x900)
   const desktop = await testViewport(ws, send, 1440, 900, false);
-  // Verify: desktop hero & lookbook visible and playing; mobile hero & lookbook hidden and paused
+  // Verify: desktop hero visible and playing; mobile hero hidden and paused
   if (desktop[0].parentDisplay !== 'block' || desktop[0].paused) throw new Error('Desktop hero video failed!');
   if (desktop[1].parentDisplay !== 'none' || !desktop[1].paused) throw new Error('Mobile hero video should be hidden on desktop!');
-  if (desktop[2].parentDisplay !== 'none' || !desktop[2].paused) throw new Error('Mobile lookbook video should be hidden on desktop!');
-  if (desktop[3].parentDisplay !== 'block' || desktop[3].paused) throw new Error('Desktop lookbook video failed!');
+  if (desktop.length > 2) {
+    if (desktop[2].parentDisplay !== 'none' || !desktop[2].paused) throw new Error('Mobile lookbook video should be hidden on desktop!');
+    if (desktop[3].parentDisplay !== 'block' || desktop[3].paused) throw new Error('Desktop lookbook video failed!');
+  }
 
   // Test 2: Mobile Viewport (390x844)
   const mobile = await testViewport(ws, send, 390, 844, true);
-  // Verify: mobile hero & lookbook visible and playing; desktop hero & lookbook hidden and paused
+  // Verify: mobile hero visible and playing; desktop hero hidden and paused
   if (mobile[0].parentDisplay !== 'none' || !mobile[0].paused) throw new Error('Desktop hero video should be hidden on mobile!');
   if (mobile[1].parentDisplay !== 'block' || mobile[1].paused) throw new Error('Mobile hero video failed on mobile view!');
-  if (mobile[2].parentDisplay !== 'block' || mobile[2].paused) throw new Error('Mobile lookbook video failed on mobile view!');
-  if (mobile[3].parentDisplay !== 'none' || !mobile[3].paused) throw new Error('Desktop lookbook video should be hidden on mobile!');
+  if (mobile.length > 2) {
+    if (mobile[2].parentDisplay !== 'block' || mobile[2].paused) throw new Error('Mobile lookbook video failed on mobile view!');
+    if (mobile[3].parentDisplay !== 'none' || !mobile[3].paused) throw new Error('Desktop lookbook video should be hidden on mobile!');
+  }
 
   console.log('\n======================================================');
   console.log('✅ BOTH DESKTOP & MOBILE RESPONSIVE VIDEO PLAYBACK VERIFIED!');

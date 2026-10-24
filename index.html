@@ -1147,9 +1147,10 @@ window.TriplePixelData={TripleName:"gen-rage-clothing.myshopify.com",ver:"2.16",
 </script>
 
 
-<!-- END app block --><script src="https://cdn.shopify.com/extensions/019ff965-89ec-7245-a500-cfd6d07fa944/mps-sales-notification-16/assets/mps-toastibar.min.js" type="text/javascript" defer="defer"></script>
+<!-- Defunct external tracking/notification scripts disabled for local performance -->
+<!-- <script src="https://cdn.shopify.com/extensions/019ff965-89ec-7245-a500-cfd6d07fa944/mps-sales-notification-16/assets/mps-toastibar.min.js" type="text/javascript" defer="defer"></script> -->
 <script src="https://cdn.shopify.com/extensions/01a14416-995f-7951-a981-854ef92a0fd4/judgeme-786/assets/loader.js" type="text/javascript" defer="defer"></script>
-<script src="https://cdn.shopify.com/extensions/01a13a55-804a-795b-af18-307506dd1053/pushowl-336/assets/pushowl-shopify.js" type="text/javascript" defer="defer"></script>
+<!-- <script src="https://cdn.shopify.com/extensions/01a13a55-804a-795b-af18-307506dd1053/pushowl-336/assets/pushowl-shopify.js" type="text/javascript" defer="defer"></script> -->
 <link href="https://monorail-edge.shopifysvc.com" rel="dns-prefetch">
 <script>(function(){if ("sendBeacon" in navigator && "performance" in window) {try {var session_token_from_headers = performance.getEntriesByType('navigation')[0].serverTiming.find(x => x.name == '_s').description;} catch {var session_token_from_headers = undefined;}var session_cookie_matches = document.cookie.match(/_shopify_s=([^;]*)/);var session_token_from_cookie = session_cookie_matches && session_cookie_matches.length === 2 ? session_cookie_matches[1] : "";var session_token = session_token_from_headers || session_token_from_cookie || "";function handle_abandonment_event(e) {var entries = performance.getEntries().filter(function(entry) {return /monorail-edge.shopifysvc.com/.test(entry.name);});if (!window.abandonment_tracked && entries.length === 0) {window.abandonment_tracked = true;var currentMs = Date.now();var navigation_start = performance.timing.navigationStart;var payload = {shop_id: 63393399022,url: window.location.href,navigation_start,duration: currentMs - navigation_start,session_token,page_type: "index"};window.navigator.sendBeacon("https://monorail-edge.shopifysvc.com/v1/produce", JSON.stringify({schema_id: "online_store_buyer_site_abandonment/1.1",payload: payload,metadata: {event_created_at_ms: currentMs,event_sent_at_ms: currentMs}}));}}window.addEventListener('pagehide', handle_abandonment_event);}}());</script>
 <script>
@@ -6559,8 +6560,10 @@ first.parentNode.insertBefore(script, first);
         }
       });
       v.addEventListener('pause', function() {
-        if (isElementVisible(v)) {
-          setTimeout(function() { activateVideo(v); }, 80);
+        if (!v.__isOffscreen && isElementVisible(v)) {
+          setTimeout(function() {
+            if (!v.__isOffscreen) activateVideo(v);
+          }, 80);
         }
       });
     });
@@ -6568,8 +6571,13 @@ first.parentNode.insertBefore(script, first);
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
+          var vid = entry.target;
           if (entry.isIntersecting) {
-            activateVideo(entry.target);
+            vid.__isOffscreen = false;
+            activateVideo(vid);
+          } else {
+            vid.__isOffscreen = true;
+            try { vid.pause(); } catch (e) {}
           }
         });
       }, { threshold: 0.05 });
@@ -6588,23 +6596,43 @@ first.parentNode.insertBefore(script, first);
   window.addEventListener('resize', function() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function() {
-      document.querySelectorAll('video').forEach(activateVideo);
-    }, 100);
+      document.querySelectorAll('video').forEach(function(v) {
+        if (!v.__isOffscreen) activateVideo(v);
+      });
+    }, 150);
   }, { passive: true });
 
-  // Periodic watchdog to keep visible videos playing smoothly
+  // Tab visibility: pause off-screen or background tab decoding to save CPU/battery
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      document.querySelectorAll('video').forEach(function(v) {
+        try { v.pause(); } catch (e) {}
+      });
+    } else {
+      document.querySelectorAll('video').forEach(function(v) {
+        if (!v.__isOffscreen) {
+          activateVideo(v);
+        }
+      });
+    }
+  });
+
+  // Watchdog throttled to keep visible in-viewport videos playing smoothly
   setInterval(function() {
+    if (document.hidden) return;
     document.querySelectorAll('video').forEach(function(v) {
-      if (isElementVisible(v) && v.paused) {
+      if (!v.__isOffscreen && v.paused && isElementVisible(v)) {
         activateVideo(v);
       }
     });
-  }, 1000);
+  }, 2500);
 
   // User gesture interaction unlocks autoplay in strict mobile/desktop browsers
   ['click', 'touchstart', 'scroll', 'keydown', 'mousemove'].forEach(function(evt) {
     window.addEventListener(evt, function() {
-      document.querySelectorAll('video').forEach(activateVideo);
+      document.querySelectorAll('video').forEach(function(v) {
+        if (!v.__isOffscreen) activateVideo(v);
+      });
     }, { passive: true, once: true });
   });
 })();
@@ -6831,20 +6859,30 @@ first.parentNode.insertBefore(script, first);
         window.WishlistEngine.decorateCards();
       }
 
-      // Pre-cache hover secondary images 600px ahead of scroll for zero-lag hover
+      // Pre-cache hover secondary images during browser idle periods for zero-lag hover without scroll jank
       if ('IntersectionObserver' in window) {
         const preloader = new IntersectionObserver((entries, obs) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               const sec = entry.target.querySelector('.product-card__image--secondary');
               if (sec && sec.src) {
-                const img = new Image();
-                img.src = sec.src;
+                const src = sec.src;
+                if ('requestIdleCallback' in window) {
+                  requestIdleCallback(() => {
+                    const img = new Image();
+                    img.src = src;
+                  }, { timeout: 1500 });
+                } else {
+                  setTimeout(() => {
+                    const img = new Image();
+                    img.src = src;
+                  }, 120);
+                }
               }
               obs.unobserve(entry.target);
             }
           });
-        }, { rootMargin: '600px 0px' });
+        }, { rootMargin: '300px 0px' });
         document.querySelectorAll('product-card, .product-card').forEach(c => preloader.observe(c));
       }
     } catch (err) {

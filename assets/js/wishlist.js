@@ -309,11 +309,7 @@ const WishlistEngine = {
     }, 3200);
   },
 
-  _isUpdating: false,
-
   decorateCards() {
-    if (this._isUpdating) return;
-    this._isUpdating = true;
     try {
       // Purge any third-party app injected buttons
       document.querySelectorAll('.vitals-wishlist, .sqa-wishlist, [class*="wishlist-by-square"], .swym-button, .swym-btn-container').forEach(el => el.remove());
@@ -381,9 +377,7 @@ const WishlistEngine = {
         figure.style.position = 'relative';
         figure.appendChild(btn);
       });
-    } finally {
-      this._isUpdating = false;
-    }
+    } catch (e) {}
   },
 
   init() {
@@ -420,7 +414,6 @@ const WishlistEngine = {
     if (typeof MutationObserver !== 'undefined' && document.body && !this._observer) {
       let debounceTimer = null;
       this._observer = new MutationObserver((mutations) => {
-        if (this._isUpdating) return;
         let hasNewCards = false;
         for (const m of mutations) {
           if (m.type === 'childList' && m.addedNodes.length > 0) {

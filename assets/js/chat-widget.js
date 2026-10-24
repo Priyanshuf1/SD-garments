@@ -36,7 +36,7 @@
       align-items: center;
       gap: 10px;
       background: #0d0d0d;
-      background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(10,10,10,0.98));
+      background: linear-gradient(135deg, rgba(20,20,20,0.98), rgba(10,10,10,0.99));
       border: 1px solid rgba(255, 255, 255, 0.22);
       color: #ffffff;
       padding: 10px 18px 10px 14px;
@@ -49,8 +49,6 @@
       text-decoration: none;
       cursor: pointer;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -116,9 +114,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.72);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.78);
       z-index: 9999999;
       opacity: 0;
       visibility: hidden;
