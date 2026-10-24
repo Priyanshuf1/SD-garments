@@ -514,14 +514,12 @@
   transform: translateX(3px);
 }
 
-/* Social Links */
-.site-footer__meta {
+/* Social Links inside Legal Column */
+.site-footer__column .site-footer__social {
+  margin-top: 14px;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: 16px;
-  padding: 16px 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 14px;
 }
 
 .site-footer__social {
@@ -557,8 +555,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 16px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @media (min-width: 901px) {
