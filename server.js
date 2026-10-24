@@ -185,6 +185,14 @@ function writeJsonFile(filename, data) {
   const p = path.join(DATA_DIR, filename);
   try {
     fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
+    if (filename === 'products.json') {
+      memoryProducts = null;
+      memoryProductsLastFetch = 0;
+    }
+    if (filename === 'orders.json') {
+      memoryOrders = null;
+      memoryOrdersLastFetch = 0;
+    }
     return true;
   } catch (err) {
     console.error(`Error writing ${filename}:`, err.message);
@@ -2084,18 +2092,46 @@ function generatePrintablePackingSlip(order, waybill) {
 
 async function handleShippingLabel(req, res, id) {
   const cleanId = String(decodeURIComponent(id || '')).replace(/\/shipping-label\/?$/, '').replace(/^\/+|\/+$/g, '').trim();
-  const orders = await getAllOrders();
+  let orders = await getAllOrders();
   let order = orders.find(o => String(o.id) === cleanId);
+
+  if (!order) {
+    const freshOrders = readJsonFile('orders.json', []);
+    order = freshOrders.find(o => String(o.id) === cleanId);
+    if (order) {
+      memoryOrders = freshOrders;
+      memoryOrdersLastFetch = Date.now();
+      orders = freshOrders;
+    }
+  }
 
   // If id is awb-XXXX, lookup by waybill
   if (!order && cleanId.startsWith('awb-')) {
     const rawAwb = cleanId.replace('awb-', '').trim();
     order = orders.find(o => o.trackingNumber === rawAwb || o.delhiveryWaybill === rawAwb);
+    if (!order) {
+      const freshOrders = readJsonFile('orders.json', []);
+      order = freshOrders.find(o => o.trackingNumber === rawAwb || o.delhiveryWaybill === rawAwb);
+      if (order) {
+        memoryOrders = freshOrders;
+        memoryOrdersLastFetch = Date.now();
+        orders = freshOrders;
+      }
+    }
   }
 
   // If still not found, check if id is a waybill directly
   if (!order) {
     order = orders.find(o => o.trackingNumber === cleanId || o.delhiveryWaybill === cleanId);
+    if (!order) {
+      const freshOrders = readJsonFile('orders.json', []);
+      order = freshOrders.find(o => o.trackingNumber === cleanId || o.delhiveryWaybill === cleanId);
+      if (order) {
+        memoryOrders = freshOrders;
+        memoryOrdersLastFetch = Date.now();
+        orders = freshOrders;
+      }
+    }
   }
 
   let waybill = (order && (order.trackingNumber || order.delhiveryWaybill))
