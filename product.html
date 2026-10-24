@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Details | ALLEYRICH Streetwear</title>
+  <title>Product Details | ALLYRICH Streetwear</title>
+  <meta name="description" id="meta-description" content="Shop luxury streetwear, oversized boxy tees, and heavyweight garments at ALLYRICH. Handcrafted in India with complimentary express shipping.">
+  <link rel="canonical" id="canonical-link" href="https://allyrich.com/collections/shop">
+  <meta property="og:type" content="product">
+  <meta property="og:title" id="og-title" content="Product Details | ALLYRICH">
+  <meta property="og:description" id="og-description" content="Explore luxury architectural silhouettes by ALLYRICH.">
+  <meta property="og:image" id="og-image" content="/assets/ar-logo.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="shortcut icon" href="/assets/ar-logo.png">
   <link rel="stylesheet" href="/assets/css/theme.css">
   <link rel="stylesheet" href="/assets/css/custom.css">
@@ -718,6 +725,7 @@
             <p class="site-footer__heading">LEGAL &amp; POLICIES</p>
             <a href="/pages/terms-of-service.html">Terms &amp; Conditions</a>
             <a href="/pages/privacy-policy.html">Privacy Policy</a>
+            <a href="/cookie-policy">Cookie Policy</a>
             <a href="/pages/refund-policy.html">Refund Policy</a>
             <a href="/pages/shipping-policy.html">Shipping Guidelines</a>
           </div>
@@ -757,6 +765,7 @@
         <div class="site-footer__legal">
           <a href="/pages/terms-of-service.html">TERMS</a>
           <a href="/pages/privacy-policy.html">PRIVACY</a>
+          <a href="/cookie-policy">COOKIES</a>
           <a href="/pages/refund-policy.html">REFUNDS</a>
           <a href="/pages/shipping-policy.html">SHIPPING</a>
         </div>
@@ -889,8 +898,41 @@
         return;
       }
 
-      // Populate UI
-      document.title = `${currentProduct.title} | ALLEYRICH`;
+      // Populate UI & Dynamic SEO Metadata
+      document.title = `${currentProduct.title} | ALLYRICH`;
+      const metaDesc = document.getElementById('meta-description');
+      if (metaDesc) metaDesc.content = `Buy ${currentProduct.title} online at ALLYRICH India. High-end architectural streetwear, 380 GSM combed cotton with free delivery.`;
+      const canLink = document.getElementById('canonical-link');
+      if (canLink) canLink.href = `https://allyrich.com/products/${currentProduct.handle}`;
+      const ogTitle = document.getElementById('og-title');
+      if (ogTitle) ogTitle.content = `${currentProduct.title} | ALLYRICH`;
+
+      // Inject Schema.org Product JSON-LD for Google Rich Results
+      let schemaScript = document.getElementById('product-schema-ld');
+      if (!schemaScript) {
+        schemaScript = document.createElement('script');
+        schemaScript.id = 'product-schema-ld';
+        schemaScript.type = 'application/ld+json';
+        document.head.appendChild(schemaScript);
+      }
+      schemaScript.textContent = JSON.stringify({
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": currentProduct.title,
+        "image": (currentProduct.images && currentProduct.images[0]?.src) || '',
+        "description": currentProduct.description || `${currentProduct.title} crafted in premium heavyweight cotton by ALLYRICH.`,
+        "brand": {
+          "@type": "Brand",
+          "name": "ALLYRICH"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": `https://allyrich.com/products/${currentProduct.handle}`,
+          "priceCurrency": "INR",
+          "price": price,
+          "availability": "https://schema.org/InStock"
+        }
+      });
       document.getElementById('breadcrumb-title').textContent = currentProduct.title;
       document.getElementById('product-title').textContent = currentProduct.title;
 
@@ -934,7 +976,7 @@
       if (images.length > 0) {
         mainImg.src = images[0].src;
         thumbsContainer.innerHTML = images.map((img, i) => `
-          <img class="pdp-thumb-img ${i === 0 ? 'active' : ''}" src="${img.src}" onclick="
+          <img class="pdp-thumb-img ${i === 0 ? 'active' : ''}" src="${img.src}" alt="${currentProduct.title || 'Product view'} thumbnail ${i + 1}" onclick="
             document.getElementById('main-product-img').src='${img.src}';
             document.querySelectorAll('.pdp-thumb-img').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
@@ -1175,5 +1217,6 @@
 <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/size-guide-modal.js" defer></script>
   <script src="/assets/js/ai-support.js" defer></script>
+  <script src="/assets/js/cookie-consent.js" defer></script>
 </body>
 </html>

@@ -1101,6 +1101,59 @@
 </head>
 <body>
 
+<!-- ==========================================
+     ALLYRICH FOUNDER VAULT (LEVEL 3 2FA GATE)
+     ========================================== -->
+<div id="admin-auth-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#09090b; z-index:999999; display:flex; align-items:center; justify-content:center; padding:1.5rem; box-sizing:border-box;">
+  <div style="max-width:440px; width:100%; background:#141417; border:1px solid #27272a; border-radius:8px; padding:2.5rem 2rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.8); text-align:center;">
+    <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:1rem;">
+      <img src="/assets/ar-logo.png" alt="AR" style="width:48px; height:48px; object-fit:contain;">
+    </div>
+    <h2 style="font-family:'Shippori Mincho B1', serif; font-size:1.35rem; letter-spacing:0.2em; color:#fff; margin:0 0 6px; text-transform:uppercase;">FOUNDER VAULT</h2>
+    <p style="font-size:0.75rem; color:#888; margin:0 0 1.5rem; letter-spacing:0.04em;">ALLYRICH INTERNAL COMMAND CENTER</p>
+
+    <div id="vault-alert" style="display:none; padding:10px 12px; border-radius:4px; font-size:0.8rem; margin-bottom:1.25rem; font-weight:600; text-align:left;"></div>
+
+    <form id="vault-login-form" onsubmit="handleVaultLogin(event)">
+      <div style="text-align:left; margin-bottom:1rem;">
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#aaa; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">Admin Username</label>
+        <input type="text" id="vault-username" required style="width:100%; box-sizing:border-box; background:#1c1c21; border:1px solid #333; color:#fff; padding:12px; border-radius:4px; font-size:0.9rem; outline:none;" placeholder="Deepak_is_admin" autocomplete="username">
+      </div>
+
+      <div style="text-align:left; margin-bottom:1.25rem;">
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#aaa; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">Master Password</label>
+        <input type="password" id="vault-password" required style="width:100%; box-sizing:border-box; background:#1c1c21; border:1px solid #333; color:#fff; padding:12px; border-radius:4px; font-size:0.9rem; outline:none;" placeholder="••••••••••••" autocomplete="current-password">
+      </div>
+
+      <!-- Google Authenticator 2FA Section -->
+      <div id="vault-2fa-section" style="display:none; margin-bottom:1.25rem; background:#18181c; border:1px solid #2e2e33; border-radius:6px; padding:1.25rem; text-align:left;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="background:#22c55e; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+          <strong style="font-size:0.82rem; color:#fff; text-transform:uppercase; letter-spacing:0.05em;">Google Authenticator 2FA</strong>
+        </div>
+        <p style="font-size:0.75rem; color:#888; margin:0 0 10px; line-height:1.4;">Enter the 6-digit code shown in Google Authenticator.</p>
+        <input type="text" id="vault-totp" maxlength="6" pattern="[0-9]{6}" style="width:100%; box-sizing:border-box; background:#111; border:1px solid #444; color:#22c55e; padding:12px; border-radius:4px; font-size:1.3rem; font-weight:800; letter-spacing:0.35em; text-align:center; outline:none;" placeholder="000000" autocomplete="one-time-code">
+        
+        <!-- One-Time Setup QR Code Box -->
+        <div id="vault-qr-box" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px dashed #333; text-align:center;">
+          <p style="font-size:0.72rem; color:#aaa; margin:0 0 8px;">Scan with Google Authenticator on your phone:</p>
+          <img id="vault-qr-img" src="" alt="Google Authenticator QR Code" style="width:170px; height:170px; border-radius:6px; background:#fff; padding:6px; margin:0 auto; display:block;">
+          <div style="font-size:0.68rem; color:#777; margin-top:8px;">Manual Setup Key: <strong id="vault-manual-key" style="color:#22c55e; font-family:monospace; letter-spacing:0.05em;"></strong></div>
+        </div>
+      </div>
+
+      <button type="submit" id="btn-vault-submit" style="width:100%; background:#fff; color:#000; border:none; padding:14px; font-weight:800; font-size:0.82rem; letter-spacing:0.1em; text-transform:uppercase; border-radius:4px; cursor:pointer;">
+        UNLOCK ADMIN PORTAL
+      </button>
+    </form>
+    
+    <div style="margin-top:1.5rem; font-size:0.7rem; color:#555;">
+      🛡️ Level 3 Zero-Trust Security • 5-Attempt Lockout Active
+    </div>
+  </div>
+</div>
+
+
 <div class="app-layout">
   <!-- SIDEBAR NAVIGATION -->
   <aside class="sidebar" id="sidebar">
@@ -1175,6 +1228,13 @@
         <div class="status-dot"></div>
         <span>SERVER ONLINE: 3000</span>
       </div>
+    </div>
+  
+    <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border-color); margin-top: auto;">
+      <button onclick="handleVaultLogout()" class="btn btn-secondary btn-sm" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:700;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Sign Out Vault
+      </button>
     </div>
   </aside>
 
@@ -2630,7 +2690,7 @@ _Limited archival drop • Ships under 48h • No restocks_
       (url.includes('/api/products') && init.method && init.method !== 'GET') ||
       (url.includes('/api/orders') && init.method && init.method !== 'GET')
     ) {
-      const adminKey = localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026';
+      const adminKey = sessionStorage.getItem('allyrich_admin_token') || localStorage.getItem('allyrich_admin_token') || '';
       init.headers = Object.assign({}, init.headers || {}, {
         'x-admin-key': adminKey
       });

@@ -214,7 +214,8 @@
         </div>
         <div class="form-group">
           <label>PIN Code</label>
-          <input type="text" id="chk-pincode" class="form-control" placeholder="400053" style="max-width:200px;" required>
+          <input type="text" id="chk-pincode" class="form-control" placeholder="400053" style="max-width:200px;" maxlength="6" pattern="[1-9][0-9]{5}" required oninput="checkPincodeDelivery(this.value)">
+          <div id="pincode-status-badge" style="margin-top:6px; font-size:0.78rem; font-weight:700; display:none;"></div>
         </div>
       </section>
 
@@ -223,7 +224,7 @@
         <h3>2. Delivery Option</h3>
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border:1px solid #111; border-radius:3px; background:#fafafa;">
           <div style="display:flex; align-items:center; gap:10px;">
-            <input type="radio" checked disabled>
+            <input type="radio" checked disabled aria-label="Delhivery Express Air Priority Delivery">
             <div>
               <strong style="font-size:0.9rem;">Delhivery Express Air Delivery</strong>
               <div style="font-size:0.75rem; color:#666;">Delivered in 2-4 business days across India</div>
@@ -242,7 +243,7 @@
 
         <!-- Cashfree Payment Gateway -->
         <label class="payment-option active" id="opt-cashfree" onclick="selectPayment('cashfree')">
-          <input type="radio" name="paymentMethod" value="cashfree" checked style="margin-top:4px;">
+          <input type="radio" id="pay-cashfree-input" name="paymentMethod" value="cashfree" checked style="margin-top:4px;" aria-label="Cashfree Online Payment">
           <div style="flex:1;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <strong style="font-size:0.95rem;">⚡ Cashfree Online Payment</strong>
@@ -256,7 +257,7 @@
 
         <!-- Cash on Delivery -->
         <label class="payment-option" id="opt-cod" onclick="selectPayment('cod')">
-          <input type="radio" name="paymentMethod" value="cod" style="margin-top:4px;">
+          <input type="radio" id="pay-cod-input" name="paymentMethod" value="cod" style="margin-top:4px;" aria-label="Cash on Delivery">
           <div style="flex:1;">
             <strong style="font-size:0.95rem;">Cash on Delivery</strong>
             <p style="margin:4px 0 0; font-size:0.8rem; color:#666;">
@@ -268,8 +269,9 @@
         <button type="button" class="btn-complete" id="btn-submit-order" onclick="submitOrder()">
           COMPLETE ORDER & PAY
         </button>
-        <div style="text-align:center; font-size:0.75rem; color:#777; margin-top:8px;">
-          By placing order, you agree to ALLEYRICH Terms & Return Policy.
+<div style="text-align:center; font-size:0.75rem; color:#777; margin-top:8px; line-height:1.5;">
+          By placing your order, you agree to ALLYRICH's <a href="/terms-of-service" target="_blank" style="color:#111; text-decoration:underline;">Terms of Service</a>, <a href="/privacy-policy" target="_blank" style="color:#111; text-decoration:underline;">Privacy Policy</a> &amp; <a href="/refund-policy" target="_blank" style="color:#111; text-decoration:underline;">Return Policy</a>. All sales include GST.
+        </div>
         </div>
       </section>
 
@@ -618,8 +620,40 @@
       }
     }
 
+    
+    let pincodeDebounce = null;
+    async function checkPincodeDelivery(pin) {
+      const badge = document.getElementById('pincode-status-badge');
+      if (!badge) return;
+      const cleaned = (pin || '').trim();
+      if (cleaned.length !== 6 || !/^[1-9][0-9]{5}$/.test(cleaned)) {
+        badge.style.display = 'none';
+        return;
+      }
+      clearTimeout(pincodeDebounce);
+      pincodeDebounce = setTimeout(async () => {
+        try {
+          badge.style.display = 'block';
+          badge.style.color = '#666';
+          badge.innerHTML = 'Checking delivery serviceability...';
+          const res = await fetch(`/api/shipping/pincode/${cleaned}`);
+          const data = await res.json();
+          if (res.ok && data.serviceable) {
+            badge.style.color = '#2e7d32';
+            badge.innerHTML = `✓ Delhivery Express Air Serviceable (${data.slaDays} business days • ${data.region})`;
+          } else {
+            badge.style.color = '#c62828';
+            badge.innerHTML = `✕ ${data.message || 'Pincode not currently serviceable'}`;
+          }
+        } catch (e) {
+          badge.style.display = 'none';
+        }
+      }, 200);
+    }
+
     document.addEventListener('DOMContentLoaded', loadCart);
   </script>
   <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/cookie-consent.js" defer></script>
 </body>
 </html>

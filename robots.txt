@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /admin
+Disallow: /account
+Disallow: /checkout
+Disallow: /data/
+Disallow: /api/
+Allow: /
+Allow: /collections/
+Allow: /products/
+Allow: /pages/
+
+Sitemap: https://allyrich.com/sitemap.xml

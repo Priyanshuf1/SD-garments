@@ -38,6 +38,7 @@ const supabase = require('./lib/supabase.js');
 const security = require('./lib/security.js');
 const whatsapp = require('./lib/whatsapp.js');
 const delhivery = require('./lib/delhivery.js');
+const totp = require('./lib/totp.js');
 let db = null;
 try {
   db = require('./lib/db.js');
@@ -1104,6 +1105,8 @@ async function handleTrackOrder(req, res, parsedUrl) {
       },
       items: matchedOrder.items || [],
       trackingNumber: matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill || '',
+      delhiveryWaybill: matchedOrder.delhiveryWaybill || matchedOrder.trackingNumber || '',
+      trackingUrl: matchedOrder.trackingUrl || (matchedOrder.trackingNumber ? `https://www.delhivery.com/track/package/${matchedOrder.trackingNumber}` : null),
       carrier: 'Delhivery Express Air Priority',
       estimatedDelivery: '2 - 4 Business Days',
       steps
@@ -1821,6 +1824,12 @@ async function handleDelhiveryAwb(req, res, id) {
   order.orderStatus = 'Shipped';
   order.trackingUrl = trackingUrl;
   order.shippingLabelUrl = packingSlipUrl;
+  order.shippingDetails = {
+    waybill: delhiveryAwb,
+    carrier: order.carrier,
+    trackingUrl: trackingUrl,
+    packingSlipUrl: packingSlipUrl
+  };
   order.updatedAt = new Date().toISOString();
 
   writeJsonFile('orders.json', orders);
@@ -2242,14 +2251,64 @@ async function appHandler(req, res) {
     return res.end('// Shopify telemetry stub');
   }
 
+  // Inject Global Defense-in-Depth HTTP Security Headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   // Handle OPTIONS for CORS
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key'
     });
     return res.end();
+  }
+
+  // -------------------------------------------------------------
+  // Shield Hidden Files, Root Source Files & Private Data Archives
+  // -------------------------------------------------------------
+  const normalizedPath = path.normalize(pathname).replace(/\\/g, '/');
+  
+  // 1. Block dotfiles (.env, .git, .system_generated, etc.) and directory traversal
+  if (normalizedPath.startsWith('/.') || normalizedPath.includes('/..')) {
+    return sendJson(res, 403, { success: false, message: 'Forbidden: Access to hidden system files is prohibited.' });
+  }
+
+  // 2. Block direct root server source files (.js, .json, .lock, .md, .yml)
+  const isDirectRootFile = normalizedPath.lastIndexOf('/') === 0;
+  const blockedRootExtensions = ['.js', '.json', '.lock', '.yml', '.yaml', '.md', '.sh', '.bat', '.ps1'];
+  if (isDirectRootFile && blockedRootExtensions.includes(path.extname(normalizedPath).toLowerCase())) {
+    if (normalizedPath !== '/cart.js') {
+      return sendJson(res, 403, { success: false, message: 'Forbidden: Direct access to server source files is prohibited.' });
+    }
+  }
+
+  // 3. Block unauthorized direct access to /data/ directory (except public products catalog)
+  if (normalizedPath.startsWith('/data/')) {
+    if (normalizedPath !== '/data/products.json') {
+      if (!security.isAdminAuthorized(req, parsedUrl)) {
+        return sendJson(res, 401, { success: false, message: 'Unauthorized: Administrator privileges required to access internal data archives.' });
+      }
+    }
+  }
+
+  // -------------------------------------------------------------
+  // SEO Routes: robots.txt & dynamic sitemap.xml
+  // -------------------------------------------------------------
+  if (pathname === '/robots.txt') {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end(`User-agent: *\nDisallow: /admin\nDisallow: /account\nDisallow: /checkout\nDisallow: /data/\nDisallow: /api/\nAllow: /\nAllow: /collections/\nAllow: /products/\nAllow: /pages/\n\nSitemap: https://allyrich.com/sitemap.xml\n`);
+  }
+
+  if (pathname === '/sitemap.xml') {
+    const sitemapPath = path.join(PUBLIC_DIR, 'sitemap.xml');
+    if (fs.existsSync(sitemapPath)) {
+      res.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8' });
+      return fs.createReadStream(sitemapPath).pipe(res);
+    }
   }
 
   // -------------------------------------------------------------
@@ -2282,7 +2341,16 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // Admin Portal Page Route
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // Stealth Admin Route: /allyrich-hq (Fake 404 on /admin)
+  // -------------------------------------------------------------
   if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html') {
+    // Stealth Mode: Deceive unauthorized scanners with an authentic 404
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    return res.end('<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style="background:#09090b;color:#666;font-family:sans-serif;text-align:center;padding:5rem;"><h1>404 Not Found</h1><p>The requested resource does not exist on this server.</p></body></html>');
+  }
+
+  if (pathname === '/allyrich-hq' || pathname === '/allyrich-hq/' || pathname === '/allyrich-hq.html') {
     const adminPath = path.join(PUBLIC_DIR, 'admin.html');
     if (fs.existsSync(adminPath)) {
       res.writeHead(200, {
@@ -2344,6 +2412,21 @@ async function appHandler(req, res) {
     }
   }
 
+    // Live Public Delhivery Pincode Serviceability API
+  if (pathname.startsWith('/api/shipping/pincode') || pathname === '/api/shipping/serviceability') {
+    if (req.method === 'GET') {
+      const pinParam = pathname.startsWith('/api/shipping/pincode/') 
+        ? pathname.replace('/api/shipping/pincode/', '').trim()
+        : (parsedUrl.searchParams.get('pincode') || parsedUrl.searchParams.get('code') || '').trim();
+      
+      const result = await delhivery.checkPincodeServiceability(pinParam);
+      return sendJson(res, result.serviceable ? 200 : 400, {
+        success: result.serviceable,
+        ...result
+      });
+    }
+  }
+
   // 1. Live Public Order Tracking API
   if (pathname === '/api/orders/track' || pathname === '/api/track-order') {
     if (req.method === 'GET') {
@@ -2390,6 +2473,77 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // REST API Endpoints for Admin Management Portal
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // Public Admin 2FA Authentication Endpoints (Pre-auth barrier)
+  // -------------------------------------------------------------
+  if (pathname === '/api/admin/login' && req.method === 'POST') {
+    const clientIp = security.getClientIp(req);
+    // Rate limit: max 5 failed attempts per 15 minutes by IP
+    const rateCheck = security.checkRateLimit(`admin_login:${clientIp}`, 5, 15 * 60);
+    if (!rateCheck.allowed) {
+      return sendJson(res, 429, {
+        success: false,
+        message: `Security Lockout: Too many failed attempts. Try again in ${rateCheck.resetAfterSeconds} seconds.`
+      });
+    }
+
+    const payload = await parseBody(req);
+    const username = (payload.username || '').trim();
+    const password = (payload.password || '').trim();
+    const totpCode = (payload.totpCode || '').trim();
+
+    const expectedUser = process.env.ADMIN_USERNAME || 'Deepak_is_admin';
+    const expectedPass = process.env.ADMIN_PASSWORD || '#99882211@';
+    const totpSecret = process.env.ADMIN_2FA_SECRET || '4I543GYJL7LAMAC7UPPL';
+
+    if (username !== expectedUser || password !== expectedPass) {
+      return sendJson(res, 401, {
+        success: false,
+        message: 'Invalid administrative username or master password.'
+      });
+    }
+
+    const otpAuthUrl = totp.getOtpAuthUrl(expectedUser, totpSecret, 'ALLYRICH');
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpAuthUrl)}`;
+
+    if (!totpCode) {
+      return sendJson(res, 200, {
+        success: false,
+        require2fa: true,
+        setupQr: qrUrl,
+        manualKey: totpSecret,
+        message: 'Master credentials accepted. Enter your 6-digit Google Authenticator code.'
+      });
+    }
+
+    const isValidTotp = totp.verifyTotp(totpSecret, totpCode);
+    if (!isValidTotp) {
+      return sendJson(res, 400, {
+        success: false,
+        require2fa: true,
+        setupQr: qrUrl,
+        manualKey: totpSecret,
+        message: 'Invalid or expired 6-digit code. Please check your Google Authenticator app.'
+      });
+    }
+
+    // Both password and 2FA verified! Create 12-hour session
+    const session = security.createAdminSession(username);
+    return sendJson(res, 200, {
+      success: true,
+      token: session.token,
+      expiresAt: session.expiresAt,
+      message: 'Admin authorization successful. Vault unlocked.'
+    });
+  }
+
+  if (pathname === '/api/admin/logout' && req.method === 'POST') {
+    const token = req.headers['x-admin-token'] || req.headers['x-admin-key'] || '';
+    security.revokeAdminSession(token);
+    return sendJson(res, 200, { success: true, message: 'Logged out successfully.' });
+  }
+
+  // General Admin API Router
   if (pathname.startsWith('/api/admin/')) {
     // 1. Enforce strict Admin Authorization across all /api/admin/* endpoints
     if (!security.isAdminAuthorized(req, parsedUrl)) {
@@ -4364,6 +4518,10 @@ async function appHandler(req, res) {
     '/refund-policy': 'refund-policy.html',
     '/pages/refund-policy': 'refund-policy.html',
     '/pages/refund-policy.html': 'refund-policy.html',
+    '/cookie-policy': 'cookie-policy.html',
+    '/pages/cookie-policy': 'cookie-policy.html',
+    '/pages/cookie-policy.html': 'cookie-policy.html',
+    '/cookies': 'cookie-policy.html',
     '/privacy-policy': 'privacy-policy.html',
     '/pages/privacy-policy': 'privacy-policy.html',
     '/pages/privacy-policy.html': 'privacy-policy.html',

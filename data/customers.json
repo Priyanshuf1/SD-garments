@@ -1,5 +1,26 @@
 [
   {
+    "id": "cust_1792772970127",
+    "name": "Reliability Test User",
+    "email": "reliability_audit@allyrich.com",
+    "phone": "+91 98200 99999",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Test Street, Floor 4",
+    "locality": "",
+    "pincode": "400053",
+    "country": "India",
+    "ordersCount": 1,
+    "totalSpent": 2499,
+    "status": "Active",
+    "tags": [
+      "Storefront Buyer",
+      "WhatsApp VIP"
+    ],
+    "wishlist": [],
+    "cart": []
+  },
+  {
     "id": "CUST-4116",
     "name": "Shivendra Awasthi",
     "email": "shivendraawasthi333@gmail.com",

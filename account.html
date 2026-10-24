@@ -289,7 +289,7 @@
 
         const itemsHtml = itemsList.map(i => `
           <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
-            <img src="${i.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}" style="width:40px; height:50px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
+            <img src="${i.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}" alt="${i.title || 'Ordered product item'}" style="width:40px; height:50px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
             <div style="flex:1; font-size:0.85rem;">
               <strong>${i.title}</strong>
               <span style="color:#666;">(Qty: ${i.quantity || 1})</span>
@@ -672,5 +672,6 @@
     }
   </script>
   <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/cookie-consent.js" defer></script>
 </body>
 </html>
