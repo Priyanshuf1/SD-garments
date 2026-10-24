@@ -420,13 +420,7 @@ import { Application } from '/assets/spline/runtime.js';
       }
     }
 
-    // Wake motion loop on user scroll and touch interactions when hero is visible
-    window.addEventListener('scroll', () => {
-      if (isHeroVisible && motionRafId === null) {
-        lastInteractionTime = performance.now();
-        wakeMotionLoop();
-      }
-    }, { passive: true });
+    // Touch interactions when hero is visible wake the motion loop
     window.addEventListener('touchstart', () => {
       if (isHeroVisible && motionRafId === null) {
         lastInteractionTime = performance.now();
