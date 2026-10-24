@@ -20,8 +20,9 @@ function request(options, data = null) {
 }
 
 async function verifyLive() {
+  const hostname = process.env.TEST_HOST || 'alleyrich.com';
   console.log('🌐 ========================================================');
-  console.log('   VERIFYING LIVE PRODUCTION: https://genrage.vercel.app');
+  console.log(`   VERIFYING LIVE PRODUCTION: https://${hostname}`);
   console.log('========================================================\n');
 
   let passed = 0;
@@ -36,8 +37,6 @@ async function verifyLive() {
       failed++;
     }
   }
-
-  const hostname = 'genrage.vercel.app';
 
   // 1. Wishlist Sync
   console.log('\n--- 1. Live Wishlist Sync ---');

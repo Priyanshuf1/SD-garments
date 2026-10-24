@@ -11,7 +11,7 @@
 
   <style>
     /* ==========================================================================
-       GENRAGE ADMIN PORTAL - 1:1 DITTO STREETWEAR DESIGN SYSTEM
+       ALLYRICH ADMIN PORTAL — FOUNDER CONTROL CENTER & D2C ENGINE
        ========================================================================== */
     :root {
       --font-heading: 'Instrument Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -2619,7 +2619,7 @@
         </div>
         <div class="form-group">
           <label class="form-label" style="font-weight:700; margin-bottom:4px; display:block;">Website / Drop URL</label>
-          <input type="text" id="broadcast-link" class="form-control" placeholder="https://genrage.vercel.app/collections/shop" style="width:100%;" oninput="Admin.updateWhatsAppPreview()">
+          <input type="text" id="broadcast-link" class="form-control" placeholder="https://alleyrich.com/collections.html" style="width:100%;" oninput="Admin.updateWhatsAppPreview()">
         </div>
       </div>
 
@@ -2642,7 +2642,7 @@
 Get exclusive 40% OFF on all heavyweight tees and baggy pants. Limited quantities available.
 
 🏷️ *Use Code:* `DROP40`
-🔗 *Shop Now:* https://genrage.vercel.app/collections/shop
+🔗 *Shop Now:* https://alleyrich.com/collections.html
 
 _Limited archival drop • Ships under 48h • No restocks_
             </div>
@@ -4512,7 +4512,7 @@ const Admin = {
     const headline = document.getElementById('broadcast-headline')?.value?.trim();
     const message = document.getElementById('broadcast-message')?.value?.trim() || 'Get exclusive 40% OFF on all heavyweight tees and baggy pants. Limited quantities available.';
     const code = document.getElementById('broadcast-code')?.value?.trim() || 'DROP40';
-    const link = document.getElementById('broadcast-link')?.value?.trim() || 'https://genrage.vercel.app/collections/shop';
+    const link = document.getElementById('broadcast-link')?.value?.trim() || 'https://alleyrich.com/collections.html';
 
     const prevEl = document.getElementById('wa-preview-text');
     if (!prevEl) return;
@@ -4678,7 +4678,7 @@ const Admin = {
     const cleanPhone = String(phone).replace(/\D/g, '');
     const normPhone = cleanPhone.length === 10 ? ('91' + cleanPhone) : cleanPhone;
     const name = customer.name || 'Member';
-    const msg = `Hi ${name}! Exclusive drop update from ALLEYRICH Streetwear.\nCheck out our latest architectural drop now: https://genrage.vercel.app/collections/shop\nUse code ALLY10 for 10% off!`;
+    const msg = `Hi ${name}! Exclusive drop update from ALLEYRICH Streetwear.\nCheck out our latest architectural drop now: https://alleyrich.com/collections.html\nUse code ALLY10 for 10% off!`;
     const waUrl = `https://wa.me/${normPhone}?text=${encodeURIComponent(msg)}`;
     window.open(waUrl, '_blank');
   },

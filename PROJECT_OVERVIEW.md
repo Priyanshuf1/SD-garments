@@ -1,21 +1,22 @@
 # ALLEYRICH — Luxury D2C Streetwear Platform & Cloud Infrastructure
-## Complete System Architecture, Tech Stack & Project Status
+## Complete System Architecture, Tech Stack & Production Status
 
-> **Live Production Store**: [https://genrage.vercel.app](https://genrage.vercel.app)  
+> **Live Production Store**: [https://alleyrich.com](https://alleyrich.com) & [https://www.alleyrich.com](https://www.alleyrich.com)  
 > **Source Repository**: [https://github.com/Priyanshuf1/SD-garments](https://github.com/Priyanshuf1/SD-garments)  
-> **Target Audience**: D2C Streetwear Consumers (Pan-India) & Engineering Portfolio (Cloud/DevOps Track)  
-> **Status**: Production Deployed (Vercel) + Containerized (Docker/GitHub Actions) + AWS Infrastructure (In Progress)
+> **Target Audience**: D2C Streetwear Consumers (Pan-India) & Engineering Portfolio (Full-Stack / Cloud / DevOps Track)  
+> **Status**: 100% Production Deployed on AWS EC2 via Docker + Cloudflare Edge CDN/SSL + Active 3-Stage GitHub Actions CI/CD Pipeline
 
 ---
 
 ## 1. Executive Summary & Brand Identity
 
-**ALLEYRICH** is a high-end Direct-to-Consumer (D2C) streetwear e-commerce platform engineered from scratch. The brand operates on limited-batch archival drops and architectural garment silhouettes (heavyweight 380+ GSM cotton, boxy tees, balloon cargo pants, hoodies, and vests).
+**ALLEYRICH** is an authentic, production-grade Direct-to-Consumer (D2C) luxury streetwear e-commerce platform engineered from scratch for **SD Garments**. The brand operates on limited-batch archival drops and architectural garment silhouettes (heavyweight 380+ GSM cotton, boxy tees, balloon cargo pants, hoodies, and vests).
 
 ### Core Brand Attributes
 - **Visual Aesthetic**: Monochromatic luxury dark palette (`#000000`, `#0a0a0a`, `#111111`) with high-contrast typography and signature red accents (`#e50914`).
 - **Brand Assets**: Custom vector AR crest mark, official ruins lookbook backdrop (`/assets/footer-ruins.webp`), and responsive typography (`Instrument Sans`).
 - **Performance Standard**: Zero heavy client frameworks (React/Next.js overhead eliminated in favor of ultra-fast vanilla JavaScript and sub-1.2s loader performance).
+- **Interactive 3D WebGL Engine**: Hardware-accelerated 3D phone showcase with custom WebGL render gating (`splineApp.renderMode = 'manual'`), eliminating idle GPU overhead and ensuring smooth 60 FPS scrolling.
 
 ---
 
@@ -25,27 +26,34 @@
                                   [ CUSTOMER BROWSERS & CLIENTS ]
                                                  │
                                                  ▼
-                              [ CLOUD DISCOVERY & ROUTING LAYER ]
-                                       Route 53 / Vercel Edge
+                              [ CLOUDFLARE GLOBAL EDGE NETWORK ]
+                         - Anycast DNS & Edge Reverse Proxy (SSL / DDoS)
+                         - Cloudflare Flexible SSL (Auto HTTP->HTTPS 301)
+                         - Intelligent Edge Caching for CSS/JS/WebGL Assets
                                                  │
                                                  ▼
-                           [ APPLICATION GATEWAY & SECURITY LAYER ]
-                        - Sliding-Window Rate Limiting (lib/security.js)
-                        - Anti-IP Spoofing & Header Normalization
-                        - OTP Brute-Force Lockout (5-Attempt Threshold)
-                        - SSRF & 2MB Body Size Limits
-                        - Role-Based Admin Auth (x-admin-key)
+                              [ AWS ELASTIC IP (EIP) ]
+                                   15.134.19.99
                                                  │
                                                  ▼
-                             [ BACKEND APPLICATION RUNTIME ]
-                              Node.js HTTP Microservices (server.js)
+                            [ APPLICATION GATEWAY & SECURITY LAYER ]
+                         - Sliding-Window Rate Limiting (lib/security.js)
+                         - Anti-IP Spoofing & Header Normalization
+                         - OTP Brute-Force Lockout (5-Attempt Threshold)
+                         - SSRF & 2MB Body Size Limits
+                         - Role-Based Admin Auth (RFC 6238 TOTP 2FA)
+                                                 │
+                                                 ▼
+                              [ BACKEND APPLICATION RUNTIME ]
+                               Node.js HTTP Microservices (server.js)
                                                  │
                      ┌───────────────────────────┴───────────────────────────┐
                      ▼                                                       ▼
         [ RELATIONAL DATABASE LAYER ]                           [ THIRD-PARTY INTEGRATIONS ]
-   - PostgreSQL (AWS RDS / Supabase Cloud)                 - Cashfree Payments (PCI-DSS Aggregator)
-   - Local JSON Fallbacks (data/*.json)                    - Delhivery Express (AWB Tracking & Dispatch)
-   - Multi-Device Profile & Wishlist Sync                  - Resend API (Transactional OTP Emails)
+    - PostgreSQL 16 (AWS RDS / Docker)                      - Cashfree Payments (PCI-DSS Aggregator)
+    - Persistent Docker Volumes                             - Delhivery Express (Live AWB Tracking & Dispatch)
+    - Local JSON Resilient Caching                          - Resend & Brevo APIs (Transactional OTP & Notifications)
+    - Multi-Device Profile & Wishlist Sync                  - n8n Cloud Webhook (Order Automation)
 ```
 
 ---
@@ -59,6 +67,8 @@ The user interface is built using pure **HTML5, CSS3, and modern ES6+ JavaScript
   - Architectural hero banner and fast custom preloader (`allyrich-loader.js`, 1.2s timeout).
   - Curated showcases: *"JUST DROPPED"*, *"NEW ARRIVALS"*, and *"BASICS"* controlled dynamically from the Admin portal.
   - Interactive dual-image product cards with mouse-over secondary lookbook reveal.
+  - **60 FPS Spline 3D Phone Hero (`assets/js/allyrich-3d-hero.js`)**: Interactive 3D phone model with manual render loop gating, zero WebGL renders at rest (true 0% GPU), and `pointer-events: none` compositor scroll offload.
+  - **3D Review Carousel (`assets/js/review-fisheye.js`)**: GPU-composited reviews gallery with pre-rendered CubeCamera passes, horizontal touch-action isolation, and zero vertical scroll hijacking.
 - **Catalog & Collections (`collections.html`)**:
   - Live filter chips: *T-shirts, Long Sleeves, Tank Tops, Hoodies, Pants, Jeans, Shorts, Clearance Sale*.
   - Grid/List column layout switchers and real-time product count calculation.
@@ -66,9 +76,12 @@ The user interface is built using pure **HTML5, CSS3, and modern ES6+ JavaScript
 - **Product Details (`product.html`)**:
   - Multi-image zoom gallery, size selector buttons (S, M, L, XL), quantity stepper (`+` / `-`).
   - Stock scarcity indicators and accordion tabs for garment fabric specs, wash care, and domestic shipping timelines.
+  - **Delhivery Live Pincode Estimator**: Real-time serviceability check providing dynamic delivery days and COD eligibility.
+  - **Sticky Add-to-Bag Bottom Bar**: Persistent mobile purchasing bar with size cycling badge.
 - **Cart & Quick-Buy Drawer (`assets/js/quick-buy.js`)**:
   - Slide-out bottom-sheet drawer on mobile screens; side-drawer on desktop.
-  - Live subtotal calculation and free shipping meter (threshold: ₹999).
+  - Live subtotal calculation and free shipping meter (threshold: ₹1,999).
+  - 1-Click Express UPI and COD checkout dispatch.
   - Empty cart checkout block (prevents 0-item order submissions).
 - **Customer Account Portal (`account.html`)**:
   - Password and passwordless 6-digit email OTP login.
@@ -76,12 +89,12 @@ The user interface is built using pure **HTML5, CSS3, and modern ES6+ JavaScript
   - Full shipping address manager (Flat/Street, Locality, City, State, PIN Code).
   - Live order history with status pills and courier tracking buttons.
 
-### B. Merchant Control Center (`admin.html`)
-- **Protected by Private Admin Key**: Strict `x-admin-key` validation blocks unauthorized access.
+### B. Founder Admin HQ (`admin.html` / `/allyrich-hq`)
+- **Protected by RFC 6238 TOTP 2FA**: Mandatory time-based 6-digit authenticator code verification required on login.
 - **Catalog Management**: Live Product CRUD (create, edit prices, update images, delete discontinued items).
 - **Homepage Showcase Curator**: Admin can toggle which products appear in the homepage curated carousels without touching code.
 - **Order Management & Logistics**: View incoming prepaid and COD orders, update fulfillment status, and trigger automated Delhivery AWB dispatch labels.
-- **Customer Intelligence & Email Marketing**: View newsletter subscriber tables and broadcast luxury HTML campaign emails via integrated Resend API.
+- **Customer Intelligence & Email Marketing**: View newsletter subscriber tables and broadcast luxury HTML campaign emails via integrated Resend API and direct WhatsApp links.
 
 ---
 
@@ -97,12 +110,15 @@ The user interface is built using pure **HTML5, CSS3, and modern ES6+ JavaScript
 | `POST` | `/api/orders` | Creates customer order with validation | Public |
 | `GET` | `/api/orders` | Retrieves order history | Admin / Authenticated |
 | `PUT` | `/api/orders/:id` | Updates order fulfillment status | **Admin Only** |
+| `GET` | `/api/shipping/pincode-check` | Live Delhivery postal code validation & SLA | Public |
+| `POST` | `/api/admin/orders/:id/delhivery-awb` | Generates official Delhivery waybill & shipping label | **Admin Only** |
+| `GET` | `/api/orders/track` | Live shipment checkpoint tracking lookup | Public |
 | `POST` | `/api/auth/send-otp` | Generates & emails 6-digit login OTP | Public (Rate-Limited) |
 | `POST` | `/api/auth/verify-otp` | Validates OTP & issues session token | Public (Lockout-Guarded) |
 | `POST` | `/api/wishlist/sync` | Persists customer wishlist to cloud database | Authenticated |
 | `POST` | `/api/cart/sync` | Persists active shopping bag across devices | Authenticated |
 | `POST` | `/api/newsletter` | Subscribes email to Inner Circle | Public (Rate-Limited) |
-| `POST` | `/api/admin/subscribers/broadcast` | Dispatches bulk campaign emails | **Admin Only** |
+| `POST` | `/api/admin/marketing/broadcast` | Dispatches bulk campaign emails & WhatsApp broadcasts | **Admin Only** |
 | `GET` | `/api/health` | Healthcheck endpoint for Docker & AWS ALB | Public |
 
 ### B. Hardened Abuse Controls & Security Defenses
@@ -124,7 +140,7 @@ All customer-facing policy pages are fully populated and legally compliant under
    - Statutory Grievance Redressal desk details (Mumbai, Maharashtra jurisdiction, 48-hour response guarantee).
 2. **Privacy Policy (`pages/privacy-policy.html`)**:
    - Compliant with India's **Digital Personal Data Protection Act, 2023 (DPDP Act)**.
-   - Comprehensive disclosures of data categories, cookie/local storage tokens, and third-party data processors (**Cashfree**, **Delhivery**, **Resend**, **AWS/Supabase**).
+   - Comprehensive disclosures of data categories, cookie/local storage tokens, and third-party data processors (**Cashfree**, **Delhivery**, **Resend**, **AWS RDS**).
    - Unconditional **Zero Data Monetization Guarantee** (strict pledge against selling customer numbers or emails).
 3. **Refund & Cancellation Policy (`pages/refund-policy.html`)**:
    - 7-Day Hassle-Free Size Exchange policy.
@@ -132,8 +148,8 @@ All customer-facing policy pages are fully populated and legally compliant under
    - Transparent refund mode breakdown table (UPI: 24–48h; Cards: 5–7 days; COD: direct NEFT/IMPS bank transfer).
 4. **Shipping Policy (`pages/shipping-policy.html`)**:
    - 19,000+ PIN code pan-India coverage via Delhivery Express & Bluedart.
-   - Domestic dispatch within 24–48 business hours; delivery timeline matrix (Metros: 2–4 days; Non-metros: 4–6 days).
-   - Free prepaid delivery threshold and tamper-proof security polybag advisory.
+   - Domestic dispatch within 24–48 business hours; delivery timeline matrix (Metros: 2–3 days; Non-metros: 3–5 days).
+   - Free prepaid delivery threshold (₹1,999) and tamper-proof security polybag advisory.
 5. **Returns Walkthrough (`pages/returns.html`)**:
    - 4-step doorstep pickup and exchange walkthrough, eligibility criteria, and ₹100 courier self-ship reimbursement policy.
 
@@ -148,35 +164,38 @@ All customer-facing policy pages are fully populated and legally compliant under
                       [ GITHUB ACTIONS AUTOMATED CI/CD ]
      ┌───────────────────────────────────┼───────────────────────────────────┐
      ▼                                   ▼                                   ▼
- [ STAGE 1: TEST ]              [ STAGE 2: BUILD ]                 [ STAGE 3: SECURITY ]
-Run test_legal_policies.js     Multi-Stage Docker Build            Aqua Security Trivy
-Run test_security_abuse.js     Run container health check          Scan CVEs in container
-                               Check http://localhost:3000/health
+ [ STAGE 1: TEST ]              [ STAGE 2: BUILD ]                 [ STAGE 3: DEPLOY ]
+Run test_legal_policies.js     Multi-Stage Docker Build            Zero-Downtime SSH Deploy
+Run test_security_abuse.js     Verify /api/health Check            Pull main on AWS EC2
+Run test_complete_fixes.js     Aqua Security Trivy Scan            docker compose build & up -d
+Run test_d2c_performance.js                                        Live Healthcheck (~55s)
                                          │
                                          ▼
-               ┌─────────────────────────┴─────────────────────────┐
-               ▼                                                   ▼
-     [ HOSTING ENVIRONMENT A ]                           [ HOSTING ENVIRONMENT B ]
-         Vercel Serverless                                   AWS Enterprise Stack
-        (Current Live Store)                              - Custom VPC (10.0.0.0/16)
-                                                          - Public Subnets (2 AZs)
-                                                          - Security Group Chaining
-                                                          - EC2 (Docker Alpine Container)
-                                                          - Application Load Balancer (ALB)
+                     [ PRODUCTION ENVIRONMENT: AWS + CLOUDFLARE ]
+                     - Cloudflare Edge CDN (DDoS Mitigation & SSL)
+                     - AWS Elastic IP (15.134.19.99)
+                     - AWS EC2 Instance (t3.micro, ap-south-1)
+                     - Docker Compose (allyrich-web + allyrich-db)
+                     - PostgreSQL 16 Persistent Relational Storage
 ```
 
 ### A. Containerization Stack
 - **Dockerfile**: Minimal multi-stage build using `node:20-alpine` reducing image size to `<120MB`.
 - **Security**: Runs under unprivileged `USER node` with `dumb-init` for signal forwarding.
-- **Docker Compose (`docker-compose.yml`)**: Local multi-container orchestration of `web` app container and `db` (PostgreSQL 16 Alpine container with persistent storage volumes and healthchecks).
+- **Docker Compose (`docker-compose.yml`)**: Local and production multi-container orchestration of `web` app container and `db` (PostgreSQL 16 Alpine container with persistent storage volumes and healthchecks).
 - **Automated CI/CD (`.github/workflows/ci-cd.yml`)**: Automated pipeline verifying tests, building Docker containers, and scanning for vulnerabilities on every push.
 
-### B. AWS Cloud Architecture (Active Progress)
-- **VPC (`allyrich-prod-vpc`)**: Isolated `10.0.0.0/16` network spanning 2 Availability Zones with public and private subnets.
-- **Security Groups**:
-  - `allyrich-alb-sg`: Inbound HTTP (80) & HTTPS (443) from `0.0.0.0/0`.
-  - `allyrich-ec2-sg`: Inbound SSH (22) from developer IP and Port 3000 chained strictly to `allyrich-alb-sg`.
-- **Compute & Load Balancing**: Free-tier eligible `t2.micro` EC2 instance, Application Load Balancer with HTTP-to-HTTPS 301 redirection, and automated SSL termination via AWS Certificate Manager (ACM).
+### B. AWS Cloud Architecture (Production Verified)
+- **EC2 Instance (`allyrich-app-server`)**:
+  - `t3.micro` instance in AWS Mumbai region (`ap-south-1`).
+  - Managed under Docker Compose with automated service restart policies (`restart: unless-stopped`).
+- **Elastic IP (`15.134.19.99`)**:
+  - Dedicated public IPv4 address permanently attached to the EC2 production instance.
+  - Ensures zero DNS reconfiguration during EC2 restarts or container migrations.
+- **Security Groups (`allyrich-ec2-sg`)**:
+  - Inbound HTTP (80) & HTTPS (443) open to public ingress and Cloudflare edge proxies.
+  - Inbound SSH (22) restricted to deployer key pair.
+  - PostgreSQL (5432) isolated from public internet exposure.
 
 ---
 
@@ -184,9 +203,12 @@ Run test_security_abuse.js     Run container health check          Scan CVEs in 
 
 | Test Suite | File | Tests Passed | Status |
 |---|---|---|---|
-| **Legal & Compliance Policies** | `test_legal_policies.js` | **37 / 37** (100%) | ✅ PASSING |
+| **Legal & Compliance Policies** | `test_legal_policies.js` | **49 / 49** (100%) | ✅ PASSING |
 | **Security & Abuse Controls** | `test_security_abuse_controls.js` | **21 / 21** (100%) | ✅ PASSING |
-| **Storefront & Admin Integration**| `test_admin_storefront_flow.js` | **60 / 60** (100%) | ✅ PASSING |
+| **Logistics, OTP & Webhooks** | `test_complete_fixes.js` | **Passing** (100%) | ✅ PASSING |
+| **D2C Performance Engine** | `test_d2c_performance.js` | **35 / 35** (100%) | ✅ PASSING |
+| **Master Bot Audit Suite** | `test_master_bot_audit.js` | **102 / 102** (100%) | ✅ PASSING |
+| **Real-World 60 FPS Benchmark** | `test_fps_performance.js` | **Passing** (0 renders at rest, 56+ FPS) | ✅ PASSING |
 
 ---
 
@@ -194,12 +216,12 @@ Run test_security_abuse.js     Run container health check          Scan CVEs in 
 
 | Component | Target URL / Reference | Management Protocol |
 |---|---|---|
-| **Live Storefront** | `https://genrage.vercel.app` | Vercel Serverless Edge |
-| **Admin Portal** | `https://genrage.vercel.app/admin` | Private `x-admin-key` Authorization |
+| **Live Storefront** | `https://alleyrich.com` | Cloudflare Edge + AWS EC2 Origin |
+| **Secondary Production URL** | `https://www.alleyrich.com` | Cloudflare Edge SSL Proxy |
+| **Founder Admin HQ** | `https://alleyrich.com/allyrich-hq` | RFC 6238 TOTP 2FA Authentication |
 | **Code Repository** | `https://github.com/Priyanshuf1/SD-garments` | Git VCS / GitHub Actions CI/CD |
-| **Order Tracking** | `https://genrage.vercel.app/track` | Internal Delhivery AWB Redirection |
-| **Database** | PostgreSQL (AWS RDS / Supabase) | SSL Encrypted TCP (Port 5432) |
+| **Order Tracking** | `https://alleyrich.com/pages/track-order.html` | Live Delhivery B2B Tracking Lookup |
+| **Database** | PostgreSQL 16 (AWS RDS / Container) | Persistent Docker Volume & Connection Pool |
 | **Payments** | Cashfree Payments Integration | Webhook validation & AES encryption |
-| **Fulfillment** | Delhivery Express B2B Integration | Automated AWB Label Generation |
-| **Cloud Server** | AWS EC2 (`allyrich-app-server`) | Docker Container on Port 3000 |
-| **Load Balancer** | AWS Application Load Balancer | Port 80/443 Listener & Target Group |
+| **Fulfillment** | Delhivery Express Production API | Live 19,000+ PIN Serviceability & AWB Generation |
+| **Cloud Server** | AWS EC2 (`allyrich-app-server`) | Elastic IP `15.134.19.99` (Port 3000 / 80 / 443) |

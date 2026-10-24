@@ -1,4 +1,4 @@
-name: Supabase & Vercel 24/7 Never-Sleep Keep-Alive
+name: ALLEYRICH 24/7 Production & Database Health Keep-Alive
 
 on:
   schedule:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   keep-alive:
-    name: Ping Supabase & Vercel
+    name: Ping Database & Production Origin
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase PostgreSQL (Prevent Inactivity Sleep)
@@ -20,20 +20,19 @@ jobs:
             "https://shhjnxarewideotbhzby.supabase.co/rest/v1/products?select=id&limit=1" || echo "failed")
           echo "Supabase Response Status: $HTTP_STATUS"
           if [ "$HTTP_STATUS" = "200" ]; then
-            echo "✅ Supabase is LIVE and active! 7-day pause timer reset."
+            echo "✅ Supabase PostgreSQL is LIVE and active! 7-day pause timer reset."
           else
             echo "⚠️ Notice: Supabase responded with status $HTTP_STATUS"
           fi
 
-      - name: Ping Vercel Deployment (Prevent Cold Starts)
+      - name: Ping ALLEYRICH AWS EC2 Production (Cloudflare CDN Edge)
         run: |
-          echo "⚡ Pinging Vercel deployment health endpoint..."
-          # Ping Vercel production domain
-          VERCEL_URL="https://genrage.vercel.app"
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$VERCEL_URL/api/health" || echo "failed")
-          echo "Vercel Response Status: $STATUS"
+          echo "⚡ Pinging ALLEYRICH production health endpoint..."
+          PROD_URL="https://alleyrich.com"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL/api/health" || echo "failed")
+          echo "ALLEYRICH Production Response Status: $STATUS"
           if [ "$STATUS" = "200" ]; then
-            echo "✅ Vercel serverless function is warm and active!"
+            echo "✅ ALLEYRICH AWS EC2 container origin & Cloudflare edge are healthy!"
           else
-            echo "ℹ️ Vercel check completed with status: $STATUS"
+            echo "ℹ️ ALLEYRICH check completed with status: $STATUS"
           fi

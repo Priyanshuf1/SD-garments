@@ -3165,7 +3165,7 @@ async function appHandler(req, res) {
                           ${message.replace(/\n/g, '<br>')}
                         </div>
                         <div style="text-align:center; margin:30px 0;">
-                          <a href="https://genrage.vercel.app/collections/shop" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                          <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
                         </div>
                       </div>
                       <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
@@ -3284,7 +3284,7 @@ async function appHandler(req, res) {
                           </div>
                           ${code ? `<div style="background:#1a1a1a;border:1px dashed #444;padding:12px;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:24px;color:#fff;">USE CODE: ${code.toUpperCase()}</div>` : ''}
                           <div style="text-align:center; margin:30px 0;">
-                            <a href="${link || 'https://genrage.vercel.app/collections/shop'}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                            <a href="${link || 'https://alleyrich.com/collections.html'}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
                           </div>
                         </div>
                         <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
@@ -3312,7 +3312,7 @@ async function appHandler(req, res) {
             subject: subject || headline,
             message: message,
             code: code,
-            link: link || 'https://genrage.vercel.app/collections/shop',
+            link: link || 'https://alleyrich.com/collections.html',
             brandName: 'ALLEYRICH'
           });
 
@@ -4173,7 +4173,7 @@ async function appHandler(req, res) {
                         ${message.replace(/\n/g, '<br>')}
                       </div>
                       <div style="text-align:center; margin:30px 0;">
-                        <a href="https://genrage.vercel.app/collections/shop" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                        <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
                       </div>
                     </div>
                     <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">

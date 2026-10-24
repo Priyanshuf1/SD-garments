@@ -22,9 +22,10 @@ function request(url, options = {}, body = null) {
 }
 
 async function runMasterVerification() {
+  const BASE_URL = process.env.TEST_BASE_URL || 'https://alleyrich.com';
   console.log('====================================================');
   console.log('🌐 RUNNING PRODUCTION MASTER VERIFICATION');
-  console.log('Target: https://genrage.vercel.app');
+  console.log(`Target: ${BASE_URL}`);
   console.log('====================================================\n');
 
   let passed = 0;
@@ -56,7 +57,7 @@ async function runMasterVerification() {
   ];
 
   for (const route of policyRoutes) {
-    const res = await request(`https://genrage.vercel.app${route}`);
+    const res = await request(`${BASE_URL}${route}`);
     assert(res.status === 200, `${route} returned HTTP 200 OK`);
     assert(res.body.includes('ALLYRICH'), `${route} contains brand name ALLYRICH`);
     assert(!res.body.includes('ALLY RICH'), `${route} does NOT contain obsolete 'ALLY RICH'`);
@@ -65,7 +66,7 @@ async function runMasterVerification() {
   // 2. Verify Newsletter Subscription & Immediate Admin Reflection on Live Vercel
   console.log('\n--- 2. Newsletter Subscription & Admin Reflection Live ---');
   const testSubEmail = `verify_sub_${Date.now()}@liveverify.com`;
-  const subRes = await request('https://genrage.vercel.app/api/newsletter', {
+  const subRes = await request(`${BASE_URL}/api/newsletter`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   }, { email: testSubEmail });
@@ -73,7 +74,7 @@ async function runMasterVerification() {
   assert(subRes.status === 201 || subRes.status === 200, `POST /api/newsletter returned status ${subRes.status}`);
   assert(subRes.json && subRes.json.success === true, 'Newsletter subscription returned success: true');
 
-  const adminSubRes = await request('https://genrage.vercel.app/api/admin/subscribers');
+  const adminSubRes = await request(`${BASE_URL}/api/admin/subscribers`);
   assert(adminSubRes.status === 200, 'GET /api/admin/subscribers returned HTTP 200 OK');
   assert(adminSubRes.json && Array.isArray(adminSubRes.json.subscribers), 'Admin subscribers endpoint returns an array');
   const foundSub = adminSubRes.json?.subscribers?.some(s => s.email === testSubEmail);
@@ -81,7 +82,7 @@ async function runMasterVerification() {
 
   // 3. Verify Resend OTP Email Dispatch Live
   console.log('\n--- 3. Resend Real Email Dispatch on Production ---');
-  const otpRes = await request('https://genrage.vercel.app/api/auth/send-otp', {
+  const otpRes = await request(`${BASE_URL}/api/auth/send-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   }, { email: 'apriyanshu540@gmail.com' });
@@ -97,7 +98,7 @@ async function runMasterVerification() {
   const testUserEmail = `cloud_device_${Date.now()}@allyrich.com`;
 
   // Device 1: Save profile with address and wishlist
-  const saveProfileRes = await request('https://genrage.vercel.app/api/auth/profile', {
+  const saveProfileRes = await request(`${BASE_URL}/api/auth/profile`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' }
   }, {
@@ -116,7 +117,7 @@ async function runMasterVerification() {
   assert(saveProfileRes.status === 200, 'Device 1: PUT /api/auth/profile returned HTTP 200 OK');
 
   // Device 2: Fetch profile from a completely fresh session
-  const fetchProfileRes = await request(`https://genrage.vercel.app/api/customers/${testUserId}?email=${encodeURIComponent(testUserEmail)}`);
+  const fetchProfileRes = await request(`${BASE_URL}/api/customers/${testUserId}?email=${encodeURIComponent(testUserEmail)}`);
   assert(fetchProfileRes.status === 200, 'Device 2: GET customer profile returned HTTP 200 OK');
   assert(fetchProfileRes.json && fetchProfileRes.json.customer, 'Device 2: Customer object retrieved from cloud');
   const loadedCust = fetchProfileRes.json?.customer;
@@ -124,7 +125,7 @@ async function runMasterVerification() {
   assert(Array.isArray(loadedCust?.wishlist) && loadedCust.wishlist.includes('boxy-heavy-tee'), 'Device 2: Cloud wishlist (boxy-heavy-tee) persisted across sessions');
 
   // Device 2: Add item to wishlist and sync
-  const syncWishlistRes = await request('https://genrage.vercel.app/api/wishlist/sync', {
+  const syncWishlistRes = await request(`${BASE_URL}/api/wishlist/sync`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   }, {
@@ -135,17 +136,17 @@ async function runMasterVerification() {
   assert(syncWishlistRes.status === 200, 'Device 2: POST /api/wishlist/sync returned HTTP 200 OK');
 
   // Device 3: Re-fetch wishlist
-  const fetchWishlistRes = await request(`https://genrage.vercel.app/api/wishlist?userId=${testUserId}&email=${encodeURIComponent(testUserEmail)}`);
+  const fetchWishlistRes = await request(`${BASE_URL}/api/wishlist?userId=${testUserId}&email=${encodeURIComponent(testUserEmail)}`);
   assert(fetchWishlistRes.status === 200, 'Device 3: GET /api/wishlist returned HTTP 200 OK');
   assert(fetchWishlistRes.json && fetchWishlistRes.json.wishlist?.length === 3, 'Device 3: All 3 wishlist items loaded from cloud');
 
   // 5. Storefront Catalog & Search Live
   console.log('\n--- 5. Storefront Catalog & Search Live ---');
-  const catalogRes = await request('https://genrage.vercel.app/api/products');
+  const catalogRes = await request(`${BASE_URL}/api/products`);
   assert(catalogRes.status === 200, 'GET /api/products returned HTTP 200 OK');
   assert(catalogRes.json?.products?.length === 244, 'Catalog contains all 244 products');
 
-  const searchRes = await request('https://genrage.vercel.app/search?q=hoodie');
+  const searchRes = await request(`${BASE_URL}/search?q=hoodie`);
   assert(searchRes.status === 200, 'GET /search?q=hoodie returned HTTP 200 OK');
 
   console.log('\n====================================================');
