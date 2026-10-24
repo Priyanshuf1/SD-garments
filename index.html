@@ -4499,11 +4499,12 @@ first.parentNode.insertBefore(script, first);
             <h4 class="site-footer__newsletter-heading">JOIN THE INNER CIRCLE</h4>
             <p class="site-footer__newsletter-sub">Gain priority access to limited drops, VIP WhatsApp alerts, and invite-only showcases.</p>
             <form class="site-footer__newsletter-form" onsubmit="window.submitNewsletter ? window.submitNewsletter(this, event) : event.preventDefault(); return false;">
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input" style="flex:1;min-width:200px;">
-                <input type="tel" placeholder="WHATSAPP NO. (OPTIONAL)" aria-label="Your WhatsApp mobile number" class="site-footer__newsletter-phone site-footer__newsletter-input" style="flex:1;min-width:180px;">
+              <div class="site-footer__newsletter-inputs">
+                <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
+                <input type="tel" placeholder="WHATSAPP NO. (OPTIONAL)" aria-label="Your WhatsApp mobile number" class="site-footer__newsletter-phone site-footer__newsletter-input">
               </div>
-              <button type="submit" class="site-footer__newsletter-btn" style="width:100%;">JOIN VIP DROP ALERTS</button>
+              <button type="submit" class="site-footer__newsletter-btn">JOIN VIP DROP ALERTS</button>
+              <p class="site-footer__newsletter-disclaimer">By subscribing, you agree to receive promotional updates &amp; accept our <a href="/pages/privacy-policy.html">Privacy Policy</a> &amp; <a href="/pages/terms-of-service.html">Terms</a>. Unsubscribe anytime.</p>
             </form>
           </div>
         </div>
@@ -4562,6 +4563,7 @@ first.parentNode.insertBefore(script, first);
         <div class="site-footer__legal">
           <a href="/pages/terms-of-service.html">TERMS</a>
           <a href="/pages/privacy-policy.html">PRIVACY</a>
+          <a href="#cookies" data-open-cookie-popup>COOKIES</a>
           <a href="/pages/refund-policy.html">REFUNDS</a>
           <a href="/pages/shipping-policy.html">SHIPPING</a>
         </div>
@@ -6915,5 +6917,6 @@ first.parentNode.insertBefore(script, first);
 <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/size-guide-modal.js" defer></script>
   <script src="/assets/js/ai-support.js" defer></script>
+  <script src="/assets/js/allyrich-cookies.js" defer></script>
 </body>
 </html>
