@@ -198,8 +198,7 @@ button {
 /* ==========================================================================
    HEADER & NAVIGATION
    ========================================================================== */
-.site-header,
-.header {
+.site-header {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -212,6 +211,21 @@ button {
   align-items: center;
   will-change: transform;
   transform: translateZ(0);
+}
+
+#shopify-section-sections--23671272669422__header,
+.shopify-section--header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.header {
+  will-change: transform;
+  transform: translateZ(0);
+  transition: background-color 0.25s ease, background 0.25s ease;
 }
 
 #allyrich-spline-canvas {

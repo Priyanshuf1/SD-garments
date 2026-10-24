@@ -517,7 +517,7 @@
 /* Social Links */
 .site-footer__meta {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: center;
   gap: 16px;
   padding: 16px 0 0;
@@ -553,12 +553,18 @@
 /* Bottom Copyright & Legal */
 .site-footer__bottom {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
   padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+@media (min-width: 901px) {
+  .site-footer__bottom {
+    padding-right: 180px;
+  }
 }
 
 .site-footer__copyright {
@@ -568,6 +574,7 @@
   color: rgba(255, 255, 255, 0.45);
   text-transform: uppercase;
   margin: 0;
+  text-align: right;
 }
 
 .site-footer__legal {
@@ -631,8 +638,13 @@
   .site-footer__bottom {
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
     gap: 12px;
+    padding-right: 0;
+  }
+  .site-footer__copyright {
+    text-align: center;
   }
   .site-footer__legal {
     justify-content: center;
