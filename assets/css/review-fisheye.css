@@ -6,4 +6,6 @@
   content-visibility: auto;
   contain-intrinsic-size: 0 720px;
   contain: content;
+  transform: translateZ(0);
+  will-change: transform;
 }

@@ -4068,6 +4068,17 @@ first.parentNode.insertBefore(script, first);
       min-height: 700px;
       overflow: hidden;
       background-color: #c4c4c4;
+      transform: translateZ(0);
+      will-change: transform;
+      contain: layout paint;
+    }
+    body.is-scrolling #shopify-section-allyrich-3d-hero,
+    body.is-scrolling #shopify-section-allyrich-3d-hero canvas,
+    body.is-scrolling #allyrich-spline-canvas,
+    body.is-scrolling #allyrich-3d-hero-container,
+    body.is-scrolling #review-canvas-container,
+    body.is-scrolling #shopify-section-client-reviews canvas {
+      pointer-events: none !important;
     }
     .allyrich-hero-page {
       position: relative;
@@ -4083,6 +4094,8 @@ first.parentNode.insertBefore(script, first);
       justify-content: center;
       overflow: hidden;
       touch-action: pan-y;
+      transform: translateZ(0);
+      will-change: transform;
     }
     #allyrich-spline-canvas {
       position: absolute;
@@ -4096,6 +4109,7 @@ first.parentNode.insertBefore(script, first);
       background: transparent !important;
       background-color: transparent !important;
       contain: layout paint;
+      transform: translateZ(0);
     }
     #allyrich-spline-canvas:active {
       cursor: grabbing;

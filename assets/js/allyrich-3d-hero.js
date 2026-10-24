@@ -46,10 +46,27 @@ import { Application } from '/assets/spline/runtime.js';
         resolve(offCanvas);
       };
       img.onerror = (e) => {
-        console.error('[AllyRich 3D] Failed to load /assets/ar-logo.jpg', e);
-        resolve(offCanvas);
+        console.warn('[AllyRich 3D] Failed to load /assets/ar-logo.jpg, falling back to /assets/ar-logo.png', e);
+        const fallbackImg = new Image();
+        fallbackImg.crossOrigin = 'anonymous';
+        fallbackImg.onload = () => {
+          const targetWidth = offCanvas.width * 1.7;
+          const targetHeight = fallbackImg.height * (targetWidth / fallbackImg.width);
+          const x = (offCanvas.width - targetWidth) / 2;
+          const y = (offCanvas.height - targetHeight) / 2;
+          ctx.drawImage(fallbackImg, x, y, targetWidth, targetHeight);
+          resolve(offCanvas);
+        };
+        fallbackImg.onerror = () => resolve(offCanvas);
+        fallbackImg.src = '/assets/ar-logo.png';
+        if (fallbackImg.complete && fallbackImg.naturalWidth !== 0) {
+          fallbackImg.onload();
+        }
       };
       img.src = '/assets/ar-logo.jpg';
+      if (img.complete && img.naturalWidth !== 0) {
+        img.onload();
+      }
     });
 
     return canvasPromise;
@@ -351,10 +368,19 @@ import { Application } from '/assets/spline/runtime.js';
     let lastInteractionType = 'none'; // 'gyro' or 'mouse'
     let lastGyroTime = 0;
 
+    let isWindowScrolling = false;
+    let scrollDebounceTimer = null;
+
     // Safeguard: on mobile, canvas pointer-events must be 'none' and touch-action 'pan-y'
-    // so finger touch scrolls pass completely unhindered to native page scroll
+    // so finger touch scrolls pass completely unhindered to native page scroll.
+    // Also during active scroll on any device, pointer-events are set to 'none' to allow threaded compositor scrolling.
     function syncCanvasTouchBehavior() {
       if (!canvas) return;
+      if (isWindowScrolling || window.__isPageScrolling) {
+        canvas.style.pointerEvents = 'none';
+        if (container) container.style.pointerEvents = 'none';
+        return;
+      }
       const isMob = isMobileView();
       if (isMob) {
         canvas.style.pointerEvents = 'none';
@@ -391,6 +417,47 @@ import { Application } from '/assets/spline/runtime.js';
     window.addEventListener('resize', syncCanvasTouchBehavior, { passive: true });
     window.addEventListener('orientationchange', syncCanvasTouchBehavior, { passive: true });
 
+    // Active page scroll listener: pauses WebGL rendering and disables pointer-events for 60fps Chrome scrolling
+    function handleWindowScroll() {
+      if (!isWindowScrolling) {
+        isWindowScrolling = true;
+        window.__isPageScrolling = true;
+        document.body.classList.add('is-scrolling');
+        if (canvas) canvas.style.pointerEvents = 'none';
+        if (container) container.style.pointerEvents = 'none';
+
+        // Pause Spline WebGL during active scrolling
+        if (typeof splineApp.stop === 'function') {
+          try { splineApp.stop(); } catch (e) {}
+        }
+        if (motionRafId) {
+          cancelAnimationFrame(motionRafId);
+          motionRafId = null;
+        }
+      }
+
+      clearTimeout(scrollDebounceTimer);
+      scrollDebounceTimer = setTimeout(() => {
+        isWindowScrolling = false;
+        window.__isPageScrolling = false;
+        document.body.classList.remove('is-scrolling');
+        syncCanvasTouchBehavior();
+
+        // Resume 3D hero motion loop if section is visible
+        if (isHeroVisible) {
+          lastInteractionTime = performance.now();
+          wakeMotionLoop();
+        }
+
+        // Resume review fisheye if in viewport
+        if (window.__reviewGallery && window.__reviewGallery.isInViewport && !window.__reviewGallery.rafId) {
+          window.__reviewGallery.lastFrameTime = performance.now();
+          window.__reviewGallery.rafId = requestAnimationFrame(window.__reviewGallery.animate);
+        }
+      }, 100);
+    }
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
+
     // Disable any internal Spline orbit/camera touch rotation to prevent gesture capture
     try {
       if (splineApp._controls) {
@@ -408,7 +475,7 @@ import { Application } from '/assets/spline/runtime.js';
     let lastInteractionTime = performance.now();
 
     function wakeMotionLoop() {
-      if (!isHeroVisible) return;
+      if (!isHeroVisible || isWindowScrolling || window.__isPageScrolling) return;
       if (typeof splineApp.play === 'function') {
         try { splineApp.play(); } catch (e) {}
       }
@@ -544,6 +611,7 @@ import { Application } from '/assets/spline/runtime.js';
     let mouseRafPending = false;
 
     function handleMouseMove(e) {
+      if (isWindowScrolling || window.__isPageScrolling) return;
       // Mobile / touch view must NEVER track finger movements
       if (isMobileView()) return;
       if (e.pointerType && e.pointerType !== 'mouse') return;
@@ -587,8 +655,11 @@ import { Application } from '/assets/spline/runtime.js';
     let motionRafId = null;
 
     function animateMotion() {
-      if (!isHeroVisible) {
+      if (!isHeroVisible || isWindowScrolling || window.__isPageScrolling) {
         motionRafId = null;
+        if (typeof splineApp.stop === 'function') {
+          try { splineApp.stop(); } catch (e) {}
+        }
         return;
       }
 
@@ -678,11 +749,13 @@ import { Application } from '/assets/spline/runtime.js';
         entries.forEach((entry) => {
           isHeroVisible = entry.isIntersecting;
           if (isHeroVisible) {
-            if (typeof splineApp.play === 'function') {
-              try { splineApp.play(); } catch (e) {}
+            if (!isWindowScrolling && !window.__isPageScrolling) {
+              if (typeof splineApp.play === 'function') {
+                try { splineApp.play(); } catch (e) {}
+              }
+              lastInteractionTime = performance.now();
+              wakeMotionLoop();
             }
-            lastInteractionTime = performance.now();
-            wakeMotionLoop();
           } else {
             if (motionRafId) {
               cancelAnimationFrame(motionRafId);
@@ -718,7 +791,8 @@ import { Application } from '/assets/spline/runtime.js';
       // Cap pixel ratio across all devices to prevent choking high-DPI GPUs
       splineApp._getPixelRatio = function() {
         const isMobile = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        return Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2.0);
+        const maxDpr = isMobile ? 1.0 : (window.chrome ? 1.0 : 1.25);
+        return Math.min(window.devicePixelRatio || 1, maxDpr);
       };
 
       try {
@@ -734,8 +808,10 @@ import { Application } from '/assets/spline/runtime.js';
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
       // Clamp WebGL renderer pixelRatio across ALL devices (laptops, desktops, phones) to avoid high-res GPU overloads
+      const heroMaxDpr = window.chrome ? 1.0 : 1.25;
       if (splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
         splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        if (heroMaxDpr < 1.5) splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, heroMaxDpr));
       }
       updateAll(splineApp);
 
@@ -752,6 +828,7 @@ import { Application } from '/assets/spline/runtime.js';
         const resizeObs = new ResizeObserver(() => {
           if (splineApp?._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
             splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+            if (heroMaxDpr < 1.5) splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, heroMaxDpr));
           }
           if (splineApp && typeof splineApp.requestRender === 'function') {
             splineApp.requestRender();
