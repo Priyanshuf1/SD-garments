@@ -131,7 +131,6 @@ import { Application } from '/assets/spline/runtime.js';
 
     // 2. Await the fully drawn AR canvas
     const arCanvas = await getARCanvas();
-    const dataUrl = arCanvas.toDataURL('image/jpeg', 0.98);
 
     // Pause all video elements in document
     document.querySelectorAll('video').forEach((v) => {
@@ -164,18 +163,10 @@ import { Application } from '/assets/spline/runtime.js';
           }
         }
 
-        // Layer 0: Texture layer (Base screen)
+        // Layer 0: Texture layer (Base screen) - directly bind canvas to avoid 250ms synchronous toDataURL main-thread freeze
         if (layer.type === 'texture') {
           layer.visible = true;
           layer.alpha = 1;
-          if (typeof layer.updateTexture === 'function') {
-            try {
-              console.log('[AllyRich 3D] Updating layer 0 texture...');
-              await layer.updateTexture(dataUrl);
-            } catch (e) {
-              console.debug('[AllyRich 3D] updateTexture layer 0:', e);
-            }
-          }
           if (layer.texture) {
             layer.texture.image = arCanvas;
             layer.texture.needsUpdate = true;
@@ -377,32 +368,44 @@ import { Application } from '/assets/spline/runtime.js';
       window.addEventListener('click', requestGyroPermission, { passive: true, once: true });
     }
 
-    // 2. Laptop / Desktop Mouse Tracker (Pointermove & Mousemove)
-    function handlePointerMove(e) {
-      // If active gyro events are firing on mobile, ignore pointer/touch moves
+    // 2. Laptop / Desktop Mouse Tracker (throttled to requestAnimationFrame)
+    let pendingMouseX = null;
+    let pendingMouseY = null;
+    let mouseRafPending = false;
+
+    function handleMouseMove(e) {
+      // If active gyro events are firing on mobile, ignore mouse moves
       if (lastInteractionType === 'gyro' && performance.now() - lastGyroTime < 1000) {
         if (e.pointerType === 'touch' || 'ontouchstart' in window) return;
       }
       lastInteractionType = 'mouse';
+      pendingMouseX = e.clientX;
+      pendingMouseY = e.clientY;
 
-      const rect = container
-        ? container.getBoundingClientRect()
-        : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      if (!mouseRafPending) {
+        mouseRafPending = true;
+        requestAnimationFrame(() => {
+          mouseRafPending = false;
+          if (pendingMouseX === null || pendingMouseY === null) return;
+          const rect = container
+            ? container.getBoundingClientRect()
+            : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
 
-      const normX = Math.max(-1, Math.min(1, (e.clientX - centerX) / (window.innerWidth * 0.5)));
-      const normY = Math.max(-1, Math.min(1, (e.clientY - centerY) / (window.innerHeight * 0.5)));
+          const normX = Math.max(-1, Math.min(1, (pendingMouseX - centerX) / (window.innerWidth * 0.5)));
+          const normY = Math.max(-1, Math.min(1, (pendingMouseY - centerY) / (window.innerHeight * 0.5)));
 
-      targetRotY = baseRotY + normX * 0.46;
-      targetRotX = baseRotX + normY * 0.34;
-      targetRotZ = baseRotZ - normX * 0.14;
-      targetPosX = basePosX + normX * 36;
-      targetPosY = basePosY - normY * 22;
+          targetRotY = baseRotY + normX * 0.46;
+          targetRotX = baseRotX + normY * 0.34;
+          targetRotZ = baseRotZ - normX * 0.14;
+          targetPosX = basePosX + normX * 36;
+          targetPosY = basePosY - normY * 22;
+        });
+      }
     }
 
-    window.addEventListener('mousemove', handlePointerMove, { passive: true });
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     // 3. Touch Drag fallback for mobile when gyro is unavailable
     let touchStartX = 0;
@@ -478,6 +481,10 @@ import { Application } from '/assets/spline/runtime.js';
             if (typeof splineApp.stop === 'function') {
               try { splineApp.stop(); } catch (e) {}
             }
+            if (motionRafId) {
+              cancelAnimationFrame(motionRafId);
+              motionRafId = null;
+            }
           }
         });
       }, { threshold: 0.05 });
@@ -498,7 +505,8 @@ import { Application } from '/assets/spline/runtime.js';
       }
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
-      if (window.innerWidth < 768 && splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
+      // Clamp WebGL renderer pixelRatio across ALL devices (laptops, desktops, phones) to avoid high-res GPU overloads
+      if (splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
         splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       }
       updateAll(splineApp);

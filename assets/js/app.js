@@ -299,7 +299,30 @@ const GenrageApp = {
       `;
       if (subtotalEl) subtotalEl.textContent = 'Rs. 0';
       if (shippingProgress) shippingProgress.style.width = '0%';
-      if (shippingMsg) shippingMsg.innerHTML = 'Add Rs. 999 for <strong>FREE DELIVERY</strong>';
+      if (shippingMsg) shippingMsg.innerHTML = 'Add Rs. 1,999 for <strong>FREE EXPRESS SHIPPING</strong>';
+
+      const cartFooter = document.querySelector('.cart-footer');
+      if (cartFooter) {
+        let expressWrap = cartFooter.querySelector('.express-checkout-options');
+        if (!expressWrap) {
+          expressWrap = document.createElement('div');
+          expressWrap.className = 'express-checkout-options';
+          expressWrap.style.cssText = 'display:flex; gap:8px; margin-top:8px;';
+          expressWrap.innerHTML = `
+            <button type="button" class="express-btn-upi" style="flex:1; background:#111; color:#fff; border:1px solid #333; padding:10px 6px; font-size:11px; font-weight:800; border-radius:2px; cursor:pointer; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:4px;">
+              <span>⚡ UPI EXPRESS</span>
+            </button>
+            <button type="button" class="express-btn-cod" style="flex:1; background:#1f1f1f; color:#fff; border:1px solid #333; padding:10px 6px; font-size:11px; font-weight:800; border-radius:2px; cursor:pointer; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:4px;">
+              <span>📦 CASH ON DELIVERY</span>
+            </button>
+          `;
+          cartFooter.appendChild(expressWrap);
+        }
+        const upiBtn = expressWrap.querySelector('.express-btn-upi');
+        const codBtn = expressWrap.querySelector('.express-btn-cod');
+        if (upiBtn) { upiBtn.style.opacity = '0.5'; upiBtn.style.cursor = 'not-allowed'; upiBtn.onclick = () => alert('Your cart is empty'); }
+        if (codBtn) { codBtn.style.opacity = '0.5'; codBtn.style.cursor = 'not-allowed'; codBtn.onclick = () => alert('Your cart is empty'); }
+      }
       return;
     }
 
@@ -318,17 +341,40 @@ const GenrageApp = {
     const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     if (subtotalEl) subtotalEl.textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
 
-    // Free shipping threshold (Rs. 999)
-    const threshold = 999;
+    // Free shipping threshold (Rs. 1,999)
+    const threshold = 1999;
     const progress = Math.min(100, Math.round((subtotal / threshold) * 100));
     if (shippingProgress) shippingProgress.style.width = `${progress}%`;
     if (shippingMsg) {
       if (subtotal >= threshold) {
-        shippingMsg.innerHTML = '🎉 You qualify for <strong>FREE DELIVERY PAN INDIA!</strong>';
+        shippingMsg.innerHTML = '🎉 You qualify for <strong>FREE EXPRESS SHIPPING PAN INDIA!</strong>';
       } else {
         const remaining = threshold - subtotal;
-        shippingMsg.innerHTML = `Add Rs. ${remaining.toLocaleString('en-IN')} more for <strong>FREE DELIVERY</strong>`;
+        shippingMsg.innerHTML = `Add Rs. ${remaining.toLocaleString('en-IN')} more for <strong>FREE EXPRESS SHIPPING</strong>`;
       }
+    }
+
+    const cartFooter = document.querySelector('.cart-footer');
+    if (cartFooter) {
+      let expressWrap = cartFooter.querySelector('.express-checkout-options');
+      if (!expressWrap) {
+        expressWrap = document.createElement('div');
+        expressWrap.className = 'express-checkout-options';
+        expressWrap.style.cssText = 'display:flex; gap:8px; margin-top:8px;';
+        expressWrap.innerHTML = `
+          <button type="button" class="express-btn-upi" style="flex:1; background:#111; color:#fff; border:1px solid #333; padding:10px 6px; font-size:11px; font-weight:800; border-radius:2px; cursor:pointer; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:4px;">
+            <span>⚡ UPI EXPRESS</span>
+          </button>
+          <button type="button" class="express-btn-cod" style="flex:1; background:#1f1f1f; color:#fff; border:1px solid #333; padding:10px 6px; font-size:11px; font-weight:800; border-radius:2px; cursor:pointer; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:4px;">
+            <span>📦 CASH ON DELIVERY</span>
+          </button>
+        `;
+        cartFooter.appendChild(expressWrap);
+      }
+      const upiBtn = expressWrap.querySelector('.express-btn-upi');
+      const codBtn = expressWrap.querySelector('.express-btn-cod');
+      if (upiBtn) { upiBtn.style.opacity = '1'; upiBtn.style.cursor = 'pointer'; upiBtn.onclick = () => { window.location.href = '/checkout?method=upi'; }; }
+      if (codBtn) { codBtn.style.opacity = '1'; codBtn.style.cursor = 'pointer'; codBtn.onclick = () => { window.location.href = '/checkout?method=cod'; }; }
     }
 
     list.innerHTML = this.cart.map((item, index) => `

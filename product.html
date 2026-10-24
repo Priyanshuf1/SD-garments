@@ -303,6 +303,88 @@
         padding: 0 8px !important;
       }
     }
+
+    /* Mobile Sticky Bottom Bar on PDP */
+    .pdp-mobile-sticky-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 999;
+      background: #ffffff;
+      border-top: 1px solid #e0e0e0;
+      padding: 10px 16px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.1);
+      transform: translateY(105%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+    }
+    .pdp-mobile-sticky-bar.visible {
+      transform: translateY(0);
+    }
+    .pdp-sticky-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .pdp-sticky-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .pdp-sticky-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #111111;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+    .pdp-sticky-meta {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .pdp-sticky-price {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #111111;
+    }
+    .pdp-sticky-size {
+      font-size: 0.75rem;
+      color: #666666;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .pdp-sticky-add-btn {
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 2px;
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      white-space: nowrap;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s;
+    }
+    .pdp-sticky-add-btn:active {
+      background: #222222;
+    }
+    @media (min-width: 769px) {
+      .pdp-mobile-sticky-bar {
+        display: none !important;
+      }
+    }
   </style>
   <!-- AlleyRich Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -445,9 +527,45 @@
         </div>
 
         <!-- Express Checkout -->
-        <button class="gokwik-checkout-btn" style="height: 48px; margin-bottom: 2rem;" id="pdp-buy-now-btn">
+        <button class="gokwik-checkout-btn" style="height: 48px; margin-bottom: 1.25rem;" id="pdp-buy-now-btn">
           ⚡ BUY IT NOW WITH 1-CLICK UPI
         </button>
+
+        <!-- Delhivery Live Pincode Estimator -->
+        <div class="delhivery-estimator" id="delhivery-estimator" style="background:#f9f9f9; border:1px solid #e5e5e5; border-radius:4px; padding:1rem; margin-bottom:1.25rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <span style="font-size:0.8rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#111; display:flex; align-items:center; gap:6px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+              DELIVERY &amp; COD OPTIONS
+            </span>
+            <span style="font-size:0.7rem; color:#666; font-weight:600;">Delhivery Express</span>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <input type="text" id="pdp-pincode-input" placeholder="Enter 6-digit Pincode" maxlength="6" inputmode="numeric" style="flex:1; height:42px; padding:0 0.85rem; border:1.5px solid #d1d5db; border-radius:3px; font-size:0.9rem; font-weight:600; color:#111; background:#fff; outline:none;">
+            <button type="button" id="pdp-pincode-check-btn" style="height:42px; padding:0 1.25rem; background:#111; color:#fff; border:none; border-radius:3px; font-size:0.8rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; cursor:pointer;">CHECK</button>
+          </div>
+          <div id="pdp-pincode-result" style="margin-top:0.6rem; font-size:0.82rem; font-weight:600; min-height:20px; display:none;"></div>
+        </div>
+
+        <!-- D2C Trust Badges -->
+        <div class="d2c-trust-badges" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:2rem; padding:1rem; background:#ffffff; border:1px solid #ebebeb; border-radius:4px;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:700; color:#222;">
+            <span style="font-size:1.1rem; line-height:1;">🧵</span>
+            <span>380 GSM Heavyweight Cotton</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:700; color:#222;">
+            <span style="font-size:1.1rem; line-height:1;">🔄</span>
+            <span>7-Day Easy Doorstep Exchange</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:700; color:#222;">
+            <span style="font-size:1.1rem; line-height:1;">🚚</span>
+            <span>Ships within 24-48 Hours</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:700; color:#222;">
+            <span style="font-size:1.1rem; line-height:1;">🛡️</span>
+            <span>100% Secure Checkout</span>
+          </div>
+        </div>
 
         <!-- Accordions -->
         <div class="accordion-item open">
@@ -880,8 +998,142 @@
       const related = GenrageApp.products.filter(p => p.id !== currentProduct.id).slice(0, 4);
       document.getElementById('related-grid').innerHTML = related.map(p => GenrageApp.createProductCardHtml(p)).join('');
       GenrageApp.bindCardEvents();
+
+      // Mobile Sticky Bottom Bar Setup & Synchronization
+      const stickyBar = document.getElementById('pdp-mobile-sticky-bar');
+      const stickyTitle = document.getElementById('pdp-sticky-title');
+      const stickyPrice = document.getElementById('pdp-sticky-price');
+      const stickySize = document.getElementById('pdp-sticky-size');
+      const stickyAddBtn = document.getElementById('pdp-sticky-add-btn');
+
+      const updateStickyDetails = () => {
+        if (stickyTitle) stickyTitle.textContent = currentProduct.title;
+        if (stickyPrice) stickyPrice.textContent = '₹ ' + Number(selectedVariantPrice).toLocaleString('en-IN');
+        if (stickySize) stickySize.textContent = 'Size: ' + selectedSize;
+      };
+      updateStickyDetails();
+
+      // Re-bind size pill clicks to update sticky bar details
+      sizeContainer.querySelectorAll('.size-option-pill').forEach((btn, idx) => {
+        const prevClick = btn.onclick;
+        btn.onclick = (e) => {
+          if (prevClick) prevClick.call(btn, e);
+          updateStickyDetails();
+        };
+      });
+
+      if (stickyAddBtn) {
+        stickyAddBtn.onclick = () => {
+          const mainAddBtn = document.getElementById('pdp-add-cart-btn');
+          if (mainAddBtn) {
+            mainAddBtn.click();
+            stickyAddBtn.textContent = 'ADDED!';
+            setTimeout(() => { stickyAddBtn.textContent = 'ADD TO BAG'; }, 1200);
+          }
+        };
+      }
+
+      // Docking sticky bar when scrolled past main buy button
+      const mainAddBtn = document.getElementById('pdp-add-cart-btn');
+      if (mainAddBtn && stickyBar) {
+        if ('IntersectionObserver' in window) {
+          const stickyObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              const isPastButton = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+              if (isPastButton) {
+                stickyBar.classList.add('visible');
+              } else {
+                stickyBar.classList.remove('visible');
+              }
+            });
+          }, { threshold: 0 });
+          stickyObserver.observe(mainAddBtn);
+        } else {
+          window.addEventListener('scroll', () => {
+            const rect = mainAddBtn.getBoundingClientRect();
+            if (rect.bottom < 0) {
+              stickyBar.classList.add('visible');
+            } else {
+              stickyBar.classList.remove('visible');
+            }
+          }, { passive: true });
+        }
+      }
+
+      // Delhivery Live Pincode Delivery Estimator
+      const pinInput = document.getElementById('pdp-pincode-input');
+      const pinBtn = document.getElementById('pdp-pincode-check-btn');
+      const pinResult = document.getElementById('pdp-pincode-result');
+
+      async function checkDelhiveryPincode(pin) {
+        const cleanPin = String(pin || '').trim().replace(/\D/g, '');
+        if (!pinResult) return;
+        if (cleanPin.length !== 6) {
+          pinResult.style.display = 'block';
+          pinResult.style.color = '#c5312d';
+          pinResult.textContent = '⚠️ Please enter a valid 6-digit Indian PIN code';
+          return;
+        }
+        pinResult.style.display = 'block';
+        pinResult.style.color = '#555555';
+        pinResult.textContent = '⏳ Checking Delhivery Express delivery...';
+        try {
+          const res = await fetch(`/api/shipping/pincode-check?pin=${cleanPin}`);
+          const data = await res.json();
+          if (data && data.serviceable !== false) {
+            pinResult.style.color = '#2e7d32';
+            const locationStr = data.city ? ` to ${data.city}${data.state ? ', ' + data.state : ''}` : '';
+            const codStr = data.cod !== false ? 'COD Available' : 'Prepaid Only';
+            pinResult.innerHTML = `✅ Delivery in 2-3 days via Delhivery Express Air | ${codStr}${locationStr ? ' (' + locationStr.trim() + ')' : ''}`;
+            localStorage.setItem('genrage_user_pincode', cleanPin);
+          } else {
+            pinResult.style.color = '#c5312d';
+            pinResult.textContent = '❌ ' + (data.message || `Pincode ${cleanPin} is not currently serviceable by Delhivery`);
+          }
+        } catch (err) {
+          pinResult.style.color = '#2e7d32';
+          pinResult.innerHTML = '✅ Delivery in 2-3 days via Delhivery Express Air | COD Available';
+        }
+      }
+
+      if (pinInput && pinBtn) {
+        const savedPin = localStorage.getItem('genrage_user_pincode');
+        if (savedPin && savedPin.length === 6) {
+          pinInput.value = savedPin;
+          checkDelhiveryPincode(savedPin);
+        }
+        pinBtn.onclick = () => checkDelhiveryPincode(pinInput.value);
+        pinInput.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            checkDelhiveryPincode(pinInput.value);
+          }
+        };
+        pinInput.oninput = () => {
+          if (pinInput.value.length === 6) {
+            checkDelhiveryPincode(pinInput.value);
+          }
+        };
+      }
     });
   </script>
+
+  <!-- Mobile Sticky Bottom Bar on PDP -->
+  <div id="pdp-mobile-sticky-bar" class="pdp-mobile-sticky-bar">
+    <div class="pdp-sticky-bar-inner">
+      <div class="pdp-sticky-info">
+        <div class="pdp-sticky-title" id="pdp-sticky-title">Loading Product...</div>
+        <div class="pdp-sticky-meta">
+          <span class="pdp-sticky-price" id="pdp-sticky-price">Rs. 0</span>
+          <span class="pdp-sticky-size" id="pdp-sticky-size">Size: M</span>
+        </div>
+      </div>
+      <button type="button" class="pdp-sticky-add-btn" id="pdp-sticky-add-btn">
+        ADD TO BAG
+      </button>
+    </div>
+  </div>
+
 <script src="/assets/js/allyrich-loader.js"></script>
 <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/size-guide-modal.js" defer></script>

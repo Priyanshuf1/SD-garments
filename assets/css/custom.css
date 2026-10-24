@@ -198,7 +198,8 @@ button {
 /* ==========================================================================
    HEADER & NAVIGATION
    ========================================================================== */
-.site-header {
+.site-header,
+.header {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -209,6 +210,12 @@ button {
   height: var(--header-height);
   display: flex;
   align-items: center;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+#allyrich-spline-canvas {
+  contain: layout paint;
 }
 
 .header-inner {

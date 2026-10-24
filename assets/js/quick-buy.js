@@ -23,6 +23,7 @@
       this.updateAllBadges();
       this.checkUrlForCart();
       this.fetchCatalog();
+      this.initPdpStickyBar();
     },
 
     enhanceZaraCards() {
@@ -563,8 +564,9 @@
           <button type="button" id="global-cart-close" aria-label="Close Bag" style="background:none; border:none; color:#111; font-size:1.25rem; cursor:pointer; padding:4px;">✕</button>
         </div>
 
-        <div style="background:#e8f5e9; border:1px solid #c8e6c9; border-radius:3px; padding:0.75rem; margin:1rem 0; font-size:0.75rem; text-align:center; color:#111;">
-          <span style="color:#2e7d32; font-weight:800;">✓ FREE EXPRESS AIR DELIVERY</span> ON ALL ORDERS IN INDIA
+        <div class="global-free-shipping-bar" style="background:#f4f4f4; border:1px solid #e0e0e0; border-radius:3px; padding:0.75rem; margin:1rem 0;">
+          <div id="global-shipping-msg" style="font-size:0.75rem; text-align:center; color:#111; margin-bottom:6px;">Add Rs. 1,999 for <strong>FREE EXPRESS SHIPPING</strong></div>
+          <div style="background:#e0e0e0; height:6px; border-radius:3px; overflow:hidden;"><div id="global-shipping-progress" style="background:#2e7d32; height:100%; width:0%; transition:width 0.3s;"></div></div>
         </div>
 
         <div id="global-cart-items" style="flex:1; overflow-y:auto; padding:0.5rem 0;"></div>
@@ -577,6 +579,14 @@
           <button type="button" id="global-cart-checkout-btn" style="width:100%; background:#000000; color:#ffffff; border:none; padding:15px; font-size:0.9rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; border-radius:2px; transition:background 0.2s;">
             PROCEED TO CHECKOUT
           </button>
+          <div class="express-checkout-options" style="display:flex; gap:8px; margin-top:8px;">
+            <button type="button" id="global-express-upi" style="flex:1; background:#111; color:#fff; border:1px solid #333; padding:10px 6px; font-size:11px; font-weight:800; border-radius:2px; cursor:pointer; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:4px;">
+              <span>⚡ UPI EXPRESS</span>
+            </button>
+            <button type="button" id="global-express-cod" style="flex:1; background:#1f1f1f; color:#fff; border:1px solid #333; padding:10px 6px; font-size:11px; font-weight:800; border-radius:2px; cursor:pointer; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:4px;">
+              <span>📦 CASH ON DELIVERY</span>
+            </button>
+          </div>
           <div style="text-align:center; font-size:0.7rem; color:#777; margin-top:8px;">
             Taxes and shipping calculated at checkout
           </div>
@@ -595,6 +605,20 @@
         }
         window.location.href = '/checkout';
       };
+      const upiBtn = document.getElementById('global-express-upi');
+      const codBtn = document.getElementById('global-express-cod');
+      if (upiBtn) {
+        upiBtn.onclick = () => {
+          if (this.getCart().length === 0) { alert('Your cart is empty.'); return; }
+          window.location.href = '/checkout?method=upi';
+        };
+      }
+      if (codBtn) {
+        codBtn.onclick = () => {
+          if (this.getCart().length === 0) { alert('Your cart is empty.'); return; }
+          window.location.href = '/checkout?method=cod';
+        };
+      }
     },
 
     openCartDrawer() {
@@ -632,6 +656,11 @@
       const container = document.getElementById('global-cart-items');
       const totalEl = document.getElementById('global-cart-total');
       const checkoutBtn = document.getElementById('global-cart-checkout-btn');
+      const shipMsg = document.getElementById('global-shipping-msg');
+      const shipProg = document.getElementById('global-shipping-progress');
+      const upiBtn = document.getElementById('global-express-upi');
+      const codBtn = document.getElementById('global-express-cod');
+
       if (!container) return;
 
       const cart = this.getCart();
@@ -647,6 +676,10 @@
           checkoutBtn.style.opacity = '0.5';
           checkoutBtn.style.cursor = 'not-allowed';
         }
+        if (shipProg) shipProg.style.width = '0%';
+        if (shipMsg) shipMsg.innerHTML = 'Add Rs. 1,999 for <strong>FREE EXPRESS SHIPPING</strong>';
+        if (upiBtn) { upiBtn.style.opacity = '0.5'; upiBtn.style.cursor = 'not-allowed'; }
+        if (codBtn) { codBtn.style.opacity = '0.5'; codBtn.style.cursor = 'not-allowed'; }
         return;
       }
 
@@ -654,6 +687,8 @@
         checkoutBtn.style.opacity = '1';
         checkoutBtn.style.cursor = 'pointer';
       }
+      if (upiBtn) { upiBtn.style.opacity = '1'; upiBtn.style.cursor = 'pointer'; }
+      if (codBtn) { codBtn.style.opacity = '1'; codBtn.style.cursor = 'pointer'; }
 
       let subtotal = 0;
       container.innerHTML = cart.map((item, idx) => {
@@ -680,6 +715,50 @@
       }).join('');
 
       if (totalEl) totalEl.textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
+
+      // Free shipping threshold (Rs. 1,999)
+      const threshold = 1999;
+      const pct = Math.min(100, Math.round((subtotal / threshold) * 100));
+      if (shipProg) shipProg.style.width = `${pct}%`;
+      if (shipMsg) {
+        if (subtotal >= threshold) {
+          shipMsg.innerHTML = '🎉 You qualify for <strong>FREE EXPRESS SHIPPING PAN INDIA!</strong>';
+        } else {
+          const rem = threshold - subtotal;
+          shipMsg.innerHTML = `Add Rs. ${rem.toLocaleString('en-IN')} more for <strong>FREE EXPRESS SHIPPING</strong>`;
+        }
+      }
+    },
+
+    initPdpStickyBar() {
+      const mainBuyBtn = document.getElementById('pdp-add-cart-btn');
+      const stickyBar = document.getElementById('pdp-mobile-sticky-bar');
+      if (!mainBuyBtn || !stickyBar) return;
+      if (stickyBar.dataset.initialized) return;
+      stickyBar.dataset.initialized = 'true';
+
+      const stickyAddBtn = document.getElementById('pdp-sticky-add-btn');
+      if (stickyAddBtn && !stickyAddBtn.onclick) {
+        stickyAddBtn.onclick = () => {
+          mainBuyBtn.click();
+          stickyAddBtn.textContent = 'ADDED!';
+          setTimeout(() => { stickyAddBtn.textContent = 'ADD TO BAG'; }, 1200);
+        };
+      }
+
+      if ('IntersectionObserver' in window) {
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const isPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+            if (isPast) {
+              stickyBar.classList.add('visible');
+            } else {
+              stickyBar.classList.remove('visible');
+            }
+          });
+        }, { threshold: 0 });
+        obs.observe(mainBuyBtn);
+      }
     },
 
     changeCartQty(idx, delta) {

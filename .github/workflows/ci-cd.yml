@@ -37,6 +37,9 @@ jobs:
       - name: Test Production Logistics, OTP, and n8n Webhook Pipeline
         run: node test_complete_fixes.js
 
+      - name: Test D2C Features & 60 FPS Performance Optimizations
+        run: node test_d2c_performance.js
+
   # ============================================================================
   # STAGE 2: Multi-Stage Docker Container Build & Health Verification
   # ============================================================================
