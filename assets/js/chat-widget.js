@@ -32,6 +32,8 @@
       bottom: 24px;
       left: 24px;
       z-index: 99998;
+      transform: translateZ(0);
+      will-change: transform;
       display: inline-flex;
       align-items: center;
       gap: 10px;

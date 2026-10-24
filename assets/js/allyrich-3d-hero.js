@@ -371,31 +371,14 @@ import { Application } from '/assets/spline/runtime.js';
     let isWindowScrolling = false;
     let scrollDebounceTimer = null;
 
-    // Safeguard: on mobile, canvas pointer-events must be 'none' and touch-action 'pan-y'
-    // so finger touch scrolls pass completely unhindered to native page scroll.
-    // Also during active scroll on any device, pointer-events are set to 'none' to allow threaded compositor scrolling.
+    // Always disable pointer-events on the canvas so wheel and touch scrolls pass unhindered to browser compositor.
+    // Desktop mouse tracking operates via window-level mousemove events.
     function syncCanvasTouchBehavior() {
       if (!canvas) return;
-      if (isWindowScrolling || window.__isPageScrolling) {
-        canvas.style.pointerEvents = 'none';
-        if (container) container.style.pointerEvents = 'none';
-        return;
-      }
-      const isMob = isMobileView();
-      if (isMob) {
-        canvas.style.pointerEvents = 'none';
-        canvas.style.touchAction = 'pan-y';
-        if (container) {
-          container.style.pointerEvents = 'none';
-          container.style.touchAction = 'pan-y';
-        }
-      } else {
-        canvas.style.pointerEvents = 'auto';
-        canvas.style.touchAction = 'pan-y';
-        if (container) {
-          container.style.pointerEvents = 'auto';
-          container.style.touchAction = 'pan-y';
-        }
+      canvas.style.pointerEvents = 'none';
+      canvas.style.touchAction = 'pan-y';
+      if (container) {
+        container.style.touchAction = 'pan-y';
       }
 
       currentLayout = getBaseLayout();
@@ -443,10 +426,11 @@ import { Application } from '/assets/spline/runtime.js';
         document.body.classList.remove('is-scrolling');
         syncCanvasTouchBehavior();
 
-        // Resume 3D hero motion loop if section is visible
+        // Render exactly 1 frame on scroll rest if visible, without starting a redundant 60fps loop
         if (isHeroVisible) {
-          lastInteractionTime = performance.now();
-          wakeMotionLoop();
+          if (typeof splineApp.requestRender === 'function') {
+            splineApp.requestRender();
+          }
         }
 
         // Resume review fisheye if in viewport
@@ -454,7 +438,7 @@ import { Application } from '/assets/spline/runtime.js';
           window.__reviewGallery.lastFrameTime = performance.now();
           window.__reviewGallery.rafId = requestAnimationFrame(window.__reviewGallery.animate);
         }
-      }, 100);
+      }, 150);
     }
     window.addEventListener('scroll', handleWindowScroll, { passive: true });
 
@@ -666,16 +650,14 @@ import { Application } from '/assets/spline/runtime.js';
       const now = performance.now();
       const timeSinceInteraction = now - lastInteractionTime;
 
-      // Subtle ambient breathing sway if no active gyro tilt (fades out after 1.8s of idle)
+      // Subtle ambient breathing sway ONLY after active user interaction
       let ambientRotX = 0;
       let ambientRotY = 0;
-      if (lastInteractionType === 'none' || (lastInteractionType === 'gyro' && now - lastGyroTime > 1500)) {
-        if (timeSinceInteraction < 1800) {
-          const t = now * 0.001;
-          const fade = Math.max(0, 1 - (timeSinceInteraction / 1800));
-          ambientRotX = Math.sin(t * 0.8) * (0.015 * fade);
-          ambientRotY = Math.cos(t * 0.7) * (0.02 * fade);
-        }
+      if (lastInteractionType !== 'none' && timeSinceInteraction < 1200) {
+        const t = now * 0.001;
+        const fade = Math.max(0, 1 - (timeSinceInteraction / 1200));
+        ambientRotX = Math.sin(t * 0.8) * (0.015 * fade);
+        ambientRotY = Math.cos(t * 0.7) * (0.02 * fade);
       }
 
       const effTargetRotY = targetRotY + ambientRotY;
@@ -698,7 +680,7 @@ import { Application } from '/assets/spline/runtime.js';
         Math.abs(dPosX) < 0.15 &&
         Math.abs(dPosY) < 0.15;
 
-      if (isSettled && (timeSinceInteraction > 1800 || lastInteractionType === 'mouse')) {
+      if (isSettled) {
         currentRotY = effTargetRotY;
         currentRotX = effTargetRotX;
         currentRotZ = effTargetRotZ;
@@ -750,11 +732,9 @@ import { Application } from '/assets/spline/runtime.js';
           isHeroVisible = entry.isIntersecting;
           if (isHeroVisible) {
             if (!isWindowScrolling && !window.__isPageScrolling) {
-              if (typeof splineApp.play === 'function') {
-                try { splineApp.play(); } catch (e) {}
+              if (typeof splineApp.requestRender === 'function') {
+                splineApp.requestRender();
               }
-              lastInteractionTime = performance.now();
-              wakeMotionLoop();
             }
           } else {
             if (motionRafId) {
@@ -786,6 +766,7 @@ import { Application } from '/assets/spline/runtime.js';
   async function startSpline() {
     try {
       const splineApp = new Application(canvas, { renderer: 'webgl' });
+      splineApp.renderMode = 'manual';
       window.__splineApp = splineApp;
 
       // Cap pixel ratio across all devices to prevent choking high-DPI GPUs

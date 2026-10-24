@@ -4104,15 +4104,13 @@ first.parentNode.insertBefore(script, first);
       height: 100% !important;
       display: block;
       outline: none;
-      cursor: grab;
+      cursor: default;
+      pointer-events: none !important;
       touch-action: pan-y !important;
       background: transparent !important;
       background-color: transparent !important;
       contain: layout paint;
       transform: translateZ(0);
-    }
-    #allyrich-spline-canvas:active {
-      cursor: grabbing;
     }
     @media (max-width: 900px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
       #shopify-section-allyrich-3d-hero {
