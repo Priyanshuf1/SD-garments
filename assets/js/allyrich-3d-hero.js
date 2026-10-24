@@ -300,72 +300,227 @@ import { Application } from '/assets/spline/runtime.js';
       return;
     }
 
+    window.__splineHand = phoneHand;
+    window.__splineLoaded = true;
+
+    // Helper: detect mobile or touch viewport
+    function isMobileView() {
+      return (
+        window.innerWidth <= 900 ||
+        ('ontouchstart' in window && window.innerWidth <= 1024) ||
+        (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+      );
+    }
+
+    // Adaptive Base Layout: centers the 3D phone on mobile portrait view so it doesn't clip off-screen
+    function getBaseLayout() {
+      if (isMobileView()) {
+        return {
+          posX: -15,
+          posY: -505,
+          posZ: 290.88,
+          scale: 0.95
+        };
+      }
+      return {
+        posX: -127.8,
+        posY: -549.2,
+        posZ: 290.88,
+        scale: 1.0
+      };
+    }
+
     const baseRotX = phoneHand.rotation ? phoneHand.rotation.x : 0.454;
     const baseRotY = phoneHand.rotation ? phoneHand.rotation.y : 0;
     const baseRotZ = phoneHand.rotation ? phoneHand.rotation.z : 0;
-    const basePosX = phoneHand.position ? phoneHand.position.x : -127.8;
-    const basePosY = phoneHand.position ? phoneHand.position.y : -549.2;
+
+    let currentLayout = getBaseLayout();
+    let basePosX = currentLayout.posX;
+    let basePosY = currentLayout.posY;
+    let basePosZ = currentLayout.posZ;
 
     let targetRotX = baseRotX;
     let targetRotY = baseRotY;
     let targetRotZ = baseRotZ;
     let targetPosX = basePosX;
     let targetPosY = basePosY;
+    let targetPosZ = basePosZ;
 
     let currentRotX = baseRotX;
     let currentRotY = baseRotY;
     let currentRotZ = baseRotZ;
     let currentPosX = basePosX;
     let currentPosY = basePosY;
+    let currentPosZ = basePosZ;
 
     let lastInteractionType = 'none'; // 'gyro' or 'mouse'
     let lastGyroTime = 0;
 
-    // 1. Phone Gyroscope (DeviceOrientation) Handler
+    // Safeguard: on mobile, canvas pointer-events must be 'none' and touch-action 'pan-y'
+    // so finger touch scrolls pass completely unhindered to native page scroll
+    function syncCanvasTouchBehavior() {
+      if (!canvas) return;
+      const isMob = isMobileView();
+      if (isMob) {
+        canvas.style.pointerEvents = 'none';
+        canvas.style.touchAction = 'pan-y';
+        if (container) {
+          container.style.pointerEvents = 'none';
+          container.style.touchAction = 'pan-y';
+        }
+      } else {
+        canvas.style.pointerEvents = 'auto';
+        canvas.style.touchAction = 'pan-y';
+        if (container) {
+          container.style.pointerEvents = 'auto';
+          container.style.touchAction = 'pan-y';
+        }
+      }
+
+      currentLayout = getBaseLayout();
+      basePosX = currentLayout.posX;
+      basePosY = currentLayout.posY;
+      basePosZ = currentLayout.posZ;
+
+      if (phoneHand && phoneHand.scale && typeof phoneHand.scale.set === 'function') {
+        phoneHand.scale.set(currentLayout.scale, currentLayout.scale, currentLayout.scale);
+      }
+
+      if (lastInteractionType === 'none') {
+        targetPosX = basePosX;
+        targetPosY = basePosY;
+        targetPosZ = basePosZ;
+      }
+    }
+    syncCanvasTouchBehavior();
+    window.addEventListener('resize', syncCanvasTouchBehavior, { passive: true });
+    window.addEventListener('orientationchange', syncCanvasTouchBehavior, { passive: true });
+
+    // Disable any internal Spline orbit/camera touch rotation to prevent gesture capture
+    try {
+      if (splineApp._controls) {
+        if (splineApp._controls.touches) {
+          splineApp._controls.touches.ONE = null;
+          splineApp._controls.touches.TWO = null;
+        }
+        splineApp._controls.enableRotate = false;
+        splineApp._controls.enablePan = false;
+        splineApp._controls.enableZoom = false;
+      }
+    } catch (e) {}
+
+    // 1. Mobile Gyroscope ("Zyro") Motion Tracking (DeviceOrientation gamma & beta)
     function handleDeviceOrientation(e) {
-      if (!e || (typeof e.gamma !== 'number' && typeof e.beta !== 'number')) return;
+      if (!e) return;
+      // Strictly ignore gyro on desktop to prevent laptop motion sensors from hijacking mouse tracking
+      if (!isMobileView()) return;
+
+      const rawGamma = typeof e.gamma === 'number' ? e.gamma : null;
+      const rawBeta = typeof e.beta === 'number' ? e.beta : null;
+      if (rawGamma === null && rawBeta === null) return;
+
       lastInteractionType = 'gyro';
       lastGyroTime = performance.now();
 
-      const gamma = typeof e.gamma === 'number' ? e.gamma : 0;
-      const beta = typeof e.beta === 'number' ? e.beta : 45;
+      const gamma = rawGamma !== null ? rawGamma : 0;
+      const beta = rawBeta !== null ? rawBeta : 45;
 
       // Neutral portrait holding posture: gamma = 0 deg (lateral tilt), beta = 45 deg (handheld viewing angle)
       // Max tilt angle sensitivity (degrees)
-      const maxTilt = 25;
+      const maxTilt = 24;
       const normX = Math.max(-1, Math.min(1, gamma / maxTilt));
       const normY = Math.max(-1, Math.min(1, (beta - 45) / maxTilt));
 
-      // Map to 3D rotation and subtle parallax translation
-      targetRotY = baseRotY + normX * 0.48;
-      targetRotX = baseRotX + normY * 0.36;
-      targetRotZ = baseRotZ - normX * 0.12;
-      targetPosX = basePosX + normX * 36;
-      targetPosY = basePosY - normY * 20;
+      // Map phone tilt directly to 3D rotation and subtle parallax translation
+      targetRotY = baseRotY + normX * 0.50;
+      targetRotX = baseRotX + normY * 0.38;
+      targetRotZ = baseRotZ - normX * 0.14;
+      targetPosX = basePosX + normX * 38;
+      targetPosY = basePosY - normY * 22;
+
+      if (!motionRafId) {
+        motionRafId = requestAnimationFrame(animateMotion);
+      }
+      if (typeof splineApp.requestRender === 'function') {
+        splineApp.requestRender();
+      }
     }
 
-    // Always register deviceorientation directly
-    window.addEventListener('deviceorientation', handleDeviceOrientation, true);
+    // Register device orientation events (both standard and absolute)
+    window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+    window.addEventListener('deviceorientationabsolute', handleDeviceOrientation, { passive: true });
+
+    // Expose window simulation helper for test suites and mobile verification
+    window.__allyrichSimulateOrientation = function (gamma, beta, alpha = 0) {
+      // Force mobile simulation path if invoked in test
+      const originalIsMob = isMobileView();
+      if (!originalIsMob) {
+        const rawGamma = typeof gamma === 'number' ? gamma : 0;
+        const rawBeta = typeof beta === 'number' ? beta : 45;
+        lastInteractionType = 'gyro';
+        lastGyroTime = performance.now();
+        const maxTilt = 24;
+        const normX = Math.max(-1, Math.min(1, rawGamma / maxTilt));
+        const normY = Math.max(-1, Math.min(1, (rawBeta - 45) / maxTilt));
+        targetRotY = baseRotY + normX * 0.50;
+        targetRotX = baseRotX + normY * 0.38;
+        targetRotZ = baseRotZ - normX * 0.14;
+        targetPosX = basePosX + normX * 38;
+        targetPosY = basePosY - normY * 22;
+        if (!motionRafId) motionRafId = requestAnimationFrame(animateMotion);
+        if (typeof splineApp.requestRender === 'function') splineApp.requestRender();
+        return;
+      }
+      handleDeviceOrientation({ gamma, beta, alpha });
+    };
+
+    window.__allyrichGetMotionState = function () {
+      return {
+        targetRotX,
+        targetRotY,
+        targetRotZ,
+        targetPosX,
+        targetPosY,
+        currentRotX,
+        currentRotY,
+        currentRotZ,
+        currentPosX,
+        currentPosY,
+        basePosX,
+        basePosY,
+        lastInteractionType
+      };
+    };
 
     // iOS 13+ requires user gesture permission
     if (
       typeof window.DeviceOrientationEvent !== 'undefined' &&
       typeof window.DeviceOrientationEvent.requestPermission === 'function'
     ) {
+      let permissionRequested = false;
       const requestGyroPermission = () => {
+        if (permissionRequested) return;
         try {
-          window.DeviceOrientationEvent.requestPermission()
-            .then((state) => {
-              if (state === 'granted') {
-                window.addEventListener('deviceorientation', handleDeviceOrientation, true);
-                console.log('[AllyRich 3D] iOS DeviceOrientation permission granted.');
-              }
-            })
-            .catch((err) => console.debug('[AllyRich 3D] Gyro permission request:', err));
+          const promise = window.DeviceOrientationEvent.requestPermission();
+          if (promise && typeof promise.then === 'function') {
+            promise
+              .then((state) => {
+                if (state === 'granted') {
+                  permissionRequested = true;
+                  window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+                  window.addEventListener('deviceorientationabsolute', handleDeviceOrientation, { passive: true });
+                  console.log('[AllyRich 3D] iOS DeviceOrientation permission granted.');
+                  window.removeEventListener('click', requestGyroPermission);
+                  window.removeEventListener('touchend', requestGyroPermission);
+                }
+              })
+              .catch((err) => console.debug('[AllyRich 3D] Gyro permission request:', err));
+          }
         } catch (e) {}
       };
-      window.addEventListener('touchstart', requestGyroPermission, { passive: true, once: true });
-      window.addEventListener('click', requestGyroPermission, { passive: true, once: true });
+      // In iOS Safari, user gestures on touchend or click reliably permit DeviceOrientation
+      window.addEventListener('touchend', requestGyroPermission, { passive: true });
+      window.addEventListener('click', requestGyroPermission, { passive: true });
     }
 
     // 2. Laptop / Desktop Mouse Tracker (throttled to requestAnimationFrame)
@@ -374,10 +529,10 @@ import { Application } from '/assets/spline/runtime.js';
     let mouseRafPending = false;
 
     function handleMouseMove(e) {
-      // If active gyro events are firing on mobile, ignore mouse moves
-      if (lastInteractionType === 'gyro' && performance.now() - lastGyroTime < 1000) {
-        if (e.pointerType === 'touch' || 'ontouchstart' in window) return;
-      }
+      // Mobile / touch view must NEVER track finger movements
+      if (isMobileView()) return;
+      if (e.pointerType && e.pointerType !== 'mouse') return;
+
       lastInteractionType = 'mouse';
       pendingMouseX = e.clientX;
       pendingMouseY = e.clientY;
@@ -407,35 +562,6 @@ import { Application } from '/assets/spline/runtime.js';
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-    // 3. Touch Drag fallback for mobile when gyro is unavailable
-    let touchStartX = 0;
-    let touchStartY = 0;
-    function handleTouchStart(e) {
-      if (e.touches && e.touches.length > 0) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      }
-    }
-    function handleTouchMove(e) {
-      if (lastInteractionType === 'gyro') return;
-      if (e.touches && e.touches.length > 0) {
-        const dx = e.touches[0].clientX - touchStartX;
-        const dy = e.touches[0].clientY - touchStartY;
-        const normX = Math.max(-1, Math.min(1, dx / 150));
-        const normY = Math.max(-1, Math.min(1, dy / 150));
-
-        targetRotY = baseRotY + normX * 0.46;
-        targetRotX = baseRotX + normY * 0.34;
-        targetRotZ = baseRotZ - normX * 0.14;
-        targetPosX = basePosX + normX * 36;
-        targetPosY = basePosY - normY * 22;
-      }
-    }
-    if (canvas) {
-      canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
-      canvas.addEventListener('touchmove', handleTouchMove, { passive: true });
-    }
-
     // 4. Smooth Animation Loop with Viewport Visibility Observer (Zero CPU/GPU when scrolled off-screen)
     let isHeroVisible = true;
     let motionRafId = null;
@@ -447,8 +573,17 @@ import { Application } from '/assets/spline/runtime.js';
       }
       motionRafId = requestAnimationFrame(animateMotion);
 
-      currentRotY += (targetRotY - currentRotY) * 0.10;
-      currentRotX += (targetRotX - currentRotX) * 0.10;
+      // Subtle ambient breathing sway if no active gyro tilt
+      let ambientRotX = 0;
+      let ambientRotY = 0;
+      if (lastInteractionType === 'none' || (lastInteractionType === 'gyro' && performance.now() - lastGyroTime > 1800)) {
+        const t = performance.now() * 0.001;
+        ambientRotX = Math.sin(t * 0.8) * 0.02;
+        ambientRotY = Math.cos(t * 0.7) * 0.025;
+      }
+
+      currentRotY += (targetRotY + ambientRotY - currentRotY) * 0.10;
+      currentRotX += (targetRotX + ambientRotX - currentRotX) * 0.10;
       currentRotZ += (targetRotZ - currentRotZ) * 0.10;
       currentPosX += (targetPosX - currentPosX) * 0.10;
       currentPosY += (targetPosY - currentPosY) * 0.10;

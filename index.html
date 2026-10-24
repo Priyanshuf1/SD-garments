@@ -4329,13 +4329,6 @@ first.parentNode.insertBefore(script, first);
       overflow: hidden;
       background-color: #c4c4c4;
     }
-    @media (max-width: 768px) {
-      #shopify-section-allyrich-3d-hero {
-        height: 72vh;
-        min-height: 480px;
-        max-height: 600px;
-      }
-    }
     .allyrich-hero-page {
       position: relative;
       width: 100%;
@@ -4349,6 +4342,7 @@ first.parentNode.insertBefore(script, first);
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      touch-action: pan-y;
     }
     #allyrich-spline-canvas {
       position: absolute;
@@ -4365,6 +4359,39 @@ first.parentNode.insertBefore(script, first);
     }
     #allyrich-spline-canvas:active {
       cursor: grabbing;
+    }
+    @media (max-width: 900px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+      #shopify-section-allyrich-3d-hero {
+        height: 75vh;
+        min-height: 520px;
+        max-height: 700px;
+        margin-top: 24px;
+        margin-bottom: 28px;
+        touch-action: pan-y !important;
+        pointer-events: none !important;
+      }
+      .allyrich-hero-page {
+        background-image: url('/assets/allyrich-hero-bg-mobile.png') !important;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        touch-action: pan-y !important;
+        pointer-events: none !important;
+      }
+      #allyrich-spline-canvas {
+        pointer-events: none !important;
+        touch-action: pan-y !important;
+        cursor: default !important;
+      }
+    }
+    @media (max-width: 480px) {
+      #shopify-section-allyrich-3d-hero {
+        height: 72vh;
+        min-height: 480px;
+        max-height: 640px;
+        margin-top: 20px;
+        margin-bottom: 24px;
+      }
     }
     .spline-loading-pulse {
       position: absolute;
