@@ -130,28 +130,8 @@ import { Application } from '/assets/spline/runtime.js';
     // 1. Enforce opaque screen materials
     ensureOpaqueScreen(splineApp);
 
-    // Skip redundant texture decode and re-upload if already applied
-    if (screenObj.userData && screenObj.userData.__arApplied) {
-      removeWatermark(splineApp);
-      if (typeof splineApp.requestRender === 'function') {
-        splineApp.requestRender();
-      }
-      return;
-    }
-
-    // 2. Await the fully drawn AR canvas and cache dataUrl
+    // 2. Await the fully drawn AR canvas
     const arCanvas = await getARCanvas();
-    if (!cachedDataUrl) {
-      cachedDataUrl = arCanvas.toDataURL('image/jpeg', 0.98);
-    }
-    const dataUrl = cachedDataUrl;
-
-    // 2. Await the fully drawn AR canvas and cache dataUrl
-    const arCanvas = await getARCanvas();
-    if (!cachedDataUrl) {
-      cachedDataUrl = arCanvas.toDataURL('image/jpeg', 0.98);
-    }
-    const dataUrl = cachedDataUrl;
 
     const mat = screenObj.material;
 
@@ -755,21 +735,9 @@ import { Application } from '/assets/spline/runtime.js';
       }
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
-      const isMobile = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const targetDpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2.0);
+      // Clamp WebGL renderer pixelRatio across ALL devices (laptops, desktops, phones) to avoid high-res GPU overloads
       if (splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
-        splineApp._renderer.setPixelRatio(targetDpr);
-      }
-      if (canvas && container) {
-        const rect = container.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-          canvas.width = Math.round(rect.width * targetDpr);
-          canvas.height = Math.round(rect.height * targetDpr);
-          if (typeof splineApp.setSize === 'function') {
-            splineApp.setSize(rect.width, rect.height);
-          }
-        }
-      }
+        splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       }
       updateAll(splineApp);
 
@@ -781,36 +749,14 @@ import { Application } from '/assets/spline/runtime.js';
       setTimeout(() => updateAll(splineApp), 1400);
       setTimeout(() => updateAll(splineApp), 3000);
 
-      let lastObsW = 0, lastObsH = 0;
+      // Keep canvas resolution synced to viewport for crisp Retina rendering without GPU overloads
       if ('ResizeObserver' in window && container) {
-        const resizeObs = new ResizeObserver((entries) => {
-          for (const entry of entries) {
-            const cr = entry.contentRect;
-            const w = Math.round(cr.width);
-            const h = Math.round(cr.height);
-            if (w === lastObsW && h === lastObsH) continue;
-            lastObsW = w;
-            lastObsH = h;
-            const isMob = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            const dpr = Math.min(window.devicePixelRatio || 1, isMob ? 1.5 : 2.0);
-            if (splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
-              splineApp._renderer.setPixelRatio(dpr);
-            }
-            if (canvas && w > 0 && h > 0) {
-              const targetW = Math.round(w * dpr);
-              const targetH = Math.round(h * dpr);
-              if (canvas.width !== targetW || canvas.height !== targetH) {
-                canvas.width = targetW;
-                canvas.height = targetH;
-              }
-            }
-            if (splineApp && typeof splineApp.requestRender === 'function') {
-              splineApp.requestRender();
-            }
+        const resizeObs = new ResizeObserver(() => {
+          if (splineApp?._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
+            splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
           }
-        });
-        resizeObs.observe(container);
-      }
+          if (splineApp && typeof splineApp.requestRender === 'function') {
+            splineApp.requestRender();
           }
         });
         resizeObs.observe(container);
