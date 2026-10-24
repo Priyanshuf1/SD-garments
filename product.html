@@ -1066,6 +1066,19 @@
       // Docking sticky bar when scrolled past main buy button
       const mainAddBtn = document.getElementById('pdp-add-cart-btn');
       if (mainAddBtn && stickyBar) {
+        const updateStickyVisibility = () => {
+          const rect = mainAddBtn.getBoundingClientRect();
+          if (rect.bottom < 0) {
+            stickyBar.classList.add('visible');
+            document.body.classList.add('pdp-sticky-active');
+          } else {
+            stickyBar.classList.remove('visible');
+            document.body.classList.remove('pdp-sticky-active');
+          }
+        };
+
+        window.addEventListener('scroll', updateStickyVisibility, { passive: true });
+
         if ('IntersectionObserver' in window) {
           const stickyObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -1080,17 +1093,6 @@
             });
           }, { threshold: 0 });
           stickyObserver.observe(mainAddBtn);
-        } else {
-          window.addEventListener('scroll', () => {
-            const rect = mainAddBtn.getBoundingClientRect();
-            if (rect.bottom < 0) {
-              stickyBar.classList.add('visible');
-              document.body.classList.add('pdp-sticky-active');
-            } else {
-              stickyBar.classList.remove('visible');
-              document.body.classList.remove('pdp-sticky-active');
-            }
-          }, { passive: true });
         }
       }
 
