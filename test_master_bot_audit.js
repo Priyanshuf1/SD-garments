@@ -109,7 +109,8 @@ async function runAudit() {
 
   // Delivery AWB Generation & Tracking Bot
   console.log('\n--- BOT 3: Delhivery AWB Generation & Live Order Tracking ---');
-  const ordersRaw = fs.readFileSync('C:\\SD_garments\\data\\orders.json', 'utf8');
+  const repoDir = __dirname;
+  const ordersRaw = fs.readFileSync(path.join(repoDir, 'data', 'orders.json'), 'utf8');
   const orders = JSON.parse(ordersRaw);
   const testOrder = orders[0];
   assert(Boolean(testOrder), 'Test order exists in data/orders.json');
@@ -139,7 +140,6 @@ async function runAudit() {
 
   // BOT 4: Accessibility & Form Compliance Bot
   console.log('\n--- BOT 4: Accessibility & Form Consent Audit ---');
-  const repoDir = 'C:\\SD_garments';
   const htmlFiles = fs.readdirSync(repoDir).concat(fs.readdirSync(path.join(repoDir, 'pages')).map(f => 'pages/' + f))
     .filter(f => f.endsWith('.html'));
 

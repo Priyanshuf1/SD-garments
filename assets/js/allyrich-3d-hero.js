@@ -727,7 +727,11 @@ import { Application } from '/assets/spline/runtime.js';
         return Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2.0);
       };
 
-      await splineApp.load('https://prod.spline.design/VVdTRfsKk3fopW3m/scene.splinecode');
+      try {
+        await splineApp.load('/assets/spline/scene.splinecode');
+      } catch (e) {
+        await splineApp.load('https://prod.spline.design/VVdTRfsKk3fopW3m/scene.splinecode');
+      }
 
       if (loaderBadge) {
         loaderBadge.style.opacity = '0';

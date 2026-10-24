@@ -5064,10 +5064,167 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-  Admin.init();
-});
+// ==========================================
+// ALLYRICH FOUNDER VAULT 2FA CONTROLLER
+// ==========================================
+let adminInitialized = false;
+
+async function checkVaultAuth() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const keyParam = urlParams.get('admin_key') || urlParams.get('key');
+  if (keyParam) {
+    sessionStorage.setItem('allyrich_admin_token', keyParam);
+  }
+  const token = sessionStorage.getItem('allyrich_admin_token') || localStorage.getItem('allyrich_admin_token');
+  const overlay = document.getElementById('admin-auth-overlay');
+  if (!token) {
+    if (overlay) overlay.style.display = 'flex';
+    return;
+  }
+  try {
+    const res = await fetch('/api/admin/stats', {
+      headers: { 'x-admin-key': token }
+    });
+    if (res.ok) {
+      if (overlay) overlay.style.display = 'none';
+      if (!adminInitialized) {
+        adminInitialized = true;
+        await Admin.init();
+      }
+    } else {
+      sessionStorage.removeItem('allyrich_admin_token');
+      localStorage.removeItem('allyrich_admin_token');
+      if (overlay) overlay.style.display = 'flex';
+    }
+  } catch (err) {
+    if (overlay) overlay.style.display = 'flex';
+  }
+}
+
+async function handleVaultLogin(event) {
+  if (event) event.preventDefault();
+  const alertEl = document.getElementById('vault-alert');
+  const submitBtn = document.getElementById('btn-vault-submit');
+  const sec2fa = document.getElementById('vault-2fa-section');
+  const qrBox = document.getElementById('vault-qr-box');
+  const qrImg = document.getElementById('vault-qr-img');
+  const keyEl = document.getElementById('vault-manual-key');
+  const totpInput = document.getElementById('vault-totp');
+  const userInput = document.getElementById('vault-username');
+  const passInput = document.getElementById('vault-password');
+
+  const username = (userInput?.value || '').trim();
+  const password = (passInput?.value || '').trim();
+  const totpCode = (totpInput?.value || '').trim();
+
+  const showAlert = (msg, isSuccess = false) => {
+    if (!alertEl) return;
+    alertEl.style.display = 'block';
+    alertEl.style.background = isSuccess ? '#0d2818' : '#2d1215';
+    alertEl.style.color = isSuccess ? '#4ade80' : '#f87171';
+    alertEl.style.border = '1px solid ' + (isSuccess ? '#166534' : '#7f1d1d');
+    alertEl.textContent = msg;
+  };
+
+  if (alertEl) alertEl.style.display = 'none';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
+  }
+
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, totpCode })
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (data.require2fa) {
+      if (sec2fa) sec2fa.style.display = 'block';
+      if (data.setupQr && qrImg && qrBox) {
+        qrImg.src = data.setupQr;
+        qrBox.style.display = 'block';
+      }
+      if (data.manualKey && keyEl) {
+        keyEl.textContent = data.manualKey;
+      }
+      if (submitBtn) {
+        submitBtn.textContent = 'VERIFY 2FA & UNLOCK';
+      }
+      if (totpInput) {
+        totpInput.focus();
+      }
+      showAlert(data.message || 'Master credentials accepted. Enter your 6-digit Google Authenticator code.', true);
+      return;
+    }
+
+    if (res.ok && data.success && data.token) {
+      sessionStorage.setItem('allyrich_admin_token', data.token);
+      localStorage.setItem('allyrich_admin_token', data.token);
+      showAlert(data.message || 'Vault unlocked successfully.', true);
+      setTimeout(async () => {
+        const overlay = document.getElementById('admin-auth-overlay');
+        if (overlay) overlay.style.display = 'none';
+        if (!adminInitialized) {
+          adminInitialized = true;
+          await Admin.init();
+        }
+        if (typeof Admin?.showToast === 'function') {
+          Admin.showToast('Founder Vault Unlocked. Welcome back, Founder.');
+        }
+      }, 400);
+      return;
+    }
+
+    showAlert(data.message || 'Authentication failed. Please verify credentials.');
+  } catch (err) {
+    showAlert('Network error: ' + err.message);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+    }
+  }
+}
+
+async function handleVaultLogout() {
+  const token = sessionStorage.getItem('allyrich_admin_token') || localStorage.getItem('allyrich_admin_token');
+  try {
+    if (token) {
+      await fetch('/api/admin/logout', {
+        method: 'POST',
+        headers: { 'x-admin-key': token }
+      });
+    }
+  } catch (_) {}
+  sessionStorage.removeItem('allyrich_admin_token');
+  localStorage.removeItem('allyrich_admin_token');
+  const passEl = document.getElementById('vault-password');
+  const totpEl = document.getElementById('vault-totp');
+  if (passEl) passEl.value = '';
+  if (totpEl) totpEl.value = '';
+  const sec2fa = document.getElementById('vault-2fa-section');
+  if (sec2fa) sec2fa.style.display = 'none';
+  const qrBox = document.getElementById('vault-qr-box');
+  if (qrBox) qrBox.style.display = 'none';
+  const submitBtn = document.getElementById('btn-vault-submit');
+  if (submitBtn) submitBtn.textContent = 'UNLOCK ADMIN PORTAL';
+  const alertEl = document.getElementById('vault-alert');
+  if (alertEl) alertEl.style.display = 'none';
+  const overlay = document.getElementById('admin-auth-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  if (typeof Admin?.showToast === 'function') {
+    Admin.showToast('Founder Vault locked.');
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkVaultAuth);
+} else {
+  checkVaultAuth();
+}
 </script>
 
 </body>

@@ -283,6 +283,8 @@ const PRODUCTS_CACHE_TTL_MS = 3000;
 let memoryOrders = null;
 let memoryOrdersLastFetch = 0;
 const ORDERS_CACHE_TTL_MS = 2000;
+let lastAwsDbErrorTime = 0;
+const AWS_DB_ERROR_COOLDOWN_MS = 30000;
 
 function filterOutGiftCards(products) {
   if (!Array.isArray(products)) return [];
@@ -303,6 +305,8 @@ function getMemoryProducts() {
   }
   return memoryProducts;
 }
+// Warm up in-memory catalog cache on server boot
+getMemoryProducts();
 
 function formatSupabaseProductToLocal(s) {
   const variants = Array.isArray(s.product_variants) && s.product_variants.length > 0
@@ -357,7 +361,7 @@ async function getAllProducts() {
     return memoryProducts;
   }
 
-  if (db && db.isConfigured) {
+  if (db && db.isConfigured && (now - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
     try {
       const awsProducts = await db.products.getAll();
       if (Array.isArray(awsProducts) && awsProducts.length > 0) {
@@ -367,11 +371,14 @@ async function getAllProducts() {
         return filtered;
       }
     } catch (err) {
-      console.warn('AWS RDS products fetch warning:', err.message);
+      lastAwsDbErrorTime = Date.now();
+      console.warn('AWS RDS products fetch warning (cooldown 30s):', err.message);
     }
   }
 
   const localList = getMemoryProducts();
+  memoryProducts = localList;
+  memoryProductsLastFetch = Date.now();
   if (!supabase.isConfigured) return localList;
 
   try {
@@ -397,6 +404,8 @@ function getMemoryOrders() {
   }
   return memoryOrders;
 }
+// Warm up in-memory orders cache on server boot
+getMemoryOrders();
 
 function formatSupabaseOrderToLocal(s) {
   const addr = s.shipping_address || {};
@@ -434,7 +443,7 @@ async function getAllOrders() {
     return memoryOrders;
   }
 
-  if (db && db.isConfigured) {
+  if (db && db.isConfigured && (now - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
     try {
       const awsOrders = await db.orders.getAll();
       if (Array.isArray(awsOrders)) {
@@ -443,11 +452,14 @@ async function getAllOrders() {
         return awsOrders;
       }
     } catch (err) {
-      console.warn('AWS RDS orders fetch warning:', err.message);
+      lastAwsDbErrorTime = Date.now();
+      console.warn('AWS RDS orders fetch warning (cooldown 30s):', err.message);
     }
   }
 
   const localOrders = getMemoryOrders();
+  memoryOrders = localOrders;
+  memoryOrdersLastFetch = Date.now();
   if (!supabase.isConfigured) return localOrders;
 
   try {

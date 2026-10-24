@@ -1955,12 +1955,16 @@
       }
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      CollectionEngine.init();
-    });
-
     if (typeof window !== 'undefined') {
       window.CollectionEngine = CollectionEngine;
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        CollectionEngine.init();
+      });
+    } else {
+      CollectionEngine.init();
     }
   </script>
 <script src="/assets/js/quick-buy.js"></script>
