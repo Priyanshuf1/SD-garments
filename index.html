@@ -2039,6 +2039,30 @@ first.parentNode.insertBefore(script, first);
         --product-list-items-per-row: 4;
       }
     }
+
+    @media screen and (max-width: 699px) {
+      #shopify-section-template--23671271489774__featured_collections_MAzpBk .product-list {
+        display: grid !important;
+        grid: auto / auto-flow min(280px, 68vw) !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-snap-type: x mandatory !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 1rem !important;
+        padding-inline: 1.25rem !important;
+        padding-bottom: 0.75rem !important;
+        margin-inline: -1.25rem !important;
+        scrollbar-width: none !important;
+        overscroll-behavior-x: contain !important;
+      }
+      #shopify-section-template--23671271489774__featured_collections_MAzpBk .product-list::-webkit-scrollbar {
+        display: none !important;
+      }
+      #shopify-section-template--23671271489774__featured_collections_MAzpBk .product-card {
+        scroll-snap-align: start !important;
+        width: 100% !important;
+      }
+    }
   </style><div class="section-spacing color-scheme color-scheme--scheme-1 color-scheme--bg-4956a57c16ea1cfdc766ca090daf4031 ">
     <div class="container"><div class="section-stack"><div class="v-stack justify-self-center gap-4 text-center sm:gap-5"><h2 class="h2 allyrich-fancy-title">
                 JUST DROPPED
@@ -4122,6 +4146,7 @@ first.parentNode.insertBefore(script, first);
         margin-bottom: 28px;
         touch-action: pan-y !important;
         pointer-events: none !important;
+        overflow: hidden !important;
       }
       .allyrich-hero-page {
         background-image: url('/assets/allyrich-hero-bg-mobile.png') !important;
@@ -4144,6 +4169,7 @@ first.parentNode.insertBefore(script, first);
         max-height: 640px;
         margin-top: 20px;
         margin-bottom: 24px;
+        overflow: hidden !important;
       }
     }
     .spline-loading-pulse {

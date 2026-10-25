@@ -41,13 +41,13 @@
 
     banner.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
-          <div style="font-size:0.85rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; color:#ffffff; display:flex; align-items:center; gap:6px;">
-            <span>🛡️</span> Privacy &amp; Cookies
+        <div style="position:relative; display:flex; justify-content:center; align-items:center; width:100%;">
+          <div style="font-size:0.85rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; color:#ffffff; text-align:center;">
+            Privacy &amp; Cookies
           </div>
-          <button type="button" id="cookie-banner-close" aria-label="Dismiss banner" style="background:none; border:none; color:#888; font-size:1.1rem; cursor:pointer; padding:0; line-height:1; transition:color 0.2s;">&times;</button>
+          <button type="button" id="cookie-banner-close" aria-label="Dismiss banner" style="position:absolute; right:0; top:50%; transform:translateY(-50%); background:none; border:none; color:#888; font-size:1.1rem; cursor:pointer; padding:0; line-height:1; transition:color 0.2s;">&times;</button>
         </div>
-        <p style="margin:0; font-size:0.8rem; line-height:1.55; color:#b0b0b5;">
+        <p style="margin:0; font-size:0.8rem; line-height:1.55; color:#b0b0b5; text-align:center;">
           We use strictly necessary cookies to power your cart and secure checkout, and optional analytics to optimize browsing speed. Learn more in our <a href="/cookie-policy" style="color:#ffffff; text-decoration:underline; font-weight:700;">Cookie Policy</a>.
         </p>
         <div style="display:flex; gap:10px; margin-top:4px; flex-wrap:wrap;">

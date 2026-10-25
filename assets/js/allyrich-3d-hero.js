@@ -328,10 +328,10 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
     function getBaseLayout() {
       if (isMobileView()) {
         return {
-          posX: -15,
-          posY: -505,
+          posX: -78,
+          posY: -450,
           posZ: 290.88,
-          scale: 0.95
+          scale: 0.74
         };
       }
       return {
@@ -506,8 +506,8 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
       targetRotY = baseRotY + normX * 0.50;
       targetRotX = baseRotX + normY * 0.38;
       targetRotZ = baseRotZ - normX * 0.14;
-      targetPosX = basePosX + normX * 38;
-      targetPosY = basePosY - normY * 22;
+      targetPosX = basePosX + normX * 22;
+        targetPosY = basePosY - normY * 16;
 
       wakeMotionLoop();
     }
@@ -532,8 +532,8 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
         targetRotY = baseRotY + normX * 0.50;
         targetRotX = baseRotX + normY * 0.38;
         targetRotZ = baseRotZ - normX * 0.14;
-        targetPosX = basePosX + normX * 38;
-        targetPosY = basePosY - normY * 22;
+        targetPosX = basePosX + normX * 22;
+      targetPosY = basePosY - normY * 16;
         wakeMotionLoop();
         return;
       }
