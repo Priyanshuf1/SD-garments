@@ -1179,6 +1179,7 @@
             <p class="site-footer__heading">LEGAL &amp; POLICIES</p>
             <a href="/pages/terms-of-service.html">Terms &amp; Conditions</a>
             <a href="/pages/privacy-policy.html">Privacy Policy</a>
+            <a href="/cookie-policy">Cookie Policy</a>
             <a href="/pages/refund-policy.html">Refund Policy</a>
             <a href="/pages/shipping-policy.html">Shipping Guidelines</a>
             <div class="site-footer__social">
@@ -1211,6 +1212,7 @@
       <!-- Bottom Copyright & Legal -->
       <div class="site-footer__bottom">
         <p class="site-footer__copyright">&copy; 2026 ALLEYRICH &bull; ALL RIGHTS RESERVED &bull; CRAFTED FOR THE FEW</p>
+
       </div>
     </div>
   </div>
@@ -1942,12 +1944,16 @@
       }
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      CollectionEngine.init();
-    });
-
     if (typeof window !== 'undefined') {
       window.CollectionEngine = CollectionEngine;
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        CollectionEngine.init();
+      });
+    } else {
+      CollectionEngine.init();
     }
   </script>
 <script src="/assets/js/quick-buy.js"></script>
@@ -1955,6 +1961,6 @@
 <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/size-guide-modal.js" defer></script>
   <script src="/assets/js/ai-support.js" defer></script>
-  <script src="/assets/js/allyrich-cookies.js" defer></script>
+<script src="/assets/js/cookie-consent.js" defer></script>
 </body>
 </html>

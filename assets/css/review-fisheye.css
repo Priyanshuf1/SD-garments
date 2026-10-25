@@ -2,8 +2,14 @@
 
 .review-hero-controls, .fisheye-toggle { display: none !important; }
 
+#review-canvas-container,
+#shopify-section-client-reviews #canvas-container,
+#shopify-section-client-reviews canvas {
+  touch-action: pan-y !important;
+}
+
 #shopify-section-client-reviews {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 720px;
-  contain: content;
+  contain: layout style;
+  transform: translateZ(0);
+  will-change: transform;
 }

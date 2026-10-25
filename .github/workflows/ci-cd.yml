@@ -40,6 +40,9 @@ jobs:
       - name: Test D2C Features & 60 FPS Performance Optimizations
         run: node test_d2c_performance.js
 
+      - name: Test Product Page Rendering & Customer Detail Persistence
+        run: node test_product_and_account_fixes.js
+
   # ============================================================================
   # STAGE 2: Multi-Stage Docker Container Build & Health Verification
   # ============================================================================
@@ -109,8 +112,11 @@ jobs:
           envs: GEMINI_API_KEY,N8N_ORDER_WEBHOOK_URL,RESEND_API_KEY,BREVO_API_KEY
           script: |
             cd ~/SD-garments
+            mkdir -p ~/SD-garments-data-backup
+            cp -f data/*.json ~/SD-garments-data-backup/ 2>/dev/null || true
             git fetch origin main
             git reset --hard origin/main
+            cp -f ~/SD-garments-data-backup/*.json data/ 2>/dev/null || true
             [ -f .env ] || touch .env
             if [ -n "$GEMINI_API_KEY" ]; then
               sed -i '/^GEMINI_API_KEY=/d' .env
@@ -127,6 +133,14 @@ jobs:
             echo "APP_DOMAIN=alleyrich.com" >> .env
             sed -i '/^ADMIN_SECRET_KEY=/d' .env
             echo "ADMIN_SECRET_KEY=genrage_super_admin_secret_key_2026" >> .env
+            sed -i '/^ADMIN_USERNAME=/d' .env
+            echo "ADMIN_USERNAME=Deepak_is_admin" >> .env
+            sed -i '/^ADMIN_PASSWORD=/d' .env
+            echo "ADMIN_PASSWORD=#99882211@" >> .env
+            sed -i '/^ADMIN_2FA_SECRET=/d' .env
+            echo "ADMIN_2FA_SECRET=4I543GYJL7LAMAC7UPPL" >> .env
+            sed -i '/^ADMIN_SLUG=/d' .env
+            echo "ADMIN_SLUG=/allyrich-hq" >> .env
             sed -i '/^DELHIVERY_API_TOKEN=/d' .env
             echo "DELHIVERY_API_TOKEN=5b89b0734b0d4daa1655ea178e432c33f1964d80" >> .env
             sed -i '/^DELHIVERY_WAREHOUSE_NAME=/d' .env

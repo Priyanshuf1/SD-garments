@@ -1,15 +1,20 @@
 {
-  "name": "genrage-clone",
-  "version": "1.0.0",
-  "description": "Full production clone of GENRAGE | Streetwear Clothing Brand India",
+  "name": "alleyrich",
+  "version": "2.0.0",
+  "description": "ALLEYRICH — High-End Luxury D2C Streetwear Platform & Cloud Infrastructure (Node.js, Docker, AWS EC2, Delhivery API, Cashfree, WebGL 3D)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node test_legal_policies.js && node test_security_abuse_controls.js && node test_complete_fixes.js && node test_d2c_performance.js"
+    "test": "node test_legal_policies.js && node test_security_abuse_controls.js && node test_marketing_broadcast.js && node test_master_bot_audit.js"
   },
-  "author": "GENRAGE",
+  "author": "Priyanshu (SD Garments / ALLEYRICH)",
   "license": "ISC",
+  "homepage": "https://alleyrich.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Priyanshuf1/SD-garments.git"
+  },
   "dependencies": {
     "pg": "^8.23.1"
   }

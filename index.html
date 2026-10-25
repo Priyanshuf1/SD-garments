@@ -5,265 +5,21 @@
 <html lang="en" dir="ltr">
   <head>
 
-    <!-- Gokwik theme code start -->
-
-<link rel="dns-prefetch" href="https://pdp.gokwik.co/">
-<link rel="dns-prefetch" href="https://api.gokwik.co">
-
-
-<script>
-
-window.merchantInfo  = {
-        mid: "19g6hlr8xrelb",
-        environment: "production",
-        type: "merchantInfo",
-  		storeId: "63393399022",
-  		fbpixel: "1252619175222835",
-      snapchatPixels: "{1056c3b0-8251-4aaf-a8aa-43d388d1a4ae}",
-      }
-var productFormSelector = '';
-var cart = {"note":null,"attributes":{},"original_total_price":0,"total_price":0,"total_discount":0,"total_weight":0.0,"item_count":0,"items":[],"requires_shipping":false,"currency":"INR","items_subtotal_price":0,"cart_level_discount_applications":[],"checkout_charge_amount":0}
-var templateName = 'index'
-</script>
-
-<script src="https://pdp.gokwik.co/merchant-integration/build/merchant.integration.js?v4"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script>
-  window.addEventListener('gokwikLoaded', e => {
-
-   $('.gokwik-checkout button').prop('disabled', false);
-              $('.gokwik-checkout button').removeClass('disabled');
-         $('#gokwik-buy-now').prop('disabled', false);
-              $('#gokwik-buy-now').removeClass('disabled');
-
-  const targetElement = document.querySelector("body");
-  function debounce(func, delay) {
-    let timeoutId;
-    return function () {
-      const context = this;
-      const args = arguments;
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(function () {
-        func.apply(context, args);
-      }, delay);
-    };
-  }
-  const observer = new MutationObserver(() => {
- const homeSelector = document.querySelector('.quick-buy-modal #gokwik-buy-now');
-    if(homeSelector){
-    homeSelector.classList.remove("disabled");
-    homeSelector.removeAttribute("disabled");
-    }
-    debouncedMyTimer();
-  });
-  const debouncedMyTimer = debounce(() => {
-    observer.disconnect();
-    enableGokwikCart();
-    observer.observe(targetElement, { childList: true, subtree: true });
-  }, 700);
-  function enableGokwikCart() {
-      $('.gokwik-checkout button').prop('disabled', false);
-              $('.gokwik-checkout button').removeClass('disabled');
-
-  }
-  const config = { childList: true, subtree: true };
-  observer.observe(targetElement, config);
-});
-</script>
-
-<style>
-
-.gokwik-checkout {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: end;
-  margin-bottom: 10px;
-}
-.gokwik-checkout button {
-  max-width:100%;
-  width: 100%;
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #000000;
-  position: relative;
-  margin: 0;
-  cursor: pointer;
-  padding: 5px 10px;
-  height:45px;
-}
-#gokwik-buy-now.disabled, .gokwik-disabled{
-  opacity:0.5;
-  cursor: not-allowed;
-  }
-  .gokwik-checkout button:focus {
-  outline: none;
-}
-.gokwik-checkout button > span {
-  display: flex;
-}
-.gokwik-checkout button > span.btn-text {
-  display: flex;
-  flex-direction: column;
-  color: #ffffff;
-  align-items: flex-start;
-}
-.gokwik-checkout button > span.btn-text > span:last-child {
-	padding-top: 2px;
-    font-size: 10px;
-    line-height: 10px;
-    text-transform: initial;
-}
-.gokwik-checkout button > span.btn-text > span:first-child {
-   font-size: 13px;
-}
-.gokwik-checkout button > span.pay-opt-icon img:first-child {
-  margin-right: 10px;
-  margin-left: 10px;
-}
-/*   Additional */
-.gokwik-checkout button.disabled{
-  opacity:0.5;
-  cursor: not-allowed;
-  }
-.gokwik-checkout button.disabled .addloadr#btn-loader{
-   display: flex!important;
-}
-  #gokwik-buy-now.disabled .addloadr#btn-loader{
-   display: flex!important;
-}
-    #gokwik-buy-now:disabled{
-   cursor: not-allowed;
-}
-.gokwik-checkout button:hover {
-  background-position: right center;
-}
-button[name="checkout"]{
-width:0px;
-height:0px;
-visibility:hidden;
-}
-
- 
-
-  
-
- #gokwik-buy-now {
-   background: #000000;
-   width: 100%;
-   color: #ffffff;
-   cursor: pointer;
-   line-height: 1;
-   border-radius: 5px;
-   padding: 15px 10px;
-    font-size: 13px;
-    margin-bottom: 10px;
-    position: relative;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-
- }
-
-  
-
-/* Loader CSS */
-  #btn-loader{
-    display: none;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    justify-content: center;
-    align-items: center;
-    background:#000000;
-    border-radius:10px;
     
-  } 
-
-.cir-loader,
-.cir-loader:after {
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-}
-.cir-loader {
-  margin: 6px auto;
-  font-size: 10px;
-  position: relative;
-  text-indent: -9999em;
-  border-top: 0.5em solid rgba(255, 255, 255, 0.2);
-  border-right: 0.5em solid rgba(255, 255, 255, 0.2);
-  border-bottom: 0.5em solid rgba(255, 255, 255, 0.2);
-  border-left: 0.5em solid #ffffff;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-animation: load8 1.1s infinite linear;
-  animation: load8 1.1s infinite linear;
-}
-@-webkit-keyframes load8 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes load8 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-</style> 
-
-
-<script type="text/javascript">
-(function(e,t,n){
-    if(e.snaptr)return;
-    var a=e.snaptr=function(){
-        a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)
-    };
-    a.queue=[];
-    var s='script';
-    var r=t.createElement(s);
-    r.async=!0;
-    r.src=n;
-    var u=t.getElementsByTagName(s)[0];
-    u.parentNode.insertBefore(r,u);
-})(window,document,'https://sc-static.net/scevent.min.js');
-
-snaptr('init', '1056c3b0-8251-4aaf-a8aa-43d388d1a4ae');
-
- 
-</script>
-
-
-<!-- Gokwik theme code End -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height, minimum-scale=1.0, maximum-scale=5.0">
 
     <title>
       ALLEYRICH | High-End Streetwear &amp; Apparel
     </title><meta name="description" content="Explore ALLEYRICH: high-end streetwear, tailored baggy pants, boxy oversized silhouettes, and architectural aesthetic drops. Free shipping in India.">
-<link rel="canonical" href="https://genrage.vercel.app/"><link rel="shortcut icon" href="/assets/ar-logo.png">
+<link rel="canonical" href="https://alleyrich.com/"><link rel="shortcut icon" href="/assets/ar-logo.png">
       <link rel="apple-touch-icon" href="/assets/ar-logo.png"><link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin><link rel="preload" href="https://genrage.com/cdn/fonts/instrument_sans/instrumentsans_n4.db86542ae5e1596dbdb28c279ae6c2086c4c5bfa.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="https://genrage.com/cdn/fonts/nunito/nunito_n4.fc49103dc396b42cae9460289072d384b6c6eb63.woff2" as="font" type="font/woff2" crossorigin><meta property="og:type" content="website">
 <meta property="og:title" content="ALLEYRICH | High-End Streetwear &amp; Apparel">
 <meta property="og:image" content="/assets/footer-ruins.webp">
 <meta property="og:image:secure_url" content="/assets/footer-ruins.webp">
 <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630"><meta property="og:description" content="Explore ALLEYRICH: high-end streetwear, tailored baggy pants, boxy oversized silhouettes, and architectural aesthetic drops. Free shipping in India.">
-<meta property="og:url" content="https://genrage.vercel.app/">
+<meta property="og:url" content="https://alleyrich.com/">
 <meta property="og:site_name" content="ALLEYRICH"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="ALLEYRICH | High-End Streetwear &amp; Apparel">
 <meta name="twitter:description" content="Explore ALLEYRICH: high-end streetwear, tailored baggy pants, boxy oversized silhouettes, and architectural aesthetic drops. Free shipping in India.">
 <meta name="twitter:image" content="/assets/footer-ruins.webp">
@@ -1349,24 +1105,7 @@ first.parentNode.insertBefore(script, first);
     eventsListenerScript.src = "//genrage.com/cdn/shopifycloud/storefront/assets/shop_events_listener-4e26a9ce.js";
     document.getElementsByTagName('head')[0].appendChild(eventsListenerScript);
 })();</script>
-<script
-  defer
-  src="https://genrage.com/cdn/shopifycloud/perf-kit/shopify-perf-kit-3.11.0.min.js"
-  data-application="storefront-renderer"
-  data-shop-id="63393399022"
-  data-render-region="gcp-asia-southeast1"
-  data-page-type="index"
-  data-theme-instance-id="166229147886"
-  data-theme-name="Prestige"
-  data-theme-version="11.4.1"
-  data-monorail-region="shop_domain"
-  data-resource-timing-sampling-rate="10"
-  data-shs="true"
-  data-shs-beacon="true"
-  data-shs-export-with-fetch="true"
-  data-shs-logs-sample-rate="1"
-  data-shs-beacon-endpoint="https://genrage.com/api/collect"
-></script>
+
 <script src="https://cdn.shopify.com/storefront/web-components/account.js" type="module" crossorigin fetchpriority="low" async></script><script id="shopify-customer-account-data" type="application/json">{"customer":null,"shop":{"id":"63393399022","customerAccountTranslations":[{"key":"account_menu.signed_out_state.sheet_title","value":"Sign in or create account"},{"key":"account_menu.signed_out_state.section_divider","value":"More ways to sign in"},{"key":"account_menu.signed_out_state.alternate_divider","value":"OR"},{"key":"account_menu.signed_out_state.email_field_label","value":"Email"},{"key":"account_menu.signed_out_state.orders_button","value":"Orders"},{"key":"account_menu.signed_out_state.profile_button","value":"Profile"},{"key":"account_menu.signed_out_state.shop_login_button","value":"Sign in with Shop"},{"key":"account_menu.signed_out_state.continue_with_google","value":"Continue with Google"},{"key":"account_menu.signed_out_state.continue_with_facebook","value":"Continue with Facebook"},{"key":"account_menu.signed_out_state.marketing_consent_label","value":"Email me with news and offers"},{"key":"account_menu.signed_in_state.greeting_with_name","value":"Hi, {{first_name}}"},{"key":"account_menu.signed_in_state.greeting_without_name","value":"Account"},{"key":"account_menu.signed_in_state.orders_button","value":"Orders"},{"key":"account_menu.signed_in_state.profile_button","value":"Profile"},{"key":"account_menu.location_picker.sheet_title","value":"Locations"},{"key":"account_menu.location_picker.search_field_placeholder","value":"Search"},{"key":"account_menu.aria_labels.close_menu","value":"Close menu"},{"key":"account_menu.aria_labels.back_to_main_menu","value":"Back to main menu from {{title}}"},{"key":"account_menu.aria_labels.open_submenu","value":"{{title}}, opens submenu"},{"key":"account_menu.aria_labels.loading_menu","value":"Loading menu"},{"key":"account_menu.aria_labels.loading","value":"Loading"},{"key":"account_menu.aria_labels.account","value":"Account"},{"key":"account_menu.aria_labels.sign_in_with_email","value":"Sign in with email"},{"key":"account_menu.aria_labels.sign_in","value":"Sign in"}],"socialLoginProviders":[{"handle":"Shop"}],"legacyCustomerAccounts":false,"signInLinksVisible":true,"b2bEnabled":false,"marketingConsentSigninEnabled":true,"marketingConsentPreselected":true},"visitor":{"country":"IN","language":"en"}}</script>
 <meta name="shopify-y" content="38e0883e-ba0f-4512-b95a-6e3d70f43dc2" data-expiration="1823824262000"><meta name="shopify-s" content="21dc5d01-92b0-4b48-b0aa-39c8bf703ebd" data-expiration="1792268462000">
   <!-- AlleyRich Fonts & Styles -->
@@ -4330,6 +4069,17 @@ first.parentNode.insertBefore(script, first);
       min-height: 700px;
       overflow: hidden;
       background-color: #c4c4c4;
+      transform: translateZ(0);
+      will-change: transform;
+      contain: layout paint;
+    }
+    body.is-scrolling #shopify-section-allyrich-3d-hero,
+    body.is-scrolling #shopify-section-allyrich-3d-hero canvas,
+    body.is-scrolling #allyrich-spline-canvas,
+    body.is-scrolling #allyrich-3d-hero-container,
+    body.is-scrolling #review-canvas-container,
+    body.is-scrolling #shopify-section-client-reviews canvas {
+      pointer-events: none !important;
     }
     .allyrich-hero-page {
       position: relative;
@@ -4345,6 +4095,8 @@ first.parentNode.insertBefore(script, first);
       justify-content: center;
       overflow: hidden;
       touch-action: pan-y;
+      transform: translateZ(0);
+      will-change: transform;
     }
     #allyrich-spline-canvas {
       position: absolute;
@@ -4353,14 +4105,13 @@ first.parentNode.insertBefore(script, first);
       height: 100% !important;
       display: block;
       outline: none;
-      cursor: grab;
+      cursor: default;
+      pointer-events: none !important;
       touch-action: pan-y !important;
       background: transparent !important;
       background-color: transparent !important;
       contain: layout paint;
-    }
-    #allyrich-spline-canvas:active {
-      cursor: grabbing;
+      transform: translateZ(0);
     }
     @media (max-width: 900px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
       #shopify-section-allyrich-3d-hero {
@@ -4424,9 +4175,9 @@ first.parentNode.insertBefore(script, first);
       <div class="spline-spinner"></div>
     </div>
   </div>
-  <script type="module" src="/assets/js/allyrich-3d-hero.js"></script>
+  <script type="module" src="/assets/js/allyrich-3d-hero.js?v=60fps"></script>
 </section><section id="shopify-section-client-reviews" class="shopify-section shopify-section--client-reviews">
-  <link rel="stylesheet" href="/assets/css/review-fisheye.css">
+  <link rel="stylesheet" href="/assets/css/review-fisheye.css?v=60fps">
   
   <div class="review-hero-header-wrap">
     <h2 class="review-hero-title">Let Clients Speak For Us</h2>
@@ -4441,7 +4192,7 @@ first.parentNode.insertBefore(script, first);
     <div id="review-canvas-container"></div>
   </div>
 
-  <script type="module" src="/assets/js/review-fisheye.js"></script>
+  <script type="module" src="/assets/js/review-fisheye.js?v=60fps"></script>
 </section><section id="shopify-section-template--23671271489774__1784625804c9d6379c" class="shopify-section shopify-section--blocks">
 </section><script data-locksmith>
     var load = function () {
@@ -4503,8 +4254,8 @@ first.parentNode.insertBefore(script, first);
                 <input type="email" placeholder="ENTER YOUR EMAIL" aria-label="Your email address" required class="site-footer__newsletter-input">
                 <input type="tel" placeholder="WHATSAPP NO. (OPTIONAL)" aria-label="Your WhatsApp mobile number" class="site-footer__newsletter-phone site-footer__newsletter-input">
               </div>
-              <button type="submit" class="site-footer__newsletter-btn">JOIN VIP DROP ALERTS</button>
-              <p class="site-footer__newsletter-disclaimer">By subscribing, you agree to receive promotional updates &amp; accept our <a href="/pages/privacy-policy.html">Privacy Policy</a> &amp; <a href="/pages/terms-of-service.html">Terms</a>. Unsubscribe anytime.</p>
+<button type="submit" class="site-footer__newsletter-btn">JOIN VIP DROP ALERTS</button>
+              <p class="site-footer__newsletter-disclaimer">By subscribing, you agree to receive promotional updates &amp; accept our <a href="/privacy-policy">Privacy Policy</a> &amp; <a href="/terms-of-service">Terms</a>. Unsubscribe anytime.</p>
             </form>
           </div>
         </div>
@@ -4524,6 +4275,7 @@ first.parentNode.insertBefore(script, first);
             <p class="site-footer__heading">LEGAL &amp; POLICIES</p>
             <a href="/pages/terms-of-service.html">Terms &amp; Conditions</a>
             <a href="/pages/privacy-policy.html">Privacy Policy</a>
+            <a href="/cookie-policy">Cookie Policy</a>
             <a href="/pages/refund-policy.html">Refund Policy</a>
             <a href="/pages/shipping-policy.html">Shipping Guidelines</a>
             <div class="site-footer__social">
@@ -4556,6 +4308,7 @@ first.parentNode.insertBefore(script, first);
       <!-- Bottom Copyright & Legal -->
       <div class="site-footer__bottom">
         <p class="site-footer__copyright">&copy; 2026 ALLEYRICH &bull; ALL RIGHTS RESERVED &bull; CRAFTED FOR THE FEW</p>
+
       </div>
     </div>
   </div>
@@ -6906,6 +6659,6 @@ first.parentNode.insertBefore(script, first);
 <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/size-guide-modal.js" defer></script>
   <script src="/assets/js/ai-support.js" defer></script>
-  <script src="/assets/js/allyrich-cookies.js" defer></script>
+<script src="/assets/js/cookie-consent.js" defer></script>
 </body>
 </html>

@@ -38,6 +38,7 @@ const supabase = require('./lib/supabase.js');
 const security = require('./lib/security.js');
 const whatsapp = require('./lib/whatsapp.js');
 const delhivery = require('./lib/delhivery.js');
+const totp = require('./lib/totp.js');
 let db = null;
 try {
   db = require('./lib/db.js');
@@ -184,6 +185,14 @@ function writeJsonFile(filename, data) {
   const p = path.join(DATA_DIR, filename);
   try {
     fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
+    if (filename === 'products.json') {
+      memoryProducts = null;
+      memoryProductsLastFetch = 0;
+    }
+    if (filename === 'orders.json') {
+      memoryOrders = null;
+      memoryOrdersLastFetch = 0;
+    }
     return true;
   } catch (err) {
     console.error(`Error writing ${filename}:`, err.message);
@@ -282,6 +291,8 @@ const PRODUCTS_CACHE_TTL_MS = 3000;
 let memoryOrders = null;
 let memoryOrdersLastFetch = 0;
 const ORDERS_CACHE_TTL_MS = 2000;
+let lastAwsDbErrorTime = 0;
+const AWS_DB_ERROR_COOLDOWN_MS = 30000;
 
 function filterOutGiftCards(products) {
   if (!Array.isArray(products)) return [];
@@ -302,6 +313,8 @@ function getMemoryProducts() {
   }
   return memoryProducts;
 }
+// Warm up in-memory catalog cache on server boot
+getMemoryProducts();
 
 function formatSupabaseProductToLocal(s) {
   const variants = Array.isArray(s.product_variants) && s.product_variants.length > 0
@@ -356,7 +369,7 @@ async function getAllProducts() {
     return memoryProducts;
   }
 
-  if (db && db.isConfigured) {
+  if (db && db.isConfigured && (now - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
     try {
       const awsProducts = await db.products.getAll();
       if (Array.isArray(awsProducts) && awsProducts.length > 0) {
@@ -366,11 +379,14 @@ async function getAllProducts() {
         return filtered;
       }
     } catch (err) {
-      console.warn('AWS RDS products fetch warning:', err.message);
+      lastAwsDbErrorTime = Date.now();
+      console.warn('AWS RDS products fetch warning (cooldown 30s):', err.message);
     }
   }
 
   const localList = getMemoryProducts();
+  memoryProducts = localList;
+  memoryProductsLastFetch = Date.now();
   if (!supabase.isConfigured) return localList;
 
   try {
@@ -396,6 +412,8 @@ function getMemoryOrders() {
   }
   return memoryOrders;
 }
+// Warm up in-memory orders cache on server boot
+getMemoryOrders();
 
 function formatSupabaseOrderToLocal(s) {
   const addr = s.shipping_address || {};
@@ -433,7 +451,7 @@ async function getAllOrders() {
     return memoryOrders;
   }
 
-  if (db && db.isConfigured) {
+  if (db && db.isConfigured && (now - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
     try {
       const awsOrders = await db.orders.getAll();
       if (Array.isArray(awsOrders)) {
@@ -442,11 +460,14 @@ async function getAllOrders() {
         return awsOrders;
       }
     } catch (err) {
-      console.warn('AWS RDS orders fetch warning:', err.message);
+      lastAwsDbErrorTime = Date.now();
+      console.warn('AWS RDS orders fetch warning (cooldown 30s):', err.message);
     }
   }
 
   const localOrders = getMemoryOrders();
+  memoryOrders = localOrders;
+  memoryOrdersLastFetch = Date.now();
   if (!supabase.isConfigured) return localOrders;
 
   try {
@@ -1104,6 +1125,8 @@ async function handleTrackOrder(req, res, parsedUrl) {
       },
       items: matchedOrder.items || [],
       trackingNumber: matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill || '',
+      delhiveryWaybill: matchedOrder.delhiveryWaybill || matchedOrder.trackingNumber || '',
+      trackingUrl: matchedOrder.trackingUrl || (matchedOrder.trackingNumber ? `https://www.delhivery.com/track/package/${matchedOrder.trackingNumber}` : null),
       carrier: 'Delhivery Express Air Priority',
       estimatedDelivery: '2 - 4 Business Days',
       steps
@@ -1734,6 +1757,13 @@ async function handleCreateOrder(req, res, isCheckout = false) {
         customers.unshift(newCust);
       }
       writeJsonFile('customers.json', customers);
+      if (db && db.isConfigured) {
+        try {
+          await db.customers.upsert(cust || newCust);
+        } catch (dbCustErr) {
+          console.warn('AWS RDS customer upsert on order warning:', dbCustErr.message);
+        }
+      }
     }
   } catch (e) {}
 
@@ -1821,6 +1851,12 @@ async function handleDelhiveryAwb(req, res, id) {
   order.orderStatus = 'Shipped';
   order.trackingUrl = trackingUrl;
   order.shippingLabelUrl = packingSlipUrl;
+  order.shippingDetails = {
+    waybill: delhiveryAwb,
+    carrier: order.carrier,
+    trackingUrl: trackingUrl,
+    packingSlipUrl: packingSlipUrl
+  };
   order.updatedAt = new Date().toISOString();
 
   writeJsonFile('orders.json', orders);
@@ -2063,18 +2099,46 @@ function generatePrintablePackingSlip(order, waybill) {
 
 async function handleShippingLabel(req, res, id) {
   const cleanId = String(decodeURIComponent(id || '')).replace(/\/shipping-label\/?$/, '').replace(/^\/+|\/+$/g, '').trim();
-  const orders = await getAllOrders();
+  let orders = await getAllOrders();
   let order = orders.find(o => String(o.id) === cleanId);
+
+  if (!order) {
+    const freshOrders = readJsonFile('orders.json', []);
+    order = freshOrders.find(o => String(o.id) === cleanId);
+    if (order) {
+      memoryOrders = freshOrders;
+      memoryOrdersLastFetch = Date.now();
+      orders = freshOrders;
+    }
+  }
 
   // If id is awb-XXXX, lookup by waybill
   if (!order && cleanId.startsWith('awb-')) {
     const rawAwb = cleanId.replace('awb-', '').trim();
     order = orders.find(o => o.trackingNumber === rawAwb || o.delhiveryWaybill === rawAwb);
+    if (!order) {
+      const freshOrders = readJsonFile('orders.json', []);
+      order = freshOrders.find(o => o.trackingNumber === rawAwb || o.delhiveryWaybill === rawAwb);
+      if (order) {
+        memoryOrders = freshOrders;
+        memoryOrdersLastFetch = Date.now();
+        orders = freshOrders;
+      }
+    }
   }
 
   // If still not found, check if id is a waybill directly
   if (!order) {
     order = orders.find(o => o.trackingNumber === cleanId || o.delhiveryWaybill === cleanId);
+    if (!order) {
+      const freshOrders = readJsonFile('orders.json', []);
+      order = freshOrders.find(o => o.trackingNumber === cleanId || o.delhiveryWaybill === cleanId);
+      if (order) {
+        memoryOrders = freshOrders;
+        memoryOrdersLastFetch = Date.now();
+        orders = freshOrders;
+      }
+    }
   }
 
   let waybill = (order && (order.trackingNumber || order.delhiveryWaybill))
@@ -2242,14 +2306,64 @@ async function appHandler(req, res) {
     return res.end('// Shopify telemetry stub');
   }
 
+  // Inject Global Defense-in-Depth HTTP Security Headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   // Handle OPTIONS for CORS
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key'
     });
     return res.end();
+  }
+
+  // -------------------------------------------------------------
+  // Shield Hidden Files, Root Source Files & Private Data Archives
+  // -------------------------------------------------------------
+  const normalizedPath = path.normalize(pathname).replace(/\\/g, '/');
+  
+  // 1. Block dotfiles (.env, .git, .system_generated, etc.) and directory traversal
+  if (normalizedPath.startsWith('/.') || normalizedPath.includes('/..')) {
+    return sendJson(res, 403, { success: false, message: 'Forbidden: Access to hidden system files is prohibited.' });
+  }
+
+  // 2. Block direct root server source files (.js, .json, .lock, .md, .yml)
+  const isDirectRootFile = normalizedPath.lastIndexOf('/') === 0;
+  const blockedRootExtensions = ['.js', '.json', '.lock', '.yml', '.yaml', '.md', '.sh', '.bat', '.ps1'];
+  if (isDirectRootFile && blockedRootExtensions.includes(path.extname(normalizedPath).toLowerCase())) {
+    if (normalizedPath !== '/cart.js') {
+      return sendJson(res, 403, { success: false, message: 'Forbidden: Direct access to server source files is prohibited.' });
+    }
+  }
+
+  // 3. Block unauthorized direct access to /data/ directory (except public products & collections catalog)
+  if (normalizedPath.startsWith('/data/')) {
+    if (normalizedPath !== '/data/products.json' && normalizedPath !== '/data/collections.json') {
+      if (!security.isAdminAuthorized(req, parsedUrl)) {
+        return sendJson(res, 401, { success: false, message: 'Unauthorized: Administrator privileges required to access internal data archives.' });
+      }
+    }
+  }
+
+  // -------------------------------------------------------------
+  // SEO Routes: robots.txt & dynamic sitemap.xml
+  // -------------------------------------------------------------
+  if (pathname === '/robots.txt') {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end(`User-agent: *\nDisallow: /admin\nDisallow: /account\nDisallow: /checkout\nDisallow: /data/\nDisallow: /api/\nAllow: /\nAllow: /collections/\nAllow: /products/\nAllow: /pages/\n\nSitemap: https://allyrich.com/sitemap.xml\n`);
+  }
+
+  if (pathname === '/sitemap.xml') {
+    const sitemapPath = path.join(PUBLIC_DIR, 'sitemap.xml');
+    if (fs.existsSync(sitemapPath)) {
+      res.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8' });
+      return fs.createReadStream(sitemapPath).pipe(res);
+    }
   }
 
   // -------------------------------------------------------------
@@ -2282,7 +2396,16 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // Admin Portal Page Route
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // Stealth Admin Route: /allyrich-hq (Fake 404 on /admin)
+  // -------------------------------------------------------------
   if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html') {
+    // Stealth Mode: Deceive unauthorized scanners with an authentic 404
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    return res.end('<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style="background:#09090b;color:#666;font-family:sans-serif;text-align:center;padding:5rem;"><h1>404 Not Found</h1><p>The requested resource does not exist on this server.</p></body></html>');
+  }
+
+  if (pathname === '/allyrich-hq' || pathname === '/allyrich-hq/' || pathname === '/allyrich-hq.html') {
     const adminPath = path.join(PUBLIC_DIR, 'admin.html');
     if (fs.existsSync(adminPath)) {
       res.writeHead(200, {
@@ -2344,6 +2467,21 @@ async function appHandler(req, res) {
     }
   }
 
+    // Live Public Delhivery Pincode Serviceability API
+  if (pathname.startsWith('/api/shipping/pincode') || pathname === '/api/shipping/serviceability') {
+    if (req.method === 'GET') {
+      const pinParam = pathname.startsWith('/api/shipping/pincode/') 
+        ? pathname.replace('/api/shipping/pincode/', '').trim()
+        : (parsedUrl.searchParams.get('pincode') || parsedUrl.searchParams.get('code') || '').trim();
+      
+      const result = await delhivery.checkPincodeServiceability(pinParam);
+      return sendJson(res, result.serviceable ? 200 : 400, {
+        success: result.serviceable,
+        ...result
+      });
+    }
+  }
+
   // 1. Live Public Order Tracking API
   if (pathname === '/api/orders/track' || pathname === '/api/track-order') {
     if (req.method === 'GET') {
@@ -2390,6 +2528,77 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // REST API Endpoints for Admin Management Portal
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // Public Admin 2FA Authentication Endpoints (Pre-auth barrier)
+  // -------------------------------------------------------------
+  if (pathname === '/api/admin/login' && req.method === 'POST') {
+    const clientIp = security.getClientIp(req);
+    // Rate limit: max 5 failed attempts per 15 minutes by IP
+    const rateCheck = security.checkRateLimit(`admin_login:${clientIp}`, 5, 15 * 60);
+    if (!rateCheck.allowed) {
+      return sendJson(res, 429, {
+        success: false,
+        message: `Security Lockout: Too many failed attempts. Try again in ${rateCheck.resetAfterSeconds} seconds.`
+      });
+    }
+
+    const payload = await parseBody(req);
+    const username = (payload.username || '').trim();
+    const password = (payload.password || '').trim();
+    const totpCode = (payload.totpCode || '').trim();
+
+    const expectedUser = process.env.ADMIN_USERNAME || 'Deepak_is_admin';
+    const expectedPass = process.env.ADMIN_PASSWORD || '#99882211@';
+    const totpSecret = process.env.ADMIN_2FA_SECRET || '4I543GYJL7LAMAC7UPPL';
+
+    if (username !== expectedUser || password !== expectedPass) {
+      return sendJson(res, 401, {
+        success: false,
+        message: 'Invalid administrative username or master password.'
+      });
+    }
+
+    const otpAuthUrl = totp.getOtpAuthUrl(expectedUser, totpSecret, 'ALLYRICH');
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpAuthUrl)}`;
+
+    if (!totpCode) {
+      return sendJson(res, 200, {
+        success: false,
+        require2fa: true,
+        setupQr: qrUrl,
+        manualKey: totpSecret,
+        message: 'Master credentials accepted. Enter your 6-digit Google Authenticator code.'
+      });
+    }
+
+    const isValidTotp = totp.verifyTotp(totpSecret, totpCode);
+    if (!isValidTotp) {
+      return sendJson(res, 400, {
+        success: false,
+        require2fa: true,
+        setupQr: qrUrl,
+        manualKey: totpSecret,
+        message: 'Invalid or expired 6-digit code. Please check your Google Authenticator app.'
+      });
+    }
+
+    // Both password and 2FA verified! Create 12-hour session
+    const session = security.createAdminSession(username);
+    return sendJson(res, 200, {
+      success: true,
+      token: session.token,
+      expiresAt: session.expiresAt,
+      message: 'Admin authorization successful. Vault unlocked.'
+    });
+  }
+
+  if (pathname === '/api/admin/logout' && req.method === 'POST') {
+    const token = req.headers['x-admin-token'] || req.headers['x-admin-key'] || '';
+    security.revokeAdminSession(token);
+    return sendJson(res, 200, { success: true, message: 'Logged out successfully.' });
+  }
+
+  // General Admin API Router
   if (pathname.startsWith('/api/admin/')) {
     // 1. Enforce strict Admin Authorization across all /api/admin/* endpoints
     if (!security.isAdminAuthorized(req, parsedUrl)) {
@@ -2963,7 +3172,7 @@ async function appHandler(req, res) {
                           ${message.replace(/\n/g, '<br>')}
                         </div>
                         <div style="text-align:center; margin:30px 0;">
-                          <a href="https://genrage.vercel.app/collections/shop" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                          <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
                         </div>
                       </div>
                       <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
@@ -3082,7 +3291,7 @@ async function appHandler(req, res) {
                           </div>
                           ${code ? `<div style="background:#1a1a1a;border:1px dashed #444;padding:12px;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:24px;color:#fff;">USE CODE: ${code.toUpperCase()}</div>` : ''}
                           <div style="text-align:center; margin:30px 0;">
-                            <a href="${link || 'https://genrage.vercel.app/collections/shop'}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                            <a href="${link || 'https://alleyrich.com/collections.html'}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
                           </div>
                         </div>
                         <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
@@ -3110,7 +3319,7 @@ async function appHandler(req, res) {
             subject: subject || headline,
             message: message,
             code: code,
-            link: link || 'https://genrage.vercel.app/collections/shop',
+            link: link || 'https://alleyrich.com/collections.html',
             brandName: 'ALLEYRICH'
           });
 
@@ -3530,20 +3739,55 @@ async function appHandler(req, res) {
         }
 
         let localCust = customers.find(c => (c.email || '').toLowerCase() === email);
+        if (!localCust && db && db.isConfigured) {
+          try {
+            localCust = await db.customers.getByEmail(email);
+            if (localCust) {
+              customers.unshift(localCust);
+              writeJsonFile('customers.json', customers);
+            }
+          } catch (e) {}
+        }
+
         if (!localCust) {
+          let orderName = email.split('@')[0].replace(/[._]/g, ' ');
+          let orderPhone = '';
+          let orderAddress = '';
+          let orderLocality = '';
+          let orderCity = '';
+          let orderState = '';
+          let orderPincode = '';
+          let userOrdersCount = 0;
+          let userTotalSpent = 0;
+          try {
+            const pastOrders = await getAllOrders();
+            const matchingOrder = pastOrders.find(o => (o.customer?.email || o.email || o.guest_email || '').toLowerCase() === email);
+            if (matchingOrder && matchingOrder.customer) {
+              orderName = matchingOrder.customer.name || orderName;
+              orderPhone = matchingOrder.customer.phone || '';
+              orderAddress = matchingOrder.customer.address || '';
+              orderLocality = matchingOrder.customer.locality || '';
+              orderCity = matchingOrder.customer.city || '';
+              orderState = matchingOrder.customer.state || '';
+              orderPincode = matchingOrder.customer.pincode || '';
+              userOrdersCount = 1;
+              userTotalSpent = matchingOrder.total || 0;
+            }
+          } catch (oe) {}
+
           localCust = {
             id: `CUST-${Date.now()}`,
-            name: email.split('@')[0].replace(/[._]/g, ' '),
+            name: orderName,
             email: email,
-            phone: '',
-            city: '',
-            state: '',
-            address: '',
-            locality: '',
-            pincode: '',
+            phone: orderPhone,
+            city: orderCity,
+            state: orderState,
+            address: orderAddress,
+            locality: orderLocality,
+            pincode: orderPincode,
             country: 'India',
-            ordersCount: 0,
-            totalSpent: 0,
+            ordersCount: userOrdersCount,
+            totalSpent: userTotalSpent,
             tags: ['Storefront Member', '6-Digit OTP Verified'],
             status: 'Active',
             wishlist: [],
@@ -3551,6 +3795,27 @@ async function appHandler(req, res) {
           };
           customers.unshift(localCust);
           writeJsonFile('customers.json', customers);
+          if (db && db.isConfigured) {
+            try { await db.customers.upsert(localCust); } catch (e) {}
+          }
+        } else if (!localCust.address || !localCust.phone) {
+          try {
+            const pastOrders = await getAllOrders();
+            const matchingOrder = pastOrders.find(o => (o.customer?.email || o.email || o.guest_email || '').toLowerCase() === email);
+            if (matchingOrder && matchingOrder.customer) {
+              if (!localCust.name || localCust.name === 'Storefront Member') localCust.name = matchingOrder.customer.name || localCust.name;
+              if (!localCust.phone) localCust.phone = matchingOrder.customer.phone || localCust.phone;
+              if (!localCust.address) localCust.address = matchingOrder.customer.address || localCust.address;
+              if (!localCust.locality) localCust.locality = matchingOrder.customer.locality || localCust.locality;
+              if (!localCust.city) localCust.city = matchingOrder.customer.city || localCust.city;
+              if (!localCust.state) localCust.state = matchingOrder.customer.state || localCust.state;
+              if (!localCust.pincode) localCust.pincode = matchingOrder.customer.pincode || localCust.pincode;
+              writeJsonFile('customers.json', customers);
+              if (db && db.isConfigured) {
+                try { await db.customers.upsert(localCust); } catch (e) {}
+              }
+            }
+          } catch (oe) {}
         }
 
         // Full profile hydration from Supabase PostgreSQL
@@ -3604,11 +3869,49 @@ async function appHandler(req, res) {
     if (authRoute === 'me' && req.method === 'GET') {
       const authHeader = req.headers.authorization || '';
       const token = authHeader.replace('Bearer ', '').trim();
-      const userId = parsedUrl.searchParams.get('userId') || (token.startsWith('tok_') ? token.split('_')[1] : null);
+      let tokenUserId = null;
+      if (token.startsWith('tok_')) {
+        const withoutPrefix = token.substring(4);
+        const lastUnderscore = withoutPrefix.lastIndexOf('_');
+        tokenUserId = lastUnderscore !== -1 ? withoutPrefix.substring(0, lastUnderscore) : withoutPrefix;
+      }
+      const userId = parsedUrl.searchParams.get('userId') || tokenUserId;
+      const emailQuery = (parsedUrl.searchParams.get('email') || '').toLowerCase().trim();
 
       let customer = null;
       if (userId) {
-        customer = customers.find(c => String(c.id) === String(userId));
+        customer = customers.find(c => String(c.id) === String(userId) || (c.email && c.email.toLowerCase() === String(userId).toLowerCase()));
+      }
+      if (!customer && emailQuery) {
+        customer = customers.find(c => c.email && c.email.toLowerCase() === emailQuery);
+      }
+      if (!customer && db && db.isConfigured) {
+        try {
+          if (userId) customer = await db.customers.getById(userId) || await db.customers.getByEmail(userId);
+          if (!customer && emailQuery) customer = await db.customers.getByEmail(emailQuery);
+        } catch (e) {}
+      }
+
+      // If customer is found but has missing address, auto-populate from latest order
+      if (customer && (!customer.address || !customer.phone)) {
+        try {
+          const userOrders = await getAllOrders();
+          const cEmail = (customer.email || '').toLowerCase();
+          const latestOrder = userOrders.find(o => {
+            const oEmail = (o.customer?.email || o.email || o.guest_email || '').toLowerCase();
+            return cEmail && oEmail === cEmail;
+          });
+          if (latestOrder && latestOrder.customer) {
+            if (!customer.name || customer.name === 'Storefront Member') customer.name = latestOrder.customer.name || customer.name;
+            if (!customer.phone) customer.phone = latestOrder.customer.phone || customer.phone;
+            if (!customer.address) customer.address = latestOrder.customer.address || customer.address;
+            if (!customer.locality) customer.locality = latestOrder.customer.locality || customer.locality;
+            if (!customer.city) customer.city = latestOrder.customer.city || customer.city;
+            if (!customer.state) customer.state = latestOrder.customer.state || customer.state;
+            if (!customer.pincode) customer.pincode = latestOrder.customer.pincode || customer.pincode;
+            if (!customer.country) customer.country = latestOrder.customer.country || 'India';
+          }
+        } catch (oe) {}
       }
 
       // If token is a Supabase JWT and not resolved locally yet
@@ -3658,7 +3961,12 @@ async function appHandler(req, res) {
       const payload = await parseBody(req);
       const authHeader = req.headers.authorization || '';
       const token = authHeader.replace('Bearer ', '').trim();
-      const tokenUserId = (token.startsWith('tok_') ? token.split('_')[1] : null);
+      let tokenUserId = null;
+      if (token.startsWith('tok_')) {
+        const withoutPrefix = token.substring(4);
+        const lastUnderscore = withoutPrefix.lastIndexOf('_');
+        tokenUserId = lastUnderscore !== -1 ? withoutPrefix.substring(0, lastUnderscore) : withoutPrefix;
+      }
 
       let customer = null;
       if (tokenUserId) {
@@ -3669,6 +3977,13 @@ async function appHandler(req, res) {
       }
       if (!customer && payload.email) {
         customer = customers.find(c => c.email && c.email.toLowerCase() === payload.email.toLowerCase());
+      }
+      if (!customer && db && db.isConfigured) {
+        try {
+          if (tokenUserId) customer = await db.customers.getById(tokenUserId);
+          if (!customer && payload.id) customer = await db.customers.getById(payload.id);
+          if (!customer && payload.email) customer = await db.customers.getByEmail(payload.email);
+        } catch (e) {}
       }
       if (!customer && token && !token.startsWith('tok_') && supabase.isConfigured) {
         try {
@@ -3712,6 +4027,15 @@ async function appHandler(req, res) {
       if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
 
       writeJsonFile('customers.json', customers);
+
+      // Persist directly to AWS RDS / PostgreSQL database
+      if (db && db.isConfigured) {
+        try {
+          await db.customers.upsert(customer);
+        } catch (dbErr) {
+          console.warn('AWS RDS customer upsert warning:', dbErr.message);
+        }
+      }
 
       // Also sync to Supabase PostgreSQL profiles and wishlists
       if (supabase.isConfigured) {
@@ -3971,7 +4295,7 @@ async function appHandler(req, res) {
                         ${message.replace(/\n/g, '<br>')}
                       </div>
                       <div style="text-align:center; margin:30px 0;">
-                        <a href="https://genrage.vercel.app/collections/shop" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                        <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
                       </div>
                     </div>
                     <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
@@ -4364,6 +4688,10 @@ async function appHandler(req, res) {
     '/refund-policy': 'refund-policy.html',
     '/pages/refund-policy': 'refund-policy.html',
     '/pages/refund-policy.html': 'refund-policy.html',
+    '/cookie-policy': 'cookie-policy.html',
+    '/pages/cookie-policy': 'cookie-policy.html',
+    '/pages/cookie-policy.html': 'cookie-policy.html',
+    '/cookies': 'cookie-policy.html',
     '/privacy-policy': 'privacy-policy.html',
     '/pages/privacy-policy': 'privacy-policy.html',
     '/pages/privacy-policy.html': 'privacy-policy.html',

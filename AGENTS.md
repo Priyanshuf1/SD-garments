@@ -1,4 +1,4 @@
-# Project Rules: SD Garments & GENRAGE Storefront
+# Project Rules: ALLEYRICH — SD Garments Production Storefront
 
 ## 1. Empty Cart Checkout Invariant
 - The checkout page and order APIs must **NEVER** permit placing an order with 0 items.

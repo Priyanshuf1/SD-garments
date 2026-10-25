@@ -1,5 +1,365 @@
 [
   {
+    "id": "SUB-1792860999226",
+    "email": "spam_1792860999226_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T16:56:39.226Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792860999226",
+    "email": "spam_1792860999225_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T16:56:39.226Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792860999224",
+    "email": "spam_1792860999224_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T16:56:39.224Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792860999223",
+    "email": "spam_1792860999223_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T16:56:39.223Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792860999222",
+    "email": "spam_1792860999216_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T16:56:39.222Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856406467",
+    "email": "spam_1792856406467_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:40:06.467Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856406466",
+    "email": "spam_1792856406465_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:40:06.466Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856406464",
+    "email": "spam_1792856406463_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:40:06.464Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856406463",
+    "email": "spam_1792856406462_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:40:06.463Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856406461",
+    "email": "spam_1792856406459_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:40:06.461Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856139637",
+    "email": "spam_1792856139636_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:35:39.637Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856139635",
+    "email": "spam_1792856139634_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:35:39.635Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856139633",
+    "email": "spam_1792856139632_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:35:39.633Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856139631",
+    "email": "spam_1792856139630_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:35:39.631Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856139629",
+    "email": "spam_1792856139627_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:35:39.629Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856095147",
+    "email": "spam_1792856095146_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:34:55.147Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856095145",
+    "email": "spam_1792856095144_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:34:55.145Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856095143",
+    "email": "spam_1792856095143_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:34:55.143Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856095142",
+    "email": "spam_1792856095141_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:34:55.142Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792856095140",
+    "email": "spam_1792856095138_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:34:55.140Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854760031",
+    "email": "spam_1792854760030_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:40.031Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854760028",
+    "email": "spam_1792854760027_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:40.028Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854760026",
+    "email": "spam_1792854760025_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:40.026Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854760024",
+    "email": "spam_1792854760023_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:40.024Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854760021",
+    "email": "spam_1792854760019_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:40.021Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854737285",
+    "email": "spam_1792854737285_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:17.285Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854737283",
+    "email": "spam_1792854737283_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:17.283Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854737282",
+    "email": "spam_1792854737281_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:17.282Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854737280",
+    "email": "spam_1792854737280_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:17.280Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854737278",
+    "email": "spam_1792854737277_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:12:17.278Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854702882",
+    "email": "spam_1792854702882_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:11:42.882Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854702881",
+    "email": "spam_1792854702880_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:11:42.881Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854702879",
+    "email": "spam_1792854702878_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:11:42.879Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854702877",
+    "email": "spam_1792854702876_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:11:42.877Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792854702875",
+    "email": "spam_1792854702871_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-24T15:11:42.875Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792772306477",
+    "email": "spam_1792772306477_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-23T16:18:26.477Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792772306476",
+    "email": "spam_1792772306476_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-23T16:18:26.476Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792772306475",
+    "email": "spam_1792772306475_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-23T16:18:26.475Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792772306474",
+    "email": "spam_1792772306474_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-23T16:18:26.474Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1792772306473",
+    "email": "spam_1792772306471_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-10-23T16:18:26.473Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
     "id": "SUB-1792697170148",
     "email": "spam_1792697170148_4@test.com",
     "phone": "",

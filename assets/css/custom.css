@@ -2320,3 +2320,9 @@ product-card {
 #shopify-section-allyrich-3d-hero {
   contain: layout style;
 }
+
+#shopify-section-client-reviews,
+#review-canvas-container {
+  contain: layout style paint;
+}
+
