@@ -2043,12 +2043,25 @@ first.parentNode.insertBefore(script, first);
     @media screen and (max-width: 699px) {
       #shopify-section-template--23671271489774__featured_collections_MAzpBk .floating-controls-container__control {
         display: grid !important;
-        opacity: 1 !important;
-        transform: translateY(0) !important;
+        opacity: 0 !important;
+        transform: translateY(-10px) !important;
         position: absolute !important;
         top: 36% !important;
         z-index: 25 !important;
+        pointer-events: none !important;
+        transition: opacity 0.25s ease, transform 0.25s ease !important;
+      }
+      #shopify-section-template--23671271489774__featured_collections_MAzpBk .floating-controls-container--on-hover:hover > .floating-controls-container__control:not(:has([disabled])),
+      #shopify-section-template--23671271489774__featured_collections_MAzpBk .floating-controls-container--on-hover.is-sliding > .floating-controls-container__control:not(:has([disabled])),
+      #shopify-section-template--23671271489774__featured_collections_MAzpBk .floating-controls-container--on-hover.is-active > .floating-controls-container__control:not(:has([disabled])) {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
         pointer-events: auto !important;
+      }
+      #shopify-section-template--23671271489774__featured_collections_MAzpBk .floating-controls-container__control:has([disabled]) {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
       }
       #shopify-section-template--23671271489774__featured_collections_MAzpBk carousel-prev-button.floating-controls-container__control {
         left: 0.5rem !important;
@@ -6736,6 +6749,37 @@ first.parentNode.insertBefore(script, first);
       }
     }
   });
+
+  // Dynamic carousel sliding indicator: show navigation controls only on hover or active sliding
+  function initCarouselSlidingControls() {
+    document.querySelectorAll('.floating-controls-container').forEach(container => {
+      const carousel = container.querySelector('scroll-carousel');
+      if (!carousel) return;
+
+      let timer = null;
+      const showControls = () => {
+        container.classList.add('is-sliding');
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          container.classList.remove('is-sliding');
+        }, 1400);
+      };
+
+      carousel.addEventListener('scroll', showControls, { passive: true });
+      carousel.addEventListener('touchstart', showControls, { passive: true });
+      carousel.addEventListener('touchmove', showControls, { passive: true });
+      carousel.addEventListener('pointerdown', showControls, { passive: true });
+      carousel.addEventListener('pointermove', (e) => {
+        if (e.buttons > 0) showControls();
+      }, { passive: true });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCarouselSlidingControls);
+  } else {
+    initCarouselSlidingControls();
+  }
 })();
 </script>
 <script src="/assets/js/wishlist.js"></script>
