@@ -368,6 +368,38 @@
       }
     }
 
+    function updateProfileUI() {
+      if (!currentUser) return;
+      const tierBadge = document.getElementById('user-tier-badge');
+      if (tierBadge) tierBadge.style.display = 'inline-block';
+
+      const nameEl = document.getElementById('user-display-name');
+      if (nameEl) nameEl.textContent = currentUser.name || currentUser.full_name || 'Storefront Member';
+
+      const emailEl = document.getElementById('user-display-email');
+      if (emailEl) emailEl.textContent = currentUser.email || '';
+
+      const phoneEl = document.getElementById('user-display-phone');
+      if (phoneEl) phoneEl.textContent = currentUser.phone || '';
+
+      const addrEl = document.getElementById('user-display-address');
+      if (addrEl) {
+        const addrParts = [currentUser.address, currentUser.locality, currentUser.city, currentUser.state, currentUser.pincode].filter(Boolean);
+        addrEl.textContent = addrParts.length > 0 ? addrParts.join(', ') : 'Not specified';
+      }
+
+      // Populate profile form fields
+      if (document.getElementById('prof-name')) document.getElementById('prof-name').value = currentUser.name || currentUser.full_name || '';
+      if (document.getElementById('prof-phone')) document.getElementById('prof-phone').value = currentUser.phone || '';
+      if (document.getElementById('prof-email')) document.getElementById('prof-email').value = currentUser.email || '';
+      if (document.getElementById('prof-address')) document.getElementById('prof-address').value = currentUser.address || '';
+      if (document.getElementById('prof-locality')) document.getElementById('prof-locality').value = currentUser.locality || '';
+      if (document.getElementById('prof-city')) document.getElementById('prof-city').value = currentUser.city || '';
+      if (document.getElementById('prof-state')) document.getElementById('prof-state').value = currentUser.state || '';
+      if (document.getElementById('prof-pincode')) document.getElementById('prof-pincode').value = currentUser.pincode || '';
+      if (document.getElementById('prof-country')) document.getElementById('prof-country').value = currentUser.country || 'India';
+    }
+
     async function initAccount() {
       try {
         currentUser = window.AuthEngine?.getUser?.();
@@ -379,14 +411,15 @@
         }
 
         const token = window.AuthEngine?.getToken?.() || localStorage.getItem('genrage_token');
-        if (token) {
+        if (token || currentUser?.email || currentUser?.id) {
           try {
-            const res = await fetch('/api/auth/me', {
-              headers: { 'Authorization': `Bearer ${token}` }
+            const userQuery = currentUser?.id ? `?userId=${encodeURIComponent(currentUser.id)}&email=${encodeURIComponent(currentUser.email || '')}` : (currentUser?.email ? `?email=${encodeURIComponent(currentUser.email)}` : '');
+            const res = await fetch(`/api/auth/me${userQuery}`, {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             const data = await res.json();
             if (data.success && data.user) {
-              currentUser = data.user;
+              currentUser = { ...(currentUser || {}), ...data.user };
               localStorage.setItem('genrage_user', JSON.stringify(currentUser));
               if (Array.isArray(currentUser.cart) && currentUser.cart.length > 0) {
                 try {
@@ -443,35 +476,7 @@
           return;
         }
 
-        const tierBadge = document.getElementById('user-tier-badge');
-        if (tierBadge) tierBadge.style.display = 'inline-block';
-
-        const nameEl = document.getElementById('user-display-name');
-        if (nameEl) nameEl.textContent = currentUser.name || currentUser.full_name || 'Storefront Member';
-
-        const emailEl = document.getElementById('user-display-email');
-        if (emailEl) emailEl.textContent = currentUser.email || '';
-
-        const phoneEl = document.getElementById('user-display-phone');
-        if (phoneEl) phoneEl.textContent = currentUser.phone || '';
-
-        const addrEl = document.getElementById('user-display-address');
-        if (addrEl) {
-          const addrParts = [currentUser.address, currentUser.locality, currentUser.city, currentUser.state, currentUser.pincode].filter(Boolean);
-          addrEl.textContent = addrParts.length > 0 ? addrParts.join(', ') : 'Not specified';
-        }
-
-        // Populate profile form fields
-        if (document.getElementById('prof-name')) document.getElementById('prof-name').value = currentUser.name || currentUser.full_name || '';
-        if (document.getElementById('prof-phone')) document.getElementById('prof-phone').value = currentUser.phone || '';
-        if (document.getElementById('prof-email')) document.getElementById('prof-email').value = currentUser.email || '';
-        if (document.getElementById('prof-address')) document.getElementById('prof-address').value = currentUser.address || '';
-        if (document.getElementById('prof-locality')) document.getElementById('prof-locality').value = currentUser.locality || '';
-        if (document.getElementById('prof-city')) document.getElementById('prof-city').value = currentUser.city || '';
-        if (document.getElementById('prof-state')) document.getElementById('prof-state').value = currentUser.state || '';
-        if (document.getElementById('prof-pincode')) document.getElementById('prof-pincode').value = currentUser.pincode || '';
-        if (document.getElementById('prof-country')) document.getElementById('prof-country').value = currentUser.country || 'India';
-
+        updateProfileUI();
         await Promise.allSettled([loadOrders(), loadWishlist()]);
       } catch (err) {
         console.error('Account init error:', err);
@@ -509,6 +514,44 @@
               orders = Array.isArray(data2.orders) ? data2.orders : [];
             }
           } catch (e2) {}
+        }
+
+        // If orders exist and current profile is missing address details, auto-populate from latest order
+        if (orders.length > 0 && (!currentUser.address || !currentUser.phone)) {
+          const latest = orders[0].customer || {};
+          let changed = false;
+          if ((!currentUser.name || currentUser.name === 'Storefront Member') && latest.name) {
+            currentUser.name = latest.name;
+            changed = true;
+          }
+          if (!currentUser.phone && latest.phone) {
+            currentUser.phone = latest.phone;
+            changed = true;
+          }
+          if (!currentUser.address && latest.address) {
+            currentUser.address = latest.address;
+            changed = true;
+          }
+          if (!currentUser.locality && latest.locality) {
+            currentUser.locality = latest.locality;
+            changed = true;
+          }
+          if (!currentUser.city && latest.city) {
+            currentUser.city = latest.city;
+            changed = true;
+          }
+          if (!currentUser.state && latest.state) {
+            currentUser.state = latest.state;
+            changed = true;
+          }
+          if (!currentUser.pincode && latest.pincode) {
+            currentUser.pincode = latest.pincode;
+            changed = true;
+          }
+          if (changed) {
+            localStorage.setItem('genrage_user', JSON.stringify(currentUser));
+            updateProfileUI();
+          }
         }
 
         container.innerHTML = renderOrdersHtml(orders);

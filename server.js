@@ -1757,6 +1757,13 @@ async function handleCreateOrder(req, res, isCheckout = false) {
         customers.unshift(newCust);
       }
       writeJsonFile('customers.json', customers);
+      if (db && db.isConfigured) {
+        try {
+          await db.customers.upsert(cust || newCust);
+        } catch (dbCustErr) {
+          console.warn('AWS RDS customer upsert on order warning:', dbCustErr.message);
+        }
+      }
     }
   } catch (e) {}
 
@@ -2334,9 +2341,9 @@ async function appHandler(req, res) {
     }
   }
 
-  // 3. Block unauthorized direct access to /data/ directory (except public products catalog)
+  // 3. Block unauthorized direct access to /data/ directory (except public products & collections catalog)
   if (normalizedPath.startsWith('/data/')) {
-    if (normalizedPath !== '/data/products.json') {
+    if (normalizedPath !== '/data/products.json' && normalizedPath !== '/data/collections.json') {
       if (!security.isAdminAuthorized(req, parsedUrl)) {
         return sendJson(res, 401, { success: false, message: 'Unauthorized: Administrator privileges required to access internal data archives.' });
       }
@@ -3732,20 +3739,55 @@ async function appHandler(req, res) {
         }
 
         let localCust = customers.find(c => (c.email || '').toLowerCase() === email);
+        if (!localCust && db && db.isConfigured) {
+          try {
+            localCust = await db.customers.getByEmail(email);
+            if (localCust) {
+              customers.unshift(localCust);
+              writeJsonFile('customers.json', customers);
+            }
+          } catch (e) {}
+        }
+
         if (!localCust) {
+          let orderName = email.split('@')[0].replace(/[._]/g, ' ');
+          let orderPhone = '';
+          let orderAddress = '';
+          let orderLocality = '';
+          let orderCity = '';
+          let orderState = '';
+          let orderPincode = '';
+          let userOrdersCount = 0;
+          let userTotalSpent = 0;
+          try {
+            const pastOrders = await getAllOrders();
+            const matchingOrder = pastOrders.find(o => (o.customer?.email || o.email || o.guest_email || '').toLowerCase() === email);
+            if (matchingOrder && matchingOrder.customer) {
+              orderName = matchingOrder.customer.name || orderName;
+              orderPhone = matchingOrder.customer.phone || '';
+              orderAddress = matchingOrder.customer.address || '';
+              orderLocality = matchingOrder.customer.locality || '';
+              orderCity = matchingOrder.customer.city || '';
+              orderState = matchingOrder.customer.state || '';
+              orderPincode = matchingOrder.customer.pincode || '';
+              userOrdersCount = 1;
+              userTotalSpent = matchingOrder.total || 0;
+            }
+          } catch (oe) {}
+
           localCust = {
             id: `CUST-${Date.now()}`,
-            name: email.split('@')[0].replace(/[._]/g, ' '),
+            name: orderName,
             email: email,
-            phone: '',
-            city: '',
-            state: '',
-            address: '',
-            locality: '',
-            pincode: '',
+            phone: orderPhone,
+            city: orderCity,
+            state: orderState,
+            address: orderAddress,
+            locality: orderLocality,
+            pincode: orderPincode,
             country: 'India',
-            ordersCount: 0,
-            totalSpent: 0,
+            ordersCount: userOrdersCount,
+            totalSpent: userTotalSpent,
             tags: ['Storefront Member', '6-Digit OTP Verified'],
             status: 'Active',
             wishlist: [],
@@ -3753,6 +3795,27 @@ async function appHandler(req, res) {
           };
           customers.unshift(localCust);
           writeJsonFile('customers.json', customers);
+          if (db && db.isConfigured) {
+            try { await db.customers.upsert(localCust); } catch (e) {}
+          }
+        } else if (!localCust.address || !localCust.phone) {
+          try {
+            const pastOrders = await getAllOrders();
+            const matchingOrder = pastOrders.find(o => (o.customer?.email || o.email || o.guest_email || '').toLowerCase() === email);
+            if (matchingOrder && matchingOrder.customer) {
+              if (!localCust.name || localCust.name === 'Storefront Member') localCust.name = matchingOrder.customer.name || localCust.name;
+              if (!localCust.phone) localCust.phone = matchingOrder.customer.phone || localCust.phone;
+              if (!localCust.address) localCust.address = matchingOrder.customer.address || localCust.address;
+              if (!localCust.locality) localCust.locality = matchingOrder.customer.locality || localCust.locality;
+              if (!localCust.city) localCust.city = matchingOrder.customer.city || localCust.city;
+              if (!localCust.state) localCust.state = matchingOrder.customer.state || localCust.state;
+              if (!localCust.pincode) localCust.pincode = matchingOrder.customer.pincode || localCust.pincode;
+              writeJsonFile('customers.json', customers);
+              if (db && db.isConfigured) {
+                try { await db.customers.upsert(localCust); } catch (e) {}
+              }
+            }
+          } catch (oe) {}
         }
 
         // Full profile hydration from Supabase PostgreSQL
@@ -3806,11 +3869,49 @@ async function appHandler(req, res) {
     if (authRoute === 'me' && req.method === 'GET') {
       const authHeader = req.headers.authorization || '';
       const token = authHeader.replace('Bearer ', '').trim();
-      const userId = parsedUrl.searchParams.get('userId') || (token.startsWith('tok_') ? token.split('_')[1] : null);
+      let tokenUserId = null;
+      if (token.startsWith('tok_')) {
+        const withoutPrefix = token.substring(4);
+        const lastUnderscore = withoutPrefix.lastIndexOf('_');
+        tokenUserId = lastUnderscore !== -1 ? withoutPrefix.substring(0, lastUnderscore) : withoutPrefix;
+      }
+      const userId = parsedUrl.searchParams.get('userId') || tokenUserId;
+      const emailQuery = (parsedUrl.searchParams.get('email') || '').toLowerCase().trim();
 
       let customer = null;
       if (userId) {
-        customer = customers.find(c => String(c.id) === String(userId));
+        customer = customers.find(c => String(c.id) === String(userId) || (c.email && c.email.toLowerCase() === String(userId).toLowerCase()));
+      }
+      if (!customer && emailQuery) {
+        customer = customers.find(c => c.email && c.email.toLowerCase() === emailQuery);
+      }
+      if (!customer && db && db.isConfigured) {
+        try {
+          if (userId) customer = await db.customers.getById(userId) || await db.customers.getByEmail(userId);
+          if (!customer && emailQuery) customer = await db.customers.getByEmail(emailQuery);
+        } catch (e) {}
+      }
+
+      // If customer is found but has missing address, auto-populate from latest order
+      if (customer && (!customer.address || !customer.phone)) {
+        try {
+          const userOrders = await getAllOrders();
+          const cEmail = (customer.email || '').toLowerCase();
+          const latestOrder = userOrders.find(o => {
+            const oEmail = (o.customer?.email || o.email || o.guest_email || '').toLowerCase();
+            return cEmail && oEmail === cEmail;
+          });
+          if (latestOrder && latestOrder.customer) {
+            if (!customer.name || customer.name === 'Storefront Member') customer.name = latestOrder.customer.name || customer.name;
+            if (!customer.phone) customer.phone = latestOrder.customer.phone || customer.phone;
+            if (!customer.address) customer.address = latestOrder.customer.address || customer.address;
+            if (!customer.locality) customer.locality = latestOrder.customer.locality || customer.locality;
+            if (!customer.city) customer.city = latestOrder.customer.city || customer.city;
+            if (!customer.state) customer.state = latestOrder.customer.state || customer.state;
+            if (!customer.pincode) customer.pincode = latestOrder.customer.pincode || customer.pincode;
+            if (!customer.country) customer.country = latestOrder.customer.country || 'India';
+          }
+        } catch (oe) {}
       }
 
       // If token is a Supabase JWT and not resolved locally yet
@@ -3860,7 +3961,12 @@ async function appHandler(req, res) {
       const payload = await parseBody(req);
       const authHeader = req.headers.authorization || '';
       const token = authHeader.replace('Bearer ', '').trim();
-      const tokenUserId = (token.startsWith('tok_') ? token.split('_')[1] : null);
+      let tokenUserId = null;
+      if (token.startsWith('tok_')) {
+        const withoutPrefix = token.substring(4);
+        const lastUnderscore = withoutPrefix.lastIndexOf('_');
+        tokenUserId = lastUnderscore !== -1 ? withoutPrefix.substring(0, lastUnderscore) : withoutPrefix;
+      }
 
       let customer = null;
       if (tokenUserId) {
@@ -3871,6 +3977,13 @@ async function appHandler(req, res) {
       }
       if (!customer && payload.email) {
         customer = customers.find(c => c.email && c.email.toLowerCase() === payload.email.toLowerCase());
+      }
+      if (!customer && db && db.isConfigured) {
+        try {
+          if (tokenUserId) customer = await db.customers.getById(tokenUserId);
+          if (!customer && payload.id) customer = await db.customers.getById(payload.id);
+          if (!customer && payload.email) customer = await db.customers.getByEmail(payload.email);
+        } catch (e) {}
       }
       if (!customer && token && !token.startsWith('tok_') && supabase.isConfigured) {
         try {
@@ -3914,6 +4027,15 @@ async function appHandler(req, res) {
       if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
 
       writeJsonFile('customers.json', customers);
+
+      // Persist directly to AWS RDS / PostgreSQL database
+      if (db && db.isConfigured) {
+        try {
+          await db.customers.upsert(customer);
+        } catch (dbErr) {
+          console.warn('AWS RDS customer upsert warning:', dbErr.message);
+        }
+      }
 
       // Also sync to Supabase PostgreSQL profiles and wishlists
       if (supabase.isConfigured) {

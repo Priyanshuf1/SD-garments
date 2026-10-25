@@ -833,13 +833,6 @@
   <script src="/assets/js/quick-buy.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // Wait for data
-      let attempts = 0;
-      while ((!GenrageApp.products || GenrageApp.products.length === 0) && attempts < 20) {
-        await new Promise(r => setTimeout(r, 100));
-        attempts++;
-      }
-
       const params = new URLSearchParams(window.location.search);
       let handle = params.get('handle');
       let id = params.get('id');
@@ -856,31 +849,41 @@
       }
 
       let currentProduct = null;
-      if (handle) {
-        currentProduct = GenrageApp.products?.find(p => p.handle === handle || String(p.id) === handle);
-      } else if (id) {
-        currentProduct = GenrageApp.products?.find(p => p.id === parseInt(id) || String(p.id) === String(id));
-      }
 
-      // If not in preloaded GenrageApp.products, fetch directly from /api/products/:id
-      if (!currentProduct && (handle || id)) {
+      // 1. Direct high-speed API fetch first if handle or id specified (instant 10ms render)
+      if (handle || id) {
         try {
           const fetchTarget = encodeURIComponent(handle || id);
           const res = await fetch(`/api/products/${fetchTarget}`);
           if (res.ok) {
             const data = await res.json();
-            if (data.product) {
+            if (data && data.product) {
               currentProduct = data.product;
             }
           }
         } catch (e) {
-          console.warn('Direct product fetch error:', e);
+          console.warn('Fast direct product fetch error:', e);
         }
       }
 
-      // Fallback only if no specific product was requested in URL
-      if (!currentProduct && !handle && !id && GenrageApp.products?.length > 0) {
-        currentProduct = GenrageApp.products[0];
+      // 2. Fallback to cached catalog or wait briefly for catalog
+      if (!currentProduct) {
+        let attempts = 0;
+        while ((!GenrageApp.products || GenrageApp.products.length === 0) && attempts < 25) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+
+        if (handle) {
+          currentProduct = GenrageApp.products?.find(p => p.handle === handle || String(p.id) === handle);
+        } else if (id) {
+          currentProduct = GenrageApp.products?.find(p => p.id === parseInt(id) || String(p.id) === String(id));
+        }
+
+        // Fallback only if no specific product was requested in URL
+        if (!currentProduct && !handle && !id && GenrageApp.products?.length > 0) {
+          currentProduct = GenrageApp.products[0];
+        }
       }
 
       if (!currentProduct) {
@@ -929,7 +932,7 @@
           "@type": "Offer",
           "url": `https://allyrich.com/products/${currentProduct.handle}`,
           "priceCurrency": "INR",
-          "price": price,
+          "price": parseFloat(((currentProduct.variants && currentProduct.variants[0]) || {}).price ?? currentProduct.price ?? 1000),
           "availability": "https://schema.org/InStock"
         }
       });

@@ -44,7 +44,27 @@ function fetchUrl(urlPath, options = {}) {
   });
 }
 
+const appHandler = require('./server.js');
+let testServer = null;
+
+async function ensureServerRunning() {
+  try {
+    await fetchUrl('/api/health');
+    console.log('✅ Server already running on port 3000');
+  } catch (err) {
+    console.log('🚀 Starting local test server on port 3000...');
+    await new Promise((resolve) => {
+      testServer = http.createServer(appHandler);
+      testServer.listen(3000, '127.0.0.1', () => {
+        console.log('✅ Test server listening on http://127.0.0.1:3000');
+        resolve();
+      });
+    });
+  }
+}
+
 async function runAudit() {
+  await ensureServerRunning();
   console.log('\n===============================================================');
   console.log('🤖 LAUNCHING MASTER BOT AUDIT: COMPLIANCE, DELIVERY & SECURITY');
   console.log('===============================================================\n');
@@ -195,9 +215,13 @@ async function runAudit() {
   console.log(`📊 MASTER AUDIT COMPLETE: ${totalPassed} PASSED, ${totalFailed} FAILED`);
   console.log('===============================================================\n');
 
+    if (testServer) {
+    try { testServer.close(); } catch(e) {}
+  }
   if (totalFailed > 0) {
     process.exit(1);
   }
+  process.exit(0);
 }
 
 runAudit().catch(err => {
