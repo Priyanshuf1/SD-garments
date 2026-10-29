@@ -63,19 +63,36 @@
       </div>
 
       <div class="ar-chips-container">
-        <button class="ar-chip" data-msg="Track my order">📦 Track Order</button>
-        <button class="ar-chip" data-msg="What size should I buy?">📏 Size Guide</button>
-        <button class="ar-chip" data-msg="What is your return and exchange policy?">🔄 7-Day Exchange</button>
-        <button class="ar-chip" data-msg="I want to speak with human support">💬 Human Support</button>
+        <button type="button" class="ar-chip" data-msg="Track my order">📦 Track Order</button>
+        <button type="button" class="ar-chip" data-msg="What size should I buy?">📐 Size Guide</button>
+        <button type="button" class="ar-chip" data-msg="What is your return and exchange policy?">🔄 7-Day Exchange</button>
+        <button type="button" class="ar-chip" data-msg="I want to speak with human support">💬 Human Support</button>
       </div>
 
       <div class="ar-chat-messages" id="ar-chat-messages">
         <!-- Messages injected here -->
       </div>
 
-      <div class="ar-chat-input-bar">
-        <input type="text" id="ar-chat-input" placeholder="Ask about sizing, orders, fabric..." autocomplete="off">
-        <button class="ar-chat-send-btn" id="ar-send-btn" aria-label="Send Message">➔</button>
+      <div class="ar-chat-input-bar" id="ar-chat-form">
+        <input
+          type="text"
+          id="ar-chat-input"
+          placeholder="Ask about sizing, orders, fabric..."
+          autocomplete="off"
+          autocapitalize="sentences"
+          autocorrect="on"
+          spellcheck="true"
+          enterkeyhint="send"
+          inputmode="text"
+          role="textbox"
+          aria-label="Ask about sizing, orders, fabric"
+        >
+        <button class="ar-chat-send-btn" id="ar-send-btn" type="button" aria-label="Send Message">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
       </div>
     `;
 
@@ -91,11 +108,49 @@
 
     const input = document.getElementById('ar-chat-input');
     const sendBtn = document.getElementById('ar-send-btn');
+    const form = document.getElementById('ar-chat-form');
+    const inputBar = modal.querySelector('.ar-chat-input-bar');
 
-    sendBtn.addEventListener('click', () => handleSend());
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleSend();
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleSend();
+      });
+    }
+
+    sendBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSend();
     });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    // Mobile tap & touch listeners: ensure virtual keyboard triggers immediately on tap
+    if (inputBar && input) {
+      inputBar.addEventListener('click', (e) => {
+        if (!e.target.closest('#ar-send-btn')) {
+          input.focus();
+        }
+      });
+      inputBar.addEventListener('touchend', (e) => {
+        if (!e.target.closest('#ar-send-btn')) {
+          input.focus();
+        }
+      }, { passive: true });
+
+      input.addEventListener('focus', () => {
+        if (window.innerWidth <= 768) {
+          setTimeout(() => {
+            updateMobileViewport();
+            scrollToBottom();
+          }, 100);
+        }
+      });
+    }
 
     // Suggestion Chips Click
     modal.addEventListener('click', (e) => {
@@ -109,16 +164,58 @@
     });
   }
 
+  // VisualViewport keyboard handler for mobile view
+  function updateMobileViewport() {
+    if (!isChatOpen) return;
+    if (window.innerWidth > 768) return; // Only mobile view
+    const modal = document.getElementById('ar-ai-modal');
+    if (!modal) return;
+
+    if (window.visualViewport) {
+      const vv = window.visualViewport;
+      // Anchor modal height and top directly to the visual viewport above mobile software keyboard
+      modal.style.setProperty('height', vv.height + 'px', 'important');
+      modal.style.setProperty('top', vv.offsetTop + 'px', 'important');
+      modal.style.setProperty('bottom', 'auto', 'important');
+      modal.style.setProperty('max-height', vv.height + 'px', 'important');
+      scrollToBottom();
+    }
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateMobileViewport);
+    window.visualViewport.addEventListener('scroll', updateMobileViewport);
+  }
+
   function toggleChat() {
     isChatOpen = !isChatOpen;
     const modal = document.getElementById('ar-ai-modal');
+    const input = document.getElementById('ar-chat-input');
     if (modal) {
       modal.style.display = isChatOpen ? 'flex' : 'none';
       if (isChatOpen) {
-        setTimeout(() => {
-          document.getElementById('ar-chat-input')?.focus();
-          scrollToBottom();
-        }, 100);
+        document.body.classList.add('ar-ai-chat-open');
+        updateMobileViewport();
+        scrollToBottom();
+
+        // Immediate focus on open for mobile keyboard activation
+        if (input) {
+          input.focus();
+          requestAnimationFrame(() => {
+            input.focus();
+          });
+          setTimeout(() => {
+            input.focus();
+            scrollToBottom();
+          }, 80);
+        }
+      } else {
+        document.body.classList.remove('ar-ai-chat-open');
+        modal.style.removeProperty('height');
+        modal.style.removeProperty('top');
+        modal.style.removeProperty('bottom');
+        modal.style.removeProperty('max-height');
+        if (input) input.blur();
       }
     }
   }
