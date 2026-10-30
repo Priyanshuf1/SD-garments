@@ -2400,6 +2400,11 @@ async function appHandler(req, res) {
   // Stealth Admin Route: /allyrich-hq (Fake 404 on /admin)
   // -------------------------------------------------------------
   if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html') {
+    const host = req.headers.host || '';
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      res.writeHead(302, { 'Location': '/allyrich-hq' });
+      return res.end();
+    }
     // Stealth Mode: Deceive unauthorized scanners with an authentic 404
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     return res.end('<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style="background:#09090b;color:#666;font-family:sans-serif;text-align:center;padding:5rem;"><h1>404 Not Found</h1><p>The requested resource does not exist on this server.</p></body></html>');
@@ -4848,7 +4853,7 @@ if (!process.env.VERCEL && require.main === module) {
     console.log(`\n==================================================`);
     console.log(`🔥 GENRAGE 1:1 DITTO Server Running!`);
     console.log(`📍 Storefront: http://localhost:${PORT}`);
-    console.log(`⚡ Admin Portal: http://localhost:${PORT}/admin`);
+    console.log(`⚡ Admin Portal: http://localhost:${PORT}/allyrich-hq (or /admin on localhost)`);
     console.log(`🎥 6 High-Definition Videos Ready & Streaming Locally`);
     console.log(`==================================================\n`);
   });
