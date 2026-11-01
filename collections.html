@@ -1977,7 +1977,8 @@
 
         // Graceful fallback: If filteredProducts is empty because of an unrecognized category (and not wishlist/search/price),
         // restore all catalog items so the customer never lands on an empty screen!
-        if (this.filteredProducts.length === 0 && this.activeCategory !== 'all' && this.activeCategory !== 'wishlist' && !this.searchQuery && !this.activePriceFilter) {
+        // Only fall back to 'all' if category is completely unrecognized in categoryMap AND catalog is already loaded
+        if (this.allProducts.length > 0 && this.filteredProducts.length === 0 && !this.categoryMap[this.activeCategory] && this.activeCategory !== 'all' && this.activeCategory !== 'wishlist' && !this.searchQuery && !this.activePriceFilter) {
           this.activeCategory = 'all';
           this.filteredProducts = [...this.allProducts];
         }
