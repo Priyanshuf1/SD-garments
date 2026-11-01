@@ -439,8 +439,8 @@
 
   <!-- Sticky Header -->
   <header class="site-header">
-    <div class="site-container header-inner">
-      <div class="header-left">
+    <div class="site-container header-inner" style="display: flex; align-items: center; justify-content: space-between; gap: clamp(1rem, 2vw, 2.5rem); width: 100%;">
+      <div class="header-left" style="display: flex; align-items: center; gap: 1.25rem; flex-shrink: 0; min-width: max-content; margin-right: clamp(0.5rem, 1.5vw, 2rem);">
         <button class="mobile-menu-trigger" id="mobile-menu-trigger" aria-label="Open Menu">
           <span></span><span></span><span></span>
         </button>
@@ -450,7 +450,7 @@
         </a>
       </div>
 
-      <nav class="desktop-nav">
+      <nav class="desktop-nav" style="display: flex; align-items: center; gap: clamp(0.6rem, 1.2vw, 1.5rem); white-space: nowrap; flex-shrink: 1; min-width: 0;">
         <a href="/collections/new-arrivals" class="nav-link">NEW ARRIVALS</a>
         <a href="/collections/mens-wear" class="nav-link">MEN'S WEAR</a>
         <a href="/collections/party-wear" class="nav-link">PARTY WEAR</a>
@@ -493,8 +493,8 @@
 
   <!-- Product Detail Section -->
   <main class="site-container pdp-container">
-    <div style="font-size: 0.75rem; color: #777777; text-transform: uppercase; margin-bottom: 2rem; font-weight: 600;">
-      <a href="/" style="color: #666666; text-decoration: none;">HOME</a> / <a href="/collections/shop" style="color: #666666; text-decoration: none;">STREETWEAR</a> / <span id="breadcrumb-title" style="color: #111111; font-weight: 800;">PRODUCT</span>
+    <div class="pdp-breadcrumb" style="font-size: 0.95rem; letter-spacing: 0.04em; color: #666666; text-transform: uppercase; margin-bottom: 2rem; font-weight: 600; line-height: 1.5;">
+      <a href="/" style="color: #666666; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#666666'">HOME</a> / <a href="/collections/shop" style="color: #666666; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#666666'">STREETWEAR</a> / <span id="breadcrumb-title" style="color: #111111; font-weight: 800;">PRODUCT</span>
     </div>
 
     <div class="pdp-grid">
@@ -629,11 +629,7 @@
       </div>
     </div>
 
-    <!-- Related Products -->
-    <section style="margin-top: 6rem;">
-      <h2 class="section-title" style="margin-bottom: 2rem;">YOU MAY ALSO LIKE</h2>
-      <div class="product-grid" id="related-grid"></div>
-    </section>
+
   </main>
 
   <!-- Size Guide Modal -->
@@ -1044,10 +1040,13 @@
         };
       }
 
-      // Related products
-      const related = GenrageApp.products.filter(p => p.id !== currentProduct.id).slice(0, 4);
-      document.getElementById('related-grid').innerHTML = related.map(p => GenrageApp.createProductCardHtml(p)).join('');
-      GenrageApp.bindCardEvents();
+      // Related products (Safely guarded)
+      const relatedGrid = document.getElementById('related-grid');
+      if (relatedGrid) {
+        const related = GenrageApp.products.filter(p => p.id !== currentProduct.id).slice(0, 4);
+        relatedGrid.innerHTML = related.map(p => GenrageApp.createProductCardHtml(p)).join('');
+        GenrageApp.bindCardEvents();
+      }
 
       // Mobile Sticky Bottom Bar Setup & Synchronization
       const stickyBar = document.getElementById('pdp-mobile-sticky-bar');

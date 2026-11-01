@@ -700,6 +700,24 @@
   overflow: hidden !important;
 }
 
+.desktop-nav .nav-link,
+.site-header__nav a,
+.header-nav-link,
+.header__primary-nav-item a {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.header-inner,
+.site-header__inner {
+  gap: clamp(1rem, 2vw, 2.5rem) !important;
+}
+
+.header-left {
+  margin-right: clamp(0.5rem, 1.5vw, 2rem) !important;
+  flex-shrink: 0 !important;
+}
+
 /* User account badge responsiveness: hide text on mobile, keep avatar circle */
 @media (max-width: 640px) {
   .sm-max\:hidden,

@@ -254,6 +254,7 @@ x-header.is-solid:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: clamp(1rem, 2vw, 2.5rem);
   width: 100%;
 }
 
@@ -328,6 +329,8 @@ x-header.is-solid:hover {
   color: #ffffff;
   position: relative;
   padding: 0.5rem 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .nav-link::after {
