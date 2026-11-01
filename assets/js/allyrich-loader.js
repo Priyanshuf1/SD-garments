@@ -1,103 +1,120 @@
 /* ==========================================================================
    AllyRich Loader Controller
    Plays on website initial open or page refresh/reload.
-   Never plays on in-page taps or collection/product sections.
+   Guarantees the loader covers the screen immediately (Frame 0)
+   and ONLY reveals the website after the luxury animation finishes.
    ========================================================================== */
 (function () {
-  var loader = document.getElementById('ForumLoader');
-  if (!loader) return;
+  var p = window.location.pathname || '';
+  var isHome = (p === '/' || p === '/index.html' || p === '');
+
+  function getLoader() {
+    return document.getElementById('ForumLoader');
+  }
 
   var animationTimer1 = null;
   var animationTimer2 = null;
   var capTimer = null;
+  var isFinished = false;
 
-  function shouldRunLoader() {
-    var p = window.location.pathname || '';
-    if (p !== '/' && p !== '/index.html' && p !== '') return false;
-    // Always run on the homepage when opened or refreshed
-    return true;
-  }
+  function finish() {
+    if (isFinished) return;
+    isFinished = true;
 
-  function hideLoaderImmediately() {
-    if (!loader) return;
-    loader.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (e) {} });
-    loader.classList.remove('is-active', 'loader--filling', 'loader--lit');
-    loader.classList.add('loader--done', 'loader--hidden');
-    loader.style.display = 'none';
-    loader.style.opacity = '0';
-    loader.style.pointerEvents = 'none';
-    document.documentElement.style.overflow = '';
-  }
-
-  function runLoaderAnimation() {
-    if (!loader) return;
-
-    if (!shouldRunLoader()) {
-      hideLoaderImmediately();
-      return;
-    }
-
-    try { document.documentElement.classList.remove('no-loader'); } catch (e) {}
-
-    // Clear existing timers if replaying
     clearTimeout(animationTimer1);
     clearTimeout(animationTimer2);
     clearTimeout(capTimer);
 
-    // Reset classes and styles
-    loader.classList.remove('loader--done', 'loader--hidden');
-    loader.classList.add('is-active');
-    loader.style.display = 'flex';
-    loader.style.opacity = '1';
-    loader.style.pointerEvents = 'auto';
-
-    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    function finish() {
-      loader.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (e) {} });
-      loader.classList.remove('loader--filling');
-      loader.classList.add('loader--done');
-      loader.style.pointerEvents = 'none';
+    var loader = getLoader();
+    if (!loader) {
+      document.documentElement.classList.remove('ar-loading');
       document.documentElement.style.overflow = '';
-      setTimeout(function () {
-        loader.classList.remove('is-active', 'loader--lit');
-        loader.classList.add('loader--hidden');
-        loader.style.display = 'none';
-      }, 650);
+      return;
     }
 
+    loader.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (e) {} });
+    loader.classList.remove('loader--filling');
+    loader.classList.add('loader--done');
+    loader.style.pointerEvents = 'none';
+
+    document.documentElement.classList.remove('ar-loading');
+    document.documentElement.style.overflow = '';
+
+    setTimeout(function () {
+      loader.classList.remove('is-active', 'loader--lit');
+      loader.classList.add('loader--hidden');
+      loader.style.display = 'none';
+    }, 650);
+  }
+
+  function startSequence() {
+    if (!isHome) {
+      var l = getLoader();
+      if (l) l.style.display = 'none';
+      document.documentElement.classList.remove('ar-loading');
+      return;
+    }
+
+    var loader = getLoader();
+    if (!loader) return;
+
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) {
       loader.style.transition = 'none';
       finish();
       return;
     }
 
-    document.documentElement.style.overflow = 'hidden';
-    capTimer = setTimeout(finish, 1200);
-
+    // Step 1: Start filling animation
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         loader.classList.add('loader--filling');
+
+        // Step 2: Shine / lit state at 800ms
         animationTimer1 = setTimeout(function () {
           loader.classList.add('loader--lit');
+
+          // Step 3: Complete & dissolve into website at 1200ms
           animationTimer2 = setTimeout(function () {
-            clearTimeout(capTimer);
             finish();
           }, 400);
-        }, 450);
+        }, 800);
       });
     });
+
+    // Hard fallback cap at 2.2 seconds in case of slow assets
+    capTimer = setTimeout(finish, 2200);
   }
 
-  // Run on page load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', runLoaderAnimation);
+  // Start sequence immediately if loader element is present in DOM
+  if (getLoader()) {
+    startSequence();
+  } else if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startSequence);
   } else {
-    runLoaderAnimation();
+    startSequence();
   }
 
-  // Expose function for manual developer testing if needed
+  // Also finish when window fully loads if sequence is ready
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      if (!isFinished && document.getElementById('ForumLoader')?.classList.contains('loader--lit')) {
+        finish();
+      }
+    }, 300);
+  });
+
+  // Expose function for manual developer testing
   window.replayAllyRichLoader = function () {
-    runLoaderAnimation();
+    isFinished = false;
+    var loader = getLoader();
+    if (!loader) return;
+    document.documentElement.classList.add('ar-loading');
+    loader.style.display = 'flex';
+    loader.style.opacity = '1';
+    loader.style.pointerEvents = 'auto';
+    loader.classList.remove('loader--done', 'loader--hidden');
+    loader.classList.add('is-active');
+    startSequence();
   };
 })();

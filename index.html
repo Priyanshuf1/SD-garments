@@ -1114,15 +1114,61 @@ first.parentNode.insertBefore(script, first);
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Barlow:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,300&family=Shippori+Mincho+B1:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/allyrich.css">
   
+  <!-- Critical Render-Blocking Preloader: Guarantees 0ms Black Screen on Initial Open -->
+  <link rel="preload" as="image" href="/assets/ar-logo.png" fetchpriority="high">
+  <style id="allyrich-preloader-critical">
+    html.ar-loading,
+    html.ar-loading body {
+      overflow: hidden !important;
+      touch-action: none !important;
+      height: 100% !important;
+      background: #000000 !important;
+    }
+    #ForumLoader {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      z-index: 2147483647 !important;
+      background: #000000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    #ForumLoader.loader--done {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      transition: opacity 650ms cubic-bezier(0.16, 1, 0.3, 1), visibility 650ms !important;
+    }
+    #ForumLoader.loader--hidden {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  </style>
+  <script>
+    (function () {
+      var p = window.location.pathname || '';
+      if (p === '/' || p === '/index.html' || p === '') {
+        document.documentElement.classList.add('ar-loading');
+      }
+    })();
+  </script>
 </head>
 
   <body class="features--button-transition  color-scheme color-scheme--scheme-1">
-  <!-- AlleyRich Preloader Animation -->
-  <div class="loader" id="ForumLoader" aria-hidden="true">
+  <!-- AlleyRich Preloader Animation (Instant Critical Frame-0 Launch) -->
+  <div class="loader is-active" id="ForumLoader" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:2147483647;background:#000000;display:flex;align-items:center;justify-content:center;opacity:1;visibility:visible;pointer-events:auto;">
     <div class="loader__stack">
       <div class="loader__brand">
         <span class="loader__mark">
-          <img src="/assets/ar-logo.png" alt="AR" width="124" height="157">
+          <img src="/assets/ar-logo.png" alt="AR" width="124" height="157" fetchpriority="high" decoding="sync">
         </span>
         <span class="loader__name">AlleyRich</span>
       </div>
@@ -1131,8 +1177,9 @@ first.parentNode.insertBefore(script, first);
       </span>
     </div>
   </div>
-  <noscript>
-    <style>.loader { display: none; }</style>
+  <script src="/assets/js/allyrich-loader.js"></script>
+    <noscript>
+    <style>.loader { display: none !important; }</style>
   </noscript>
   <template id="drawer-default-template">
   <div part="base">
@@ -6987,7 +7034,6 @@ first.parentNode.insertBefore(script, first);
 <script src="/assets/js/wishlist.js"></script>
 <script src="/assets/js/auth.js"></script>
 <script src="/assets/js/quick-buy.js"></script>
-<script src="/assets/js/allyrich-loader.js"></script>
 <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/size-guide-modal.js" defer></script>
   <script src="/assets/js/ai-support.js" defer></script>
