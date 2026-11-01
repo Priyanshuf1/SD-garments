@@ -1409,17 +1409,33 @@
             </div>
             <div style="flex: 1.5; min-width: 180px;">
               <select id="prod-filter-category">
-                <option value="all">All Categories</option>
-                <option value="Pants & Bottoms">Pants & Bottoms (75)</option>
-                <option value="Vests & Tanks">Vests & Tanks (53)</option>
-                <option value="T-Shirts & Boxy Tees">T-Shirts & Boxy Tees (30)</option>
-                <option value="Jewelry & Pendants">Jewelry & Pendants (28)</option>
-                <option value="Full Sleeves">Full Sleeves (26)</option>
-                <option value="Jackets">Jackets (10)</option>
-                <option value="Shorts & Jorts">Shorts & Jorts (8)</option>
-                <option value="Hoodies">Hoodies (6)</option>
-                <option value="Baby Tees">Baby Tees (4)</option>
-                <option value="Bags & Accessories">Bags & Accessories (4)</option>
+                <option value="all">All Departments & Categories</option>
+                <optgroup label="Departments">
+                  <option value="Men's Wear">Men's Wear</option>
+                  <option value="Party Wear">Party Wear</option>
+                  <option value="Kids Wear">Kids Wear</option>
+                  <option value="Accessories">Accessories</option>
+                </optgroup>
+                <optgroup label="Men's Wear">
+                  <option value="Bottom Wear">Bottom Wear</option>
+                  <option value="Top Wear">Top Wear</option>
+                  <option value="Co-ord Sets">Co-ord Sets</option>
+                </optgroup>
+                <optgroup label="Party Wear">
+                  <option value="Party Wear">Party Wear</option>
+                  <option value="Jodhpuri Suits">Jodhpuri Suits</option>
+                  <option value="Blazers">Blazers</option>
+                  <option value="Three-Piece Suits">Three-Piece Suits</option>
+                  <option value="Indo-Western Wear (Indo)">Indo-Western Wear (Indo)</option>
+                  <option value="Koti-Kurta Sets">Koti-Kurta Sets</option>
+                  <option value="Long Kurtas">Long Kurtas</option>
+                  <option value="Nehru Jackets">Nehru Jackets</option>
+                </optgroup>
+                <optgroup label="Kids Wear">
+                  <option value="Boys' Clothing">Boys' Clothing</option>
+                  <option value="Girls' Clothing">Girls' Clothing</option>
+                  <option value="Baby Clothing (0–2 Years)">Baby Clothing (0–2 Years)</option>
+                </optgroup>
               </select>
             </div>
             <div style="flex: 1; min-width: 140px;">
@@ -1955,16 +1971,31 @@
         <div class="form-group">
           <label class="form-label">Category</label>
           <select id="edit-prod-category">
-            <option value="Pants & Bottoms">Pants & Bottoms</option>
-            <option value="T-Shirts & Boxy Tees">T-Shirts & Boxy Tees</option>
-            <option value="Vests & Tanks">Vests & Tanks</option>
-            <option value="Full Sleeves">Full Sleeves</option>
-            <option value="Hoodies">Hoodies</option>
-            <option value="Jackets">Jackets</option>
-            <option value="Shorts & Jorts">Shorts & Jorts</option>
-            <option value="Baby Tees">Baby Tees</option>
-            <option value="Jewelry & Pendants">Jewelry & Pendants</option>
-            <option value="Bags & Accessories">Bags & Accessories</option>
+            <optgroup label="Men's Wear">
+              <option value="Bottom Wear">Bottom Wear (Pants/Jeans)</option>
+              <option value="Top Wear">Top Wear (Shirts/Tees/Hoodies)</option>
+              <option value="Co-ord Sets">Co-ord Sets</option>
+            </optgroup>
+            <optgroup label="Party Wear">
+              <option value="Party Wear">Party Wear</option>
+              <option value="Jodhpuri Suits">Jodhpuri Suits</option>
+              <option value="Blazers">Blazers</option>
+              <option value="Three-Piece Suits">Three-Piece Suits</option>
+              <option value="Indo-Western Wear (Indo)">Indo-Western Wear (Indo)</option>
+              <option value="Koti-Kurta Sets">Koti-Kurta Sets</option>
+              <option value="Long Kurtas">Long Kurtas</option>
+              <option value="Nehru Jackets">Nehru Jackets</option>
+            </optgroup>
+            <optgroup label="Kids Wear">
+              <option value="Boys' Clothing">Boys' Clothing</option>
+              <option value="Girls' Clothing">Girls' Clothing</option>
+              <option value="Baby Clothing (0–2 Years)">Baby Clothing (0–2 Years)</option>
+            </optgroup>
+            <optgroup label="Accessories">
+              <option value="Accessories">Accessories</option>
+              <option value="Jewelry & Pendants">Jewelry & Pendants</option>
+              <option value="Bags & Accessories">Bags & Accessories</option>
+            </optgroup>
           </select>
         </div>
         <div class="form-group">
@@ -2974,6 +3005,9 @@ const Admin = {
 
       const matchCat = !category || category === 'all' ||
         (p.category && p.category.toLowerCase() === category.toLowerCase()) ||
+        (p.department && p.department.toLowerCase() === category.toLowerCase()) ||
+        (p.sub_category && p.sub_category.toLowerCase() === category.toLowerCase()) ||
+        (p.fit && p.fit.toLowerCase() === category.toLowerCase()) ||
         (p.product_type && p.product_type.toLowerCase() === category.toLowerCase());
 
       let matchStock = true;

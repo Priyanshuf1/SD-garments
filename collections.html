@@ -139,6 +139,47 @@
       text-transform: uppercase;
       transition: background 0.15s, color 0.15s;
     }
+    
+    .nav-dropdown-menu.mega-dropdown {
+      min-width: 580px;
+      padding: 1.25rem 1.5rem;
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .nav-dropdown-menu.mega-dropdown-2col {
+      min-width: 420px;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .nav-item-dropdown:hover .nav-dropdown-menu.mega-dropdown {
+      display: grid;
+    }
+    .nav-mega-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-mega-col-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #ff8585;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid #282828;
+      margin-bottom: 0.35rem;
+    }
+    .nav-dropdown-menu.mega-dropdown .nav-dropdown-link {
+      padding: 4px 0;
+      font-size: 0.76rem;
+      color: #cccccc;
+    }
+    .nav-dropdown-menu.mega-dropdown .nav-dropdown-link:hover {
+      color: #ffffff;
+      background: transparent;
+      text-decoration: underline;
+    }
+
     .nav-dropdown-link:hover {
       background: #222222;
       color: #ffffff;
@@ -865,42 +906,112 @@
 
       <!-- Center: Desktop Navigation Links with Sub-Category Dropdowns (Hidden on Mobile <= 900px) -->
       <nav class="site-header__nav">
-        <a href="/collections/new-arrivals" class="header-nav-link" data-cat="newarrivals">NEW ARRIVALS</a>
+        <a href="/collections/new-arrivals" class="header-nav-link" data-cat="new-arrivals">NEW ARRIVALS</a>
 
-        <!-- TOPS Dropdown -->
+        <!-- MEN'S WEAR Mega Dropdown -->
         <div class="nav-item-dropdown">
-          <a href="/collections/tops" class="header-nav-link" data-cat="tops" style="display:inline-flex; align-items:center; gap:4px;">
-            TOPS
+          <a href="/collections/mens-wear" class="header-nav-link" data-cat="mens-wear" style="display:inline-flex; align-items:center; gap:4px;">
+            MEN'S WEAR
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
           </a>
-          <div class="nav-dropdown-menu">
-            <a href="/collections/tops" class="nav-dropdown-link" data-cat="tops" style="font-weight:800;">ALL TOPS</a>
-            <a href="/collections/tank-top-men" class="nav-dropdown-link">TANK TOP</a>
-            <a href="/collections/boxy-oversized-tshirt" class="nav-dropdown-link">TSHIRT</a>
-            <a href="/collections/hoodies-for-men" class="nav-dropdown-link">HOODIES</a>
-            <a href="/collections/jacket-for-men" class="nav-dropdown-link">JACKETS</a>
-            <a href="/collections/full-sleeve-t-shirt" class="nav-dropdown-link">FULL SLEEVE T SHIRT</a>
-            <a href="/collections/baby-tee" class="nav-dropdown-link">BABY TEE</a>
+          <div class="nav-dropdown-menu mega-dropdown">
+            <div class="nav-mega-col">
+              <div class="nav-mega-col-title">BOTTOM WEAR</div>
+              <a href="/collections/mens-bottom-wear" class="nav-dropdown-link" style="font-weight:800; color:#fff;">All Bottom Wear</a>
+              <a href="/collections/mens-jeans" class="nav-dropdown-link">Jeans</a>
+              <a href="/collections/straight-fit-jeans" class="nav-dropdown-link" style="padding-left:8px; opacity:0.85;">— Straight Fit</a>
+              <a href="/collections/baggy-fit-jeans" class="nav-dropdown-link" style="padding-left:8px; opacity:0.85;">— Baggy Fit</a>
+              <a href="/collections/narrow-fit-jeans" class="nav-dropdown-link" style="padding-left:8px; opacity:0.85;">— Narrow Fit</a>
+              <a href="/collections/cargo-joggers" class="nav-dropdown-link">Cargo / Jogger Pants</a>
+              <a href="/collections/formal-pants" class="nav-dropdown-link">Formal Pants</a>
+              <a href="/collections/trousers" class="nav-dropdown-link">Trousers</a>
+              <a href="/collections/lowers" class="nav-dropdown-link">Lowers</a>
+            </div>
+            <div class="nav-mega-col">
+              <div class="nav-mega-col-title">TOP WEAR</div>
+              <a href="/collections/mens-top-wear" class="nav-dropdown-link" style="font-weight:800; color:#fff;">All Top Wear</a>
+              <a href="/collections/shirts" class="nav-dropdown-link">Shirts</a>
+              <a href="/collections/t-shirts" class="nav-dropdown-link">T-Shirts</a>
+              <a href="/collections/hoodies" class="nav-dropdown-link">Hoodies</a>
+              <a href="/collections/sweatshirts" class="nav-dropdown-link">Sweatshirts</a>
+              <a href="/collections/sweaters" class="nav-dropdown-link">Sweaters</a>
+              <a href="/collections/jackets" class="nav-dropdown-link">Jackets</a>
+              <a href="/collections/half-jackets" class="nav-dropdown-link">Half Jackets</a>
+              <a href="/collections/short-kurtas" class="nav-dropdown-link">Short Kurtas</a>
+            </div>
+            <div class="nav-mega-col">
+              <div class="nav-mega-col-title">SETS & EXPLORE</div>
+              <a href="/collections/mens-coord-sets" class="nav-dropdown-link" style="font-weight:800; color:#fff;">Co-ord Sets</a>
+              <a href="/collections/mens-wear" class="nav-dropdown-link">View Full Men's Catalog</a>
+              <a href="/collections/new-arrivals" class="nav-dropdown-link">Latest Men's Drops</a>
+            </div>
           </div>
         </div>
 
-        <!-- BOTTOMS Dropdown -->
+        <!-- PARTY WEAR Dropdown -->
         <div class="nav-item-dropdown">
-          <a href="/collections/bottoms" class="header-nav-link" data-cat="bottoms" style="display:inline-flex; align-items:center; gap:4px;">
-            BOTTOMS
+          <a href="/collections/party-wear" class="header-nav-link" data-cat="party-wear" style="display:inline-flex; align-items:center; gap:4px;">
+            PARTY WEAR
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
           </a>
-          <div class="nav-dropdown-menu">
-            <a href="/collections/bottoms" class="nav-dropdown-link" data-cat="bottoms" style="font-weight:800;">ALL BOTTOMS</a>
-            <a href="/collections/baggy-pants" class="nav-dropdown-link">PANTS</a>
-            <a href="/collections/baggy-jeans" class="nav-dropdown-link">JEANS</a>
-            <a href="/collections/shorts-for-men" class="nav-dropdown-link">SHORTS</a>
+          <div class="nav-dropdown-menu" style="min-width: 220px;">
+            <a href="/collections/party-wear" class="nav-dropdown-link" style="font-weight:800; color:#fff;">ALL PARTY WEAR</a>
+            <a href="/collections/jodhpuri-suits" class="nav-dropdown-link">Jodhpuri Suits</a>
+            <a href="/collections/blazers" class="nav-dropdown-link">Blazers</a>
+            <a href="/collections/three-piece-suits" class="nav-dropdown-link">Three-Piece Suits</a>
+            <a href="/collections/indo-western" class="nav-dropdown-link">Indo-Western Wear</a>
+            <a href="/collections/koti-kurta-sets" class="nav-dropdown-link">Koti-Kurta Sets</a>
+            <a href="/collections/long-kurtas" class="nav-dropdown-link">Long Kurtas</a>
+            <a href="/collections/nehru-jackets" class="nav-dropdown-link">Nehru Jackets</a>
           </div>
         </div>
 
-        <a href="/collections/basics-genrage" class="header-nav-link">BASICS</a>
-        <a href="/collections/accessories" class="header-nav-link">ACCESSORIES</a>
-        <a href="/collections/clearance-sale" class="header-nav-link" style="color:#e50914;">CLEARANCE</a>
+        <!-- KIDS WEAR Mega Dropdown -->
+        <div class="nav-item-dropdown">
+          <a href="/collections/kids-wear" class="header-nav-link" data-cat="kids-wear" style="display:inline-flex; align-items:center; gap:4px;">
+            KIDS WEAR
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+          </a>
+          <div class="nav-dropdown-menu mega-dropdown">
+            <div class="nav-mega-col">
+              <div class="nav-mega-col-title">BOYS' CLOTHING</div>
+              <a href="/collections/boys-clothing" class="nav-dropdown-link" style="font-weight:800; color:#fff;">All Boys' Wear</a>
+              <a href="/collections/boys-casual-wear" class="nav-dropdown-link">Casual & Daily</a>
+              <a href="/collections/boys-t-shirts" class="nav-dropdown-link">T-Shirts & Shirts</a>
+              <a href="/collections/boys-jeans" class="nav-dropdown-link">Jeans & Lowers</a>
+              <a href="/collections/boys-cargo-joggers" class="nav-dropdown-link">Cargo / Joggers</a>
+              <a href="/collections/boys-coord-sets" class="nav-dropdown-link">Co-ord & Night Sets</a>
+              <a href="/collections/boys-ethnic-wear" class="nav-dropdown-link" style="margin-top:4px; font-weight:700;">Ethnic & Party</a>
+              <a href="/collections/boys-kurta-pajama" class="nav-dropdown-link">Kurta Pajama Sets</a>
+              <a href="/collections/boys-indo-western" class="nav-dropdown-link">Indo-Western & Jodhpuri</a>
+            </div>
+            <div class="nav-mega-col">
+              <div class="nav-mega-col-title">GIRLS' CLOTHING</div>
+              <a href="/collections/girls-clothing" class="nav-dropdown-link" style="font-weight:800; color:#fff;">All Girls' Wear</a>
+              <a href="/collections/girls-casual-wear" class="nav-dropdown-link">Casual Tops & Jeans</a>
+              <a href="/collections/girls-coord-sets" class="nav-dropdown-link">Co-ords & Jumpsuits</a>
+              <a href="/collections/girls-party-wear" class="nav-dropdown-link" style="margin-top:4px; font-weight:700;">Party Collection</a>
+              <a href="/collections/girls-frocks" class="nav-dropdown-link">Frocks & Gowns</a>
+              <a href="/collections/girls-lehenga-sets" class="nav-dropdown-link">Lehenga Sets & Dresses</a>
+              <a href="/collections/girls-winter-wear" class="nav-dropdown-link" style="margin-top:4px; font-weight:700;">Winter Wear</a>
+              <a href="/collections/girls-sweaters" class="nav-dropdown-link">Sweaters & Jackets</a>
+              <a href="/collections/girls-hoodies" class="nav-dropdown-link">Hoodies & Sweatshirts</a>
+            </div>
+            <div class="nav-mega-col">
+              <div class="nav-mega-col-title">BABY CLOTHING (0–2Y)</div>
+              <a href="/collections/baby-clothing" class="nav-dropdown-link" style="font-weight:800; color:#fff;">All Baby Wear</a>
+              <a href="/collections/baby-rompers" class="nav-dropdown-link">Rompers</a>
+              <a href="/collections/baby-jumpsuits" class="nav-dropdown-link">Jumpsuits</a>
+              <a href="/collections/newborn-baby-clothes" class="nav-dropdown-link">Newborn Baby Clothes</a>
+              <a href="/collections/baby-clothing-sets" class="nav-dropdown-link">Baby Clothing Sets</a>
+              <a href="/collections/baby-coord-sets" class="nav-dropdown-link">Baby Co-ord Sets</a>
+              <a href="/collections/baby-frocks" class="nav-dropdown-link">Baby Frocks</a>
+              <a href="/collections/baby-dresses" class="nav-dropdown-link">Baby Dresses</a>
+            </div>
+          </div>
+        </div>
+
+        <a href="/collections/accessories" class="header-nav-link" data-cat="accessories">ACCESSORIES</a>
         <a href="/pages/contact.html" class="header-nav-link" onclick="if(window.openChatModal){window.openChatModal(); return false;}">CHAT WITH US</a>
       </nav>
 
@@ -951,19 +1062,16 @@
   <nav class="collection-subnav" aria-label="Sub-category Navigation">
     <div class="collection-subnav__inner" id="category-chips">
       <a href="/collections/shop" class="category-chip active" data-cat="all">All Drops</a>
-      <a href="/collections/new-arrivals" class="category-chip" data-cat="newarrivals">New Arrivals</a>
-      <a href="/collections/tops" class="category-chip" data-cat="tops">Tops</a>
-      <a href="/collections/hoodies-for-men" class="category-chip" data-cat="hoodies">Hoodies</a>
-      <a href="/collections/baggy-pants" class="category-chip" data-cat="bottoms">Pants</a>
-      <a href="/collections/vest" class="category-chip" data-cat="vests">Tank Tops</a>
-      <a href="/collections/basics-genrage" class="category-chip" data-cat="basics">Basics</a>
-      <a href="/collections/boxy-oversized-tshirt" class="category-chip" data-cat="tshirts">T-shirts</a>
-      <a href="/collections/full-sleeve-t-shirt" class="category-chip" data-cat="longsleeves">Long Sleeves</a>
-      <a href="/collections/jacket-for-men" class="category-chip" data-cat="jackets">Jackets</a>
-      <a href="/collections/shorts-for-men" class="category-chip" data-cat="shorts">Shorts</a>
-      <a href="/collections/baggy-jeans" class="category-chip" data-cat="jeans">Jeans</a>
+      <a href="/collections/new-arrivals" class="category-chip" data-cat="new-arrivals">New Arrivals</a>
+      <a href="/collections/mens-wear" class="category-chip" data-cat="mens-wear">Men's Wear</a>
+      <a href="/collections/mens-bottom-wear" class="category-chip" data-cat="mens-bottom-wear">Bottom Wear</a>
+      <a href="/collections/mens-top-wear" class="category-chip" data-cat="mens-top-wear">Top Wear</a>
+      <a href="/collections/party-wear" class="category-chip" data-cat="party-wear">Party Wear</a>
+      <a href="/collections/kids-wear" class="category-chip" data-cat="kids-wear">Kids Wear</a>
+      <a href="/collections/boys-clothing" class="category-chip" data-cat="boys-clothing">Boys</a>
+      <a href="/collections/girls-clothing" class="category-chip" data-cat="girls-clothing">Girls</a>
+      <a href="/collections/baby-clothing" class="category-chip" data-cat="baby-clothing">Baby (0–2Y)</a>
       <a href="/collections/accessories" class="category-chip" data-cat="accessories">Accessories</a>
-      <a href="/collections/clearance-sale" class="category-chip" data-cat="clearance" style="color:#e50914;">Clearance Sale</a>
     </div>
   </nav>
 
@@ -1238,23 +1346,91 @@
       cart: [],
 
       categoryMap: {
-        'all': 'ALL STREETWEAR',
-        'newarrivals': 'NEW ARRIVALS',
-        'tops': 'TOPS & TEES',
-        'bottoms': 'PANTS & BOTTOMS',
-        'vests': 'VESTS & TANKS',
-        'tshirts': 'T-SHIRTS & BOXY TEES',
-        'longsleeves': 'FULL SLEEVE T-SHIRTS',
-        'babytee': 'BABY TEES',
-        'hoodies': 'HEAVY HOODIES',
-        'jackets': 'JACKETS',
-        'shorts': 'SHORTS',
-        'jeans': 'BAGGY JEANS',
-        'accessories': 'JEWELRY & ACCESSORIES',
-        'basics': 'ALLEYRICH BASICS',
-        'clearance': 'CLEARANCE SALE',
-        'wishlist': 'MY SAVED WISHLIST'
-      },
+      "all": "ALL PRODUCTS",
+      "shop": "ALL COLLECTIONS",
+      "wishlist": "MY SAVED WISHLIST",
+      "new-arrivals": "NEW ARRIVALS",
+      "mens-wear": "MEN'S WEAR",
+      "mens-bottom-wear": "MEN'S BOTTOM WEAR",
+      "mens-jeans": "JEANS",
+      "straight-fit-jeans": "STRAIGHT FIT JEANS",
+      "baggy-fit-jeans": "BAGGY FIT JEANS",
+      "narrow-fit-jeans": "NARROW FIT JEANS",
+      "cargo-joggers": "CARGO / JOGGER PANTS",
+      "formal-pants": "FORMAL PANTS",
+      "trousers": "TROUSERS",
+      "lowers": "LOWERS",
+      "mens-top-wear": "MEN'S TOP WEAR",
+      "shirts": "SHIRTS",
+      "t-shirts": "T-SHIRTS",
+      "hoodies": "HOODIES",
+      "sweatshirts": "SWEATSHIRTS",
+      "sweaters": "SWEATERS",
+      "jackets": "JACKETS",
+      "half-jackets": "HALF JACKETS",
+      "short-kurtas": "SHORT KURTAS",
+      "mens-coord-sets": "CO-ORD SETS",
+      "party-wear": "PARTY WEAR",
+      "jodhpuri-suits": "JODHPURI SUITS",
+      "blazers": "BLAZERS",
+      "three-piece-suits": "THREE-PIECE SUITS",
+      "indo-western": "INDO-WESTERN WEAR",
+      "koti-kurta-sets": "KOTI-KURTA SETS",
+      "long-kurtas": "LONG KURTAS",
+      "nehru-jackets": "NEHRU JACKETS",
+      "kids-wear": "KIDS WEAR",
+      "boys-clothing": "BOYS' CLOTHING",
+      "boys-casual-wear": "BOYS' CASUAL WEAR",
+      "boys-t-shirts": "BOYS' T-SHIRTS",
+      "boys-shirts": "BOYS' SHIRTS",
+      "boys-jeans": "BOYS' JEANS",
+      "boys-cargo-joggers": "BOYS' CARGO PANTS / JOGGERS",
+      "boys-lowers": "BOYS' LOWERS",
+      "boys-coord-sets": "BOYS' CO-ORD SETS",
+      "boys-night-suits": "BOYS' NIGHT SUITS",
+      "boys-ethnic-wear": "BOYS' ETHNIC WEAR",
+      "boys-kurta-pajama": "BOYS' KURTA PAJAMA SETS",
+      "boys-indo-western": "BOYS' INDO-WESTERN SETS",
+      "boys-jodhpuri": "BOYS' JODHPURI SETS",
+      "boys-three-piece-suits": "BOYS' THREE-PIECE SUITS",
+      "girls-clothing": "GIRLS' CLOTHING",
+      "girls-casual-wear": "GIRLS' CASUAL & DAILY WEAR",
+      "girls-jeans": "GIRLS' JEANS",
+      "girls-tops-tshirts": "GIRLS' TOPS & T-SHIRTS",
+      "girls-coord-sets": "GIRLS' CO-ORD SETS",
+      "girls-jumpsuits": "GIRLS' JUMPSUITS",
+      "girls-midi-dresses": "GIRLS' MIDI DRESSES",
+      "girls-party-wear": "GIRLS' PARTY WEAR",
+      "girls-frocks": "GIRLS' FROCKS",
+      "girls-gowns": "GIRLS' GOWNS",
+      "girls-lehenga-sets": "GIRLS' LEHENGA SETS",
+      "girls-dresses": "GIRLS' DRESSES",
+      "girls-winter-wear": "GIRLS' WINTER WEAR",
+      "girls-sweaters": "GIRLS' SWEATERS",
+      "girls-jackets": "GIRLS' JACKETS",
+      "girls-hoodies": "GIRLS' HOODIES",
+      "girls-sweatshirts": "GIRLS' SWEATSHIRTS",
+      "girls-winter-coord-sets": "GIRLS' WINTER CO-ORD SETS",
+      "baby-clothing": "BABY CLOTHING (0–2 YEARS)",
+      "baby-rompers": "ROMPERS",
+      "baby-jumpsuits": "BABY JUMPSUITS",
+      "newborn-baby-clothes": "NEWBORN BABY CLOTHES",
+      "baby-clothing-sets": "BABY CLOTHING SETS",
+      "baby-coord-sets": "BABY CO-ORD SETS",
+      "baby-frocks": "BABY FROCKS",
+      "baby-dresses": "BABY DRESSES",
+      "accessories": "ACCESSORIES",
+      "basics-genrage": "ALLEYRICH BASICS",
+      "newarrivals": "NEW ARRIVALS",
+      "tops": "TOPS & TEES",
+      "bottoms": "PANTS & BOTTOMS",
+      "vests": "VESTS & TANKS",
+      "tshirts": "T-SHIRTS",
+      "longsleeves": "FULL SLEEVE T-SHIRTS",
+      "babytee": "BABY TEES",
+      "basics": "ALLEYRICH BASICS",
+      "clearance": "CLEARANCE SALE"
+},
 
       init() {
         this.loadCartFromStorage();
@@ -1308,54 +1484,50 @@
           }, 350);
         }
 
-        if (viewMode === 'wishlist' || queryCat === 'wishlist') {
+        if (viewMode === 'wishlist' || queryCat === 'wishlist' || path.includes('/wishlist')) {
           this.activeCategory = 'wishlist';
-        } else if (queryCat) {
-          if (queryCat.includes('new-arrival') || queryCat.includes('new_arrival') || queryCat.includes('newarrival')) this.activeCategory = 'newarrivals';
-          else if (queryCat === 'tops' || queryCat === 'top') this.activeCategory = 'tops';
-          else if (queryCat.includes('baby')) this.activeCategory = 'babytee';
-          else if (queryCat.includes('basic')) this.activeCategory = 'basics';
-          else if (queryCat.includes('clearance') || queryCat.includes('sale')) this.activeCategory = 'clearance';
-          else if (queryCat.includes('short')) this.activeCategory = 'shorts';
-          else if (queryCat.includes('jean')) this.activeCategory = 'jeans';
-          else if (queryCat.includes('pant') || queryCat.includes('bottom')) this.activeCategory = 'bottoms';
-          else if (queryCat.includes('vest') || queryCat.includes('tank')) this.activeCategory = 'vests';
-          else if (queryCat.includes('full-sleeve') || queryCat.includes('long-sleeve') || queryCat.includes('longsleeve')) this.activeCategory = 'longsleeves';
-          else if (queryCat.includes('tshirt') || queryCat.includes('tee') || queryCat.includes('boxy')) this.activeCategory = 'tshirts';
-          else if (queryCat.includes('hoodie')) this.activeCategory = 'hoodies';
-          else if (queryCat.includes('jacket')) this.activeCategory = 'jackets';
-          else if (queryCat.includes('access') || queryCat.includes('jewel')) this.activeCategory = 'accessories';
-          else this.activeCategory = 'all';
-        } else if (path.includes('new-arrival') || path.includes('new_arrival') || path.includes('newarrivals')) {
-          this.activeCategory = 'newarrivals';
-        } else if (path.includes('/tops') || path.includes('/top') || path.endsWith('/tops')) {
-          this.activeCategory = 'tops';
-        } else if (path.includes('baby-tee') || path.includes('baby_tee')) {
-          this.activeCategory = 'babytee';
-        } else if (path.includes('basic')) {
-          this.activeCategory = 'basics';
-        } else if (path.includes('clearance') || path.includes('sale')) {
-          this.activeCategory = 'clearance';
-        } else if (path.includes('baggy-jeans') || path.includes('jeans')) {
-          this.activeCategory = 'jeans';
-        } else if (path.includes('shorts')) {
-          this.activeCategory = 'shorts';
-        } else if (path.includes('baggy-pants') || path.includes('bottom') || path.includes('pant')) {
-          this.activeCategory = 'bottoms';
-        } else if (path.includes('vest') || path.includes('tank')) {
-          this.activeCategory = 'vests';
-        } else if (path.includes('full-sleeve') || path.includes('long-sleeve')) {
-          this.activeCategory = 'longsleeves';
-        } else if (path.includes('boxy') || path.includes('tshirt') || path.includes('tee')) {
-          this.activeCategory = 'tshirts';
-        } else if (path.includes('hoodie')) {
-          this.activeCategory = 'hoodies';
-        } else if (path.includes('jacket')) {
-          this.activeCategory = 'jackets';
-        } else if (path.includes('access') || path.includes('jewel')) {
-          this.activeCategory = 'accessories';
+        } else if (queryCat && this.categoryMap[queryCat]) {
+          this.activeCategory = queryCat;
         } else {
-          this.activeCategory = 'all';
+          let handleFromPath = '';
+          const match = path.match(/\/collections\/([^\/\?#]+)/);
+          if (match && match[1]) {
+            handleFromPath = match[1];
+          }
+
+          if (handleFromPath && this.categoryMap[handleFromPath]) {
+            this.activeCategory = handleFromPath;
+          } else if (queryCat) {
+            const norm = queryCat.replace(/_/g, '-');
+            if (this.categoryMap[norm]) this.activeCategory = norm;
+            else if (queryCat.includes('new')) this.activeCategory = 'new-arrivals';
+            else if (queryCat.includes('top')) this.activeCategory = 'mens-top-wear';
+            else if (queryCat.includes('bottom') || queryCat.includes('pant')) this.activeCategory = 'mens-bottom-wear';
+            else if (queryCat.includes('jean')) this.activeCategory = 'mens-jeans';
+            else if (queryCat.includes('party')) this.activeCategory = 'party-wear';
+            else if (queryCat.includes('kid')) this.activeCategory = 'kids-wear';
+            else if (queryCat.includes('boy')) this.activeCategory = 'boys-clothing';
+            else if (queryCat.includes('girl')) this.activeCategory = 'girls-clothing';
+            else if (queryCat.includes('baby') || queryCat.includes('newborn')) this.activeCategory = 'baby-clothing';
+            else if (queryCat.includes('access')) this.activeCategory = 'accessories';
+            else this.activeCategory = 'all';
+          } else if (handleFromPath) {
+            const norm = handleFromPath.replace(/_/g, '-');
+            if (this.categoryMap[norm]) this.activeCategory = norm;
+            else if (norm.includes('new')) this.activeCategory = 'new-arrivals';
+            else if (norm.includes('top')) this.activeCategory = 'mens-top-wear';
+            else if (norm.includes('bottom') || norm.includes('pant')) this.activeCategory = 'mens-bottom-wear';
+            else if (norm.includes('jean')) this.activeCategory = 'mens-jeans';
+            else if (norm.includes('party')) this.activeCategory = 'party-wear';
+            else if (norm.includes('kid')) this.activeCategory = 'kids-wear';
+            else if (norm.includes('boy')) this.activeCategory = 'boys-clothing';
+            else if (norm.includes('girl')) this.activeCategory = 'girls-clothing';
+            else if (norm.includes('baby') || norm.includes('newborn')) this.activeCategory = 'baby-clothing';
+            else if (norm.includes('access')) this.activeCategory = 'accessories';
+            else this.activeCategory = 'all';
+          } else {
+            this.activeCategory = 'all';
+          }
         }
       },
 
@@ -1486,6 +1658,264 @@
         this.filterAndRender();
       },
 
+      
+      matchesCategory(product, targetCat) {
+        if (!targetCat || targetCat === 'all' || targetCat === 'shop') return true;
+        const handle = targetCat.toLowerCase();
+        const pDept = (product.department || '').toLowerCase();
+        const pCat = (product.category || '').toLowerCase();
+        const pSub = (product.sub_category || '').toLowerCase();
+        const pFit = (product.fit || '').toLowerCase();
+        const pTags = (Array.isArray(product.tags) ? product.tags : (product.tags || '').split(','))
+                        .map(t => t.trim().toLowerCase());
+        const pTitle = (product.title || '').toLowerCase();
+        const pType = (product.product_type || '').toLowerCase();
+
+        // New Arrivals
+        if (handle === 'new-arrivals' || handle === 'newarrivals') {
+          return product.homepage_section === 'new_arrivals' || pTags.includes('new arrival') || pTags.includes('new arrivals') || pTags.includes('new-arrival') || pTags.includes('new in');
+        }
+        // Accessories
+        if (handle === 'accessories') {
+          return pDept === 'accessories' || pCat === 'accessories' || pTags.includes('accessories') || pType.includes('jewelry') || pType.includes('bag');
+        }
+        // Basics
+        if (handle === 'basics-genrage' || handle === 'basics') {
+          return product.homepage_section === 'genrage_basics' || pTags.includes('basic') || pTags.includes('basics');
+        }
+        // Clearance
+        if (handle === 'clearance' || handle === 'clearance-sale') {
+          const rawPr = Number(product.variants?.[0]?.price || product.price || 0);
+          const rawComp = product.variants?.[0]?.compare_at_price ? Number(product.variants[0].compare_at_price) : (product.compare_at_price ? Number(product.compare_at_price) : 0);
+          return (rawComp > rawPr && rawComp > 0) || pTags.includes('clearance') || pTags.includes('sale');
+        }
+
+        // --- Department 1: Men's Wear ---
+        if (handle === 'mens-wear') {
+          return pDept.includes("men");
+        }
+        if (handle === 'mens-bottom-wear' || handle === 'bottoms') {
+          return pDept.includes("men") && (pCat.includes("bottom") || pSub.includes("jean") || pSub.includes("pant") || pSub.includes("lower") || pSub.includes("cargo") || pSub.includes("trouser"));
+        }
+        if (handle === 'mens-top-wear' || handle === 'tops') {
+          return pDept.includes("men") && (pCat.includes("top") || pSub.includes("shirt") || pSub.includes("hoodie") || pSub.includes("jacket") || pSub.includes("sweater") || pSub.includes("t-shirt"));
+        }
+        if (handle === 'mens-coord-sets') {
+          return pDept.includes("men") && (pCat.includes("co-ord") || pSub.includes("co-ord") || pTags.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
+        }
+
+        // Bottom Wear Subcategories & Fits
+        if (handle === 'mens-jeans' || handle === 'jeans') {
+          return pDept.includes("men") && (pSub.includes("jean") || pTags.includes("jeans") || pTitle.includes("jean") || pFit.includes("jean"));
+        }
+        if (handle === 'straight-fit-jeans') {
+          return (pFit.includes("straight") || pTitle.includes("straight") || pTags.includes("straight-fit-jeans")) && (pSub.includes("jean") || pTitle.includes("jean") || pTags.includes("jeans"));
+        }
+        if (handle === 'baggy-fit-jeans') {
+          return (pFit.includes("baggy") || pTitle.includes("baggy") || pTags.includes("baggy-fit-jeans") || pTitle.includes("balloon") || pTitle.includes("wide")) && (pSub.includes("jean") || pTitle.includes("jean") || pTags.includes("jeans"));
+        }
+        if (handle === 'narrow-fit-jeans') {
+          return (pFit.includes("narrow") || pTitle.includes("narrow") || pTags.includes("narrow-fit-jeans") || pTitle.includes("slim") || pFit.includes("slim")) && (pSub.includes("jean") || pTitle.includes("jean") || pTags.includes("jeans"));
+        }
+        if (handle === 'cargo-joggers') {
+          return pDept.includes("men") && (pSub.includes("cargo") || pSub.includes("jogger") || pTitle.includes("cargo") || pTitle.includes("jogger") || pTags.includes("cargo-joggers"));
+        }
+        if (handle === 'formal-pants') {
+          return pDept.includes("men") && (pSub.includes("formal") || pTitle.includes("formal") || pTags.includes("formal-pants"));
+        }
+        if (handle === 'trousers') {
+          return pDept.includes("men") && (pSub.includes("trouser") || pTitle.includes("trouser") || pTags.includes("trousers"));
+        }
+        if (handle === 'lowers') {
+          return pDept.includes("men") && (pSub.includes("lower") || pTitle.includes("lower") || pTitle.includes("sweatpant") || pTags.includes("lowers"));
+        }
+
+        // Top Wear Subcategories
+        if (handle === 'shirts') {
+          return pDept.includes("men") && (pSub.includes("shirt") && !pSub.includes("t-shirt") && !pSub.includes("sweatshirt") || pTitle.includes("shirt") && !pTitle.includes("t-shirt") && !pTitle.includes("sweatshirt") || pTags.includes("shirts"));
+        }
+        if (handle === 't-shirts' || handle === 'tshirts') {
+          return pDept.includes("men") && (pSub.includes("t-shirt") || pTitle.includes("t-shirt") || pTitle.includes("tshirt") || pTitle.includes("tee") || pTags.includes("t-shirts"));
+        }
+        if (handle === 'hoodies') {
+          return pDept.includes("men") && (pSub.includes("hoodie") || pTitle.includes("hoodie") || pTags.includes("hoodies"));
+        }
+        if (handle === 'sweatshirts') {
+          return pDept.includes("men") && (pSub.includes("sweatshirt") || pTitle.includes("sweatshirt") || pTags.includes("sweatshirts"));
+        }
+        if (handle === 'sweaters') {
+          return pDept.includes("men") && (pSub.includes("sweater") || pTitle.includes("sweater") || pTags.includes("sweaters"));
+        }
+        if (handle === 'jackets') {
+          return pDept.includes("men") && (pSub.includes("jacket") && !pSub.includes("half") || pTitle.includes("jacket") && !pTitle.includes("half") || pTags.includes("jackets"));
+        }
+        if (handle === 'half-jackets' || handle === 'vests') {
+          return pDept.includes("men") && (pSub.includes("half jacket") || pTitle.includes("half jacket") || pTags.includes("half-jackets") || pTitle.includes("vest") || pType.includes("vest"));
+        }
+        if (handle === 'short-kurtas') {
+          return pDept.includes("men") && (pSub.includes("short kurta") || pTitle.includes("short kurta") || pTags.includes("short-kurtas"));
+        }
+
+        // --- Department 2: Party Wear ---
+        if (handle === 'party-wear') {
+          return pDept.includes("party") || pCat.includes("party") || pTags.includes("party-wear");
+        }
+        if (handle === 'jodhpuri-suits') {
+          return pDept.includes("party") && (pCat.includes("jodhpuri") || pSub.includes("jodhpuri") || pTitle.includes("jodhpuri"));
+        }
+        if (handle === 'blazers') {
+          return pDept.includes("party") && (pCat.includes("blazer") || pSub.includes("blazer") || pTitle.includes("blazer"));
+        }
+        if (handle === 'three-piece-suits') {
+          return pDept.includes("party") && (pCat.includes("three-piece") || pSub.includes("three-piece") || pTitle.includes("three-piece") || pTitle.includes("3-piece"));
+        }
+        if (handle === 'indo-western') {
+          return pDept.includes("party") && (pCat.includes("indo") || pSub.includes("indo") || pTitle.includes("indo"));
+        }
+        if (handle === 'koti-kurta-sets') {
+          return pDept.includes("party") && (pCat.includes("koti") || pSub.includes("koti") || pTitle.includes("koti"));
+        }
+        if (handle === 'long-kurtas') {
+          return pDept.includes("party") && (pCat.includes("long kurta") || pSub.includes("long kurta") || pTitle.includes("long kurta"));
+        }
+        if (handle === 'nehru-jackets') {
+          return pDept.includes("party") && (pCat.includes("nehru") || pSub.includes("nehru") || pTitle.includes("nehru"));
+        }
+
+        // --- Department 3: Kids Wear ---
+        if (handle === 'kids-wear') {
+          return pDept.includes("kid") || pCat.includes("kid") || pCat.includes("baby") || pTags.includes("kids-wear");
+        }
+        // Boys' Clothing
+        if (handle === 'boys-clothing') {
+          return pCat.includes("boys");
+        }
+        if (handle === 'boys-casual-wear') {
+          return pCat.includes("boys") && (pSub.includes("casual") || pTags.includes("casual-wear") || (!pSub.includes("ethnic") && !pTitle.includes("kurta") && !pTitle.includes("suit")));
+        }
+        if (handle === 'boys-t-shirts') {
+          return pCat.includes("boys") && (pFit.includes("t-shirt") || pTitle.includes("tee") || pTitle.includes("t-shirt"));
+        }
+        if (handle === 'boys-shirts') {
+          return pCat.includes("boys") && (pFit.includes("shirt") && !pFit.includes("t-shirt") || pTitle.includes("shirt") && !pTitle.includes("t-shirt"));
+        }
+        if (handle === 'boys-jeans') {
+          return pCat.includes("boys") && (pFit.includes("jean") || pTitle.includes("jean"));
+        }
+        if (handle === 'boys-cargo-joggers') {
+          return pCat.includes("boys") && (pFit.includes("cargo") || pFit.includes("jogger") || pTitle.includes("cargo") || pTitle.includes("jogger"));
+        }
+        if (handle === 'boys-lowers') {
+          return pCat.includes("boys") && (pFit.includes("lower") || pTitle.includes("lower") || pTitle.includes("pant"));
+        }
+        if (handle === 'boys-coord-sets') {
+          return pCat.includes("boys") && (pFit.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
+        }
+        if (handle === 'boys-night-suits') {
+          return pCat.includes("boys") && (pFit.includes("night") || pTitle.includes("night") || pTitle.includes("pajama"));
+        }
+        if (handle === 'boys-ethnic-wear') {
+          return pCat.includes("boys") && (pSub.includes("ethnic") || pTitle.includes("kurta") || pTitle.includes("suit") || pTitle.includes("indo"));
+        }
+        if (handle === 'boys-kurta-pajama') {
+          return pCat.includes("boys") && (pFit.includes("kurta") || pTitle.includes("kurta"));
+        }
+        if (handle === 'boys-indo-western') {
+          return pCat.includes("boys") && (pFit.includes("indo") || pTitle.includes("indo"));
+        }
+        if (handle === 'boys-jodhpuri') {
+          return pCat.includes("boys") && (pFit.includes("jodhpuri") || pTitle.includes("jodhpuri"));
+        }
+        if (handle === 'boys-three-piece-suits') {
+          return pCat.includes("boys") && (pFit.includes("three-piece") || pTitle.includes("three-piece") || pTitle.includes("suit"));
+        }
+
+        // Girls' Clothing
+        if (handle === 'girls-clothing') {
+          return pCat.includes("girls");
+        }
+        if (handle === 'girls-casual-wear') {
+          return pCat.includes("girls") && (pSub.includes("casual") || pTags.includes("casual-wear") || pTitle.includes("tee") || pTitle.includes("top") || pTitle.includes("jean") || pTitle.includes("midi"));
+        }
+        if (handle === 'girls-jeans') {
+          return pCat.includes("girls") && (pFit.includes("jean") || pTitle.includes("jean"));
+        }
+        if (handle === 'girls-tops-tshirts') {
+          return pCat.includes("girls") && (pFit.includes("top") || pFit.includes("t-shirt") || pTitle.includes("tee") || pTitle.includes("top"));
+        }
+        if (handle === 'girls-coord-sets') {
+          return pCat.includes("girls") && (pFit.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
+        }
+        if (handle === 'girls-jumpsuits') {
+          return pCat.includes("girls") && (pFit.includes("jumpsuit") || pTitle.includes("jumpsuit"));
+        }
+        if (handle === 'girls-midi-dresses') {
+          return pCat.includes("girls") && (pFit.includes("midi") || pTitle.includes("midi"));
+        }
+        if (handle === 'girls-party-wear') {
+          return pCat.includes("girls") && (pSub.includes("party") || pTitle.includes("frock") || pTitle.includes("gown") || pTitle.includes("lehenga") || pTitle.includes("dress"));
+        }
+        if (handle === 'girls-frocks') {
+          return pCat.includes("girls") && (pFit.includes("frock") || pTitle.includes("frock"));
+        }
+        if (handle === 'girls-gowns') {
+          return pCat.includes("girls") && (pFit.includes("gown") || pTitle.includes("gown"));
+        }
+        if (handle === 'girls-lehenga-sets') {
+          return pCat.includes("girls") && (pFit.includes("lehenga") || pTitle.includes("lehenga"));
+        }
+        if (handle === 'girls-dresses') {
+          return pCat.includes("girls") && (pFit.includes("dress") || pTitle.includes("dress"));
+        }
+        if (handle === 'girls-winter-wear') {
+          return pCat.includes("girls") && (pSub.includes("winter") || pTitle.includes("sweater") || pTitle.includes("jacket") || pTitle.includes("hoodie") || pTitle.includes("sweatshirt"));
+        }
+        if (handle === 'girls-sweaters') {
+          return pCat.includes("girls") && (pFit.includes("sweater") || pTitle.includes("sweater"));
+        }
+        if (handle === 'girls-jackets') {
+          return pCat.includes("girls") && (pFit.includes("jacket") || pTitle.includes("jacket"));
+        }
+        if (handle === 'girls-hoodies') {
+          return pCat.includes("girls") && (pFit.includes("hoodie") || pTitle.includes("hoodie"));
+        }
+        if (handle === 'girls-sweatshirts') {
+          return pCat.includes("girls") && (pFit.includes("sweatshirt") || pTitle.includes("sweatshirt"));
+        }
+        if (handle === 'girls-winter-coord-sets') {
+          return pCat.includes("girls") && (pFit.includes("winter co-ord") || (pTitle.includes("winter") && pTitle.includes("co-ord")));
+        }
+
+        // Baby Clothing (0–2 Years) / Newborn
+        if (handle === 'baby-clothing' || handle === 'babytee') {
+          return pCat.includes("baby") || pDept.includes("baby") || pTitle.includes("baby");
+        }
+        if (handle === 'baby-rompers') {
+          return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("romper") || pTitle.includes("romper") || pFit.includes("romper"));
+        }
+        if (handle === 'baby-jumpsuits') {
+          return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("jumpsuit") || pTitle.includes("jumpsuit") || pFit.includes("jumpsuit"));
+        }
+        if (handle === 'newborn-baby-clothes') {
+          return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("newborn") || pTitle.includes("newborn") || pFit.includes("newborn"));
+        }
+        if (handle === 'baby-clothing-sets') {
+          return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("set") || pTitle.includes("set") || pFit.includes("set"));
+        }
+        if (handle === 'baby-coord-sets') {
+          return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("co-ord") || pTitle.includes("co-ord") || pFit.includes("co-ord"));
+        }
+        if (handle === 'baby-frocks') {
+          return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("frock") || pTitle.includes("frock") || pFit.includes("frock"));
+        }
+        if (handle === 'baby-dresses') {
+          return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("dress") || pTitle.includes("dress") || pFit.includes("dress"));
+        }
+
+        // Fallback fuzzy match
+        return pTags.includes(handle) || pTitle.includes(handle) || pCat.includes(handle) || pSub.includes(handle);
+      },
+
       filterAndRender() {
         this.filteredProducts = this.allProducts.filter(p => {
           const cat = (p.category || p.product_type || '').toLowerCase();
@@ -1510,59 +1940,18 @@
           }
 
           // 1. Category Filter
-          if (this.activeCategory === 'wishlist') {
-            const wishlist = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
-            const wishlistedHandles = new Set(wishlist.map(i => {
-              const h = typeof i === 'string' ? i : i.handle;
-              return h ? String(h).split('?')[0].split('#')[0].trim().toLowerCase() : '';
-            }).filter(Boolean));
-            const pHandle = p.handle ? String(p.handle).split('?')[0].split('#')[0].trim().toLowerCase() : '';
-            if (!wishlistedHandles.has(pHandle)) return false;
-          } else if (this.activeCategory === 'newarrivals') {
-            const isNew = p.homepage_section === 'new_arrivals' ||
-                          tags.includes('new arrival') ||
-                          tags.includes('new arrivals') ||
-                          tags.includes('new in') ||
-                          tags.includes('new') ||
-                          cat.includes('new');
-            if (!isNew) return false;
-          } else if (this.activeCategory === 'tops') {
-            const isTop = cat.includes('t-shirt') || cat.includes('tee') || cat.includes('boxy') ||
-                          cat.includes('hoodie') || cat.includes('jacket') || cat.includes('full sleeve') ||
-                          cat.includes('long sleeve') || cat.includes('vest') || cat.includes('tank') ||
-                          cat.includes('top') ||
-                          tags.includes('top') || tags.includes('tee') || tags.includes('hoodie') ||
-                          title.includes('tshirt') || title.includes('t-shirt') || title.includes('tee') ||
-                          title.includes('hoodie') || title.includes('top') || title.includes('jacket') ||
-                          title.includes('sleeve') || title.includes('vest') || title.includes('tank');
-            if (!isTop) return false;
-          } else if (this.activeCategory === 'babytee') {
-            if (!(cat.includes('baby') || tags.includes('baby') || title.includes('baby'))) return false;
-          } else if (this.activeCategory === 'basics') {
-            if (!(p.homepage_section === 'genrage_basics' || tags.includes('basic') || title.includes('basic') || title.includes('balloon'))) return false;
-          } else if (this.activeCategory === 'clearance') {
-            const rawPr = Number(p.variants?.[0]?.price || p.price || 0);
-            const rawComp = p.variants?.[0]?.compare_at_price ? Number(p.variants[0].compare_at_price) : (p.compare_at_price ? Number(p.compare_at_price) : 0);
-            const hasSale = (rawComp > rawPr && rawComp > 0) || tags.includes('clearance') || tags.includes('sale');
-            if (!hasSale) return false;
-          } else if (this.activeCategory === 'bottoms') {
-            if (!(cat.includes('pant') || cat.includes('bottom') || tags.includes('pant') || tags.includes('bottom') || title.includes('pant') || title.includes('cargo') || title.includes('trouser'))) return false;
-          } else if (this.activeCategory === 'jeans') {
-            if (!(cat.includes('jean') || tags.includes('jean') || title.includes('jean') || title.includes('denim'))) return false;
-          } else if (this.activeCategory === 'shorts') {
-            if (!(cat.includes('short') || tags.includes('short') || title.includes('short'))) return false;
-          } else if (this.activeCategory === 'vests') {
-            if (!(cat.includes('vest') || cat.includes('tank') || tags.includes('vest') || tags.includes('tank'))) return false;
-          } else if (this.activeCategory === 'tshirts') {
-            if (!(cat.includes('t-shirt') || cat.includes('boxy') || tags.includes('boxy') || tags.includes('t-shirt') || title.includes('t-shirt') || title.includes('tshirt'))) return false;
-          } else if (this.activeCategory === 'longsleeves') {
-            if (!(title.includes('full sleeve') || title.includes('full-sleeve') || tags.includes('full-sleeve') || cat.includes('full sleeve') || cat.includes('long sleeve'))) return false;
-          } else if (this.activeCategory === 'hoodies') {
-            if (!(cat.includes('hoodie') || tags.includes('hoodie') || title.includes('hoodie'))) return false;
-          } else if (this.activeCategory === 'jackets') {
-            if (!(cat.includes('jacket') || tags.includes('jacket') || title.includes('jacket'))) return false;
-          } else if (this.activeCategory === 'accessories') {
-            if (!(cat.includes('jewel') || cat.includes('pendant') || cat.includes('access') || tags.includes('access'))) return false;
+          if (this.activeCategory && this.activeCategory !== 'all' && this.activeCategory !== 'shop') {
+            if (this.activeCategory === 'wishlist') {
+              const wishlist = window.WishlistEngine ? window.WishlistEngine.getWishlist() : [];
+              const wishlistedHandles = new Set(wishlist.map(i => {
+                const h = typeof i === 'string' ? i : i.handle;
+                return h ? String(h).split('?')[0].split('#')[0].trim().toLowerCase() : '';
+              }).filter(Boolean));
+              const pHandle = p.handle ? String(p.handle).split('?')[0].split('#')[0].trim().toLowerCase() : '';
+              if (!wishlistedHandles.has(pHandle)) return false;
+            } else if (!this.matchesCategory(p, this.activeCategory)) {
+              return false;
+            }
           }
 
           // 2. Price Filter
