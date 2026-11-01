@@ -113,10 +113,16 @@ jobs:
           script: |
             cd ~/SD-garments
             mkdir -p ~/SD-garments-data-backup
-            cp -f data/*.json ~/SD-garments-data-backup/ 2>/dev/null || true
+            # Backup transactional user records only (never overwrite catalog products/collections)
+            for f in orders.json customers.json subscribers.json reviews.json discounts.json; do
+              [ -f "data/$f" ] && cp -f "data/$f" ~/SD-garments-data-backup/"$f" 2>/dev/null || true
+            done
             git fetch origin main
             git reset --hard origin/main
-            cp -f ~/SD-garments-data-backup/*.json data/ 2>/dev/null || true
+            # Restore transactional user records only
+            for f in orders.json customers.json subscribers.json reviews.json discounts.json; do
+              [ -f ~/SD-garments-data-backup/"$f" ] && cp -f ~/SD-garments-data-backup/"$f" "data/$f" 2>/dev/null || true
+            done
             [ -f .env ] || touch .env
             if [ -n "$GEMINI_API_KEY" ]; then
               sed -i '/^GEMINI_API_KEY=/d' .env
