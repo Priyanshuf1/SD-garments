@@ -351,7 +351,7 @@ function formatSupabaseProductToLocal(s) {
     title: s.title,
     body_html: s.description || '',
     vendor: s.vendor || 'ALLEYRICH',
-    category: s.category || 'T-Shirts & Boxy Tees',
+    category: s.category || 'Top Wear',
     product_type: s.product_type || s.category || 'Streetwear',
     homepage_section: s.homepage_section || 'none',
     tags: Array.isArray(s.tags) ? s.tags : [],
@@ -1391,7 +1391,20 @@ async function handleGetProducts(req, res, parsedUrl) {
 async function handleCreateProduct(req, res) {
   const payload = await parseBody(req);
   const products = await getAllProducts();
-  const prodCategory = payload.category || payload.product_type || 'T-Shirts & Boxy Tees';
+  const prodCategory = payload.category || payload.product_type || 'Top Wear';
+  let prodDepartment = payload.department;
+  if (!prodDepartment) {
+    const lower = (prodCategory + ' ' + (payload.title || '')).toLowerCase();
+    if (lower.includes('party') || lower.includes('jodhpuri') || lower.includes('blazer') || lower.includes('three-piece') || lower.includes('indo') || lower.includes('kurta') || lower.includes('nehru')) {
+      prodDepartment = 'Party Wear';
+    } else if (lower.includes('boy') || lower.includes('girl') || lower.includes('baby') || lower.includes('kid') || lower.includes('frock') || lower.includes('romper') || lower.includes('newborn')) {
+      prodDepartment = 'Kids Wear';
+    } else if (lower.includes('jewel') || lower.includes('bag') || lower.includes('accessor')) {
+      prodDepartment = 'Accessories';
+    } else {
+      prodDepartment = "Men's Wear";
+    }
+  }
   const primaryImage = payload.image || (payload.images && payload.images[0]?.src) || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
   const hoverImage = payload.hoverImage || (payload.images && payload.images[1]?.src) || null;
 
@@ -1431,7 +1444,10 @@ async function handleCreateProduct(req, res) {
     handle: payload.handle || (payload.title ? payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`),
     body_html: payload.description || payload.body_html || '',
     vendor: payload.vendor || 'GENRAGE',
+    department: prodDepartment,
     category: prodCategory,
+    sub_category: payload.sub_category || '',
+    fit: payload.fit || '',
     product_type: payload.product_type || prodCategory,
     homepage_section: payload.homepage_section || 'none',
     tags: Array.isArray(payload.tags) ? payload.tags : (payload.tags ? payload.tags.split(',').map(s => s.trim()) : ['Shop']),
@@ -1492,7 +1508,24 @@ async function handleUpdateProduct(req, res, id) {
 
   const current = products[index];
   if (payload.title) current.title = payload.title;
-  if (payload.category) current.category = payload.category;
+  if (payload.category) {
+    current.category = payload.category;
+    if (!payload.department) {
+      const lower = (payload.category + ' ' + (current.title || '')).toLowerCase();
+      if (lower.includes('party') || lower.includes('jodhpuri') || lower.includes('blazer') || lower.includes('three-piece') || lower.includes('indo') || lower.includes('kurta') || lower.includes('nehru')) {
+        current.department = 'Party Wear';
+      } else if (lower.includes('boy') || lower.includes('girl') || lower.includes('baby') || lower.includes('kid') || lower.includes('frock') || lower.includes('romper') || lower.includes('newborn')) {
+        current.department = 'Kids Wear';
+      } else if (lower.includes('jewel') || lower.includes('bag') || lower.includes('accessor')) {
+        current.department = 'Accessories';
+      } else {
+        current.department = "Men's Wear";
+      }
+    }
+  }
+  if (payload.department) current.department = payload.department;
+  if (payload.sub_category !== undefined) current.sub_category = payload.sub_category;
+  if (payload.fit !== undefined) current.fit = payload.fit;
   if (payload.product_type) current.product_type = payload.product_type;
   if (payload.homepage_section !== undefined) current.homepage_section = payload.homepage_section;
 

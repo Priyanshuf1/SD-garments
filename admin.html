@@ -3083,7 +3083,10 @@ const Admin = {
               </div>
             </div>
           </td>
-          <td><span class="badge badge-category">${cat}</span></td>
+          <td>
+            <span class="badge badge-category">${cat}</span>
+            ${p.sub_category ? `<div style="font-size:11px;color:var(--accent-gold);margin-top:2px;font-weight:600;">${p.sub_category}</div>` : ''}
+          </td>
           <td>
             <select class="prod-section-select" style="width:138px;padding:3px 6px;font-size:13px;background:#141414;color:${hSection === 'none' ? 'var(--text-muted)' : 'var(--accent-gold)'};border:1px solid ${hSection === 'none' ? 'var(--border-color)' : 'rgba(212,175,55,0.4)'};border-radius:var(--radius-sm);cursor:pointer;font-weight:${hSection === 'none' ? 'normal' : '700'};"
                     onchange="Admin.quickUpdateHomepageSection('${p.id}', this.value)">
@@ -3338,12 +3341,12 @@ const Admin = {
   },
 
   openAddProductModal() {
-    document.getElementById('product-modal-title').textContent = 'Add New Streetwear Item';
+    document.getElementById('product-modal-title').textContent = 'Add New Product';
     document.getElementById('edit-prod-id').value = '';
     document.getElementById('edit-prod-title').value = '';
     document.getElementById('edit-prod-price').value = '1000';
     document.getElementById('edit-prod-compare').value = '2000';
-    document.getElementById('edit-prod-category').value = 'T-Shirts & Boxy Tees';
+    document.getElementById('edit-prod-category').value = 'Top Wear';
     document.getElementById('edit-prod-stock').value = '100';
     document.getElementById('edit-prod-homepage-section').value = 'none';
     this.updateFeaturedBadge('none');
@@ -3372,7 +3375,19 @@ const Admin = {
     document.getElementById('edit-prod-title').value = p.title || '';
     document.getElementById('edit-prod-price').value = p.variants?.[0]?.price ?? p.price ?? '1000';
     document.getElementById('edit-prod-compare').value = p.variants?.[0]?.compare_at_price ?? p.compare_at_price ?? '';
-    document.getElementById('edit-prod-category').value = p.category || 'T-Shirts & Boxy Tees';
+    const catVal = p.category || p.department || p.sub_category || 'Top Wear';
+    const selectEl = document.getElementById('edit-prod-category');
+    if (selectEl) {
+      let matched = false;
+      for (const opt of selectEl.options) {
+        if (opt.value.toLowerCase() === catVal.toLowerCase()) {
+          selectEl.value = opt.value;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) selectEl.value = 'Top Wear';
+    }
     document.getElementById('edit-prod-stock').value = p.variants?.[0]?.inventory_quantity ?? 100;
     
     const hSection = p.homepage_section || 'none';
@@ -4949,16 +4964,14 @@ const Admin = {
     if (!container) return;
 
     const breakdown = this.stats.categoryBreakdown || {
-      'Pants & Bottoms': 75,
-      'Vests & Tanks': 53,
-      'T-Shirts & Boxy Tees': 30,
-      'Jewelry & Pendants': 28,
-      'Full Sleeves': 26,
-      'Jackets': 10,
-      'Shorts & Jorts': 8,
-      'Hoodies': 6,
-      'Baby Tees': 4,
-      'Bags & Accessories': 4
+      'Top Wear': 135,
+      'Accessories': 101,
+      'Bottom Wear': 20,
+      'Party Wear': 14,
+      "Girls' Clothing": 14,
+      "Boys' Clothing": 11,
+      'Baby Clothing (0–2 Years)': 7,
+      'Co-ord Sets': 1
     };
 
     const maxVal = Math.max(...Object.values(breakdown), 1);
