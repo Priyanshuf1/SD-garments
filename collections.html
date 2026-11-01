@@ -1538,26 +1538,17 @@
             const href = link.getAttribute('href');
             if (href && (href.startsWith('/collections/') || href.includes('collections.html'))) {
               e.preventDefault();
-              const catFromChip = link.dataset.cat;
-              let targetCat = catFromChip;
-              if (!targetCat) {
-                if (href.includes('new-arrival') || href.includes('new_arrival')) targetCat = 'newarrivals';
-                else if (href.includes('tops') || href.includes('/top')) targetCat = 'tops';
-                else if (href.includes('baby-tee')) targetCat = 'babytee';
-                else if (href.includes('tank') || href.includes('vest')) targetCat = 'vests';
-                else if (href.includes('boxy') || href.includes('tshirt')) targetCat = 'tshirts';
-                else if (href.includes('hoodie')) targetCat = 'hoodies';
-                else if (href.includes('jacket')) targetCat = 'jackets';
-                else if (href.includes('full-sleeve')) targetCat = 'longsleeves';
-                else if (href.includes('pants')) targetCat = 'bottoms';
-                else if (href.includes('jeans')) targetCat = 'jeans';
-                else if (href.includes('shorts')) targetCat = 'shorts';
-                else if (href.includes('basics')) targetCat = 'basics';
-                else if (href.includes('access')) targetCat = 'accessories';
-                else if (href.includes('clearance')) targetCat = 'clearance';
-                else targetCat = 'all';
+              let targetCat = link.dataset.cat;
+              if (!targetCat && href) {
+                const m = href.match(/\/collections\/([^\/\?#]+)/);
+                if (m && m[1]) {
+                  targetCat = m[1];
+                } else {
+                  const q = new URLSearchParams(href.split('?')[1] || '');
+                  targetCat = q.get('category') || 'all';
+                }
               }
-              this.setCategory(targetCat, href);
+              this.setCategory(targetCat || 'all', href);
             }
           });
         });
