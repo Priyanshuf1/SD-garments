@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const appHandler = require('./server.js');
 process.env.ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'test-admin-secret-key-not-for-production-32';
 process.env.ALLOW_SYNTHETIC_AWB = 'true';
 
@@ -46,7 +47,6 @@ function fetchUrl(urlPath, options = {}) {
   });
 }
 
-const appHandler = require('./server.js');
 let testServer = null;
 
 async function ensureServerRunning() {

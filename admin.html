@@ -86,7 +86,7 @@
       transition: var(--transition);
     }
 
-    input, select, textarea {
+    input, textarea {
       font-family: inherit;
       color: var(--text-main);
       background-color: var(--bg-input);
@@ -97,6 +97,41 @@
       outline: none;
       transition: var(--transition);
       width: 100%;
+    }
+
+    select {
+      font-family: inherit;
+      color: var(--text-main);
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      height: 38px;
+      line-height: normal;
+      padding: 0 2rem 0 0.85rem;
+      font-size: 13.5px;
+      outline: none;
+      transition: var(--transition);
+      width: 100%;
+      vertical-align: middle;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .panel-actions select,
+    .panel-actions input {
+      height: 36px !important;
+      font-size: 13px !important;
+      line-height: normal !important;
+      box-sizing: border-box !important;
+    }
+
+    .panel-actions select {
+      padding: 0 1.75rem 0 0.75rem !important;
+      vertical-align: middle !important;
+    }
+
+    .panel-actions input {
+      padding: 0 0.85rem !important;
     }
 
     input:focus, select:focus, textarea:focus {
@@ -1657,7 +1692,7 @@
                 <option value="all">All Showcase Status</option>
                 <option value="just_dropped">⭐ JUST DROPPED</option>
                 <option value="new_arrivals">⭐ NEW ARRIVALS</option>
-                <option value="genrage_basics">⭐ GENRAGE BASICS</option>
+                <option value="genrage_basics">⭐ ALLEYRICH BASICS</option>
                 <option value="none">Catalog Only (Not on Homepage)</option>
               </select>
             </div>
@@ -1738,7 +1773,7 @@
               <span class="panel-title-badge" id="orders-total-count">5 Orders</span>
             </div>
             <div class="panel-actions">
-              <select id="order-filter-status" style="width:160px;height:34px;">
+              <select id="order-filter-status" style="width:160px;">
                 <option value="all">All Orders</option>
                 <option value="Processing">Processing</option>
                 <option value="Shipped">Shipped</option>
@@ -1914,7 +1949,7 @@
               <span class="panel-title-badge" id="rev-total-count">5 Reviews</span>
             </div>
             <div class="panel-actions">
-              <select id="rev-filter-status" style="width:140px;height:34px;" onchange="Admin.filterReviews(this.value)">
+              <select id="rev-filter-status" style="width:140px;" onchange="Admin.filterReviews(this.value)">
                 <option value="all">All Reviews</option>
                 <option value="Approved">Approved</option>
                 <option value="Pending">Pending</option>
@@ -2240,7 +2275,7 @@
           <option value="none">None (General Catalog Only)</option>
           <option value="just_dropped">JUST DROPPED (Homepage Hero Drops)</option>
           <option value="new_arrivals">NEW ARRIVALS (Curated Streetwear Arrivals)</option>
-          <option value="genrage_basics">GENRAGE BASICS (Signature Pants & Basics)</option>
+          <option value="genrage_basics">ALLEYRICH BASICS (Signature Pants & Basics)</option>
         </select>
       </div>
 
@@ -3285,7 +3320,7 @@ const Admin = {
       } else if (hSection === 'new_arrivals') {
         sectionBadge = '<span class="badge badge-info" style="font-size:11.5px;font-weight:800;letter-spacing:0.02em;">⭐ NEW ARRIVALS</span>';
       } else if (hSection === 'genrage_basics') {
-        sectionBadge = '<span class="badge badge-warning" style="font-size:11.5px;font-weight:800;letter-spacing:0.02em;">⭐ GENRAGE BASICS</span>';
+        sectionBadge = '<span class="badge badge-warning" style="font-size:11.5px;font-weight:800;letter-spacing:0.02em;">⭐ ALLEYRICH BASICS</span>';
       }
 
       return `
@@ -3312,7 +3347,7 @@ const Admin = {
               <option value="none" ${hSection === 'none' ? 'selected' : ''}>Catalog Only</option>
               <option value="just_dropped" ${hSection === 'just_dropped' ? 'selected' : ''}>⭐ Just Dropped</option>
               <option value="new_arrivals" ${hSection === 'new_arrivals' ? 'selected' : ''}>⭐ New Arrivals</option>
-              <option value="genrage_basics" ${hSection === 'genrage_basics' ? 'selected' : ''}>⭐ Genrage Basics</option>
+              <option value="genrage_basics" ${hSection === 'genrage_basics' ? 'selected' : ''}>⭐ Alleyrich Basics</option>
             </select>
           </td>
           <td style="font-weight:700;">₹${Number(price).toLocaleString('en-IN')}</td>
@@ -3550,7 +3585,7 @@ const Admin = {
       badge.className = 'badge badge-warning';
       badge.style.background = '';
       badge.style.color = '';
-      badge.textContent = '⭐ GENRAGE BASICS';
+      badge.textContent = '⭐ ALLEYRICH BASICS';
     } else {
       badge.className = 'badge';
       badge.style.background = '#222';
@@ -3834,7 +3869,7 @@ const Admin = {
           'none': 'Catalog Only (Removed from Homepage)',
           'just_dropped': '⭐ JUST DROPPED Carousel',
           'new_arrivals': '⭐ NEW ARRIVALS Carousel',
-          'genrage_basics': '⭐ GENRAGE BASICS Carousel'
+          'genrage_basics': '⭐ ALLEYRICH BASICS Carousel'
         };
         this.showToast(`✅ Showcase updated: "${p?.title || id}" → ${labels[section] || section}`);
         this.renderDashboard();
