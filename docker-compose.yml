@@ -15,21 +15,19 @@ services:
     restart: always
     ports:
       - "80:3000"
-      - "3000:3000"
-      - "443:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
       - DB_TYPE=postgres
-      - DATABASE_URL=postgres://alleyrich_admin:AlleyRichSecurePass2026@postgres:5432/alleyrich_production?sslmode=disable
+      - DATABASE_URL=postgres://${DB_USER:-alleyrich_admin}:${DB_PASSWORD:-AlleyRichSecurePass2026}@postgres:5432/${DB_NAME:-alleyrich_production}?sslmode=disable
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=alleyrich_production
-      - DB_USER=alleyrich_admin
-      - DB_PASSWORD=AlleyRichSecurePass2026
+      - DB_NAME=${DB_NAME:-alleyrich_production}
+      - DB_USER=${DB_USER:-alleyrich_admin}
+      - DB_PASSWORD=${DB_PASSWORD:-AlleyRichSecurePass2026}
       - CASHFREE_ENV=production
-      - CASHFREE_APP_ID=${CASHFREE_APP_ID:-TEST10769932ad8d390237739989ba6e23996701}
-      - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-cfsk_ma_test_c9b8832a8dd9f57560da4c693a129ef9_41f649ba}
+      - CASHFREE_APP_ID=${CASHFREE_APP_ID:-}
+      - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-ALLYRICH <onboarding@resend.dev>}
       - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-https://priyanshuf1.app.n8n.cloud/webhook/allyrich-orders}
@@ -38,6 +36,10 @@ services:
       - BREVO_SENDER_EMAIL=${BREVO_SENDER_EMAIL:-support@allyrich.com}
       - APP_DOMAIN=${APP_DOMAIN:-alleyrich.com}
       - ADMIN_SECRET_KEY=${ADMIN_SECRET_KEY:-genrage_super_admin_secret_key_2026}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-Deepak_is_admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-#99882211@}
+      - ADMIN_2FA_SECRET=${ADMIN_2FA_SECRET:-4I543GYJL7LAMAC7UPPL}
+      - AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:-alleyrich_super_secret_auth_session_key_2026}
       - DELHIVERY_API_TOKEN=${DELHIVERY_API_TOKEN:-5b89b0734b0d4daa1655ea178e432c33f1964d80}
       - DELHIVERY_WAREHOUSE_NAME=${DELHIVERY_WAREHOUSE_NAME:-SD Garments}
       - DELHIVERY_WAREHOUSE_PINCODE=${DELHIVERY_WAREHOUSE_PINCODE:-209721}
@@ -59,9 +61,9 @@ services:
     container_name: alleyrich-db
     restart: always
     environment:
-      - POSTGRES_DB=alleyrich_production
-      - POSTGRES_USER=alleyrich_admin
-      - POSTGRES_PASSWORD=AlleyRichSecurePass2026
+      - POSTGRES_DB=${DB_NAME:-alleyrich_production}
+      - POSTGRES_USER=${DB_USER:-alleyrich_admin}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-AlleyRichSecurePass2026}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:

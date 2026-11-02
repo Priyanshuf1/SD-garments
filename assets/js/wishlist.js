@@ -250,7 +250,11 @@ const WishlistEngine = {
       // Keepalive ensures request completes even if user navigates away or closes tab!
       fetch('/api/wishlist/sync', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // The server binds the write to this signed session, not to userId/email.
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('genrage_token') ? { 'Authorization': `Bearer ${localStorage.getItem('genrage_token')}` } : {})
+        },
         body: JSON.stringify({ userId: identifier, email: user.email, wishlist: cleanHandles }),
         keepalive: true
       }).catch(() => {});
@@ -390,7 +394,9 @@ const WishlistEngine = {
       if (userRaw) {
         const user = JSON.parse(userRaw);
         if (user && user.id) {
-          fetch(`/api/wishlist?userId=${encodeURIComponent(user.id)}`)
+          fetch(`/api/wishlist?userId=${encodeURIComponent(user.id)}`, {
+            headers: localStorage.getItem('genrage_token') ? { 'Authorization': `Bearer ${localStorage.getItem('genrage_token')}` } : {}
+          })
             .then(r => r.json())
             .then(data => {
               if (data && data.success && Array.isArray(data.wishlist) && data.wishlist.length > 0) {

@@ -1117,7 +1117,7 @@
     <form id="vault-login-form" onsubmit="handleVaultLogin(event)">
       <div style="text-align:left; margin-bottom:1rem;">
         <label style="display:block; font-size:0.72rem; font-weight:700; color:#aaa; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">Admin Username</label>
-        <input type="text" id="vault-username" required style="width:100%; box-sizing:border-box; background:#1c1c21; border:1px solid #333; color:#fff; padding:12px; border-radius:4px; font-size:0.9rem; outline:none;" placeholder="Deepak_is_admin" autocomplete="username">
+        <input type="text" id="vault-username" required style="width:100%; box-sizing:border-box; background:#1c1c21; border:1px solid #333; color:#fff; padding:12px; border-radius:4px; font-size:0.9rem; outline:none;" placeholder="Administrator username" autocomplete="username">
       </div>
 
       <div style="text-align:left; margin-bottom:1.25rem;">
@@ -2721,7 +2721,7 @@ _Limited archival drop • Ships under 48h • No restocks_
       (url.includes('/api/products') && init.method && init.method !== 'GET') ||
       (url.includes('/api/orders') && init.method && init.method !== 'GET')
     ) {
-      const adminKey = sessionStorage.getItem('allyrich_admin_token') || localStorage.getItem('allyrich_admin_token') || '';
+     const adminKey = sessionStorage.getItem('allyrich_admin_token') || '';
       init.headers = Object.assign({}, init.headers || {}, {
         'x-admin-key': adminKey
       });
@@ -2973,10 +2973,23 @@ const Admin = {
         <td style="color:var(--text-muted);font-size:13px;">${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
         <td>
           <button class="btn btn-secondary btn-sm" onclick="Admin.openOrderModal('${o.id}')">Manage</button>
-              ${(o.trackingNumber || o.delhiveryWaybill) ? `<a href="/api/admin/orders/${o.id}/shipping-label?key=${encodeURIComponent(localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026')}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 7px;font-size:12px;" title="Print Delhivery Label">🏷️ Label</a>` : ''}
+              ${(o.trackingNumber || o.delhiveryWaybill) ? `<button onclick="Admin.printLabel('${o.id}')" class="btn btn-secondary btn-sm" style="padding:4px 7px;font-size:12px;" title="Print Delhivery Label">🏷️ Label</button>` : ''}
         </td>
       </tr>
     `).join('');
+  },
+
+  async printLabel(orderId) {
+    try {
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(orderId)}/shipping-label`);
+      if (!response.ok) throw new Error('Label request failed');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (_) {
+      this.showToast('Unable to load shipping label');
+    }
   },
 
   getOrderBadgeClass(status) {
@@ -3918,7 +3931,7 @@ const Admin = {
 
     document.getElementById('order-modal-title').textContent = `Manage Order #${order.id}`;
     const container = document.getElementById('order-modal-content');
-    const adminKey = localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026';
+     const adminKey = sessionStorage.getItem('allyrich_admin_token') || '';
     const currentAwb = order.trackingNumber || order.delhiveryWaybill || '';
 
     const items = (order.items && order.items.length > 0) ? order.items : [{
@@ -3982,9 +3995,9 @@ const Admin = {
               ⚡ Generate AWB
             </button>
             ${currentAwb ? `
-              <a href="/api/admin/orders/${order.id}/shipping-label?key=${encodeURIComponent(adminKey)}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Print Official Delhivery Barcode Label">
-                🖨️ Label
-              </a>
+              <button onclick="Admin.printLabel('${order.id}')" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Print Official Delhivery Barcode Label">
+                 🖨️ Label
+               </button>
               <a href="https://www.delhivery.com/track/package/${currentAwb}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:13px;" title="Track on Delhivery">
                 Track ↗
               </a>
@@ -4072,7 +4085,7 @@ const Admin = {
     }
     try {
       this.showToast('🚫 Cancelling Delhivery courier dispatch...');
-      const adminKey = localStorage.getItem('allyrich_admin_key') || 'genrage_super_admin_secret_key_2026';
+      const adminKey = sessionStorage.getItem('allyrich_admin_token') || '';
       const res = await fetch(`/api/admin/orders/${orderId}/delhivery-cancel`, {
         method: 'POST',
         headers: {
@@ -5117,12 +5130,7 @@ window.addEventListener('keydown', (e) => {
 let adminInitialized = false;
 
 async function checkVaultAuth() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const keyParam = urlParams.get('admin_key') || urlParams.get('key');
-  if (keyParam) {
-    sessionStorage.setItem('allyrich_admin_token', keyParam);
-  }
-  const token = sessionStorage.getItem('allyrich_admin_token') || localStorage.getItem('allyrich_admin_token');
+  const token = sessionStorage.getItem('allyrich_admin_token');
   const overlay = document.getElementById('admin-auth-overlay');
   if (!token) {
     if (overlay) overlay.style.display = 'flex';
@@ -5140,7 +5148,6 @@ async function checkVaultAuth() {
       }
     } else {
       sessionStorage.removeItem('allyrich_admin_token');
-      localStorage.removeItem('allyrich_admin_token');
       if (overlay) overlay.style.display = 'flex';
     }
   } catch (err) {
@@ -5209,7 +5216,6 @@ async function handleVaultLogin(event) {
 
     if (res.ok && data.success && data.token) {
       sessionStorage.setItem('allyrich_admin_token', data.token);
-      localStorage.setItem('allyrich_admin_token', data.token);
       showAlert(data.message || 'Vault unlocked successfully.', true);
       setTimeout(async () => {
         const overlay = document.getElementById('admin-auth-overlay');
@@ -5237,7 +5243,7 @@ async function handleVaultLogin(event) {
 }
 
 async function handleVaultLogout() {
-  const token = sessionStorage.getItem('allyrich_admin_token') || localStorage.getItem('allyrich_admin_token');
+  const token = sessionStorage.getItem('allyrich_admin_token');
   try {
     if (token) {
       await fetch('/api/admin/logout', {
@@ -5247,7 +5253,6 @@ async function handleVaultLogout() {
     }
   } catch (_) {}
   sessionStorage.removeItem('allyrich_admin_token');
-  localStorage.removeItem('allyrich_admin_token');
   const passEl = document.getElementById('vault-password');
   const totpEl = document.getElementById('vault-totp');
   if (passEl) passEl.value = '';

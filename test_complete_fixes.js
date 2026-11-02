@@ -13,15 +13,15 @@ const fs = require('fs');
 
 // Set test environment variables
 process.env.PORT = '3459';
-process.env.DELHIVERY_API_TOKEN = '5b89b0734b0d4daa1655ea178e432c33f1964d80';
-process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || Buffer.from('cmVfSk10a2hMZDRfQ3pGTDY2SE14SGVOUk5EaGc0WjZaM0F2', 'base64').toString();
-process.env.ADMIN_SECRET_KEY = 'genrage_super_admin_secret_key_2026';
+process.env.DELHIVERY_API_TOKEN = process.env.DELHIVERY_API_TOKEN || 'test-delhivery-token-not-for-production';
+process.env.ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'test-admin-secret-key-not-for-production-32';
+process.env.ALLOW_SYNTHETIC_AWB = 'true';
 process.env.N8N_ORDER_WEBHOOK_URL = 'https://priyanshuf1.app.n8n.cloud/webhook/allyrich-orders';
 process.env.APP_DOMAIN = 'alleyrich.com';
 
 const appHandler = require('./server.js');
 const BASE_URL = 'http://127.0.0.1:3459';
-const ADMIN_KEY = 'genrage_super_admin_secret_key_2026';
+const ADMIN_KEY = process.env.ADMIN_SECRET_KEY;
 const testServer = http.createServer(appHandler);
 
 let passedTests = 0;
@@ -110,45 +110,47 @@ async function runTests() {
     });
     fs.writeFileSync(ordersPath, JSON.stringify(orders, null, 2), 'utf8');
 
-    // 1.1 Direct request without admin key but with Referer (simulating browser click from admin.html)
+    // 1.1 Referer headers are not authentication
     totalTests++;
     const labelResReferer = await request('GET', `/api/admin/orders/${testOrderId}/shipping-label`, null, {
       'Referer': `${BASE_URL}/admin.html`
     });
-    assert(labelResReferer.status === 200 || labelResReferer.status === 302, `Label request with admin referer should succeed, got ${labelResReferer.status}`);
-    logPass('Browser navigation from admin.html succeeds (HTTP 200 or 302)');
+    assert(labelResReferer.status === 401, `Label request with admin referer must be rejected, got ${labelResReferer.status}`);
+    logPass('Referer-only shipping label request is rejected');
 
-    // 1.2 Request with query key (?key=...)
+    // 1.2 Query-string keys are not accepted
     totalTests++;
     const labelResQuery = await request('GET', `/api/admin/orders/${testOrderId}/shipping-label?key=${ADMIN_KEY}`);
-    assert(labelResQuery.status === 200 || labelResQuery.status === 302, `Label request with query key should succeed, got ${labelResQuery.status}`);
-    logPass('Direct URL request with ?key= parameter succeeds');
+    assert(labelResQuery.status === 401, `Label request with query key must be rejected, got ${labelResQuery.status}`);
+    logPass('Query-string admin key is rejected');
+
+    const labelResAuth = await request('GET', `/api/admin/orders/${testOrderId}/shipping-label`, null, { 'x-admin-key': ADMIN_KEY });
 
     // 1.3 Verify content is printable barcode label or pre-signed S3 redirect
     totalTests++;
-    if (labelResQuery.status === 302) {
-      assert(labelResQuery.headers.location && labelResQuery.headers.location.startsWith('http'), 'Location must be a valid pre-signed URL');
-      logPass(`Redirects directly to pre-signed URL: ${labelResQuery.headers.location}`);
+    if (labelResAuth.status === 302) {
+      assert(labelResAuth.headers.location && labelResAuth.headers.location.startsWith('http'), 'Location must be a valid pre-signed URL');
+      logPass(`Redirects directly to pre-signed URL: ${labelResAuth.headers.location}`);
     } else {
-      assert(labelResQuery.body.includes('DELHIVERY') && labelResQuery.body.includes('AWB:'), 'Body must contain printable Delhivery barcode sticker');
+      assert(labelResAuth.body.includes('DELHIVERY') && labelResAuth.body.includes('AWB:'), 'Body must contain printable Delhivery barcode sticker');
       logPass('Renders official high-fidelity printable Delhivery thermal barcode sticker');
     }
 
     // 1.4 Test public route /api/orders/:id/shipping-label
     totalTests++;
     const pubLabelRes = await request('GET', `/api/orders/${testOrderId}/shipping-label`);
-    assert(pubLabelRes.status === 200 || pubLabelRes.status === 302, `Public route should succeed, got ${pubLabelRes.status}`);
-    logPass('Public /api/orders/:id/shipping-label works for customer order tracking');
+    assert(pubLabelRes.status === 401, `Public route must be protected, got ${pubLabelRes.status}`);
+    logPass('Public shipping label route is protected');
 
     // 1.5 Test shipping label endpoint with trailing slash
     totalTests++;
-    const labelResSlash = await request('GET', `/api/admin/orders/${testOrderId}/shipping-label/?key=${ADMIN_KEY}`);
+    const labelResSlash = await request('GET', `/api/admin/orders/${testOrderId}/shipping-label/`, null, { 'x-admin-key': ADMIN_KEY });
     assert(labelResSlash.status === 200 || labelResSlash.status === 302, `Label request with trailing slash should succeed, got ${labelResSlash.status}`);
-    logPass('Shipping label request with trailing slash handled seamlessly');
+    logPass('Authenticated shipping label request with trailing slash handled seamlessly');
 
     // 1.6 Test shipping label endpoint by waybill directly (awb-XXXX)
     totalTests++;
-    const labelResAwb = await request('GET', `/api/admin/orders/awb-${testWaybill}/shipping-label?key=${ADMIN_KEY}`);
+    const labelResAwb = await request('GET', `/api/admin/orders/awb-${testWaybill}/shipping-label`, null, { 'x-admin-key': ADMIN_KEY });
     assert(labelResAwb.status === 200 || labelResAwb.status === 302, `Label request by waybill should succeed, got ${labelResAwb.status}`);
     logPass('Shipping label requested via awb-XXXX waybill parameter succeeds');
 
@@ -227,6 +229,10 @@ async function runTests() {
     // -----------------------------------------------------------------
     console.log('\n[4] Testing Order Creation & n8n Order Receipt Webhook:');
 
+    const catalogResponse = await request('GET', '/api/products');
+    const catalogProduct = catalogResponse.json?.products?.find(p => p.variants?.[0]?.available !== false);
+    assert(catalogProduct, 'Order test must use a real catalog product');
+
     totalTests++;
     const newOrderPayload = {
       customer: {
@@ -239,7 +245,7 @@ async function runTests() {
         pincode: '110001'
       },
       items: [
-        { title: 'Architectural Boxy Hoodie', size: 'XL', quantity: 1, price: 3999 }
+        { id: catalogProduct.id, title: catalogProduct.title, size: catalogProduct.variants?.[0]?.title || 'Default', quantity: 1, price: 3999 }
       ],
       total: 3999,
       subtotal: 3999,
@@ -251,14 +257,14 @@ async function runTests() {
     assert(orderRes.json && orderRes.json.success === true, 'Order creation must return success: true');
     logPass(`Order successfully created: #${orderRes.json.orderId}`);
 
-    // 4.2 Test Cashfree payment verification trigger for n8n
+    // 4.2 Cashfree verification must fail closed without a real gateway payment
     totalTests++;
     const cashfreeRes = await request('POST', `/api/admin/orders/${orderRes.json.orderId}/cashfree-verify`, {}, {
       'x-admin-key': ADMIN_KEY
     });
-    assert(cashfreeRes.status === 200, `Cashfree verify should return HTTP 200, got ${cashfreeRes.status}`);
-    assert(cashfreeRes.json && cashfreeRes.json.order.paymentStatus === 'Paid', 'Order paymentStatus should be Paid');
-    logPass('Cashfree verification successfully updated order and triggered n8n invoice webhook');
+    assert(cashfreeRes.status === 400 || cashfreeRes.status === 502 || cashfreeRes.status === 503, `Unpaid Cashfree verification must be rejected, got ${cashfreeRes.status}`);
+    assert(!cashfreeRes.json?.order || cashfreeRes.json.order.paymentStatus !== 'Paid', 'Unverified payment cannot mark order Paid');
+    logPass('Cashfree verification correctly fails closed for an unpaid order');
 
     // 4.3 Test empty cart validation (cannot create order with 0 items)
     totalTests++;
@@ -299,4 +305,3 @@ async function runTests() {
 testServer.listen(3459, () => {
   runTests();
 });
-

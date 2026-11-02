@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/assets/css/theme.css">
   <link rel="stylesheet" href="/assets/css/custom.css">
   <link rel="stylesheet" href="/assets/css/allyrich.css">
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
   <style>
     :root {
       --font-heading: 'Instrument Sans', sans-serif;
@@ -357,6 +358,7 @@
     let checkoutItems = [];
     let discountApplied = false;
     let selectedPayment = 'cashfree';
+    let cashfreePaymentSessionId = null;
     let currentCreatedOrderId = null;
 
     function selectPayment(mode) {
@@ -579,6 +581,7 @@
 
         if (data.success && data.order) {
           currentCreatedOrderId = data.order.id;
+          cashfreePaymentSessionId = data.order.paymentSessionId || null;
 
           if (selectedPayment === 'cashfree') {
             // Show Cashfree payment modal
@@ -602,17 +605,22 @@
     }
 
     async function confirmCashfreePayment() {
-      if (!currentCreatedOrderId) return;
+      if (!currentCreatedOrderId || !cashfreePaymentSessionId || !window.Cashfree) {
+        alert('Online payment is not ready. Please try again or choose COD.');
+        return;
+      }
       try {
+        const cashfree = window.Cashfree({ mode: window.location.hostname === 'alleyrich.com' || window.location.hostname === 'www.alleyrich.com' ? 'production' : 'sandbox' });
+        await cashfree.checkout({ paymentSessionId: cashfreePaymentSessionId, redirectTarget: '_modal' });
         const res = await fetch('/api/checkout/verify-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             orderId: currentCreatedOrderId,
-            cashfreePaymentId: `cf_pay_${Date.now()}`
           })
         });
         const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Payment was not confirmed');
         localStorage.removeItem('genrage_cart');
         window.location.href = `/order-success?orderId=${currentCreatedOrderId}&cashfree=paid`;
       } catch (err) {

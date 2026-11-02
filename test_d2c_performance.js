@@ -16,8 +16,9 @@ const assert = require('assert');
 
 // Test server configuration
 process.env.PORT = '3499';
-process.env.DELHIVERY_API_TOKEN = '5b89b0734b0d4daa1655ea178e432c33f1964d80';
-process.env.ADMIN_SECRET_KEY = 'genrage_super_admin_secret_key_2026';
+process.env.DELHIVERY_API_TOKEN = process.env.DELHIVERY_API_TOKEN || 'test-delhivery-token-not-for-production';
+process.env.ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'test-admin-secret-key-not-for-production-32';
+process.env.ALLOW_SYNTHETIC_AWB = 'true';
 
 const appHandler = require('./server.js');
 const server = http.createServer(appHandler);

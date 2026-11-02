@@ -117,7 +117,10 @@
           return;
         }
 
-        const res = await fetch(`/api/cart?userId=${encodeURIComponent(identifier)}&email=${encodeURIComponent(user.email || '')}`);
+        const token = localStorage.getItem('genrage_token');
+        const res = await fetch(`/api/cart?userId=${encodeURIComponent(identifier)}&email=${encodeURIComponent(user.email || '')}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         if (res.ok) {
           const data = await res.json();
           if (data && data.success && Array.isArray(data.cart) && data.cart.length > 0) {
@@ -442,7 +445,10 @@
         const identifier = user.id || user.email;
         fetch('/api/cart/sync', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('genrage_token') ? { 'Authorization': `Bearer ${localStorage.getItem('genrage_token')}` } : {})
+          },
           body: JSON.stringify({ userId: identifier, email: user.email, cart: cart || this.getCart() })
         }).catch(() => {});
       } catch (e) {}

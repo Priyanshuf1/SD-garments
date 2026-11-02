@@ -105,11 +105,22 @@ jobs:
           N8N_ORDER_WEBHOOK_URL: ${{ secrets.N8N_ORDER_WEBHOOK_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          CASHFREE_APP_ID: ${{ secrets.CASHFREE_APP_ID }}
+          CASHFREE_SECRET_KEY: ${{ secrets.CASHFREE_SECRET_KEY }}
+          ADMIN_SECRET_KEY: ${{ secrets.ADMIN_SECRET_KEY }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_2FA_SECRET: ${{ secrets.ADMIN_2FA_SECRET }}
+          AUTH_SESSION_SECRET: ${{ secrets.AUTH_SESSION_SECRET }}
+          DELHIVERY_API_TOKEN: ${{ secrets.DELHIVERY_API_TOKEN }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: GEMINI_API_KEY,N8N_ORDER_WEBHOOK_URL,RESEND_API_KEY,BREVO_API_KEY
+          envs: GEMINI_API_KEY,N8N_ORDER_WEBHOOK_URL,RESEND_API_KEY,BREVO_API_KEY,DB_NAME,DB_USER,DB_PASSWORD,CASHFREE_APP_ID,CASHFREE_SECRET_KEY,ADMIN_SECRET_KEY,ADMIN_USERNAME,ADMIN_PASSWORD,ADMIN_2FA_SECRET,AUTH_SESSION_SECRET,DELHIVERY_API_TOKEN
           script: |
             cd ~/SD-garments
             mkdir -p ~/SD-garments-data-backup
@@ -124,31 +135,25 @@ jobs:
               [ -f ~/SD-garments-data-backup/"$f" ] && cp -f ~/SD-garments-data-backup/"$f" "data/$f" 2>/dev/null || true
             done
             [ -f .env ] || touch .env
+            write_env() { sed -i "/^$1=/d" .env; printf '%s=%s\n' "$1" "$2" >> .env; }
             if [ -n "$GEMINI_API_KEY" ]; then
-              sed -i '/^GEMINI_API_KEY=/d' .env
-              echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> .env
+              write_env GEMINI_API_KEY "$GEMINI_API_KEY"
             fi
-            sed -i '/^N8N_ORDER_WEBHOOK_URL=/d' .env
-            echo "N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-https://priyanshuf1.app.n8n.cloud/webhook/allyrich-orders}" >> .env
-            sed -i '/^RESEND_API_KEY=/d' .env
-            RES_FALLBACK=$(echo "cmVfSk10a2hMZDRfQ3pGTDY2SE14SGVOUk5EaGc0WjZaM0F2" | base64 -d)
-            echo "RESEND_API_KEY=${RESEND_API_KEY:-$RES_FALLBACK}" >> .env
-            sed -i '/^RESEND_FROM_EMAIL=/d' .env
-            echo "RESEND_FROM_EMAIL=ALLYRICH <onboarding@resend.dev>" >> .env
-            sed -i '/^APP_DOMAIN=/d' .env
-            echo "APP_DOMAIN=alleyrich.com" >> .env
-            sed -i '/^ADMIN_SECRET_KEY=/d' .env
-            echo "ADMIN_SECRET_KEY=genrage_super_admin_secret_key_2026" >> .env
-            sed -i '/^ADMIN_USERNAME=/d' .env
-            echo "ADMIN_USERNAME=Deepak_is_admin" >> .env
-            sed -i '/^ADMIN_PASSWORD=/d' .env
-            echo "ADMIN_PASSWORD=#99882211@" >> .env
-            sed -i '/^ADMIN_2FA_SECRET=/d' .env
-            echo "ADMIN_2FA_SECRET=4I543GYJL7LAMAC7UPPL" >> .env
-            sed -i '/^ADMIN_SLUG=/d' .env
-            echo "ADMIN_SLUG=/allyrich-hq" >> .env
-            sed -i '/^DELHIVERY_API_TOKEN=/d' .env
-            echo "DELHIVERY_API_TOKEN=5b89b0734b0d4daa1655ea178e432c33f1964d80" >> .env
+            [ -z "$N8N_ORDER_WEBHOOK_URL" ] || write_env N8N_ORDER_WEBHOOK_URL "$N8N_ORDER_WEBHOOK_URL"
+            [ -z "$RESEND_API_KEY" ] || write_env RESEND_API_KEY "$RESEND_API_KEY"
+            [ -z "$BREVO_API_KEY" ] || write_env BREVO_API_KEY "$BREVO_API_KEY"
+            write_env DB_NAME "${DB_NAME:-alleyrich_production}"
+            write_env DB_USER "${DB_USER:-alleyrich_admin}"
+            write_env DB_PASSWORD "${DB_PASSWORD:-AlleyRichSecurePass2026}"
+            [ -z "$CASHFREE_APP_ID" ] || write_env CASHFREE_APP_ID "$CASHFREE_APP_ID"
+            [ -z "$CASHFREE_SECRET_KEY" ] || write_env CASHFREE_SECRET_KEY "$CASHFREE_SECRET_KEY"
+            write_env ADMIN_SECRET_KEY "${ADMIN_SECRET_KEY:-genrage_super_admin_secret_key_2026}"
+            write_env ADMIN_USERNAME "${ADMIN_USERNAME:-Deepak_is_admin}"
+            write_env ADMIN_PASSWORD "${ADMIN_PASSWORD:-#99882211@}"
+            write_env ADMIN_2FA_SECRET "${ADMIN_2FA_SECRET:-4I543GYJL7LAMAC7UPPL}"
+            write_env AUTH_SESSION_SECRET "${AUTH_SESSION_SECRET:-alleyrich_super_secret_auth_session_key_2026}"
+            write_env DELHIVERY_API_TOKEN "${DELHIVERY_API_TOKEN:-5b89b0734b0d4daa1655ea178e432c33f1964d80}"
+            write_env APP_DOMAIN "alleyrich.com"
             sed -i '/^DELHIVERY_WAREHOUSE_NAME=/d' .env
             echo "DELHIVERY_WAREHOUSE_NAME=SD Garments" >> .env
             sed -i '/^DELHIVERY_WAREHOUSE_PINCODE=/d' .env

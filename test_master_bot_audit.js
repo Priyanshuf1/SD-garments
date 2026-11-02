@@ -1,6 +1,8 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+process.env.ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'test-admin-secret-key-not-for-production-32';
+process.env.ALLOW_SYNTHETIC_AWB = 'true';
 
 const BASE_URL = 'http://localhost:3000';
 let totalPassed = 0;
@@ -140,7 +142,7 @@ async function runAudit() {
     // Call Delhivery AWB generation endpoint with admin auth
     const awbRes = await fetchUrl(`/api/admin/orders/${orderId}/delhivery-awb`, {
       method: 'POST',
-      headers: { 'Authorization': 'Basic ' + Buffer.from('admin:allyrich2026').toString('base64') }
+      headers: { 'x-admin-key': process.env.ADMIN_SECRET_KEY || '' }
     });
     assert(awbRes.statusCode === 200, `POST /api/admin/orders/${orderId}/delhivery-awb returns HTTP 200`);
     const awbData = JSON.parse(awbRes.body);

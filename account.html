@@ -501,7 +501,10 @@
 
         let orders = [];
         try {
-          const res = await fetch(`/api/orders?${queryParams.toString()}`);
+           const token = window.AuthEngine?.getToken?.() || localStorage.getItem('genrage_token');
+           const res = await fetch(`/api/orders?${queryParams.toString()}`, {
+             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+           });
           if (res.ok) {
             const data = await res.json();
             orders = Array.isArray(data.orders) ? data.orders : [];

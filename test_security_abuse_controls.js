@@ -16,7 +16,8 @@ const appHandler = require('./server.js');
 
 const TEST_PORT = 3457;
 const BASE_URL = `http://127.0.0.1:${TEST_PORT}`;
-const ADMIN_KEY = 'genrage_super_admin_secret_key_2026';
+process.env.ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'test-admin-secret-key-not-for-production-32';
+const ADMIN_KEY = process.env.ADMIN_SECRET_KEY;
 
 function makeRequest(method, path, body = null, extraHeaders = {}) {
   return new Promise((resolve, reject) => {

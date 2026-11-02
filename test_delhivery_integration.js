@@ -14,7 +14,7 @@ async function runTests() {
   assert.strictEqual(cfg.isConfigured, true, 'Delhivery must be configured');
   assert.strictEqual(cfg.warehouse, 'SD Garments', 'Warehouse name must match SD Garments');
   assert.strictEqual(cfg.warehousePin, '209721', 'Warehouse pin must be 209721');
-  assert.strictEqual(cfg.token, '5b89b0734b0d4daa1655ea178e432c33f1964d80', 'Token must match provided token');
+  assert(cfg.token && cfg.token.length > 10, 'Delhivery token must be supplied through environment configuration');
   console.log('  ✅ [PASS] Production configuration verified successfully');
 
   // 2. Chhibramau Warehouse Pincode Serviceability

@@ -25,7 +25,6 @@
     "name": "Shivendra Awasthi",
     "email": "shivendraawasthi333@gmail.com",
     "phone": "+916392269330",
-    "password": "12345",
     "city": "Mumbai",
     "state": "Maharashtra",
     "address": "",
@@ -69,7 +68,8 @@
         "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/fade-basic-black-baggy-pants-genrage-1.png?v=1788530014",
         "quantity": 1
       }
-    ]
+    ],
+    "passwordHash": "scrypt$3cb9898854fd4ca594a6bd986897196e$2eb919ac1651afecb093ee98e449d959010a1471d5a7a6b859ae98d5782edbafa0fbf7efb2e0ce6c1568c53129b5219d0dad4ae5ee47c59cec438ad87a59e649"
   },
   {
     "id": "cust_1792610021098",
@@ -118,7 +118,6 @@
     "name": "Original User",
     "email": "dup_test_1792423198615@allyrichtest.com",
     "phone": "+91 99999 00000",
-    "password": "SecurePassword123",
     "city": "Mumbai",
     "state": "Maharashtra",
     "address": "",
@@ -134,7 +133,8 @@
     ],
     "status": "Active",
     "wishlist": [],
-    "cart": []
+    "cart": [],
+    "passwordHash": "scrypt$2fb62ed44f1e338a826a3058663a84e4$868c9a0c8d9082a673bf91aa49bac956d5e29e5a3c041008912a7dc4bd786501d85b9d55c2a83d993d3f4cafcc90ac644fe7bfac90c20f4100f5d3fc620ebce8"
   },
   {
     "id": "cust_cross_1792423191322",
@@ -169,7 +169,6 @@
     "name": "Original User",
     "email": "dup_test_1792423152640@allyrichtest.com",
     "phone": "+91 99999 00000",
-    "password": "SecurePassword123",
     "city": "Mumbai",
     "state": "Maharashtra",
     "address": "",
@@ -185,7 +184,8 @@
     ],
     "status": "Active",
     "wishlist": [],
-    "cart": []
+    "cart": [],
+    "passwordHash": "scrypt$3c452014244ef058d0b06aafc71a3a07$f94e4cd7ccf410e2567cabd3587333f500d66358833445a61aa26927551821169b7fb50dffc38ff91f94b6222c35d28aca87f9c4a600f6fc11a21848834f6348"
   },
   {
     "id": "cust_cross_1792423145075",
@@ -241,7 +241,6 @@
     "name": "Original User",
     "email": "dup_test_1792418938152@allyrichtest.com",
     "phone": "+91 99999 00000",
-    "password": "SecurePassword123",
     "city": "Mumbai",
     "state": "Maharashtra",
     "address": "",
@@ -257,7 +256,8 @@
     ],
     "status": "Active",
     "wishlist": [],
-    "cart": []
+    "cart": [],
+    "passwordHash": "scrypt$1d98bbdb6793e3a06939a06d261cf9f2$87acab26525918c5b9595e108181e8cb0ac9cac64b872b48a1c1c075f750833d4089b724c1e7d2073ab5a022d0d652c61974f4090000493d7189868e68b47c10"
   },
   {
     "id": "cust_cross_1792418930460",
@@ -292,7 +292,6 @@
     "name": "Original User",
     "email": "dup_test_1792418819460@allyrichtest.com",
     "phone": "+91 99999 00000",
-    "password": "SecurePassword123",
     "city": "Mumbai",
     "state": "Maharashtra",
     "address": "",
@@ -308,7 +307,8 @@
     ],
     "status": "Active",
     "wishlist": [],
-    "cart": []
+    "cart": [],
+    "passwordHash": "scrypt$d970eee0ffecb6faa0d43730607e3c02$7dcae9817b570e09df8650a6abb4989042efe6141c28b47032b20ba7bb0f3f9851885add382423178aafe00b14da28b30b020b92c1997600f92a1031ebfe6d4b"
   },
   {
     "id": "cust_cross_1792418810965",
@@ -343,7 +343,6 @@
     "name": "Original User",
     "email": "dup_test_1792418436065@allyrichtest.com",
     "phone": "+91 99999 00000",
-    "password": "SecurePassword123",
     "city": "Mumbai",
     "state": "Maharashtra",
     "address": "",
@@ -359,7 +358,8 @@
     ],
     "status": "Active",
     "wishlist": [],
-    "cart": []
+    "cart": [],
+    "passwordHash": "scrypt$f013396a9b56e922cb5644b6582d2c32$723a3c329509c6cc0d5af738510a212edd67ef798e923a7b3c922dbd7fbfc83f021eadfa533da03455a6dc1c8ad0cf48095858b0f15c9360ac172a44e5c05261"
   },
   {
     "id": "cust_cross_1792418426964",
@@ -605,8 +605,8 @@
       "Prepaid"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$75e20d24c3eb8cf7335b7cff1fd836fb$f0880075a2b07f634abed9305f7f22e04cb2f2b477cc7a20946cec7cc9f9871dad6c9a195e110d779959795cd4f81bd937130fcf8e0ae825aba82a65fd316134"
   },
   {
     "id": "CUST-1002",
@@ -623,8 +623,8 @@
       "Baby Tees"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$4f1ea9141588da588a91f83b0fa6c284$ddde63b555da0c7aa57c3373b8adee69e3a85202c3b3a1b81f1906daa57d93ef76c39e5508487ab206c52f618ba969acd39871cfb77f3bf8fd16f9a30da992f7"
   },
   {
     "id": "CUST-1003",
@@ -641,8 +641,8 @@
       "VIP Streetwear"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$c318c9dfa423189cbce62673083dd419$18266acc0a1476c76169127893efeb50c56baa0aa61e2d4a4395b3f4c1d277215d6cc0acf1b5a1643ef45f753e1c74b34ba04e7cff36294a10f68588413d17c8"
   },
   {
     "id": "CUST-1004",
@@ -659,8 +659,8 @@
       "COD"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$3649981b15d5abdccba05fc737ef61b1$c19cf95a966eba33b6d64ef45c4f681794decfdb97b97e1161ea5cb476d8e81018422012d9a55c422d12e9b318437f38b81184667cde42984326db7b51d8bbe0"
   },
   {
     "id": "CUST-1005",
@@ -677,8 +677,8 @@
       "Prepaid"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$f481f187b8d4a6126f44792ce836aa4d$636814f7eb54bd6ae5077252c4adcabd7c5a6a70cbeec2af5486bb54704816bec96180f96bf76711ee067f08c5a58a7a57592df4135390b4608c528fdf0ba21d"
   },
   {
     "id": "CUST-1006",
@@ -694,8 +694,8 @@
       "First Time Buyer"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$9c76e99a7bfcde2e5cc3e3e16100821a$0afc527e61b5842bcce4de501912143c6c89d7107cc7893b82175781536f4386a50951cca9d90d0924f38ed90a3444c979a583fe15bcc5efaf001b1809c6cedf"
   },
   {
     "id": "CUST-1007",
@@ -712,8 +712,8 @@
       "VIP Streetwear"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$38b246323628b518d5c0a9cde8dd56a9$968c72f2a27213b975c587c9184f271ec083bb5401dc8c567090725a4f539fd4227ae1e71f0fe3fbcf7fb1d41b8da1bb0f5afdf82fbf567eb37da61508b18b97"
   },
   {
     "id": "CUST-1008",
@@ -730,7 +730,7 @@
       "Corduroy"
     ],
     "status": "Active",
-    "password": "password123",
-    "wishlist": []
+    "wishlist": [],
+    "passwordHash": "scrypt$0871bbdb0df8445a07e06458c78adac9$78d83a4aac310cdc0ff981a1aaab5cc1e07157681e5ae4cdc96f231dbfb5cd87725ccdd7ebf5c2305cb349dc7fb6ae0d89eb11236b380e0e298ea9694f504eeb"
   }
 ]

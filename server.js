@@ -6,9 +6,11 @@ process.on('unhandledRejection', (reason) => { console.error('[UNHANDLED REJECTI
 
 const http = require('http');
 const https = require('https');
+const dns = require('dns').promises;
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const crypto = require('crypto');
 
 // Load environment variables from .env and .env.local if present
 ['.env', '.env.local'].forEach(file => {
@@ -50,6 +52,84 @@ const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = __dirname;
 const DATA_DIR = path.join(PUBLIC_DIR, 'data');
 const otpCache = new Map();
+const FREE_SHIPPING_THRESHOLD = 1999;
+const DEFAULT_SHIPPING_FEE = Number.isFinite(Number(process.env.SHIPPING_FEE_INR)) ? Math.max(0, Number(process.env.SHIPPING_FEE_INR)) : 99;
+const CASHFREE_API_VERSION = '2023-08-01';
+
+function getConfiguredOrigin(req) {
+  const configured = String(process.env.APP_ORIGIN || 'https://alleyrich.com').replace(/\/$/, '');
+  const allowed = new Set([configured, 'https://alleyrich.com', 'https://www.alleyrich.com']);
+  if (process.env.NODE_ENV !== 'production') {
+    allowed.add('http://localhost:3000');
+    allowed.add('http://127.0.0.1:3000');
+    allowed.add(`http://localhost:${PORT}`);
+    allowed.add(`http://127.0.0.1:${PORT}`);
+  }
+  const origin = req.headers.origin;
+  return origin && allowed.has(origin) ? origin : null;
+}
+
+function applyCors(req, res) {
+  const origin = getConfiguredOrigin(req);
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+}
+
+function getBearerToken(req) {
+  const header = String(req.headers.authorization || '');
+  return header.replace(/^Bearer\s+/i, '').trim();
+}
+
+function getLocalCustomerClaims(req) {
+  return security.validateCustomerSession(getBearerToken(req));
+}
+
+async function getAuthenticatedIdentity(req) {
+  const token = getBearerToken(req);
+  const localClaims = security.validateCustomerSession(token);
+  if (localClaims) return { id: String(localClaims.sub), email: String(localClaims.email || '').toLowerCase(), token };
+  if (token && supabase.isConfigured) {
+    const user = await supabase.auth.getUser(token).catch(() => null);
+    if (user?.id) return { id: String(user.id), email: String(user.email || '').toLowerCase(), token };
+  }
+  return null;
+}
+
+function cleanText(value, maxLength = 200) {
+  return String(value ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, maxLength);
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,63}$/.test(email);
+}
+
+function isValidIndianPhone(phone) {
+  return /^[6-9]\d{9}$/.test(String(phone).replace(/\D/g, '').slice(-10));
+}
+
+function isValidIndianPincode(pin) {
+  return /^[1-9]\d{5}$/.test(String(pin));
+}
+
+function generateOrderId() {
+  return `GR-${crypto.randomBytes(10).toString('hex').toUpperCase()}`;
+}
+
+function constantTimeStringEquals(leftValue, rightValue) {
+  const left = Buffer.from(String(leftValue || ''));
+  const right = Buffer.from(String(rightValue || ''));
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function orderBelongsToIdentity(order, identity) {
+  if (!identity) return false;
+  const email = String(order.customer?.email || order.email || order.guest_email || '').toLowerCase();
+  const id = String(order.userId || order.user_id || order.customerId || '');
+  return Boolean((identity.email && email === identity.email) || (identity.id && id === identity.id));
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -89,16 +169,14 @@ function serveVideoWithRange(req, res, filePath) {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': chunksize,
-      'Content-Type': 'video/mp4',
-      'Access-Control-Allow-Origin': '*'
+      'Content-Type': 'video/mp4'
     });
     file.pipe(res);
   } else {
     res.writeHead(200, {
       'Content-Length': fileSize,
       'Content-Type': 'video/mp4',
-      'Accept-Ranges': 'bytes',
-      'Access-Control-Allow-Origin': '*'
+      'Accept-Ranges': 'bytes'
     });
     fs.createReadStream(filePath).pipe(res);
   }
@@ -137,25 +215,60 @@ function proxyRequest(req, res, targetUrl) {
   req.pipe(proxy);
 }
 
-function downloadFile(sourceUrl, destPath) {
+async function downloadFile(sourceUrl, destPath, redirectCount = 0) {
+  if (redirectCount > 3 || !security.isSafeRemoteUrl(sourceUrl)) {
+    throw new Error('Remote download URL is not allowed');
+  }
+  const parsed = new URL(sourceUrl);
+  const resolvedAddresses = await dns.lookup(parsed.hostname, { all: true });
+  if (!resolvedAddresses.length || resolvedAddresses.some(({ address }) => {
+    const safeHost = address.includes(':') ? `[${address}]` : address;
+    return !security.isSafeRemoteUrl(`${parsed.protocol}//${safeHost}`);
+  })) {
+    throw new Error('Remote download resolves to a restricted network address');
+  }
+  const pinnedAddress = resolvedAddresses[0];
   return new Promise((resolve, reject) => {
-    const parsed = new URL(sourceUrl);
     const client = parsed.protocol === 'https:' ? https : http;
-    const request = client.get(sourceUrl, (res) => {
+    const request = client.get(sourceUrl, {
+      timeout: 10000,
+      lookup: (_hostname, _options, callback) => callback(null, pinnedAddress.address, pinnedAddress.family)
+    }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         const nextUrl = new URL(res.headers.location, sourceUrl).toString();
-        return downloadFile(nextUrl, destPath).then(resolve).catch(reject);
+        res.resume();
+        return downloadFile(nextUrl, destPath, redirectCount + 1).then(resolve).catch(reject);
       }
       if (res.statusCode !== 200) {
+        res.resume();
         return reject(new Error(`Failed to download: HTTP ${res.statusCode}`));
       }
-      const fileStream = fs.createWriteStream(destPath);
+      const maxBytes = 50 * 1024 * 1024;
+      if (Number(res.headers['content-length'] || 0) > maxBytes) {
+        res.resume();
+        return reject(new Error('Remote file exceeds the 50MB limit'));
+      }
+      const tempPath = `${destPath}.${process.pid}.download`;
+      let received = 0;
+      const fileStream = fs.createWriteStream(tempPath, { mode: 0o600 });
+      res.on('data', chunk => {
+        received += chunk.length;
+        if (received > maxBytes) {
+          request.destroy(new Error('Remote file exceeds the 50MB limit'));
+        }
+      });
       res.pipe(fileStream);
       fileStream.on('finish', () => {
-        fileStream.close(resolve);
+        fileStream.close(() => {
+          try { fs.renameSync(tempPath, destPath); resolve(); } catch (error) { reject(error); }
+        });
       });
-      fileStream.on('error', reject);
+      fileStream.on('error', error => {
+        try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch (_) {}
+        reject(error);
+      });
     });
+    request.on('timeout', () => request.destroy(new Error('Remote download timed out')));
     request.on('error', reject);
   });
 }
@@ -183,8 +296,10 @@ function readJsonFile(filename, fallback = []) {
 
 function writeJsonFile(filename, data) {
   const p = path.join(DATA_DIR, filename);
+  const tempPath = `${p}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
   try {
-    fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
+    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), { encoding: 'utf8', mode: 0o600 });
+    fs.renameSync(tempPath, p);
     if (filename === 'products.json') {
       memoryProducts = null;
       memoryProductsLastFetch = 0;
@@ -195,6 +310,7 @@ function writeJsonFile(filename, data) {
     }
     return true;
   } catch (err) {
+    try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch (_) {}
     console.error(`Error writing ${filename}:`, err.message);
     return false;
   }
@@ -241,26 +357,44 @@ async function getUnifiedSubscribers() {
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
-    let body = '';
+    const chunks = [];
+    let receivedBytes = 0;
+    let settled = false;
     // Allow up to 15MB for media uploads, 2MB max for standard JSON endpoints
     const isUpload = req.url && (req.url.includes('/media/upload') || req.url.includes('/videos/upload') || req.url.includes('/videos/update'));
     const maxBytes = isUpload ? 15 * 1024 * 1024 : 2 * 1024 * 1024;
 
+    const declaredLength = Number(req.headers['content-length'] || 0);
+    if (declaredLength > maxBytes) {
+      return reject(new Error(`Payload too large (limit: ${Math.round(maxBytes / (1024 * 1024))}MB)`));
+    }
     req.on('data', chunk => {
-      body += chunk.toString();
-      if (body.length > maxBytes) {
+      if (settled) return;
+      receivedBytes += Buffer.byteLength(chunk);
+      if (receivedBytes > maxBytes) {
+        settled = true;
         req.destroy();
         reject(new Error(`Payload too large (limit: ${Math.round(maxBytes / (1024 * 1024))}MB)`));
+        return;
       }
+      chunks.push(Buffer.from(chunk));
     });
     req.on('end', () => {
+      if (settled) return;
+      settled = true;
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         resolve(body ? JSON.parse(body) : {});
       } catch (e) {
-        resolve({});
+        reject(new Error('Malformed JSON request body'));
       }
     });
-    req.on('error', reject);
+    req.on('error', err => {
+      if (!settled) {
+        settled = true;
+        reject(err);
+      }
+    });
   });
 }
 
@@ -273,9 +407,8 @@ function sendJson(res, statusCode, data, extraHeaders = {}) {
   }
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token',
     ...extraHeaders
   });
   res.end(JSON.stringify(data));
@@ -1003,6 +1136,10 @@ async function sendOrderConfirmationEmail(order) {
 
 // Order Tracking Public Handler
 async function handleTrackOrder(req, res, parsedUrl) {
+  const trackLimit = security.checkRateLimit(`public_tracking:${security.getClientIp(req)}`, 30, 60);
+  if (!trackLimit.allowed) {
+    return sendJson(res, 429, { success: false, message: 'Too many tracking attempts. Please try again later.' }, { 'Retry-After': String(trackLimit.resetAfterSeconds) });
+  }
   const query = (
     parsedUrl.searchParams.get('id') ||
     parsedUrl.searchParams.get('order') ||
@@ -1015,7 +1152,7 @@ async function handleTrackOrder(req, res, parsedUrl) {
   if (!query) {
     return sendJson(res, 400, {
       success: false,
-      message: 'Please provide an Order ID (e.g. GR-4891) or phone number to track your shipment.'
+      message: 'Please provide the exact Order ID or Delhivery AWB to track your shipment.'
     });
   }
 
@@ -1025,11 +1162,7 @@ async function handleTrackOrder(req, res, parsedUrl) {
   const orders = await getAllOrders();
   let matchedOrder = orders.find(o => {
     const oId = String(o.id || '').toLowerCase().replace(/^[#]/, '');
-    if (oId === cleanQuery || cleanQuery.includes(oId) || oId.includes(cleanQuery)) return true;
-
-    // Match phone
-    const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
-    if (digitsQuery.length >= 7 && oPhone.includes(digitsQuery)) return true;
+    if (oId === cleanQuery) return true;
 
     // Match AWB / tracking number
     const trk = String(o.trackingNumber || o.delhiveryWaybill || '').toLowerCase();
@@ -1043,9 +1176,7 @@ async function handleTrackOrder(req, res, parsedUrl) {
       const supaOrders = await supabase.orders.getAll(100);
       matchedOrder = supaOrders.find(o => {
         const oId = String(o.id || '').toLowerCase().replace(/^[#]/, '');
-        if (oId === cleanQuery || cleanQuery.includes(oId) || oId.includes(cleanQuery)) return true;
-        const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
-        if (digitsQuery.length >= 7 && oPhone.includes(digitsQuery)) return true;
+        if (oId === cleanQuery) return true;
         const trk = String(o.trackingNumber || o.delhiveryWaybill || '').toLowerCase();
         if (trk && trk === cleanQuery) return true;
         return false;
@@ -1115,15 +1246,16 @@ async function handleTrackOrder(req, res, parsedUrl) {
       subtotal: matchedOrder.subtotal,
       shipping: matchedOrder.shipping,
       customer: {
-        name: matchedOrder.customer?.name || 'Customer',
         city: matchedOrder.customer?.city || 'Mumbai',
         state: matchedOrder.customer?.state || 'Maharashtra',
-        address: matchedOrder.customer?.address || '',
-        locality: matchedOrder.customer?.locality || '',
-        pincode: matchedOrder.customer?.pincode || '',
         country: matchedOrder.customer?.country || 'India'
       },
-      items: matchedOrder.items || [],
+      items: (matchedOrder.items || []).map(item => ({
+        title: item.title,
+        size: item.size,
+        quantity: item.quantity,
+        image: item.image
+      })),
       trackingNumber: matchedOrder.trackingNumber || matchedOrder.delhiveryWaybill || '',
       delhiveryWaybill: matchedOrder.delhiveryWaybill || matchedOrder.trackingNumber || '',
       trackingUrl: matchedOrder.trackingUrl || (matchedOrder.trackingNumber ? `https://www.delhivery.com/track/package/${matchedOrder.trackingNumber}` : null),
@@ -1136,8 +1268,12 @@ async function handleTrackOrder(req, res, parsedUrl) {
 
 // 24/7 AI Streetwear Support Concierge Handler
 async function handleAiChat(req, res) {
+  const chatLimit = security.checkRateLimit(`ai_chat:${security.getClientIp(req)}`, 30, 60);
+  if (!chatLimit.allowed) return sendJson(res, 429, { success: false, reply: 'Please slow down and try again shortly.' }, { 'Retry-After': String(chatLimit.resetAfterSeconds) });
   const payload = await parseBody(req);
   const userMsg = (payload.message || '').trim();
+  const customerIdentity = await getAuthenticatedIdentity(req);
+  const canAccessOrderData = Boolean(customerIdentity || security.isAdminAuthorized(req));
 
   if (!userMsg) {
     return sendJson(res, 400, { success: false, reply: 'Please provide a question or message.' });
@@ -1151,10 +1287,11 @@ async function handleAiChat(req, res) {
       let orderContext = '';
       const orderIdMatch = userMsg.match(/(?:gr|ar)[#\s-]*([0-9]{4,6})/i) || userMsg.match(/#?([0-9]{4,6})/);
       const phoneMatch = userMsg.match(/\b[6-9]\d{9}\b/);
-      if (orderIdMatch || phoneMatch) {
+      if (canAccessOrderData && (orderIdMatch || phoneMatch)) {
         const query = orderIdMatch ? (orderIdMatch[0].toUpperCase()) : (phoneMatch ? phoneMatch[0] : '');
         const cleanQ = query.replace(/\D/g, '');
         const match = orders.find(o => {
+          if (!security.isAdminAuthorized(req) && !orderBelongsToIdentity(o, customerIdentity)) return false;
           const oId = String(o.id || '').toUpperCase();
           if (oId.includes(query.toUpperCase())) return true;
           const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
@@ -1211,12 +1348,13 @@ Provide an elegant, helpful, and concise response in markdown.`;
   const orderIdMatch = userMsg.match(/(?:gr|ar)[#\s-]*([0-9]{4,6})/i) || userMsg.match(/#?([0-9]{4,6})/);
   const phoneMatch = userMsg.match(/\b[6-9]\d{9}\b/);
 
-  if (orderIdMatch || phoneMatch || lower.includes('track') || lower.includes('where is my order') || lower.includes('status')) {
+    if (canAccessOrderData && (orderIdMatch || phoneMatch || lower.includes('track') || lower.includes('where is my order') || lower.includes('status'))) {
     const query = orderIdMatch ? (orderIdMatch[0].toUpperCase()) : (phoneMatch ? phoneMatch[0] : '');
     if (query) {
       const orders = await getAllOrders();
       const cleanQ = query.replace(/\D/g, '');
       const match = orders.find(o => {
+        if (!security.isAdminAuthorized(req) && !orderBelongsToIdentity(o, customerIdentity)) return false;
         const oId = String(o.id || '').toUpperCase();
         if (oId.includes(query.toUpperCase())) return true;
         const oPhone = String(o.customer?.phone || '').replace(/\D/g, '');
@@ -1326,6 +1464,15 @@ async function handleGetSingleOrder(req, res, orderId) {
 
   if (!order) {
     return sendJson(res, 404, { success: false, message: `Order '${orderId}' not found` });
+  }
+
+  if (!security.isAdminAuthorized(req)) {
+    const identity = await getAuthenticatedIdentity(req);
+    const ownerEmail = String(order.customer?.email || order.email || order.guest_email || '').toLowerCase();
+    const ownerId = String(order.userId || order.user_id || order.customerId || '');
+    if (!identity || (identity.email !== ownerEmail && identity.id !== ownerId)) {
+      return sendJson(res, 404, { success: false, message: 'Order not found' });
+    }
   }
 
   return sendJson(res, 200, { success: true, order });
@@ -1617,17 +1764,24 @@ async function handleDeleteProduct(req, res, id) {
 
 async function handleGetOrders(req, res, parsedUrl) {
   const status = parsedUrl.searchParams.get('status');
-  const email = parsedUrl.searchParams.get('email')?.toLowerCase();
-  const phone = parsedUrl.searchParams.get('phone');
-  const userId = parsedUrl.searchParams.get('userId');
+  const requestedEmail = parsedUrl.searchParams.get('email')?.toLowerCase();
+  const requestedPhone = parsedUrl.searchParams.get('phone');
+  const requestedUserId = parsedUrl.searchParams.get('userId');
+  const isAdmin = security.isAdminAuthorized(req, parsedUrl);
+  const identity = isAdmin ? null : await getAuthenticatedIdentity(req);
 
-  // Prevent unauthenticated full dump of all orders
-  if (!status && !email && !phone && !userId && !security.isAdminAuthorized(req, parsedUrl)) {
+  if (!isAdmin && !identity) {
     return sendJson(res, 401, {
       success: false,
-      message: 'Unauthorized: Administrator authentication required to view complete orders database.'
+      message: 'Authentication required to view orders.'
     });
   }
+
+  // Customer queries are always bound to the authenticated identity. Query
+  // parameters cannot be used to select another customer's records.
+  const email = isAdmin ? requestedEmail : identity.email;
+  const phone = isAdmin ? requestedPhone : null;
+  const userId = isAdmin ? requestedUserId : identity.id;
 
   // Rate limit customer order lookups (30 req/min)
   const clientIp = security.getClientIp(req);
@@ -1652,7 +1806,7 @@ async function handleGetOrders(req, res, parsedUrl) {
           cPhone.slice(-10) === searchPhone.slice(-10)
         )
       );
-      return (email && cEmail === email) ||
+       return (email && cEmail === email) ||
              phoneMatch ||
              (userId && (o.userId === userId || o.supabaseId === userId));
     });
@@ -1665,6 +1819,92 @@ async function handleGetOrders(req, res, parsedUrl) {
   });
 }
 
+function getCashfreeConfig() {
+  const appId = process.env.CASHFREE_APP_ID;
+  const secret = process.env.CASHFREE_SECRET_KEY;
+  if (!appId || !secret) return null;
+  const environment = String(process.env.CASHFREE_ENV || 'TEST').toUpperCase();
+  return {
+    appId,
+    secret,
+    baseUrl: environment === 'PROD' || environment === 'PRODUCTION'
+      ? 'https://api.cashfree.com/pg'
+      : 'https://sandbox.cashfree.com/pg'
+  };
+}
+
+async function cashfreeFetch(config, endpoint, options = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    return await fetch(`${config.baseUrl}${endpoint}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-client-id': config.appId,
+        'x-client-secret': config.secret,
+        'x-api-version': CASHFREE_API_VERSION,
+        ...(options.headers || {})
+      }
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function createCashfreeOrder(req, order) {
+  const config = getCashfreeConfig();
+  if (!config) return { configured: false };
+  const origin = getConfiguredOrigin(req) || `https://${process.env.APP_DOMAIN || 'alleyrich.com'}`;
+  const response = await cashfreeFetch(config, '/orders', {
+    method: 'POST',
+    body: JSON.stringify({
+      order_id: order.id,
+      order_amount: order.total,
+      order_currency: 'INR',
+      customer_details: {
+        customer_id: String(order.customer.email || order.customer.phone).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50),
+        customer_name: order.customer.name,
+        customer_email: order.customer.email,
+        customer_phone: order.customer.phone
+      },
+      order_meta: {
+        return_url: `${origin}/order-success?orderId={order_id}&cashfree=paid`
+      }
+    })
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || !body.payment_session_id) {
+    const error = new Error('Cashfree order creation failed');
+    error.statusCode = response.status >= 400 && response.status < 500 ? 400 : 502;
+    throw error;
+  }
+  return {
+    configured: true,
+    cashfreeOrderId: body.cf_order_id || order.id,
+    paymentSessionId: body.payment_session_id
+  };
+}
+
+async function verifyCashfreeOrder(order) {
+  const config = getCashfreeConfig();
+  if (!config) return { configured: false, verified: false };
+  const response = await cashfreeFetch(config, `/orders/${encodeURIComponent(order.id)}/payments`);
+  const payments = await response.json().catch(() => []);
+  if (!response.ok || !Array.isArray(payments)) return { configured: true, verified: false };
+  const successfulPayment = payments.find(payment =>
+    String(payment.payment_status).toUpperCase() === 'SUCCESS' &&
+    Math.abs(Number(payment.payment_amount) - Number(order.total)) < 0.01 &&
+    String(payment.payment_currency || 'INR').toUpperCase() === 'INR'
+  );
+  return {
+    configured: true,
+    verified: Boolean(successfulPayment),
+    paymentId: successfulPayment?.cf_payment_id || null
+  };
+}
+
 async function handleCreateOrder(req, res, isCheckout = false) {
   const clientIp = security.getClientIp(req);
   const createLimit = security.checkRateLimit(`order_create:${clientIp}`, 10, 300);
@@ -1674,8 +1914,8 @@ async function handleCreateOrder(req, res, isCheckout = false) {
 
   const payload = await parseBody(req);
   const items = Array.isArray(payload.items) ? payload.items : [];
-  const validItems = items.filter(it => (Number(it.quantity || it.qty) || 0) > 0);
-  if (validItems.length === 0) {
+  const validItems = items.filter(it => Number.isInteger(Number(it.quantity || it.qty)) && Number(it.quantity || it.qty) > 0);
+  if (validItems.length === 0 || validItems.length > 50) {
     return sendJson(res, 400, {
       success: false,
       error: 'Cart is empty. Cannot place an empty order.',
@@ -1684,58 +1924,112 @@ async function handleCreateOrder(req, res, isCheckout = false) {
   }
 
   const allProducts = await getAllProducts();
-  const processedItems = validItems.map(item => {
+  const processedItems = [];
+  for (const item of validItems) {
     const match = allProducts.find(p =>
       (item.id && String(p.id) === String(item.id)) ||
-      (item.title && p.title.toLowerCase() === String(item.title).toLowerCase()) ||
-      (item.handle && p.handle === item.handle)
+      (item.handle && p.handle === item.handle) ||
+      (item.title && p.title.toLowerCase() === String(item.title).toLowerCase())
     );
-    return {
-      id: item.id || match?.id || Date.now(),
-      title: item.title || match?.title || 'Streetwear Apparel',
-      size: item.size || 'L',
-      price: Number(item.price) || Number(match?.variants?.[0]?.price) || 1499,
-      quantity: Number(item.quantity || item.qty) || 1,
-      image: item.image || match?.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
-    };
-  });
+    if (!match) {
+      return sendJson(res, 400, { success: false, message: 'One or more cart items are no longer available.' });
+    }
+    const quantity = Number(item.quantity || item.qty);
+    if (!Number.isSafeInteger(quantity) || quantity > 20) {
+      return sendJson(res, 400, { success: false, message: 'Each item quantity must be between 1 and 20.' });
+    }
+    const variant = Array.isArray(match.variants) && match.variants.length
+      ? (match.variants.find(v => item.size && String(v.title).toLowerCase() === String(item.size).toLowerCase()) || match.variants[0])
+      : null;
+    const serverPrice = Number(variant?.price ?? match.price ?? 0);
+    if (!Number.isFinite(serverPrice) || serverPrice < 0) {
+      return sendJson(res, 400, { success: false, message: 'A cart item has an invalid catalog price.' });
+    }
+    const available = variant?.available !== false && Number(variant?.inventory_quantity ?? 1) >= quantity;
+    if (!available) return sendJson(res, 409, { success: false, message: `${match.title} is out of stock.` });
+    processedItems.push({
+      id: match.id,
+      handle: match.handle,
+      title: match.title,
+      size: cleanText(item.size || variant?.title || 'Default', 30),
+      price: serverPrice,
+      quantity,
+      image: match.images?.[0]?.src || ''
+    });
+  }
 
   const calculatedSubtotal = processedItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
-  const subtotal = Number(payload.subtotal) || calculatedSubtotal || 1999;
-  const discount = Number(payload.discount) || 0;
-  const shipping = Number(payload.shipping) || 0;
-  const total = Number(payload.total) || Math.max(0, subtotal - discount + shipping);
+  const subtotal = Number(calculatedSubtotal.toFixed(2));
+  const discounts = readJsonFile('discounts.json', []);
+  const discountCode = cleanText(payload.discountCode || payload.couponCode || payload.coupon || '', 50).toUpperCase();
+  const discountRule = discounts.find(d => d.isActive !== false && String(d.code || '').toUpperCase() === discountCode && (!d.usageLimit || Number(d.usageCount || 0) < Number(d.usageLimit)) && subtotal >= Number(d.minOrderValue || 0));
+  let discount = 0;
+  if (discountRule) {
+    discount = discountRule.type === 'fixed'
+      ? Number(discountRule.value || 0)
+      : subtotal * (Number(discountRule.value || 0) / 100);
+    discount = Math.min(discount, Number(discountRule.maxDiscount || discount));
+  }
+  discount = Math.max(0, Math.min(subtotal, Number(discount.toFixed(2))));
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING_FEE;
+  const total = Number(Math.max(0, subtotal - discount + shipping).toFixed(2));
 
-  const orderId = payload.id || `GR-${Math.floor(1000 + Math.random() * 9000)}`;
-  const isCashfree = payload.paymentMethod === 'cashfree' || payload.paymentMethod === 'Cashfree 1-Click UPI';
+  const rawCustomer = payload.customer && typeof payload.customer === 'object' ? payload.customer : {};
+  const customer = {
+    name: cleanText(rawCustomer.name, 120),
+    email: cleanText(rawCustomer.email, 255).toLowerCase(),
+    phone: cleanText(rawCustomer.phone, 30).replace(/\D/g, '').slice(-10),
+    city: cleanText(rawCustomer.city, 100),
+    state: cleanText(rawCustomer.state, 100),
+    address: cleanText(rawCustomer.address, 300),
+    locality: cleanText(rawCustomer.locality, 150),
+    pincode: cleanText(rawCustomer.pincode, 6),
+    country: 'India'
+  };
+  if (!customer.name || !isValidEmail(customer.email) || !isValidIndianPhone(customer.phone) || !customer.address || !isValidIndianPincode(customer.pincode)) {
+    return sendJson(res, 400, { success: false, message: 'Valid name, email, Indian phone, address and 6-digit pincode are required.' });
+  }
+
+  const isCashfree = String(payload.paymentMethod || '').toLowerCase().includes('cashfree');
+  const orderId = generateOrderId();
 
   const newOrder = {
     id: orderId,
     customer: {
-      name: payload.customer?.name || 'Walk-in Customer',
-      email: payload.customer?.email || '',
-      phone: payload.customer?.phone || '+91 99999 99999',
-      city: payload.customer?.city || 'Mumbai',
-      state: payload.customer?.state || 'Maharashtra',
-      address: payload.customer?.address || '',
-      locality: payload.customer?.locality || '',
-      pincode: payload.customer?.pincode || '',
-      country: payload.customer?.country || 'India'
+      ...customer
     },
     items: processedItems,
     subtotal,
     discount,
     shipping,
     total,
-    paymentMethod: payload.paymentMethod || (isCashfree ? 'Cashfree 1-Click UPI' : 'Cash on Delivery (COD)'),
-    paymentStatus: payload.paymentStatus || (isCashfree ? 'Pending' : 'Pending COD'),
-    orderStatus: payload.orderStatus || 'Processing',
-    trackingNumber: payload.trackingNumber || '',
+    paymentMethod: isCashfree ? 'Cashfree Online Payment' : 'Cash on Delivery (COD)',
+    paymentStatus: isCashfree ? 'Pending' : 'Pending COD',
+    orderStatus: 'Processing',
+    trackingNumber: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    cashfreeOrderId: isCashfree ? `cf_order_${orderId}_${Date.now()}` : (payload.cashfreeOrderId || null),
-    cashfreePaymentId: payload.cashfreePaymentId || null
+    cashfreeOrderId: null,
+    cashfreePaymentId: null
   };
+  let paymentSessionId = null;
+
+  if (isCashfree) {
+    let gatewayOrder;
+    try {
+      gatewayOrder = await createCashfreeOrder(req, newOrder);
+    } catch (error) {
+      return sendJson(res, error.statusCode || 502, { success: false, message: 'Unable to initialise the payment gateway. Please try again.' });
+    }
+    if (!gatewayOrder.configured) {
+      return sendJson(res, 503, { success: false, message: 'Online payments are temporarily unavailable. Please choose COD.' });
+    }
+    newOrder.cashfreeOrderId = gatewayOrder.cashfreeOrderId;
+    paymentSessionId = gatewayOrder.paymentSessionId;
+  }
+
+  // Cashfree's client session is a short-lived payment credential. Return it
+  // once to the checkout client, but never persist it in order archives.
 
   const orders = await getAllOrders();
   orders.unshift(newOrder);
@@ -1753,10 +2047,11 @@ async function handleCreateOrder(req, res, isCheckout = false) {
 
   // Sync customer address and contact info to customers.json
   try {
-    const custEmail = (payload.customer?.email || '').toLowerCase().trim();
+    const custEmail = customer.email;
     if (custEmail) {
       let customers = readJsonFile('customers.json', []);
       let cust = customers.find(c => (c.email || '').toLowerCase().trim() === custEmail);
+      let newCust = null;
       if (cust) {
         if (payload.customer?.name && (!cust.name || cust.name === 'Walk-in Customer')) cust.name = payload.customer.name;
         if (payload.customer?.phone) cust.phone = payload.customer.phone;
@@ -1769,7 +2064,7 @@ async function handleCreateOrder(req, res, isCheckout = false) {
         cust.totalOrders = (cust.totalOrders || 0) + 1;
         cust.totalSpent = (cust.totalSpent || 0) + total;
       } else {
-        const newCust = {
+        newCust = {
           id: `cust_${Date.now()}`,
           name: payload.customer?.name || 'Customer',
           email: custEmail,
@@ -1792,7 +2087,7 @@ async function handleCreateOrder(req, res, isCheckout = false) {
       writeJsonFile('customers.json', customers);
       if (db && db.isConfigured) {
         try {
-          await db.customers.upsert(cust || newCust);
+           await db.customers.upsert(cust || newCust);
         } catch (dbCustErr) {
           console.warn('AWS RDS customer upsert on order warning:', dbCustErr.message);
         }
@@ -1810,7 +2105,7 @@ async function handleCreateOrder(req, res, isCheckout = false) {
 
   return sendJson(res, 201, {
     success: true,
-    order: newOrder,
+    order: paymentSessionId ? { ...newOrder, paymentSessionId } : newOrder,
     orderId: newOrder.id,
     cashfreeOrderId: newOrder.cashfreeOrderId
   });
@@ -1824,12 +2119,18 @@ async function handleUpdateOrder(req, res, id) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
   }
 
-  if (payload.orderStatus) order.orderStatus = payload.orderStatus;
-  if (payload.paymentStatus) order.paymentStatus = payload.paymentStatus;
+  const allowedOrderStatuses = new Set(['Processing', 'Pending', 'Shipped', 'Delivered', 'Cancelled', 'Refunded']);
+  const allowedPaymentStatuses = new Set(['Pending', 'Pending COD', 'Failed', 'Refunded']);
+  if (payload.orderStatus) {
+    if (!allowedOrderStatuses.has(String(payload.orderStatus))) return sendJson(res, 400, { success: false, message: 'Invalid order status.' });
+    order.orderStatus = String(payload.orderStatus);
+  }
+  if (payload.paymentStatus) {
+    if (!allowedPaymentStatuses.has(String(payload.paymentStatus))) return sendJson(res, 400, { success: false, message: 'Payment status can only be changed by the payment verification flow.' });
+    order.paymentStatus = String(payload.paymentStatus);
+  }
   if (payload.paymentMethod) order.paymentMethod = payload.paymentMethod;
   if (payload.trackingNumber !== undefined) order.trackingNumber = payload.trackingNumber;
-  if (payload.cashfreeOrderId) order.cashfreeOrderId = payload.cashfreeOrderId;
-  if (payload.cashfreePaymentId) order.cashfreePaymentId = payload.cashfreePaymentId;
   if (payload.customer) order.customer = { ...order.customer, ...payload.customer };
   order.updatedAt = new Date().toISOString();
 
@@ -1872,7 +2173,10 @@ async function handleDelhiveryAwb(req, res, id) {
     }
   } catch (err) {
     console.error('Delhivery Express API note:', err.message);
-    dispatchNote = `Live API: ${err.message}. Assigned standard express waybill for manual manifest.`;
+    if (process.env.ALLOW_SYNTHETIC_AWB !== 'true') {
+      return sendJson(res, 502, { success: false, message: 'Delhivery could not create a shipment. No tracking number was assigned.' });
+    }
+    dispatchNote = `Live API: ${err.message}. Assigned synthetic waybill for test mode only.`;
     delhiveryAwb = order.trackingNumber || ('14092' + Math.floor(1000000 + Math.random() * 9000000));
     trackingUrl = `https://www.delhivery.com/track/package/${delhiveryAwb}`;
     packingSlipUrl = delhivery.getPackingSlipUrl(delhiveryAwb);
@@ -2272,9 +2576,22 @@ async function handleCashfreeVerify(req, res, id) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
   }
 
+  let verification;
+  try {
+    verification = await verifyCashfreeOrder(order);
+  } catch (_) {
+    return sendJson(res, 502, { success: false, message: 'Cashfree verification is temporarily unavailable.' });
+  }
+  if (!verification.configured) {
+    return sendJson(res, 503, { success: false, message: 'Cashfree verification is not configured.' });
+  }
+  if (!verification.verified) {
+    return sendJson(res, 400, { success: false, message: 'No successful Cashfree payment matching this order was found.' });
+  }
+
   order.paymentStatus = 'Paid';
-  order.paymentMethod = order.paymentMethod || 'Cashfree 1-Click UPI';
-  order.cashfreePaymentId = order.cashfreePaymentId || `cf_pay_${Date.now()}`;
+  order.paymentMethod = order.paymentMethod || 'Cashfree Online Payment';
+  order.cashfreePaymentId = verification.paymentId;
   order.updatedAt = new Date().toISOString();
 
   writeJsonFile('orders.json', orders);
@@ -2324,6 +2641,7 @@ async function appHandler(req, res) {
   try {
     const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     let pathname = decodeURIComponent(parsedUrl.pathname);
+    applyCors(req, res);
 
   // Handle Shopify dummy telemetry, web-pixels & monorail to keep console clean
   if (
@@ -2333,8 +2651,7 @@ async function appHandler(req, res) {
     pathname.includes('shopify-app-pixel')
   ) {
     res.writeHead(200, {
-      'Content-Type': 'application/javascript; charset=utf-8',
-      'Access-Control-Allow-Origin': '*'
+      'Content-Type': 'application/javascript; charset=utf-8'
     });
     return res.end('// Shopify telemetry stub');
   }
@@ -2342,15 +2659,17 @@ async function appHandler(req, res) {
   // Inject Global Defense-in-Depth HTTP Security Headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (process.env.NODE_ENV === 'production' || req.headers['x-forwarded-proto'] === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
 
   // Handle OPTIONS for CORS
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token'
     });
     return res.end();
   }
@@ -2363,6 +2682,13 @@ async function appHandler(req, res) {
   // 1. Block dotfiles (.env, .git, .system_generated, etc.) and directory traversal
   if (normalizedPath.startsWith('/.') || normalizedPath.includes('/..')) {
     return sendJson(res, 403, { success: false, message: 'Forbidden: Access to hidden system files is prohibited.' });
+  }
+
+  // Never expose server-side modules, migration scripts, dependency trees or
+  // database schema files through the static-file fallback.
+  const privateStaticPrefixes = ['/lib/', '/scripts/', '/supabase/', '/node_modules/', '/.git/'];
+  if (privateStaticPrefixes.some(prefix => normalizedPath.toLowerCase().startsWith(prefix))) {
+    return sendJson(res, 404, { success: false, message: 'Not found' });
   }
 
   // 2. Block direct root server source files (.js, .json, .lock, .md, .yml)
@@ -2447,8 +2773,7 @@ async function appHandler(req, res) {
     const adminPath = path.join(PUBLIC_DIR, 'admin.html');
     if (fs.existsSync(adminPath)) {
       res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'text/html; charset=utf-8'
       });
       return fs.createReadStream(adminPath).pipe(res);
     }
@@ -2536,6 +2861,9 @@ async function appHandler(req, res) {
 
   if (pathname === '/api/orders' || pathname.startsWith('/api/orders/')) {
     if (pathname.includes('/shipping-label') && req.method === 'GET') {
+      if (!security.isAdminAuthorized(req, parsedUrl)) {
+        return sendJson(res, 401, { success: false, message: 'Administrator authentication required.' });
+      }
       const id = pathname.replace('/api/orders/', '').replace(/\/shipping-label\/?$/, '');
       return await handleShippingLabel(req, res, id);
     }
@@ -2585,27 +2913,26 @@ async function appHandler(req, res) {
     const password = (payload.password || '').trim();
     const totpCode = (payload.totpCode || '').trim();
 
-    const expectedUser = process.env.ADMIN_USERNAME || 'Deepak_is_admin';
-    const expectedPass = process.env.ADMIN_PASSWORD || '#99882211@';
-    const totpSecret = process.env.ADMIN_2FA_SECRET || '4I543GYJL7LAMAC7UPPL';
+    const expectedUser = process.env.ADMIN_USERNAME;
+    const expectedPass = process.env.ADMIN_PASSWORD;
+    const totpSecret = process.env.ADMIN_2FA_SECRET;
 
-    if (username !== expectedUser || password !== expectedPass) {
+    if (!expectedUser || !expectedPass || !totpSecret || !process.env.ADMIN_SECRET_KEY) {
+      return sendJson(res, 503, { success: false, message: 'Administrative authentication is not configured.' });
+    }
+
+    if (!constantTimeStringEquals(username, expectedUser) || !constantTimeStringEquals(password, expectedPass)) {
       return sendJson(res, 401, {
         success: false,
         message: 'Invalid administrative username or master password.'
       });
     }
 
-    const otpAuthUrl = totp.getOtpAuthUrl(expectedUser, totpSecret, 'ALLYRICH');
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpAuthUrl)}`;
-
     if (!totpCode) {
       return sendJson(res, 200, {
         success: false,
         require2fa: true,
-        setupQr: qrUrl,
-        manualKey: totpSecret,
-        message: 'Master credentials accepted. Enter your 6-digit Google Authenticator code.'
+        message: 'Credentials accepted. Enter your 6-digit authenticator code.'
       });
     }
 
@@ -2614,8 +2941,6 @@ async function appHandler(req, res) {
       return sendJson(res, 400, {
         success: false,
         require2fa: true,
-        setupQr: qrUrl,
-        manualKey: totpSecret,
         message: 'Invalid or expired 6-digit code. Please check your Google Authenticator app.'
       });
     }
@@ -3024,14 +3349,19 @@ async function appHandler(req, res) {
 
       if (matches) {
         const mime = matches[1].toLowerCase();
+        const allowedImageMimes = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
+        if (!allowedImageMimes.has(mime)) {
+          return sendJson(res, 400, { success: false, message: 'Only PNG, JPEG, WebP and GIF images are allowed.' });
+        }
         if (mime.includes('jpeg') || mime.includes('jpg')) extension = '.jpg';
         else if (mime.includes('webp')) extension = '.webp';
         else if (mime.includes('gif')) extension = '.gif';
-        else if (mime.includes('svg')) extension = '.svg';
-        else if (mime.includes('mp4')) extension = '.mp4';
         buffer = Buffer.from(matches[2], 'base64');
       } else {
-        buffer = Buffer.from(payload.data, 'base64');
+        return sendJson(res, 400, { success: false, message: 'Image data must be a valid data URL.' });
+      }
+      if (!buffer.length || buffer.length > 5 * 1024 * 1024) {
+        return sendJson(res, 413, { success: false, message: 'Image must be between 1 byte and 5MB.' });
       }
 
       const rawName = (payload.filename || 'photo').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
@@ -3106,6 +3436,9 @@ async function appHandler(req, res) {
       }
 
       const cleanName = path.basename(rawName).replace(/[^a-zA-Z0-9_\.-]/g, '_');
+      if (!/\.(mp4|webm)$/i.test(cleanName)) {
+        return sendJson(res, 400, { success: false, message: 'Only MP4 and WebM video files are allowed.' });
+      }
       const videoDir = path.join(PUBLIC_DIR, 'assets', 'videos');
       if (!fs.existsSync(videoDir)) fs.mkdirSync(videoDir, { recursive: true });
 
@@ -3135,10 +3468,13 @@ async function appHandler(req, res) {
           } catch (dlErr) {
             return sendJson(res, 500, { success: false, message: 'Failed to download video from URL: ' + dlErr.message });
           }
-        } else {
-          // Local path like /assets/uploads/...
-          const relPath = rawUrl.replace(/^\//, '');
-          const localSrc = path.join(PUBLIC_DIR, relPath);
+          } else {
+            // Local path like /assets/uploads/...
+            const relPath = rawUrl.replace(/^\//, '');
+            const localSrc = path.resolve(PUBLIC_DIR, `.${rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`}`);
+            if (!localSrc.startsWith(path.resolve(PUBLIC_DIR) + path.sep)) {
+              return sendJson(res, 400, { success: false, message: 'Local source path is not allowed.' });
+            }
           if (fs.existsSync(localSrc) && fs.statSync(localSrc).isFile()) {
             fs.copyFileSync(localSrc, destPath);
           } else {
@@ -3406,13 +3742,17 @@ async function appHandler(req, res) {
     if (authRoute === 'signup' && req.method === 'POST') {
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
-      const password = payload.password || 'password123';
+      const password = String(payload.password || '');
       const name = payload.name || 'Storefront Member';
       const phone = payload.phone || '+91 99999 00000';
 
       if (!email) {
         return sendJson(res, 400, { success: false, message: 'Email is required' });
       }
+      if (!isValidEmail(email) || password.length < 8 || password.length > 128) {
+        return sendJson(res, 400, { success: false, message: 'A valid email and password of 8-128 characters are required.' });
+      }
+      const passwordHash = await security.hashPassword(password);
 
       // Check whether email exists in local customers.json OR in Supabase
       const existing = customers.find(c => (c.email || '').toLowerCase() === email);
@@ -3436,7 +3776,7 @@ async function appHandler(req, res) {
       }
 
       let userId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
-      let authToken = `tok_${userId}_${Date.now()}`;
+      let authToken = security.createCustomerSession(userId, email);
       let supabaseProfile = null;
 
       // 1. Supabase Auth Registration
@@ -3455,7 +3795,9 @@ async function appHandler(req, res) {
 
           if (supaRes.success && supaRes.user) {
             userId = supaRes.user.id;
-            authToken = supaRes.token || authToken;
+            authToken = supaRes.token && !String(supaRes.token).startsWith('tok_')
+              ? supaRes.token
+              : security.createCustomerSession(userId, email);
             supabaseProfile = supaRes.user;
           }
         } catch (supaErr) {
@@ -3469,7 +3811,8 @@ async function appHandler(req, res) {
         name: name,
         email: email,
         phone: phone,
-        password: password,
+        passwordHash,
+        password_hash: passwordHash,
         city: payload.city || 'Mumbai',
         state: payload.state || 'Maharashtra',
         address: payload.address || '',
@@ -3498,6 +3841,8 @@ async function appHandler(req, res) {
 
       const safeUser = { ...customerRecord };
       delete safeUser.password;
+      delete safeUser.passwordHash;
+      delete safeUser.password_hash;
 
       return sendJson(res, 201, { success: true, user: safeUser, token: authToken });
     }
@@ -3552,13 +3897,20 @@ async function appHandler(req, res) {
           return sendJson(res, 401, { success: false, message: 'Invalid email address or password. Please verify your credentials.' });
         }
 
-        const candidatePassword = localCustomer?.password || cloudProfile?.password;
-        if (candidatePassword && candidatePassword !== password) {
+        const candidateHash = localCustomer?.passwordHash || localCustomer?.password_hash || cloudProfile?.passwordHash || cloudProfile?.password_hash;
+        const legacyPassword = localCustomer?.password;
+        const passwordValid = candidateHash
+          ? await security.verifyPassword(password, candidateHash)
+          : Boolean(legacyPassword && legacyPassword === password);
+        if (!passwordValid) {
           return sendJson(res, 401, { success: false, message: 'Invalid email address or password. Please verify your credentials.' });
         }
 
-        if (localCustomer && !localCustomer.password) {
-          localCustomer.password = password || 'password123';
+        // One-time migration for old local records that stored plaintext
+        // passwords. Never write the plaintext back to disk.
+        if (localCustomer && legacyPassword && !candidateHash) {
+          localCustomer.passwordHash = await security.hashPassword(password);
+          delete localCustomer.password;
           writeJsonFile('customers.json', customers);
         }
 
@@ -3573,7 +3925,7 @@ async function appHandler(req, res) {
           wishlist: cloudProfile?.wishlist || [],
           cart: cloudProfile?.cart || []
         };
-        authToken = `tok_${authedUser.id}_${Date.now()}`;
+        authToken = security.createCustomerSession(authedUser.id, authedUser.email || email);
       } else {
         // Sync authed user with local customer
         if (!localCustomer) {
@@ -3582,7 +3934,7 @@ async function appHandler(req, res) {
             name: authedUser.name || authedUser.full_name || 'Storefront Member',
             email: email,
             phone: authedUser.phone || '',
-            password: password,
+            passwordHash: await security.hashPassword(password),
             ordersCount: 0,
             totalSpent: 0,
             tags: ['Storefront Member', 'Supabase Verified'],
@@ -3642,6 +3994,8 @@ async function appHandler(req, res) {
 
       const safeUser = { ...authedUser };
       delete safeUser.password;
+      delete safeUser.passwordHash;
+      delete safeUser.password_hash;
 
       return sendJson(res, 200, { success: true, user: safeUser, token: authToken });
     }
@@ -3662,7 +4016,7 @@ async function appHandler(req, res) {
       }
 
       // Generate secure 6-digit numeric OTP
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpCode = crypto.randomInt(100000, 1000000).toString();
       const expiresAt = Date.now() + 10 * 60 * 1000;
       otpCache.set(email, {
         code: otpCode,
@@ -3879,11 +4233,13 @@ async function appHandler(req, res) {
         writeJsonFile('customers.json', customers);
         const safeUser = { ...localCust };
         delete safeUser.password;
+        delete safeUser.passwordHash;
+        delete safeUser.password_hash;
         return sendJson(res, 200, {
           success: true,
           message: 'Successfully verified & logged in!',
           user: safeUser,
-          token: `tok_${localCust.id}_${Date.now()}`
+          token: security.createCustomerSession(localCust.id, localCust.email)
         });
       }
 
@@ -3905,16 +4261,10 @@ async function appHandler(req, res) {
 
     // GET /api/auth/me
     if (authRoute === 'me' && req.method === 'GET') {
-      const authHeader = req.headers.authorization || '';
-      const token = authHeader.replace('Bearer ', '').trim();
-      let tokenUserId = null;
-      if (token.startsWith('tok_')) {
-        const withoutPrefix = token.substring(4);
-        const lastUnderscore = withoutPrefix.lastIndexOf('_');
-        tokenUserId = lastUnderscore !== -1 ? withoutPrefix.substring(0, lastUnderscore) : withoutPrefix;
-      }
-      const userId = parsedUrl.searchParams.get('userId') || tokenUserId;
-      const emailQuery = (parsedUrl.searchParams.get('email') || '').toLowerCase().trim();
+      const identity = await getAuthenticatedIdentity(req);
+      if (!identity) return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      const userId = identity.id;
+      const emailQuery = identity.email;
 
       let customer = null;
       if (userId) {
@@ -3952,20 +4302,6 @@ async function appHandler(req, res) {
         } catch (oe) {}
       }
 
-      // If token is a Supabase JWT and not resolved locally yet
-      if (!customer && token && !token.startsWith('tok_') && supabase.isConfigured) {
-        try {
-          const supaUser = await supabase.auth.getUser(token);
-          if (supaUser && supaUser.id) {
-            customer = customers.find(c => c.id === supaUser.id || (c.email && c.email.toLowerCase() === supaUser.email?.toLowerCase()));
-            if (!customer) {
-              const prof = await supabase.profiles.get(supaUser.id);
-              customer = prof || { id: supaUser.id, email: supaUser.email, name: supaUser.user_metadata?.full_name };
-            }
-          }
-        } catch (e) {}
-      }
-
       if (!customer) {
         return sendJson(res, 401, { success: false, message: 'Not authenticated' });
       }
@@ -3991,68 +4327,24 @@ async function appHandler(req, res) {
 
       const safeUser = { ...customer };
       delete safeUser.password;
+      delete safeUser.passwordHash;
+      delete safeUser.password_hash;
       return sendJson(res, 200, { success: true, user: safeUser });
     }
 
     // PUT /api/auth/profile
     if (authRoute === 'profile' && req.method === 'PUT') {
       const payload = await parseBody(req);
-      const authHeader = req.headers.authorization || '';
-      const token = authHeader.replace('Bearer ', '').trim();
-      let tokenUserId = null;
-      if (token.startsWith('tok_')) {
-        const withoutPrefix = token.substring(4);
-        const lastUnderscore = withoutPrefix.lastIndexOf('_');
-        tokenUserId = lastUnderscore !== -1 ? withoutPrefix.substring(0, lastUnderscore) : withoutPrefix;
-      }
-
-      let customer = null;
-      if (tokenUserId) {
-        customer = customers.find(c => String(c.id) === String(tokenUserId));
-      }
-      if (!customer && payload.id) {
-        customer = customers.find(c => String(c.id) === String(payload.id));
-      }
-      if (!customer && payload.email) {
-        customer = customers.find(c => c.email && c.email.toLowerCase() === payload.email.toLowerCase());
-      }
+      const identity = await getAuthenticatedIdentity(req);
+      if (!identity) return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      let customer = customers.find(c => String(c.id) === identity.id || (c.email && c.email.toLowerCase() === identity.email));
       if (!customer && db && db.isConfigured) {
-        try {
-          if (tokenUserId) customer = await db.customers.getById(tokenUserId);
-          if (!customer && payload.id) customer = await db.customers.getById(payload.id);
-          if (!customer && payload.email) customer = await db.customers.getByEmail(payload.email);
-        } catch (e) {}
+        try { customer = await db.customers.getById(identity.id) || await db.customers.getByEmail(identity.email); } catch (e) {}
       }
-      if (!customer && token && !token.startsWith('tok_') && supabase.isConfigured) {
-        try {
-          const supaUser = await supabase.auth.getUser(token);
-          if (supaUser && supaUser.id) {
-            customer = customers.find(c => c.id === supaUser.id || (c.email && c.email.toLowerCase() === supaUser.email?.toLowerCase()));
-          }
-        } catch (e) {}
+      if (!customer && supabase.isConfigured) {
+        try { customer = await supabase.profiles.get(identity.id, identity.email); } catch (e) {}
       }
-
-      if (!customer && payload.email) {
-        customer = {
-          id: payload.id || payload.userId || `CUST-${Date.now()}`,
-          name: payload.name || payload.email.split('@')[0],
-          email: payload.email.toLowerCase(),
-          phone: payload.phone || '',
-          city: payload.city || '',
-          state: payload.state || '',
-          address: payload.address || '',
-          locality: payload.locality || '',
-          pincode: payload.pincode || '',
-          country: payload.country || 'India',
-          ordersCount: 0,
-          totalSpent: 0,
-          status: 'Active',
-          wishlist: []
-        };
-        customers.unshift(customer);
-      }
-
-      if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found or not authenticated' });
+      if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
 
       if (payload.name) customer.name = payload.name;
       if (payload.phone) customer.phone = payload.phone;
@@ -4062,7 +4354,7 @@ async function appHandler(req, res) {
       if (payload.locality !== undefined) customer.locality = payload.locality;
       if (payload.pincode !== undefined) customer.pincode = payload.pincode;
       if (payload.country !== undefined) customer.country = payload.country || 'India';
-      if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
+      if (payload.wishlist !== undefined) customer.wishlist = Array.isArray(payload.wishlist) ? payload.wishlist.slice(0, 500) : customer.wishlist;
 
       writeJsonFile('customers.json', customers);
 
@@ -4101,13 +4393,16 @@ async function appHandler(req, res) {
 
       const safeUser = { ...customer };
       delete safeUser.password;
+      delete safeUser.passwordHash;
+      delete safeUser.password_hash;
       return sendJson(res, 200, { success: true, user: safeUser });
     }
 
     // GET /api/auth/wishlist
     if (authRoute === 'wishlist' && req.method === 'GET') {
-      const userId = parsedUrl.searchParams.get('userId');
-      if (!userId) return sendJson(res, 400, { success: false, message: 'User ID required' });
+      const identity = await getAuthenticatedIdentity(req);
+      if (!identity) return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      const userId = identity.id;
 
       let list = [];
       const customer = customers.find(c => String(c.id) === String(userId));
@@ -4167,34 +4462,21 @@ async function appHandler(req, res) {
       const order = orders.find(o => String(o.id) === String(orderId));
       if (!order) return sendJson(res, 404, { success: false, message: 'Order not found' });
 
-      // If Cashfree API credentials are set, verify against Cashfree REST API
-      const cfAppId = process.env.CASHFREE_APP_ID;
-      const cfSecret = process.env.CASHFREE_SECRET_KEY;
-      if (cfAppId && cfSecret) {
-        try {
-          const cfEnv = (process.env.CASHFREE_ENV || 'TEST').toUpperCase();
-          const baseUrl = cfEnv === 'PROD' || cfEnv === 'PRODUCTION' ? 'https://api.cashfree.com/pg' : 'https://sandbox.cashfree.com/pg';
-          const cfRes = await fetch(`${baseUrl}/orders/${orderId}/payments`, {
-            headers: {
-              'x-client-id': cfAppId,
-              'x-client-secret': cfSecret,
-              'x-api-version': '2023-08-01'
-            }
-          });
-          const payments = await cfRes.json();
-          const successfulPayment = Array.isArray(payments) && payments.find(p => p.payment_status === 'SUCCESS');
-          if (!successfulPayment) {
-            return sendJson(res, 400, { success: false, message: 'Payment verification failed: No successful gateway transaction found.' });
-          }
-          order.cashfreePaymentId = successfulPayment.cf_payment_id || payload.cashfreePaymentId;
-        } catch (cfErr) {
-          console.warn('Cashfree online verification warning:', cfErr.message);
-        }
-      } else {
-        order.cashfreePaymentId = payload.cashfreePaymentId || `cf_pay_${Date.now()}`;
+      let verification;
+      try {
+        verification = await verifyCashfreeOrder(order);
+      } catch (_) {
+        return sendJson(res, 502, { success: false, message: 'Payment verification is temporarily unavailable.' });
+      }
+      if (!verification.configured) {
+        return sendJson(res, 503, { success: false, message: 'Online payments are not configured.' });
+      }
+      if (!verification.verified) {
+        return sendJson(res, 400, { success: false, message: 'Payment verification failed.' });
       }
 
       order.paymentStatus = 'Paid';
+      order.cashfreePaymentId = verification.paymentId;
       order.updatedAt = new Date().toISOString();
 
       writeJsonFile('orders.json', orders);
@@ -4282,8 +4564,7 @@ async function appHandler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const subs = await getUnifiedSubscribers();
-      return sendJson(res, 200, { success: true, count: subs.length, subscribers: subs });
+      return sendJson(res, 405, { success: false, message: 'Subscriber listing is restricted to administrators.' });
     }
   }
 
@@ -4390,9 +4671,19 @@ async function appHandler(req, res) {
     let customers = readJsonFile('customers.json', []);
     let customer = customers.find(c => String(c.id) === String(custId) || (emailQuery && c.email && c.email.toLowerCase() === emailQuery));
 
+    if (!security.isAdminAuthorized(req)) {
+      const identity = await getAuthenticatedIdentity(req);
+      const matchesIdentity = identity && customer && (
+        String(customer.id) === identity.id ||
+        String(customer.email || '').toLowerCase() === identity.email
+      );
+      if (!matchesIdentity) return sendJson(res, 404, { success: false, message: 'Customer not found' });
+    }
+
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      if (!customer) {
+      if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
+      /*
         customer = {
           id: custId,
           name: payload.name || 'Storefront Member',
@@ -4412,6 +4703,7 @@ async function appHandler(req, res) {
         };
         customers.unshift(customer);
       }
+      */
 
       if (payload.wishlist !== undefined) customer.wishlist = payload.wishlist;
       if (payload.cart !== undefined) customer.cart = payload.cart;
@@ -4462,6 +4754,8 @@ async function appHandler(req, res) {
 
       const safeUser = { ...customer };
       delete safeUser.password;
+      delete safeUser.passwordHash;
+      delete safeUser.password_hash;
       return sendJson(res, 200, { success: true, customer: safeUser, user: safeUser });
     }
 
@@ -4495,6 +4789,8 @@ async function appHandler(req, res) {
       if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
       const safeUser = { ...customer };
       delete safeUser.password;
+      delete safeUser.passwordHash;
+      delete safeUser.password_hash;
       return sendJson(res, 200, { success: true, customer: safeUser, user: safeUser });
     }
   }
@@ -4503,13 +4799,11 @@ async function appHandler(req, res) {
   if (pathname === '/api/wishlist/sync' || pathname === '/api/wishlist') {
     if (req.method === 'POST' || req.method === 'PUT') {
       const payload = await parseBody(req);
-      const userId = payload.userId || payload.user_id || payload.id;
-      const email = (payload.email || '').toLowerCase().trim();
-      const wishlist = Array.isArray(payload.wishlist) ? payload.wishlist : [];
-
-      if (!userId && !email) {
-        return sendJson(res, 400, { success: false, message: 'User ID or email required for wishlist sync' });
-      }
+      const identity = await getAuthenticatedIdentity(req);
+      if (!identity) return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      const userId = identity.id;
+      const email = identity.email;
+      const wishlist = Array.isArray(payload.wishlist) ? payload.wishlist.slice(0, 500) : [];
 
       const lookupId = userId || email;
 
@@ -4543,11 +4837,10 @@ async function appHandler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const userId = parsedUrl.searchParams.get('userId');
-      const email = parsedUrl.searchParams.get('email');
-      if (!userId && !email) {
-        return sendJson(res, 400, { success: false, message: 'User ID or email required' });
-      }
+      const identity = await getAuthenticatedIdentity(req);
+      if (!identity) return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      const userId = identity.id;
+      const email = identity.email;
 
       const lookupId = userId || email;
       let list = [];
@@ -4572,13 +4865,11 @@ async function appHandler(req, res) {
   if (pathname === '/api/cart/sync' || pathname === '/api/cart') {
     if (req.method === 'POST' || req.method === 'PUT') {
       const payload = await parseBody(req);
-      const userId = payload.userId || payload.user_id || payload.id;
-      const email = (payload.email || '').toLowerCase().trim();
-      const cart = Array.isArray(payload.cart) ? payload.cart : [];
-
-      if (!userId && !email) {
-        return sendJson(res, 400, { success: false, message: 'User ID or email required for cart sync' });
-      }
+      const identity = await getAuthenticatedIdentity(req);
+      if (!identity) return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      const userId = identity.id;
+      const email = identity.email;
+      const cart = Array.isArray(payload.cart) ? payload.cart.slice(0, 100) : [];
 
       const lookupId = userId || email;
 
@@ -4612,11 +4903,10 @@ async function appHandler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const userId = parsedUrl.searchParams.get('userId');
-      const email = parsedUrl.searchParams.get('email');
-      if (!userId && !email) {
-        return sendJson(res, 400, { success: false, message: 'User ID or email required' });
-      }
+      const identity = await getAuthenticatedIdentity(req);
+      if (!identity) return sendJson(res, 401, { success: false, message: 'Not authenticated' });
+      const userId = identity.id;
+      const email = identity.email;
 
       const lookupId = userId || email;
       let cart = [];
@@ -4643,10 +4933,7 @@ async function appHandler(req, res) {
   // Serve Homepage
   if (pathname === '/' || pathname === '/index.html') {
     const indexPath = path.join(PUBLIC_DIR, 'index.html');
-    res.writeHead(200, {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Access-Control-Allow-Origin': '*'
-    });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     return fs.createReadStream(indexPath).pipe(res);
   }
 
@@ -4654,7 +4941,7 @@ async function appHandler(req, res) {
   if (pathname === '/checkout' || pathname === '/checkout/' || pathname === '/checkout.html') {
     const chkPath = path.join(PUBLIC_DIR, 'checkout.html');
     if (fs.existsSync(chkPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return fs.createReadStream(chkPath).pipe(res);
     }
   }
@@ -4663,7 +4950,7 @@ async function appHandler(req, res) {
   if (pathname === '/account' || pathname === '/account/' || pathname === '/account.html') {
     const accPath = path.join(PUBLIC_DIR, 'account.html');
     if (fs.existsSync(accPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return fs.createReadStream(accPath).pipe(res);
     }
   }
@@ -4672,7 +4959,7 @@ async function appHandler(req, res) {
   if (pathname === '/login' || pathname === '/login/' || pathname === '/login.html') {
     const loginPath = path.join(PUBLIC_DIR, 'login.html');
     if (fs.existsSync(loginPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return fs.createReadStream(loginPath).pipe(res);
     }
   }
@@ -4681,7 +4968,7 @@ async function appHandler(req, res) {
   if (pathname === '/order-success' || pathname === '/order-success/' || pathname === '/order-success.html') {
     const succPath = path.join(PUBLIC_DIR, 'order-success.html');
     if (fs.existsSync(succPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return fs.createReadStream(succPath).pipe(res);
     }
   }
@@ -4691,8 +4978,7 @@ async function appHandler(req, res) {
     const colPath = path.join(PUBLIC_DIR, 'collections.html');
     if (fs.existsSync(colPath)) {
       res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'text/html; charset=utf-8'
       });
       return fs.createReadStream(colPath).pipe(res);
     }
@@ -4703,8 +4989,7 @@ async function appHandler(req, res) {
     const searchPage = path.join(PUBLIC_DIR, 'collections.html');
     if (fs.existsSync(searchPage)) {
       res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'text/html; charset=utf-8'
       });
       return fs.createReadStream(searchPage).pipe(res);
     }
@@ -4768,8 +5053,7 @@ async function appHandler(req, res) {
     const pageFile = path.join(PUBLIC_DIR, 'pages', pageFileName);
     if (fs.existsSync(pageFile)) {
       res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'text/html; charset=utf-8'
       });
       return fs.createReadStream(pageFile).pipe(res);
     }
@@ -4781,8 +5065,7 @@ async function appHandler(req, res) {
     const pageFile = path.join(PUBLIC_DIR, 'pages', pName);
     if (fs.existsSync(pageFile)) {
       res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'text/html; charset=utf-8'
       });
       return fs.createReadStream(pageFile).pipe(res);
     }
@@ -4793,8 +5076,7 @@ async function appHandler(req, res) {
     const prodPath = path.join(PUBLIC_DIR, 'product.html');
     if (fs.existsSync(prodPath)) {
       res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'text/html; charset=utf-8'
       });
       return fs.createReadStream(prodPath).pipe(res);
     }
@@ -4809,7 +5091,11 @@ async function appHandler(req, res) {
   }
 
   // Check local files
-  let localPath = path.join(PUBLIC_DIR, pathname);
+  let localPath = path.resolve(PUBLIC_DIR, `.${pathname}`);
+  const publicRoot = path.resolve(PUBLIC_DIR) + path.sep;
+  if (!localPath.startsWith(publicRoot)) {
+    return sendJson(res, 403, { success: false, message: 'Forbidden' });
+  }
   if (fs.existsSync(localPath) && fs.statSync(localPath).isFile()) {
     const ext = path.extname(localPath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
@@ -4819,8 +5105,7 @@ async function appHandler(req, res) {
     }
 
     res.writeHead(200, {
-      'Content-Type': contentType,
-      'Access-Control-Allow-Origin': '*'
+      'Content-Type': contentType
     });
     return fs.createReadStream(localPath).pipe(res);
   }
@@ -4874,7 +5159,9 @@ async function appHandler(req, res) {
     return sendJson(res, statusCode, {
       success: false,
       error: isPayloadTooLarge ? 'Payload Too Large' : 'Internal Server Error',
-      message: err.message
+      message: isPayloadTooLarge || err.message === 'Malformed JSON request body'
+        ? err.message
+        : 'An unexpected server error occurred.'
     });
   }
 }

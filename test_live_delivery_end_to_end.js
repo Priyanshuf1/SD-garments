@@ -6,7 +6,7 @@
 const assert = require('assert');
 
 const BASE_URL = 'http://alleyrich.com';
-const ADMIN_KEY = 'genrage_super_admin_secret_key_2026';
+const ADMIN_KEY = process.env.ADMIN_SECRET_KEY || 'test-admin-secret-key-not-for-production-32';
 
 async function testDeliverySystem() {
   console.log('====================================================');
@@ -134,7 +134,7 @@ async function testDeliverySystem() {
   const labelCheck = await fetch(labelUrl, {
     method: 'HEAD',
     headers: {
-      'Authorization': 'Token 5b89b0734b0d4daa1655ea178e432c33f1964d80'
+      'Authorization': 'Token test-delhivery-token-not-for-production'
     }
   });
   console.log(`Delhivery Official Label Generator HTTP Status: ${labelCheck.status}`);
