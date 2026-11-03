@@ -681,7 +681,19 @@ async function getAllProducts() {
     try {
       const awsProducts = await db.products.getAll();
       if (Array.isArray(awsProducts) && awsProducts.length > 0) {
-        const filtered = filterOutGiftCards(awsProducts);
+        const localList = getMemoryProducts();
+        let fullList = awsProducts;
+        if (localList && localList.length > awsProducts.length) {
+          const existingHandles = new Set(awsProducts.map(p => p.handle));
+          const merged = [...awsProducts];
+          for (const lp of localList) {
+            if (!existingHandles.has(lp.handle)) {
+              merged.push(lp);
+            }
+          }
+          fullList = merged;
+        }
+        const filtered = filterOutGiftCards(fullList);
         memoryProducts = filtered;
         memoryProductsLastFetch = Date.now();
         return filtered;
@@ -2143,6 +2155,8 @@ async function handleCreateOrder(req, res, isCheckout = false) {
       ? Number(discountRule.value || 0)
       : subtotal * (Number(discountRule.value || 0) / 100);
     discount = Math.min(discount, Number(discountRule.maxDiscount || discount));
+    discountRule.usageCount = (Number(discountRule.usageCount) || 0) + 1;
+    writeJsonFile('discounts.json', discounts);
   }
   discount = Math.max(0, Math.min(subtotal, Number(discount.toFixed(2))));
   const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING_FEE;
@@ -4733,12 +4747,123 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // Storefront Checkout & Payment APIs (Cashfree strictly here)
   // -------------------------------------------------------------
+  if ((pathname === '/api/discounts/validate' || pathname === '/api/coupons/validate') && req.method === 'POST') {
+    const payload = await parseBody(req);
+    const code = cleanText(payload.code || payload.discountCode || payload.couponCode || '', 50).toUpperCase();
+    const subtotal = Math.max(0, Number(payload.subtotal) || 0);
+
+    if (!code) {
+      return sendJson(res, 400, { success: false, valid: false, message: 'Please enter a discount code.' });
+    }
+
+    const discounts = readJsonFile('discounts.json', []);
+    const rule = discounts.find(d => d.isActive !== false && String(d.code || '').toUpperCase() === code);
+
+    if (!rule) {
+      return sendJson(res, 404, { success: false, valid: false, message: `Coupon code '${code}' is invalid or expired.` });
+    }
+
+    if (rule.usageLimit && Number(rule.usageCount || 0) >= Number(rule.usageLimit)) {
+      return sendJson(res, 400, { success: false, valid: false, message: `Coupon '${code}' has reached its maximum usage limit.` });
+    }
+
+    const minVal = Number(rule.minOrderValue || 0);
+    if (subtotal < minVal) {
+      return sendJson(res, 400, {
+        success: false,
+        valid: false,
+        message: `Coupon '${code}' requires a minimum order subtotal of ₹${minVal.toLocaleString('en-IN')}.`
+      });
+    }
+
+    let discountAmount = 0;
+    if (rule.type === 'fixed') {
+      discountAmount = Number(rule.value || 0);
+    } else {
+      discountAmount = subtotal * (Number(rule.value || 0) / 100);
+    }
+
+    if (rule.maxDiscount) {
+      discountAmount = Math.min(discountAmount, Number(rule.maxDiscount));
+    }
+
+    discountAmount = Math.max(0, Math.min(subtotal, Math.round(discountAmount)));
+
+    return sendJson(res, 200, {
+      success: true,
+      valid: true,
+      discountAmount,
+      discountRule: {
+        code: rule.code,
+        type: rule.type,
+        value: rule.value,
+        description: rule.description || `${rule.value}${rule.type === 'fixed' ? ' off' : '% off'}`
+      }
+    });
+  }
+
   if (pathname === '/api/webhooks/cashfree' && req.method === 'POST') {
     return await handleCashfreeWebhook(req, res);
   }
 
   if (pathname.startsWith('/api/checkout/')) {
     const checkoutRoute = pathname.replace('/api/checkout/', '');
+
+    // POST /api/checkout/validate-discount or /api/discounts/validate
+    if ((checkoutRoute === 'validate-discount' || checkoutRoute === 'validate-coupon') && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const code = cleanText(payload.code || payload.discountCode || payload.couponCode || '', 50).toUpperCase();
+      const subtotal = Math.max(0, Number(payload.subtotal) || 0);
+
+      if (!code) {
+        return sendJson(res, 400, { success: false, valid: false, message: 'Please enter a discount code.' });
+      }
+
+      const discounts = readJsonFile('discounts.json', []);
+      const rule = discounts.find(d => d.isActive !== false && String(d.code || '').toUpperCase() === code);
+
+      if (!rule) {
+        return sendJson(res, 404, { success: false, valid: false, message: `Coupon code '${code}' is invalid or expired.` });
+      }
+
+      if (rule.usageLimit && Number(rule.usageCount || 0) >= Number(rule.usageLimit)) {
+        return sendJson(res, 400, { success: false, valid: false, message: `Coupon '${code}' has reached its maximum usage limit.` });
+      }
+
+      const minVal = Number(rule.minOrderValue || 0);
+      if (subtotal < minVal) {
+        return sendJson(res, 400, {
+          success: false,
+          valid: false,
+          message: `Coupon '${code}' requires a minimum order subtotal of ₹${minVal.toLocaleString('en-IN')}.`
+        });
+      }
+
+      let discountAmount = 0;
+      if (rule.type === 'fixed') {
+        discountAmount = Number(rule.value || 0);
+      } else {
+        discountAmount = subtotal * (Number(rule.value || 0) / 100);
+      }
+
+      if (rule.maxDiscount) {
+        discountAmount = Math.min(discountAmount, Number(rule.maxDiscount));
+      }
+
+      discountAmount = Math.max(0, Math.min(subtotal, Math.round(discountAmount)));
+
+      return sendJson(res, 200, {
+        success: true,
+        valid: true,
+        discountAmount,
+        discountRule: {
+          code: rule.code,
+          type: rule.type,
+          value: rule.value,
+          description: rule.description || `${rule.value}${rule.type === 'fixed' ? ' off' : '% off'}`
+        }
+      });
+    }
 
     // POST /api/checkout/create-order
     if (checkoutRoute === 'create-order' && req.method === 'POST') {

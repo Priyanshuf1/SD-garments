@@ -1,5 +1,44 @@
 [
   {
+    "id": "dsc_welcome",
+    "code": "WELCOME",
+    "type": "percentage",
+    "value": 10,
+    "minOrderValue": 499,
+    "maxDiscount": 500,
+    "usageCount": 42,
+    "usageLimit": 10000,
+    "isActive": true,
+    "description": "Welcome drop: 10% off on first purchase",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "id": "dsc_allyrich10",
+    "code": "ALLYRICH10",
+    "type": "percentage",
+    "value": 10,
+    "minOrderValue": 499,
+    "maxDiscount": 500,
+    "usageCount": 8,
+    "usageLimit": 10000,
+    "isActive": true,
+    "description": "10% off on all streetwear orders above ₹499",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "id": "dsc_alleyrich10",
+    "code": "ALLEYRICH10",
+    "type": "percentage",
+    "value": 10,
+    "minOrderValue": 499,
+    "maxDiscount": 500,
+    "usageCount": 15,
+    "usageLimit": 10000,
+    "isActive": true,
+    "description": "10% off on all streetwear orders above ₹499",
+    "createdAt": "2026-01-01T00:00:00Z"
+  },
+  {
     "id": "dsc_1",
     "code": "RAGE10",
     "type": "percentage",

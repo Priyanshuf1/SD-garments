@@ -1,6 +1,60 @@
 {
   "products": [
     {
+      "id": "1793648108932",
+      "handle": "men-s-olive-green-cotton-casual-full-sleeve-shirt-with-chest-pocket",
+      "title": "Men's Olive Green Cotton Casual Full Sleeve Shirt with Chest Pocket",
+      "body_html": "<p>Premium combed cotton casual full sleeve shirt in olive green. Features a tailored spread collar, chest pocket with subtle detailing, and roll-up sleeves designed for versatile everyday and smart casual wear.</p>",
+      "vendor": "ALLEYRICH",
+      "category": "Top Wear",
+      "product_type": "Top Wear",
+      "department": "Men's Wear",
+      "sub_category": "Shirts",
+      "homepage_section": "just_dropped",
+      "tags": [
+        "Men's Shirt",
+        "Olive Green Shirt",
+        "Casual Shirt",
+        "Full Sleeve Shirt",
+        "Cotton Shirt",
+        "Men's Fashion",
+        "Casual Wear",
+        "Button Down Shirt",
+        "Solid Shirt",
+        "Green Shirt",
+        "Smart Casual",
+        "Regular Fit Shirt",
+        "just-dropped",
+        "featured"
+      ],
+      "variants": [
+        {
+          "id": 1793648108933,
+          "sku": "GR-3642",
+          "price": "1199",
+          "compare_at_price": "2000",
+          "title": "Default",
+          "available": true,
+          "inventory_quantity": 9
+        }
+      ],
+      "images": [
+        {
+          "id": 1,
+          "src": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80",
+          "position": 1
+        },
+        {
+          "id": 2,
+          "src": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1200&q=80",
+          "position": 2
+        }
+      ],
+      "published_at": "2026-11-02T19:35:08.932Z",
+      "created_at": "2026-11-02T19:35:08.934Z",
+      "updated_at": "2026-11-02T19:35:08.934Z"
+    },
+    {
       "id": 1792792091289,
       "title": "RAW ESSENTIALS MINIMAL BALLOON PANT",
       "handle": "raw-essentials-minimal-balloon-pant",

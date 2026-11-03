@@ -357,6 +357,8 @@
   <script>
     let checkoutItems = [];
     let discountApplied = false;
+    let appliedDiscountAmount = 0;
+    let appliedDiscountCode = "";
     let selectedPayment = 'cashfree';
     let cashfreePaymentSessionId = null;
     let currentCreatedOrderId = null;
@@ -486,13 +488,13 @@
 
       let discount = 0;
       if (discountApplied) {
-        discount = Math.round(subtotal * 0.1);
+        discount = Math.max(0, Math.min(subtotal, appliedDiscountAmount));
       }
 
       const total = Math.max(0, subtotal - discount);
 
       document.getElementById('chk-subtotal').textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
-      if (discountApplied) {
+      if (discountApplied && discount > 0) {
         document.getElementById('row-discount').style.display = 'flex';
         document.getElementById('chk-discount').textContent = `- Rs. ${discount.toLocaleString('en-IN')}`;
       } else {
@@ -501,14 +503,71 @@
       document.getElementById('chk-total').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
     }
 
-    function applyPromo() {
-      const code = document.getElementById('discount-code').value.trim().toUpperCase();
-      if (code === 'ALLEYRICH10' || code === 'ALLYRICH10' || code === 'ALLEY RICH10' || code === 'ALLY RICH10' || code === 'STREET10' || code === 'WELCOME') {
-        discountApplied = true;
-        document.getElementById('discount-applied-msg').style.display = 'block';
-        renderSummary();
-      } else {
-        alert('Invalid discount code. Try ALLEYRICH10 for 10% off!');
+    async function applyPromo() {
+      const codeInput = document.getElementById('discount-code');
+      const code = (codeInput ? codeInput.value : '').trim().toUpperCase();
+      const msgEl = document.getElementById('discount-applied-msg');
+
+      if (!code) {
+        if (msgEl) {
+          msgEl.style.display = 'block';
+          msgEl.style.color = '#e50914';
+          msgEl.textContent = 'Please enter a discount code.';
+        }
+        return;
+      }
+
+      let subtotal = 0;
+      checkoutItems.forEach(i => subtotal += Number(i.price || i.variants?.[0]?.price || 1899) * (i.quantity || 1));
+
+      try {
+        const res = await fetch('/api/discounts/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, subtotal })
+        });
+        const data = await res.json();
+
+        if (data.success && data.valid) {
+          discountApplied = true;
+          appliedDiscountAmount = Number(data.discountAmount || 0);
+          appliedDiscountCode = data.discountRule?.code || code;
+          if (msgEl) {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#2e7d32';
+            msgEl.textContent = `✓ Code ${appliedDiscountCode} applied! Saved ₹${appliedDiscountAmount.toLocaleString('en-IN')}`;
+          }
+          renderSummary();
+        } else {
+          discountApplied = false;
+          appliedDiscountAmount = 0;
+          appliedDiscountCode = '';
+          if (msgEl) {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#e50914';
+            msgEl.textContent = data.message || 'Invalid or expired coupon code.';
+          }
+          renderSummary();
+        }
+      } catch (err) {
+        // Fallback for offline/network latency
+        if (code === 'ALLEYRICH10' || code === 'ALLYRICH10' || code === 'STREET10' || code === 'WELCOME') {
+          discountApplied = true;
+          appliedDiscountAmount = Math.round(subtotal * 0.1);
+          appliedDiscountCode = code;
+          if (msgEl) {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#2e7d32';
+            msgEl.textContent = `✓ Code ${code} applied! 10% discount subtracted.`;
+          }
+          renderSummary();
+        } else {
+          if (msgEl) {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#e50914';
+            msgEl.textContent = 'Could not validate promo code. Please try again.';
+          }
+        }
       }
     }
 
@@ -533,7 +592,7 @@
 
       let subtotal = 0;
       checkoutItems.forEach(i => subtotal += Number(i.price || i.variants?.[0]?.price || 1899) * (i.quantity || 1));
-      const discount = discountApplied ? Math.round(subtotal * 0.1) : 0;
+      const discount = discountApplied ? appliedDiscountAmount : 0;
       const total = Math.max(0, subtotal - discount);
 
       const orderPayload = {
@@ -548,6 +607,7 @@
         })),
         subtotal,
         discount,
+        discountCode: discountApplied ? appliedDiscountCode : null,
         total,
         paymentMethod: selectedPayment === 'cashfree' ? 'Cashfree 1-Click UPI' : 'Cash on Delivery (COD)'
       };

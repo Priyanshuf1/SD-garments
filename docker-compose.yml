@@ -54,6 +54,8 @@ services:
     networks:
       - alleyrich-network
     volumes:
+      - ./data:/usr/src/app/data
+      - ./assets/uploads:/usr/src/app/assets/uploads
       - ./data:/app/data
       - ./assets/uploads:/app/assets/uploads
 

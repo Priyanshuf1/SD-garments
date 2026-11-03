@@ -123,17 +123,20 @@ jobs:
           envs: GEMINI_API_KEY,N8N_ORDER_WEBHOOK_URL,RESEND_API_KEY,BREVO_API_KEY,DB_NAME,DB_USER,DB_PASSWORD,CASHFREE_APP_ID,CASHFREE_SECRET_KEY,ADMIN_SECRET_KEY,ADMIN_USERNAME,ADMIN_PASSWORD,ADMIN_2FA_SECRET,AUTH_SESSION_SECRET,DELHIVERY_API_TOKEN
           script: |
             cd ~/SD-garments
-            mkdir -p ~/SD-garments-data-backup
-            # Backup transactional user records only (never overwrite catalog products/collections)
+            mkdir -p ~/SD-garments-data-backup ~/SD-garments-uploads-backup assets/uploads
+            # Backup transactional user records & uploaded media
             for f in orders.json customers.json subscribers.json reviews.json discounts.json; do
               [ -f "data/$f" ] && cp -f "data/$f" ~/SD-garments-data-backup/"$f" 2>/dev/null || true
             done
+            cp -rn assets/uploads/* ~/SD-garments-uploads-backup/ 2>/dev/null || true
             git fetch origin main
             git reset --hard origin/main
-            # Restore transactional user records only
+            # Restore transactional user records & uploaded media
             for f in orders.json customers.json subscribers.json reviews.json discounts.json; do
               [ -f ~/SD-garments-data-backup/"$f" ] && cp -f ~/SD-garments-data-backup/"$f" "data/$f" 2>/dev/null || true
             done
+            mkdir -p assets/uploads
+            cp -rn ~/SD-garments-uploads-backup/* assets/uploads/ 2>/dev/null || true
             [ -f .env ] || touch .env
             write_env() { sed -i "/^$1=/d" .env; printf '%s=%s\n' "$1" "$2" >> .env; }
             if [ -n "$GEMINI_API_KEY" ]; then

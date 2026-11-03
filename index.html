@@ -6964,7 +6964,8 @@ first.parentNode.insertBefore(script, first);
         if (foundInTarget) return;
 
         // If not already present in the section, prepend it using Zara minimalist card layout
-        const primaryImg = p.images?.[0]?.src || p.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+        const fallbackImg = 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+        const primaryImg = p.images?.[0]?.src || p.image || fallbackImg;
         const secondaryImg = p.images?.[1]?.src || p.hoverImage || '';
         const rawPrice = Number(p.variants?.[0]?.price || p.price || 1000);
         const rawCompare = p.variants?.[0]?.compare_at_price ? Number(p.variants[0].compare_at_price) : (p.compare_at_price ? Number(p.compare_at_price) : 0);
@@ -6979,11 +6980,13 @@ first.parentNode.insertBefore(script, first);
         card.setAttribute('handle', p.handle);
         card.style.opacity = '1';
         card.style.visibility = 'visible';
+        card.style.scrollSnapAlign = 'start';
+        card.style.flexShrink = '0';
         card.innerHTML = `
           <div class="product-card__figure">
             <a href="/products/${p.handle}" class="product-card__media" draggable="false" data-instant>
-              <img src="${primaryImg}" alt="${p.title}" decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall">
-              ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary">` : ''}
+              <img src="${primaryImg}" alt="${p.title}" decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall" onerror="this.onerror=null;this.src='${fallbackImg}';">
+              ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary" onerror="this.style.display='none';">` : ''}
             </a>
           </div>
           <div class="product-card__info empty:hidden">
@@ -7005,6 +7008,9 @@ first.parentNode.insertBefore(script, first);
 
         targetContainer.prepend(card);
       });
+
+      // Trigger carousel layout refresh for dynamically prepended cards
+      window.dispatchEvent(new Event('resize'));
 
       // Synchronize wishlist buttons across all newly added and existing cards
       if (window.WishlistEngine) {
