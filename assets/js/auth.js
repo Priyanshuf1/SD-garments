@@ -12,6 +12,10 @@ const AuthEngine = {
   USER_KEY: 'genrage_user',
   TOKEN_KEY: 'genrage_token',
 
+  escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  },
+
   getUser() {
     try {
       const raw = localStorage.getItem(this.USER_KEY);
@@ -215,9 +219,9 @@ const AuthEngine = {
         el.innerHTML = `
           <div style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit; font-weight:700; font-size:0.8rem; letter-spacing:0.04em; text-transform:uppercase; max-width:130px; overflow:hidden;">
             <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#111; color:#fff; font-size:0.75rem; font-weight:800; flex-shrink:0;">
-              ${firstName.charAt(0).toUpperCase()}
+               ${this.escapeHtml(firstName.charAt(0).toUpperCase())}
             </span>
-            <span class="sm-max:hidden" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; display:inline-block;">${firstName}</span>
+             <span class="sm-max:hidden" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; display:inline-block;">${this.escapeHtml(firstName)}</span>
           </div>
         `;
         el.onclick = (e) => {

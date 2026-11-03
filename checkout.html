@@ -360,6 +360,7 @@
     let selectedPayment = 'cashfree';
     let cashfreePaymentSessionId = null;
     let currentCreatedOrderId = null;
+    let checkoutVerificationToken = null;
 
     function selectPayment(mode) {
       selectedPayment = mode;
@@ -582,6 +583,7 @@
         if (data.success && data.order) {
           currentCreatedOrderId = data.order.id;
           cashfreePaymentSessionId = data.order.paymentSessionId || null;
+          checkoutVerificationToken = data.order.checkoutToken || null;
 
           if (selectedPayment === 'cashfree') {
             // Show Cashfree payment modal
@@ -617,6 +619,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             orderId: currentCreatedOrderId,
+            checkoutToken: checkoutVerificationToken
           })
         });
         const data = await res.json();

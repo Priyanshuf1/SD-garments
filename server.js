@@ -52,6 +52,8 @@ const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = __dirname;
 const DATA_DIR = path.join(PUBLIC_DIR, 'data');
 const otpCache = new Map();
+const cashfreeWebhookEvents = new Map();
+let orderMutationQueue = Promise.resolve();
 const FREE_SHIPPING_THRESHOLD = 1999;
 const DEFAULT_SHIPPING_FEE = Number.isFinite(Number(process.env.SHIPPING_FEE_INR)) ? Math.max(0, Number(process.env.SHIPPING_FEE_INR)) : 99;
 const CASHFREE_API_VERSION = '2023-08-01';
@@ -102,6 +104,25 @@ function cleanText(value, maxLength = 200) {
   return String(value ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, maxLength);
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[character]));
+}
+
+function safeHttpUrl(value, fallback = 'https://alleyrich.com/collections.html') {
+  try {
+    const parsed = new URL(String(value || fallback));
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.toString() : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 function isValidEmail(email) {
   return /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,63}$/.test(email);
 }
@@ -129,6 +150,145 @@ function orderBelongsToIdentity(order, identity) {
   const email = String(order.customer?.email || order.email || order.guest_email || '').toLowerCase();
   const id = String(order.userId || order.user_id || order.customerId || '');
   return Boolean((identity.email && email === identity.email) || (identity.id && id === identity.id));
+}
+
+function hashSecret(value) {
+  return crypto.createHash('sha256').update(String(value)).digest('hex');
+}
+
+function publicCustomer(customer) {
+  if (!customer || typeof customer !== 'object') return customer;
+  const safe = { ...customer };
+  delete safe.password;
+  delete safe.passwordHash;
+  delete safe.password_hash;
+  return safe;
+}
+
+function customerOrderView(order) {
+  if (!order || typeof order !== 'object') return order;
+  const safe = { ...order, customer: publicCustomer(order.customer) };
+  delete safe.checkoutTokenHash;
+  delete safe.cashfreeOrderId;
+  delete safe.cashfreePaymentId;
+  delete safe.inventoryReservedAt;
+  delete safe.inventoryReleasedAt;
+  return safe;
+}
+
+function isCheckoutTokenValid(order, token) {
+  if (!order?.checkoutTokenHash || !token) return false;
+  return constantTimeStringEquals(hashSecret(token), order.checkoutTokenHash);
+}
+
+function serializeOrderMutation(work) {
+  const result = orderMutationQueue.then(work, work);
+  orderMutationQueue = result.catch(() => {});
+  return result;
+}
+
+async function reserveLocalInventory(items) {
+  const data = readJsonFile('products.json', { products: [] });
+  const products = Array.isArray(data) ? data : (data.products || []);
+  const changed = [];
+  for (const item of items) {
+    const product = products.find(p => String(p.id) === String(item.id) || p.handle === item.handle);
+    const variant = product?.variants?.find(v => String(v.id) === String(item.variantId)) || product?.variants?.[0];
+    if (!variant || variant.available === false || Number(variant.inventory_quantity ?? 0) < item.quantity) {
+      for (const change of changed) change.variant.inventory_quantity += change.quantity;
+      return false;
+    }
+    variant.inventory_quantity = Number(variant.inventory_quantity ?? 0) - item.quantity;
+    if (variant.inventory_quantity <= 0) variant.available = false;
+    changed.push({ variant, quantity: item.quantity });
+  }
+  if (!writeJsonFile('products.json', { products })) return false;
+  memoryProducts = filterOutGiftCards(products);
+  memoryProductsLastFetch = Date.now();
+  return true;
+}
+
+async function releaseLocalInventory(items) {
+  const data = readJsonFile('products.json', { products: [] });
+  const products = Array.isArray(data) ? data : (data.products || []);
+  for (const item of items || []) {
+    const product = products.find(p => String(p.id) === String(item.id) || p.handle === item.handle);
+    const variant = product?.variants?.find(v => String(v.id) === String(item.variantId)) || product?.variants?.[0];
+    if (variant) {
+      variant.inventory_quantity = Number(variant.inventory_quantity || 0) + Number(item.quantity || 0);
+      variant.available = true;
+    }
+  }
+  writeJsonFile('products.json', { products });
+  memoryProducts = filterOutGiftCards(products);
+  memoryProductsLastFetch = Date.now();
+}
+
+async function reserveInventory(items) {
+  // Database-backed deployments should use the atomic SQL function. Local
+  // development/fallback mode uses the serialized JSON reservation below.
+  const canUseCloudInventory = supabase.isConfigured && typeof supabase.rpc === 'function' &&
+    items.every(item => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.variantId || '')));
+  if (canUseCloudInventory) {
+    const reserved = [];
+    try {
+      for (const item of items) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.variantId || ''))) continue;
+        const result = await supabase.rpc('decrement_stock', { p_variant_id: item.variantId, p_quantity: item.quantity });
+        const ok = result === true || (Array.isArray(result) && result[0] === true) || result?.[0]?.decrement_stock === true;
+        if (!ok) throw new Error('Insufficient inventory');
+        reserved.push(item);
+      }
+      return true;
+    } catch (_) {
+      if (reserved.length && typeof supabase.rpc === 'function') {
+        for (const item of reserved) await supabase.rpc('increment_stock', { p_variant_id: item.variantId, p_quantity: item.quantity }).catch(() => {});
+      }
+      return false;
+    }
+  }
+  return reserveLocalInventory(items);
+}
+
+async function releaseInventory(items) {
+  const canUseCloudInventory = supabase.isConfigured && typeof supabase.rpc === 'function' &&
+    (items || []).every(item => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.variantId || '')));
+  if (canUseCloudInventory) {
+    for (const item of items || []) {
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.variantId || ''))) {
+        await supabase.rpc('increment_stock', { p_variant_id: item.variantId, p_quantity: item.quantity }).catch(() => {});
+      }
+    }
+    return;
+  }
+  return releaseLocalInventory(items);
+}
+
+function parseRawBody(req, maxBytes = 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let bytes = 0;
+    let settled = false;
+    const fail = (error) => {
+      if (!settled) { settled = true; reject(error); }
+    };
+    if (Number(req.headers['content-length'] || 0) > maxBytes) {
+      return fail(new Error('Payload too large'));
+    }
+    req.on('data', chunk => {
+      if (settled) return;
+      bytes += chunk.length;
+      if (bytes > maxBytes) {
+        req.destroy();
+        return fail(new Error('Payload too large'));
+      }
+      chunks.push(Buffer.from(chunk));
+    });
+    req.on('end', () => {
+      if (!settled) { settled = true; resolve(Buffer.concat(chunks)); }
+    });
+    req.on('error', fail);
+  });
 }
 
 const MIME_TYPES = {
@@ -159,9 +319,18 @@ function serveVideoWithRange(req, res, filePath) {
   const range = req.headers.range;
 
   if (range) {
-    const parts = range.replace(/bytes=/, '').split('-');
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const match = /^bytes=(\d*)-(\d*)$/.exec(String(range).trim());
+    if (!match || (!match[1] && !match[2])) {
+      res.writeHead(416, { 'Content-Range': `bytes */${fileSize}` });
+      return res.end();
+    }
+    let start = match[1] ? Number(match[1]) : Math.max(0, fileSize - Number(match[2]));
+    let end = match[2] ? Number(match[2]) : fileSize - 1;
+    if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || start >= fileSize || end < start) {
+      res.writeHead(416, { 'Content-Range': `bytes */${fileSize}` });
+      return res.end();
+    }
+    end = Math.min(end, fileSize - 1);
     const chunksize = (end - start) + 1;
     const file = fs.createReadStream(filePath, { start, end });
 
@@ -183,6 +352,9 @@ function serveVideoWithRange(req, res, filePath) {
 }
 
 function proxyRequest(req, res, targetUrl) {
+  if (!['GET', 'HEAD'].includes(req.method)) {
+    return sendJson(res, 405, { success: false, message: 'Method not allowed' }, { Allow: 'GET, HEAD' });
+  }
   const parsed = new URL(targetUrl);
   const options = {
     hostname: parsed.hostname,
@@ -190,19 +362,22 @@ function proxyRequest(req, res, targetUrl) {
     path: parsed.pathname + parsed.search,
     method: req.method,
     headers: {
-      ...req.headers,
+      'user-agent': req.headers['user-agent'] || 'ALLEYRICH-asset-proxy',
+      accept: req.headers.accept || '*/*',
       host: parsed.hostname,
       referer: 'https://genrage.com/'
     }
   };
 
-  const proxy = https.request(options, (remoteRes) => {
+  const proxy = https.request({ ...options, timeout: 8000 }, (remoteRes) => {
     res.writeHead(remoteRes.statusCode, {
-      ...remoteRes.headers,
-      'access-control-allow-origin': '*'
+      'Content-Type': remoteRes.headers['content-type'] || 'application/octet-stream',
+      'Cache-Control': remoteRes.headers['cache-control'] || 'public, max-age=300'
     });
     remoteRes.pipe(res);
   });
+
+  proxy.on('timeout', () => proxy.destroy(new Error('Asset proxy timed out')));
 
   proxy.on('error', (err) => {
     console.error('Proxy error:', err.message);
@@ -950,9 +1125,7 @@ async function sendOtpEmail(email, otpCode) {
     } catch (e) {}
   }
 
-  console.log(`\n======================================================`);
-  console.log(`🔐 [SECURE OTP DISPATCH] 6-Digit Code for ${email}: ${otpCode} (Delivered via Email: ${emailDispatched})`);
-  console.log(`======================================================\n`);
+  console.log(`[OTP DISPATCH] email=${email} delivered=${emailDispatched}`);
 
   return emailDispatched;
 }
@@ -960,7 +1133,7 @@ async function sendOtpEmail(email, otpCode) {
 
 // n8n Webhook Dispatch Service
 async function dispatchN8nOrderWebhook(order) {
-  const n8nUrl = process.env.N8N_ORDER_WEBHOOK_URL || 'https://priyanshuf1.app.n8n.cloud/webhook/allyrich-orders';
+  const n8nUrl = process.env.N8N_ORDER_WEBHOOK_URL;
   if (!n8nUrl) return false;
 
   try {
@@ -1016,7 +1189,7 @@ async function sendOrderConfirmationEmail(order) {
   if (!resendApiKey || !email || !email.includes('@')) return false;
 
   const domain = process.env.APP_DOMAIN || 'alleyrich.com';
-  const trackUrl = `http://${domain}/pages/track-order.html?order=${encodeURIComponent(order.id)}`;
+  const trackUrl = `https://${domain}/pages/track-order.html?order=${encodeURIComponent(order.id)}`;
   const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi ALLEYRICH, please send live WhatsApp delivery updates for my order #${order.id}.`)}`;
 
   const itemsHtml = (order.items || []).map(item => `
@@ -1025,11 +1198,11 @@ async function sendOrderConfirmationEmail(order) {
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="width: 54px; vertical-align: top; padding-right: 12px;">
-              <img src="${item.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png'}" width="48" height="60" style="object-fit: cover; border-radius: 4px; display: block; background: #222;" alt="${item.title || 'Streetwear'}">
+              <img src="${escapeHtml(safeHttpUrl(item.image, 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png'))}" width="48" height="60" style="object-fit: cover; border-radius: 4px; display: block; background: #222;" alt="${escapeHtml(item.title || 'Streetwear')}">
             </td>
             <td style="vertical-align: top;">
-              <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${item.title || item.name || 'ALLEYRICH Streetwear Item'}</div>
-              <div style="font-size: 12px; color: #888888; margin-top: 4px;">Size: <span style="color:#ffffff;">${item.size || 'L'}</span> &bull; Qty: <span style="color:#ffffff;">${item.quantity || 1}</span></div>
+              <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${escapeHtml(item.title || item.name || 'ALLEYRICH Streetwear Item')}</div>
+              <div style="font-size: 12px; color: #888888; margin-top: 4px;">Size: <span style="color:#ffffff;">${escapeHtml(item.size || 'L')}</span> &bull; Qty: <span style="color:#ffffff;">${Number(item.quantity || 1)}</span></div>
             </td>
             <td style="vertical-align: top; text-align: right; font-weight: 800; color: #ffffff; font-size: 14px;">
               ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
@@ -1060,7 +1233,7 @@ async function sendOrderConfirmationEmail(order) {
 
             <div style="padding: 28px 24px;">
               <div style="background: rgba(46, 125, 50, 0.15); border: 1px solid rgba(46, 125, 50, 0.3); border-radius: 6px; padding: 14px 18px; margin-bottom: 24px; text-align: center;">
-                <span style="color: #4caf50; font-size: 14px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">✓ Order Confirmed #${order.id}</span>
+                <span style="color: #4caf50; font-size: 14px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">✓ Order Confirmed #${escapeHtml(order.id)}</span>
                 <p style="margin: 4px 0 0; color: #cccccc; font-size: 12px;">We're handcrafting and quality-checking your pieces at our atelier.</p>
               </div>
 
@@ -1083,7 +1256,7 @@ async function sendOrderConfirmationEmail(order) {
                   </tr>
                   <tr>
                     <td style="color: #888888; padding: 4px 0;">Payment Method</td>
-                    <td style="color: #ffffff; text-align: right; padding: 4px 0;">${order.paymentMethod || 'Cash on Delivery (COD)'}</td>
+                    <td style="color: #ffffff; text-align: right; padding: 4px 0;">${escapeHtml(order.paymentMethod || 'Cash on Delivery (COD)')}</td>
                   </tr>
                   <tr style="border-top: 1px solid #262626;">
                     <td style="color: #ffffff; font-weight: 800; font-size: 16px; padding: 12px 0 4px;">Total Bill</td>
@@ -1094,16 +1267,16 @@ async function sendOrderConfirmationEmail(order) {
 
               <div style="background: #141414; padding: 16px; border-radius: 6px; border: 1px solid #222222; margin-bottom: 28px; font-size: 13px; line-height: 1.6;">
                 <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin-bottom: 6px;">Delivery Destination</div>
-                <div style="color: #ffffff; font-weight: 700;">${order.customer?.name || 'Valued Client'}</div>
+                <div style="color: #ffffff; font-weight: 700;">${escapeHtml(order.customer?.name || 'Valued Client')}</div>
                 <div style="color: #cccccc;">
-                  ${order.customer?.address || ''}${order.customer?.locality ? ', ' + order.customer.locality : ''}<br>
-                  ${order.customer?.city || 'Mumbai'}, ${order.customer?.state || 'Maharashtra'} ${order.customer?.pincode || ''}<br>
-                  Phone: ${order.customer?.phone || '+91 99999 99999'}
+                  ${escapeHtml(order.customer?.address || '')}${order.customer?.locality ? ', ' + escapeHtml(order.customer.locality) : ''}<br>
+                  ${escapeHtml(order.customer?.city || 'Mumbai')}, ${escapeHtml(order.customer?.state || 'Maharashtra')} ${escapeHtml(order.customer?.pincode || '')}<br>
+                  Phone: ${escapeHtml(order.customer?.phone || '+91 99999 99999')}
                 </div>
               </div>
 
               <div style="text-align: center; margin-bottom: 12px;">
-                <a href="${trackUrl}" style="background: #ffffff; color: #000000; text-decoration: none; padding: 14px 28px; font-weight: 800; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px; display: block; margin-bottom: 10px;">
+                <a href="${escapeHtml(safeHttpUrl(trackUrl))}" style="background: #ffffff; color: #000000; text-decoration: none; padding: 14px 28px; font-weight: 800; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px; display: block; margin-bottom: 10px;">
                   TRACK SHIPMENT IN REAL TIME ➔
                 </a>
                 <a href="${whatsappUrl}" style="background: #25D366; color: #000000; text-decoration: none; padding: 12px 24px; font-weight: 800; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; display: block;">
@@ -1815,7 +1988,7 @@ async function handleGetOrders(req, res, parsedUrl) {
   return sendJson(res, 200, {
     success: true,
     count: filtered.length,
-    orders: filtered
+    orders: filtered.map(order => isAdmin ? order : customerOrderView(order))
   });
 }
 
@@ -1950,6 +2123,7 @@ async function handleCreateOrder(req, res, isCheckout = false) {
     processedItems.push({
       id: match.id,
       handle: match.handle,
+      variantId: variant?.id || null,
       title: match.title,
       size: cleanText(item.size || variant?.title || 'Default', 30),
       price: serverPrice,
@@ -1992,9 +2166,12 @@ async function handleCreateOrder(req, res, isCheckout = false) {
 
   const isCashfree = String(payload.paymentMethod || '').toLowerCase().includes('cashfree');
   const orderId = generateOrderId();
+  const checkoutToken = crypto.randomBytes(32).toString('base64url');
+  const identity = await getAuthenticatedIdentity(req);
 
   const newOrder = {
     id: orderId,
+    userId: identity?.id || null,
     customer: {
       ...customer
     },
@@ -2010,18 +2187,28 @@ async function handleCreateOrder(req, res, isCheckout = false) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     cashfreeOrderId: null,
-    cashfreePaymentId: null
+    cashfreePaymentId: null,
+    checkoutTokenHash: hashSecret(checkoutToken),
+    inventoryReservedAt: new Date().toISOString(),
+    inventoryReleasedAt: null
   };
   let paymentSessionId = null;
+
+  const inventoryReserved = await reserveInventory(processedItems);
+  if (!inventoryReserved) {
+    return sendJson(res, 409, { success: false, message: 'One or more items became unavailable. Please refresh your bag and try again.' });
+  }
 
   if (isCashfree) {
     let gatewayOrder;
     try {
       gatewayOrder = await createCashfreeOrder(req, newOrder);
     } catch (error) {
+      await releaseInventory(processedItems);
       return sendJson(res, error.statusCode || 502, { success: false, message: 'Unable to initialise the payment gateway. Please try again.' });
     }
     if (!gatewayOrder.configured) {
+      await releaseInventory(processedItems);
       return sendJson(res, 503, { success: false, message: 'Online payments are temporarily unavailable. Please choose COD.' });
     }
     newOrder.cashfreeOrderId = gatewayOrder.cashfreeOrderId;
@@ -2035,7 +2222,10 @@ async function handleCreateOrder(req, res, isCheckout = false) {
   orders.unshift(newOrder);
   memoryOrders = orders;
   memoryOrdersLastFetch = Date.now();
-  writeJsonFile('orders.json', orders);
+  if (!writeJsonFile('orders.json', orders)) {
+    await releaseInventory(processedItems);
+    return sendJson(res, 500, { success: false, message: 'Unable to save the order. Please try again.' });
+  }
   if (db && db.orders && typeof db.orders.create === 'function') {
     try {
       await db.orders.create(newOrder);
@@ -2105,7 +2295,9 @@ async function handleCreateOrder(req, res, isCheckout = false) {
 
   return sendJson(res, 201, {
     success: true,
-    order: paymentSessionId ? { ...newOrder, paymentSessionId } : newOrder,
+    order: paymentSessionId
+      ? { ...customerOrderView(newOrder), paymentSessionId, checkoutToken }
+      : customerOrderView(newOrder),
     orderId: newOrder.id,
     cashfreeOrderId: newOrder.cashfreeOrderId
   });
@@ -2129,14 +2321,26 @@ async function handleUpdateOrder(req, res, id) {
     if (!allowedPaymentStatuses.has(String(payload.paymentStatus))) return sendJson(res, 400, { success: false, message: 'Payment status can only be changed by the payment verification flow.' });
     order.paymentStatus = String(payload.paymentStatus);
   }
-  if (payload.paymentMethod) order.paymentMethod = payload.paymentMethod;
-  if (payload.trackingNumber !== undefined) order.trackingNumber = payload.trackingNumber;
-  if (payload.customer) order.customer = { ...order.customer, ...payload.customer };
+  if (payload.paymentMethod) order.paymentMethod = cleanText(payload.paymentMethod, 80);
+  if (payload.trackingNumber !== undefined) order.trackingNumber = cleanText(payload.trackingNumber, 80);
+  if (payload.customer && typeof payload.customer === 'object') {
+    const allowedCustomerFields = ['name', 'phone', 'email', 'city', 'state', 'address', 'locality', 'pincode', 'country'];
+    const customerPatch = {};
+    for (const field of allowedCustomerFields) {
+      if (payload.customer[field] !== undefined) customerPatch[field] = cleanText(payload.customer[field], field === 'address' ? 300 : 120);
+    }
+    order.customer = { ...order.customer, ...customerPatch };
+  }
   order.updatedAt = new Date().toISOString();
 
-  writeJsonFile('orders.json', orders);
+  if (!writeJsonFile('orders.json', orders)) return sendJson(res, 500, { success: false, message: 'Unable to save order changes.' });
   memoryOrders = orders;
   memoryOrdersLastFetch = Date.now();
+  if ((order.orderStatus === 'Cancelled' || order.orderStatus === 'Refunded') && order.inventoryReservedAt && !order.inventoryReleasedAt) {
+    await releaseInventory(order.items);
+    order.inventoryReleasedAt = new Date().toISOString();
+    writeJsonFile('orders.json', orders);
+  }
   if (db && db.orders && typeof db.orders.create === 'function') {
     try {
       await db.orders.create(order);
@@ -2146,7 +2350,7 @@ async function handleUpdateOrder(req, res, id) {
   }
   await syncOrderToSupabase(order);
 
-  return sendJson(res, 200, { success: true, order });
+  return sendJson(res, 200, { success: true, order: security.isAdminAuthorized(req) ? order : customerOrderView(order) });
 }
 
 async function handleDelhiveryAwb(req, res, id) {
@@ -2569,6 +2773,71 @@ async function handleDelhiveryCancel(req, res, id) {
   });
 }
 
+async function handleCashfreeWebhook(req, res) {
+  const config = getCashfreeConfig();
+  if (!config) return sendJson(res, 503, { success: false, message: 'Payment webhook is not configured.' });
+
+  let rawBody;
+  try {
+    rawBody = await parseRawBody(req, 1024 * 1024);
+  } catch (error) {
+    return sendJson(res, error.message === 'Payload too large' ? 413 : 400, { success: false, message: 'Invalid webhook payload.' });
+  }
+
+  const timestamp = String(req.headers['x-webhook-timestamp'] || '');
+  const suppliedSignature = String(req.headers['x-webhook-signature'] || '');
+  const timestampNumber = Number(timestamp);
+  if (!/^\d+$/.test(timestamp) || !Number.isSafeInteger(timestampNumber) || Math.abs(Date.now() - timestampNumber) > 5 * 60 * 1000 || !suppliedSignature) {
+    return sendJson(res, 401, { success: false, message: 'Invalid webhook signature.' });
+  }
+
+  const expectedSignature = crypto.createHmac('sha256', config.secret).update(`${timestamp}${rawBody.toString('utf8')}`).digest('base64');
+  if (!constantTimeStringEquals(suppliedSignature, expectedSignature)) {
+    return sendJson(res, 401, { success: false, message: 'Invalid webhook signature.' });
+  }
+
+  let event;
+  try {
+    event = JSON.parse(rawBody.toString('utf8'));
+  } catch (_) {
+    return sendJson(res, 400, { success: false, message: 'Invalid webhook JSON.' });
+  }
+
+  const eventId = String(req.headers['x-idempotency-key'] || event.event_id || hashSecret(rawBody.toString('utf8')));
+  if (cashfreeWebhookEvents.has(eventId)) return sendJson(res, 200, { success: true, duplicate: true });
+  cashfreeWebhookEvents.set(eventId, Date.now());
+
+  const data = event.data || {};
+  const payment = data.payment || {};
+  const gatewayOrderId = String(data.order?.order_id || data.order?.cf_order_id || '');
+  const paymentStatus = String(payment.payment_status || data.order?.order_status || '').toUpperCase();
+  if (!gatewayOrderId || !['SUCCESS', 'PAID'].includes(paymentStatus)) {
+    return sendJson(res, 200, { success: true, processed: false });
+  }
+
+  const orders = await getAllOrders();
+  const order = orders.find(candidate => String(candidate.id) === gatewayOrderId || String(candidate.cashfreeOrderId || '') === gatewayOrderId);
+  if (!order) return sendJson(res, 200, { success: true, processed: false });
+  if (Math.abs(Number(payment.payment_amount || data.order?.order_amount || 0) - Number(order.total)) >= 0.01 || String(payment.payment_currency || 'INR').toUpperCase() !== 'INR') {
+    return sendJson(res, 400, { success: false, message: 'Webhook amount or currency does not match the order.' });
+  }
+
+  if (order.paymentStatus !== 'Paid') {
+    order.paymentStatus = 'Paid';
+    order.cashfreePaymentId = payment.cf_payment_id || payment.cf_payment_id || null;
+    order.updatedAt = new Date().toISOString();
+    if (!writeJsonFile('orders.json', orders)) {
+      cashfreeWebhookEvents.delete(eventId);
+      return sendJson(res, 500, { success: false, message: 'Unable to persist payment webhook.' });
+    }
+    memoryOrders = orders;
+    memoryOrdersLastFetch = Date.now();
+    await syncOrderToSupabase(order);
+    dispatchN8nOrderWebhook(order).catch(() => {});
+  }
+  return sendJson(res, 200, { success: true, processed: true });
+}
+
 async function handleCashfreeVerify(req, res, id) {
   const orders = await getAllOrders();
   const order = orders.find(o => String(o.id) === String(id));
@@ -2589,12 +2858,16 @@ async function handleCashfreeVerify(req, res, id) {
     return sendJson(res, 400, { success: false, message: 'No successful Cashfree payment matching this order was found.' });
   }
 
+  if (order.paymentStatus === 'Paid') {
+    return sendJson(res, 200, { success: true, message: 'Cashfree payment was already verified.', order: customerOrderView(order) });
+  }
+
   order.paymentStatus = 'Paid';
   order.paymentMethod = order.paymentMethod || 'Cashfree Online Payment';
   order.cashfreePaymentId = verification.paymentId;
   order.updatedAt = new Date().toISOString();
 
-  writeJsonFile('orders.json', orders);
+  if (!writeJsonFile('orders.json', orders)) return sendJson(res, 500, { success: false, message: 'Unable to save payment confirmation.' });
   memoryOrders = orders;
   memoryOrdersLastFetch = Date.now();
   if (db && db.orders && typeof db.orders.create === 'function') {
@@ -2612,19 +2885,23 @@ async function handleCashfreeVerify(req, res, id) {
   return sendJson(res, 200, {
     success: true,
     message: 'Cashfree payment verified and confirmed.',
-    order
+    order: customerOrderView(order)
   });
 }
 
 async function handleDeleteOrder(req, res, id) {
   const orders = await getAllOrders();
+  const order = orders.find(o => String(o.id) === String(id));
   const filtered = orders.filter(o => String(o.id) !== String(id));
   if (filtered.length === orders.length) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
   }
+  if (!writeJsonFile('orders.json', filtered)) return sendJson(res, 500, { success: false, message: 'Unable to delete order.' });
+  if (order?.inventoryReservedAt && !order.inventoryReleasedAt) {
+    await releaseInventory(order.items);
+  }
   memoryOrders = filtered;
   memoryOrdersLastFetch = Date.now();
-  writeJsonFile('orders.json', filtered);
   if (db && db.orders && typeof db.orders.delete === 'function') {
     try {
       await db.orders.delete(id);
@@ -2729,6 +3006,8 @@ async function appHandler(req, res) {
   // Keep-Alive & Health Check (Vercel + Supabase Never-Sleep)
   // -------------------------------------------------------------
   if (pathname === '/api/health' || pathname === '/api/ping') {
+    const healthLimit = security.checkRateLimit(`health:${security.getClientIp(req)}`, 30, 60);
+    if (!healthLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many health checks.' }, { 'Retry-After': String(healthLimit.resetAfterSeconds) });
     let supabaseStatus = 'disconnected';
     if (supabase.isConfigured) {
       try {
@@ -2798,9 +3077,11 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // Delhivery Live Pincode Serviceability Check
   if (pathname === '/api/shipping/pincode-check' && req.method === 'GET') {
+    const pincodeLimit = security.checkRateLimit(`pincode:${security.getClientIp(req)}`, 30, 60);
+    if (!pincodeLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many pincode checks.' }, { 'Retry-After': String(pincodeLimit.resetAfterSeconds) });
     const pin = parsedUrl.searchParams?.get('pin') || parsedUrl.searchParams?.get('pincode') || (parsedUrl.query && parsedUrl.query.pin);
     const result = await delhivery.checkPincodeServiceability(pin);
-    return sendJson(res, 200, { success: true, ...result });
+    return sendJson(res, result.serviceable ? 200 : 400, { success: Boolean(result.serviceable), ...result });
   }
 
   // Storefront & Public REST APIs for Products & Orders
@@ -2833,6 +3114,8 @@ async function appHandler(req, res) {
     // Live Public Delhivery Pincode Serviceability API
   if (pathname.startsWith('/api/shipping/pincode') || pathname === '/api/shipping/serviceability') {
     if (req.method === 'GET') {
+      const pincodeLimit = security.checkRateLimit(`pincode:${security.getClientIp(req)}`, 30, 60);
+      if (!pincodeLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many pincode checks.' }, { 'Retry-After': String(pincodeLimit.resetAfterSeconds) });
       const pinParam = pathname.startsWith('/api/shipping/pincode/') 
         ? pathname.replace('/api/shipping/pincode/', '').trim()
         : (parsedUrl.searchParams.get('pincode') || parsedUrl.searchParams.get('code') || '').trim();
@@ -3508,6 +3791,8 @@ async function appHandler(req, res) {
         const subject = (payload.subject || '').trim();
         const headline = (payload.headline || '').trim();
         const message = (payload.message || '').trim();
+        const safeHeadline = escapeHtml(headline);
+        const safeMessage = escapeHtml(message).replace(/\r?\n/g, '<br>');
 
         if (!subject || !message) {
           return sendJson(res, 400, { success: false, message: 'Subject and message are required for broadcast' });
@@ -3541,9 +3826,9 @@ async function appHandler(req, res) {
                         <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
                       </div>
                       <div style="padding:28px 0;">
-                        ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${headline}</h2>` : ''}
+                        ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${safeHeadline}</h2>` : ''}
                         <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
-                          ${message.replace(/\n/g, '<br>')}
+                          ${safeMessage}
                         </div>
                         <div style="text-align:center; margin:30px 0;">
                           <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
@@ -3620,6 +3905,10 @@ async function appHandler(req, res) {
         const message = (payload.message || '').trim();
         const code = (payload.code || '').trim();
         const link = (payload.link || '').trim();
+        const safeHeadline = escapeHtml(headline);
+        const safeMessage = escapeHtml(message).replace(/\r?\n/g, '<br>');
+        const safeCode = escapeHtml(code.toUpperCase());
+        const safeLink = escapeHtml(safeHttpUrl(link));
 
         if (!message && !subject) {
           return sendJson(res, 400, { success: false, message: 'Message content is required for campaign broadcast' });
@@ -3659,13 +3948,13 @@ async function appHandler(req, res) {
                           <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
                         </div>
                         <div style="padding:28px 0;">
-                          ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${headline}</h2>` : ''}
+                          ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${safeHeadline}</h2>` : ''}
                           <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
-                            ${message.replace(/\n/g, '<br>')}
+                          ${safeMessage}
                           </div>
-                          ${code ? `<div style="background:#1a1a1a;border:1px dashed #444;padding:12px;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:24px;color:#fff;">USE CODE: ${code.toUpperCase()}</div>` : ''}
+                          ${code ? `<div style="background:#1a1a1a;border:1px dashed #444;padding:12px;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:24px;color:#fff;">USE CODE: ${safeCode}</div>` : ''}
                           <div style="text-align:center; margin:30px 0;">
-                            <a href="${link || 'https://alleyrich.com/collections.html'}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                            <a href="${safeLink}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
                           </div>
                         </div>
                         <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
@@ -3740,6 +4029,8 @@ async function appHandler(req, res) {
 
     // POST /api/auth/signup
     if (authRoute === 'signup' && req.method === 'POST') {
+      const signupLimit = security.checkRateLimit(`signup:${security.getClientIp(req)}`, 5, 3600);
+      if (!signupLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many registration attempts. Please try again later.' }, { 'Retry-After': String(signupLimit.resetAfterSeconds) });
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
       const password = String(payload.password || '');
@@ -3862,8 +4153,8 @@ async function appHandler(req, res) {
       const email = (payload.email || '').toLowerCase().trim();
       const password = payload.password || '';
 
-      if (!email) {
-        return sendJson(res, 400, { success: false, message: 'Email is required' });
+      if (!isValidEmail(email) || String(password).length < 1 || String(password).length > 128) {
+        return sendJson(res, 400, { success: false, message: 'A valid email address and password are required' });
       }
 
       let authedUser = null;
@@ -3901,7 +4192,7 @@ async function appHandler(req, res) {
         const legacyPassword = localCustomer?.password;
         const passwordValid = candidateHash
           ? await security.verifyPassword(password, candidateHash)
-          : Boolean(legacyPassword && legacyPassword === password);
+          : (process.env.NODE_ENV !== 'production' && Boolean(legacyPassword && legacyPassword === password));
         if (!passwordValid) {
           return sendJson(res, 401, { success: false, message: 'Invalid email address or password. Please verify your credentials.' });
         }
@@ -4004,7 +4295,7 @@ async function appHandler(req, res) {
     if ((authRoute === 'send-otp' || authRoute === 'magic-link') && req.method === 'POST') {
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
-      if (!email || !email.includes('@')) {
+       if (!isValidEmail(email)) {
         return sendJson(res, 400, { success: false, message: 'A valid email address is required' });
       }
 
@@ -4050,6 +4341,12 @@ async function appHandler(req, res) {
 
       // Return clean, secure customer response without exposing the OTP code in prod when delivered,
       // but providing devCode when email dispatch failed or in non-production so users are never locked out
+      if (!dispatched && process.env.NODE_ENV === 'production') {
+        otpCache.delete(email);
+        if (db && db.events && typeof db.events.deleteOtp === 'function') await db.events.deleteOtp(email).catch(() => {});
+        if (supabase.isConfigured && supabase.otp) await supabase.otp.delete(email).catch(() => {});
+        return sendJson(res, 503, { success: false, message: 'Verification email service is temporarily unavailable. Please try again later.' });
+      }
       return sendJson(res, 200, {
         success: true,
         emailSent: dispatched,
@@ -4436,6 +4733,10 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // Storefront Checkout & Payment APIs (Cashfree strictly here)
   // -------------------------------------------------------------
+  if (pathname === '/api/webhooks/cashfree' && req.method === 'POST') {
+    return await handleCashfreeWebhook(req, res);
+  }
+
   if (pathname.startsWith('/api/checkout/')) {
     const checkoutRoute = pathname.replace('/api/checkout/', '');
 
@@ -4454,6 +4755,7 @@ async function appHandler(req, res) {
 
       const payload = await parseBody(req);
       const orderId = payload.orderId;
+      const checkoutToken = String(payload.checkoutToken || '');
       if (!orderId) {
         return sendJson(res, 400, { success: false, message: 'Order ID is required' });
       }
@@ -4461,6 +4763,9 @@ async function appHandler(req, res) {
       const orders = await getAllOrders();
       const order = orders.find(o => String(o.id) === String(orderId));
       if (!order) return sendJson(res, 404, { success: false, message: 'Order not found' });
+      if (!isCheckoutTokenValid(order, checkoutToken)) {
+        return sendJson(res, 401, { success: false, message: 'Invalid checkout verification credential.' });
+      }
 
       let verification;
       try {
@@ -4479,11 +4784,11 @@ async function appHandler(req, res) {
       order.cashfreePaymentId = verification.paymentId;
       order.updatedAt = new Date().toISOString();
 
-      writeJsonFile('orders.json', orders);
+      if (!writeJsonFile('orders.json', orders)) return sendJson(res, 500, { success: false, message: 'Unable to save payment confirmation.' });
       memoryOrders = orders;
       memoryOrdersLastFetch = Date.now();
       await syncOrderToSupabase(order);
-      return sendJson(res, 200, { success: true, message: 'Payment confirmed & order marked Paid', order });
+      return sendJson(res, 200, { success: true, message: 'Payment confirmed & order marked Paid', order: customerOrderView(order) });
     }
 
     return sendJson(res, 404, { success: false, message: 'Checkout API route not found' });
@@ -5155,7 +5460,8 @@ async function appHandler(req, res) {
   res.end('404 Not Found');
   } catch (err) {
     const isPayloadTooLarge = err.message && err.message.includes('Payload too large');
-    const statusCode = isPayloadTooLarge ? 413 : 500;
+    const isMalformedJson = err.message === 'Malformed JSON request body';
+    const statusCode = isPayloadTooLarge ? 413 : (isMalformedJson ? 400 : 500);
     return sendJson(res, statusCode, {
       success: false,
       error: isPayloadTooLarge ? 'Payload Too Large' : 'Internal Server Error',
