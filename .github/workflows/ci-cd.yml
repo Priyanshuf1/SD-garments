@@ -173,7 +173,7 @@ jobs:
             sed -i '/^BREVO_API_KEY=/d' .env
             echo "BREVO_API_KEY=${BREVO_API_KEY:-}" >> .env
             sed -i '/^BREVO_SENDER_EMAIL=/d' .env
-            echo "BREVO_SENDER_EMAIL=support@allyrich.com" >> .env
+            echo "BREVO_SENDER_EMAIL=alleyrich11@gmail.com" >> .env
             sed -i '/^BREVO_SENDER_NAME=/d' .env
             echo "BREVO_SENDER_NAME=ALLEYRICH" >> .env
             sed -i '/^N8N_OTP_WEBHOOK_URL=/d' .env

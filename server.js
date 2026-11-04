@@ -1018,7 +1018,7 @@ async function sendTransactionalEmail({ to, subject, htmlContent, textContent, t
   const brevoApiKey = process.env.BREVO_API_KEY;
   if (brevoApiKey) {
     try {
-      const senderEmail = process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com';
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || 'alleyrich11@gmail.com';
       const senderName = process.env.BREVO_SENDER_NAME || 'ALLEYRICH';
       const payload = {
         sender: { name: senderName, email: senderEmail },
@@ -1097,23 +1097,26 @@ async function sendOtpEmail(email, otpCode) {
   let emailDispatched = false;
   const cleanEmail = (email || '').trim().toLowerCase();
 
-  const otpSubject = `Your ALLEYRICH Login Code: ${otpCode}`;
+  const otpSubject = `Your ALLEYRICH Atelier Access Code: ${otpCode}`;
   const otpHtml = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
-      <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-        <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLEYRICH</h1>
-        <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; max-width:560px; margin:0 auto; background:#0a0a0a; color:#f5f5f5; border:1px solid #222222; border-radius:8px; overflow:hidden;">
+      <div style="background:#000000; padding:28px 24px; text-align:center; border-bottom:1px solid #1a1a1a;">
+        <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
+        <p style="font-size:11px; letter-spacing:0.15em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Official Atelier</p>
       </div>
-      <div style="padding:28px 0; text-align:center;">
-        <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
-        <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
+      <div style="padding:36px 24px; text-align:center;">
+        <div style="display:inline-block; font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#4caf50; background:rgba(76,175,80,0.12); padding:6px 14px; border-radius:20px; border:1px solid rgba(76,175,80,0.3); margin-bottom:22px;">
+          One-Time Verification Code
+        </div>
+        <p style="font-size:14px; color:#cccccc; margin:0 0 24px; line-height:1.5;">Enter the following 6-digit access key to verify your identity and access your ALLEYRICH account:</p>
+        <div style="display:inline-block; font-size:38px; font-weight:900; letter-spacing:0.35em; color:#ffffff; background:#141414; padding:18px 32px 18px 40px; border-radius:6px; font-family:'Courier New',Courier,monospace; border:1px solid #333333; box-shadow:0 8px 24px rgba(0,0,0,0.6);">
           ${otpCode}
         </div>
-        <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+        <p style="font-size:12px; color:#888888; margin:24px 0 0;">Valid for <strong>10 minutes</strong>. Never share this code with anyone.</p>
       </div>
-      <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
-        If you did not request this code, you can safely ignore this email.<br>
-        &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
+      <div style="background:#000000; border-top:1px solid #1a1a1a; padding:20px 24px; text-align:center; font-size:11px; color:#666666; line-height:1.6;">
+        If you did not request this access code, you can safely disregard this email.<br>
+        &copy; ${new Date().getFullYear()} ALLEYRICH India. All rights reserved.
       </div>
     </div>
   `;
