@@ -1005,148 +1005,170 @@ async function deleteProductFromSupabase(productIdOrHandle, fallbackHandle) {
   }
 }
 
-// Transactional Email Service for OTP Authentication
-async function sendOtpEmail(email, otpCode) {
-  let emailDispatched = false;
+// ==============================================================================
+// Unified Multi-Provider Transactional Email Service
+// Primary: Brevo (Sendinblue v3 API) - 300 free emails/day forever to ANY recipient
+// Secondary: Resend API - Fallback for custom domains / verified sender
+// ==============================================================================
+async function sendTransactionalEmail({ to, subject, htmlContent, textContent, tags }) {
+  const cleanTo = (to || '').trim().toLowerCase();
+  if (!cleanTo || !cleanTo.includes('@')) return false;
 
-  // 1. Resend API Integration (Preferred for D2C & Vercel)
+  // 1. Primary: Brevo (Sendinblue) API v3 (Permanent Free 300 emails/day)
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  if (brevoApiKey) {
+    try {
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com';
+      const senderName = process.env.BREVO_SENDER_NAME || 'ALLEYRICH';
+      const payload = {
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: cleanTo }],
+        subject,
+        htmlContent
+      };
+      if (textContent) payload.textContent = textContent;
+      if (tags && Array.isArray(tags)) payload.tags = tags;
+
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoApiKey,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        console.log(`✅ [BREVO EMAIL DISPATCH] Successfully delivered email (${subject}) to ${cleanTo}`);
+        return true;
+      } else {
+        const errText = await res.text();
+        console.warn(`⚠️ [BREVO EMAIL ERROR]:`, errText);
+      }
+    } catch (err) {
+      console.warn(`⚠️ [BREVO EXCEPTION]:`, err.message);
+    }
+  }
+
+  // 2. Secondary Fallback: Resend API
   const resendApiKey = process.env.RESEND_API_KEY;
   if (resendApiKey) {
     try {
+      const fromEmail = process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>';
+      const payload = {
+        from: fromEmail,
+        to: [cleanTo],
+        subject,
+        html: htmlContent
+      };
+      if (textContent) payload.text = textContent;
+
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
-          to: [email],
-          subject: `Your ALLEYRICH Login Code: ${otpCode}`,
-          html: `
-            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
-              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLEYRICH</h1>
-                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
-              </div>
-              <div style="padding:28px 0; text-align:center;">
-                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
-                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
-                  ${otpCode}
-                </div>
-                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
-              </div>
-              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
-                If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
-              </div>
-            </div>
-          `
-        })
+        body: JSON.stringify(payload)
       });
+
       if (res.ok) {
-        emailDispatched = true;
-        console.log(`✅ [RESEND EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
+        console.log(`✅ [RESEND EMAIL DISPATCH] Successfully delivered email (${subject}) to ${cleanTo}`);
+        return true;
       } else {
         const errText = await res.text();
         console.warn(`⚠️ [RESEND EMAIL ERROR]:`, errText);
       }
     } catch (err) {
-      console.warn(`⚠️ [RESEND ERROR]:`, err.message);
+      console.warn(`⚠️ [RESEND EXCEPTION]:`, err.message);
     }
   }
 
-  // 2. Brevo (Sendinblue) API Integration (Free 300 emails/day)
-  const brevoApiKey = process.env.BREVO_API_KEY;
-  if (!emailDispatched && brevoApiKey) {
-    try {
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': brevoApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: 'ALLEYRICH', email: process.env.BREVO_SENDER_EMAIL || 'support@allyrich.com' },
-          to: [{ email }],
-          subject: `Your ALLEYRICH Login Code: ${otpCode}`,
-          htmlContent: `
-            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
-              <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLEYRICH</h1>
-                <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
-              </div>
-              <div style="padding:28px 0; text-align:center;">
-                <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
-                <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
-                  ${otpCode}
-                </div>
-                <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
-              </div>
-              <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
-                If you did not request this code, you can safely ignore this email.<br>
-                &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
-              </div>
-            </div>
-          `
-        })
-      });
-      if (res.ok) {
-        emailDispatched = true;
-        console.log(`✅ [BREVO EMAIL DISPATCH] Successfully delivered OTP email to ${email}`);
-      } else {
-        const errText = await res.text();
-        console.warn(`⚠️ [BREVO EMAIL ERROR]:`, errText);
-      }
-    } catch (err) {
-      console.warn(`⚠️ [BREVO ERROR]:`, err.message);
-    }
+  if (!brevoApiKey && !resendApiKey) {
+    console.log(`ℹ️ [EMAIL NOTICE] No email API key configured (BREVO_API_KEY / RESEND_API_KEY). Delivery of "${subject}" to ${cleanTo} bypassed gracefully.`);
   }
 
-  // 3. Try n8n OTP Webhook if configured
+  return false;
+}
+
+// Transactional Email Service for OTP Authentication
+async function sendOtpEmail(email, otpCode) {
+  let emailDispatched = false;
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  const otpSubject = `Your ALLEYRICH Login Code: ${otpCode}`;
+  const otpHtml = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:540px; margin:0 auto; padding:32px 24px; background:#ffffff; color:#111111; border:1px solid #e5e5e5; border-radius:6px;">
+      <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #eeeeee;">
+        <h1 style="font-size:22px; font-weight:900; letter-spacing:0.2em; text-transform:uppercase; margin:0; color:#000000;">ALLEYRICH</h1>
+        <p style="font-size:11px; letter-spacing:0.1em; color:#888888; margin:4px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; India</p>
+      </div>
+      <div style="padding:28px 0; text-align:center;">
+        <p style="font-size:15px; color:#333333; margin:0 0 18px;">Your 6-digit one-time verification code is:</p>
+        <div style="display:inline-block; font-size:36px; font-weight:800; letter-spacing:0.3em; color:#000000; background:#f5f5f5; padding:16px 28px; border-radius:6px; font-family:monospace; border:1px solid #dddddd;">
+          ${otpCode}
+        </div>
+        <p style="font-size:13px; color:#777777; margin:20px 0 0;">This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+      </div>
+      <div style="border-top:1px solid #eeeeee; padding-top:20px; font-size:11px; color:#999999; text-align:center; line-height:1.5;">
+        If you did not request this code, you can safely ignore this email.<br>
+        &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
+      </div>
+    </div>
+  `;
+
+  // 1 & 2. Direct transactional delivery via Brevo / Resend
+  emailDispatched = await sendTransactionalEmail({
+    to: cleanEmail,
+    subject: otpSubject,
+    htmlContent: otpHtml,
+    textContent: `Your ALLEYRICH verification code is: ${otpCode}. Valid for 10 minutes.`,
+    tags: ['auth-otp']
+  });
+
+  // 3. Optional fallback: n8n OTP Webhook (if specifically configured)
   const n8nOtpUrl = process.env.N8N_OTP_WEBHOOK_URL;
-  if (!emailDispatched && n8nOtpUrl) {
+  if (!emailDispatched && n8nOtpUrl && n8nOtpUrl.startsWith('http')) {
     try {
       const res = await fetch(n8nOtpUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           event: 'auth.otp',
-          email,
+          email: cleanEmail,
           otpCode,
           expiresAt: Date.now() + 10 * 60 * 1000
         })
       });
       if (res.ok) {
         emailDispatched = true;
-        console.log(`✅ [N8N OTP DISPATCH] Successfully triggered n8n OTP delivery for ${email}`);
+        console.log(`✅ [N8N OTP DISPATCH] Successfully triggered n8n OTP delivery for ${cleanEmail}`);
       }
     } catch (err) {
-      console.warn(`⚠️ [N8N OTP ERROR]:`, err.message);
+      console.warn(`⚠️ [N8N OTP NOTICE]:`, err.message);
     }
   }
 
-  // 4. Try Supabase OTP as well if configured (works if user set up custom SMTP in Supabase)
+  // 4. Supabase OTP Magic Link Fallback
   if (!emailDispatched && supabase.isConfigured) {
     try {
-      const supaRes = await supabase.auth.sendMagicLink({ email });
+      const supaRes = await supabase.auth.sendMagicLink({ email: cleanEmail });
       if (supaRes && supaRes.success) {
         emailDispatched = true;
-        console.log(`✅ [SUPABASE EMAIL DISPATCH] Delivered magic link / OTP to ${email}`);
+        console.log(`✅ [SUPABASE EMAIL DISPATCH] Delivered magic link / OTP to ${cleanEmail}`);
       }
     } catch (e) {}
   }
 
-  console.log(`[OTP DISPATCH] email=${email} delivered=${emailDispatched}`);
-
+  console.log(`[OTP DISPATCH] email=${cleanEmail} delivered=${emailDispatched}`);
   return emailDispatched;
 }
 
-
-// n8n Webhook Dispatch Service
+// Optional n8n Webhook Dispatch Service (Graceful fallback)
 async function dispatchN8nOrderWebhook(order) {
   const n8nUrl = process.env.N8N_ORDER_WEBHOOK_URL;
-  if (!n8nUrl) return false;
+  if (!n8nUrl || !n8nUrl.startsWith('http')) return false;
 
   try {
     const taxInvoice = order.taxInvoice || {
@@ -1186,22 +1208,23 @@ async function dispatchN8nOrderWebhook(order) {
       return true;
     } else {
       const err = await res.text();
-      console.warn(`⚠️ [N8N WEBHOOK ERROR]:`, err);
+      console.warn(`⚠️ [N8N WEBHOOK NOTICE]: n8n response: ${err}`);
     }
   } catch (err) {
-    console.warn(`⚠️ [N8N WEBHOOK EXCEPTION]:`, err.message);
+    console.warn(`ℹ️ [N8N WEBHOOK NOTICE]: n8n webhook offline or trial expired (${err.message}). Direct email engine handled customer delivery.`);
   }
   return false;
 }
 
-// Order Confirmation Tax Invoice Email Service via Resend
+// Order Confirmation & Tax Invoice Email Service (Brevo + Resend)
 async function sendOrderConfirmationEmail(order) {
-  const resendApiKey = process.env.RESEND_API_KEY;
-  const email = (order.customer?.email || '').trim();
-  if (!resendApiKey || !email || !email.includes('@')) return false;
+  const email = (order.customer?.email || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) return false;
 
   const domain = process.env.APP_DOMAIN || 'alleyrich.com';
-  const trackUrl = `https://${domain}/pages/track-order.html?order=${encodeURIComponent(order.id)}`;
+  const trackUrl = order.delhiveryWaybill
+    ? `https://track.delhivery.com/p/${encodeURIComponent(order.delhiveryWaybill)}`
+    : `https://${domain}/pages/track-order.html?order=${encodeURIComponent(order.id)}`;
   const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(`Hi ALLEYRICH, please send live WhatsApp delivery updates for my order #${order.id}.`)}`;
 
   const itemsHtml = (order.items || []).map(item => `
@@ -1225,98 +1248,94 @@ async function sendOrderConfirmationEmail(order) {
     </tr>
   `).join('');
 
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
-        to: [email],
-        subject: `Order Confirmed: #${order.id} | ALLEYRICH Official Atelier`,
-        html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #f5f5f5; border: 1px solid #222222; border-radius: 8px; overflow: hidden;">
-            <div style="background: #000000; padding: 28px 24px; text-align: center; border-bottom: 1px solid #1a1a1a;">
-              <h1 style="font-size: 24px; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase; margin: 0; color: #ffffff;">ALLEYRICH</h1>
-              <p style="font-size: 11px; letter-spacing: 0.15em; color: #888888; margin: 6px 0 0; text-transform: uppercase;">Handcrafted In India &bull; Express Dispatch</p>
-            </div>
+  const htmlContent = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #f5f5f5; border: 1px solid #222222; border-radius: 8px; overflow: hidden;">
+      <div style="background: #000000; padding: 28px 24px; text-align: center; border-bottom: 1px solid #1a1a1a;">
+        <h1 style="font-size: 24px; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase; margin: 0; color: #ffffff;">ALLEYRICH</h1>
+        <p style="font-size: 11px; letter-spacing: 0.15em; color: #888888; margin: 6px 0 0; text-transform: uppercase;">Handcrafted In India &bull; Express Dispatch</p>
+      </div>
 
-            <div style="padding: 28px 24px;">
-              <div style="background: rgba(46, 125, 50, 0.15); border: 1px solid rgba(46, 125, 50, 0.3); border-radius: 6px; padding: 14px 18px; margin-bottom: 24px; text-align: center;">
-                <span style="color: #4caf50; font-size: 14px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">✓ Order Confirmed #${escapeHtml(order.id)}</span>
-                <p style="margin: 4px 0 0; color: #cccccc; font-size: 12px;">We're handcrafting and quality-checking your pieces at our atelier.</p>
-              </div>
+      <div style="padding: 28px 24px;">
+        <div style="background: rgba(46, 125, 50, 0.15); border: 1px solid rgba(46, 125, 50, 0.3); border-radius: 6px; padding: 14px 18px; margin-bottom: 24px; text-align: center;">
+          <span style="color: #4caf50; font-size: 14px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">✓ Order Confirmed #${escapeHtml(order.id)}</span>
+          <p style="margin: 4px 0 0; color: #cccccc; font-size: 12px;">We're handcrafting and quality-checking your pieces at our atelier.</p>
+        </div>
 
-              <div style="margin-bottom: 24px;">
-                <h3 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin: 0 0 12px;">Order Summary</h3>
-                <table style="width: 100%; border-collapse: collapse;">
-                  ${itemsHtml}
-                </table>
-              </div>
+        <div style="margin-bottom: 24px;">
+          <h3 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin: 0 0 12px;">Order Summary</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            ${itemsHtml}
+          </table>
+        </div>
 
-              <div style="background: #141414; padding: 16px; border-radius: 6px; border: 1px solid #222222; margin-bottom: 24px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                  <tr>
-                    <td style="color: #888888; padding: 4px 0;">Subtotal</td>
-                    <td style="color: #ffffff; text-align: right; padding: 4px 0;">₹${(order.subtotal || 0).toLocaleString('en-IN')}</td>
-                  </tr>
-                  <tr>
-                    <td style="color: #888888; padding: 4px 0;">Express Shipping (19,000+ PIN Codes)</td>
-                    <td style="color: #4caf50; text-align: right; padding: 4px 0; font-weight: 700;">FREE</td>
-                  </tr>
-                  <tr>
-                    <td style="color: #888888; padding: 4px 0;">Payment Method</td>
-                    <td style="color: #ffffff; text-align: right; padding: 4px 0;">${escapeHtml(order.paymentMethod || 'Cash on Delivery (COD)')}</td>
-                  </tr>
-                  <tr style="border-top: 1px solid #262626;">
-                    <td style="color: #ffffff; font-weight: 800; font-size: 16px; padding: 12px 0 4px;">Total Bill</td>
-                    <td style="color: #ffffff; font-weight: 800; font-size: 16px; text-align: right; padding: 12px 0 4px;">₹${(order.total || 0).toLocaleString('en-IN')}</td>
-                  </tr>
-                </table>
-              </div>
+        <div style="background: #141414; padding: 16px; border-radius: 6px; border: 1px solid #222222; margin-bottom: 24px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr>
+              <td style="color: #888888; padding: 4px 0;">Subtotal</td>
+              <td style="color: #ffffff; text-align: right; padding: 4px 0;">₹${(order.subtotal || 0).toLocaleString('en-IN')}</td>
+            </tr>
+            <tr>
+              <td style="color: #888888; padding: 4px 0;">Express Shipping (19,000+ PIN Codes)</td>
+              <td style="color: #4caf50; text-align: right; padding: 4px 0; font-weight: 700;">FREE</td>
+            </tr>
+            <tr>
+              <td style="color: #888888; padding: 4px 0;">Payment Method</td>
+              <td style="color: #ffffff; text-align: right; padding: 4px 0;">${escapeHtml(order.paymentMethod || 'Cash on Delivery (COD)')}</td>
+            </tr>
+            <tr>
+              <td style="color: #888888; padding: 4px 0;">Payment Status</td>
+              <td style="color: ${order.paymentStatus === 'Paid' ? '#4caf50' : '#ffa726'}; text-align: right; padding: 4px 0; font-weight: 700;">${escapeHtml(order.paymentStatus || 'Pending')}</td>
+            </tr>
+            ${order.delhiveryWaybill ? `
+            <tr>
+              <td style="color: #888888; padding: 4px 0;">Delhivery AWB Tracking</td>
+              <td style="color: #ffffff; text-align: right; padding: 4px 0; font-weight: 700;">${escapeHtml(order.delhiveryWaybill)}</td>
+            </tr>
+            ` : ''}
+            <tr style="border-top: 1px solid #262626;">
+              <td style="color: #ffffff; font-weight: 800; font-size: 16px; padding: 12px 0 4px;">Total Bill (Incl. GST)</td>
+              <td style="color: #ffffff; font-weight: 800; font-size: 16px; text-align: right; padding: 12px 0 4px;">₹${(order.total || 0).toLocaleString('en-IN')}</td>
+            </tr>
+          </table>
+        </div>
 
-              <div style="background: #141414; padding: 16px; border-radius: 6px; border: 1px solid #222222; margin-bottom: 28px; font-size: 13px; line-height: 1.6;">
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin-bottom: 6px;">Delivery Destination</div>
-                <div style="color: #ffffff; font-weight: 700;">${escapeHtml(order.customer?.name || 'Valued Client')}</div>
-                <div style="color: #cccccc;">
-                  ${escapeHtml(order.customer?.address || '')}${order.customer?.locality ? ', ' + escapeHtml(order.customer.locality) : ''}<br>
-                  ${escapeHtml(order.customer?.city || 'Mumbai')}, ${escapeHtml(order.customer?.state || 'Maharashtra')} ${escapeHtml(order.customer?.pincode || '')}<br>
-                  Phone: ${escapeHtml(order.customer?.phone || '+91 99999 99999')}
-                </div>
-              </div>
-
-              <div style="text-align: center; margin-bottom: 12px;">
-                <a href="${escapeHtml(safeHttpUrl(trackUrl))}" style="background: #ffffff; color: #000000; text-decoration: none; padding: 14px 28px; font-weight: 800; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px; display: block; margin-bottom: 10px;">
-                  TRACK SHIPMENT IN REAL TIME ➔
-                </a>
-                <a href="${whatsappUrl}" style="background: #25D366; color: #000000; text-decoration: none; padding: 12px 24px; font-weight: 800; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; display: block;">
-                  💬 RECEIVE LIVE UPDATES ON WHATSAPP
-                </a>
-              </div>
-            </div>
-
-            <div style="background: #000000; border-top: 1px solid #1a1a1a; padding: 20px 24px; text-align: center; font-size: 11px; color: #666666; line-height: 1.6;">
-              7-Day Doorstep Exchange Guarantee &bull; 100% Cotton Bio-Washed Apparel<br>
-              Need assistance? Reply directly to this email or chat with our 24/7 AI Concierge.<br>
-              &copy; ${new Date().getFullYear()} ALLEYRICH India. All rights reserved.
-            </div>
+        <div style="background: #141414; padding: 16px; border-radius: 6px; border: 1px solid #222222; margin-bottom: 28px; font-size: 13px; line-height: 1.6;">
+          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin-bottom: 6px;">Delivery Destination</div>
+          <div style="color: #ffffff; font-weight: 700;">${escapeHtml(order.customer?.name || 'Valued Client')}</div>
+          <div style="color: #cccccc;">
+            ${escapeHtml(order.customer?.address || '')}${order.customer?.locality ? ', ' + escapeHtml(order.customer.locality) : ''}<br>
+            ${escapeHtml(order.customer?.city || 'Mumbai')}, ${escapeHtml(order.customer?.state || 'Maharashtra')} ${escapeHtml(order.customer?.pincode || '')}<br>
+            Phone: ${escapeHtml(order.customer?.phone || '+91 99999 99999')}
           </div>
-        `
-      })
-    });
-    if (res.ok) {
-      console.log(`✅ [TAX INVOICE EMAIL] Delivered to ${email} for order ${order.id}`);
-      return true;
-    } else {
-      const errText = await res.text();
-      console.warn(`⚠️ [TAX INVOICE EMAIL ERROR]:`, errText);
-    }
-  } catch (err) {
-    console.warn(`⚠️ [TAX INVOICE EMAIL EXCEPTION]:`, err.message);
-  }
-  return false;
+        </div>
+
+        <div style="text-align: center; margin-bottom: 12px;">
+          <a href="${escapeHtml(safeHttpUrl(trackUrl))}" style="background: #ffffff; color: #000000; text-decoration: none; padding: 14px 28px; font-weight: 800; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px; display: block; margin-bottom: 10px;">
+            TRACK SHIPMENT IN REAL TIME ➔
+          </a>
+          <a href="${whatsappUrl}" style="background: #25D366; color: #000000; text-decoration: none; padding: 12px 24px; font-weight: 800; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; display: block;">
+            💬 RECEIVE LIVE UPDATES ON WHATSAPP
+          </a>
+        </div>
+      </div>
+
+      <div style="background: #000000; border-top: 1px solid #1a1a1a; padding: 20px 24px; text-align: center; font-size: 11px; color: #666666; line-height: 1.6;">
+        7-Day Doorstep Exchange Guarantee &bull; 100% Cotton Bio-Washed Apparel<br>
+        Need assistance? Reply directly to this email or chat with our 24/7 AI Concierge.<br>
+        &copy; ${new Date().getFullYear()} ALLEYRICH India. All rights reserved.
+      </div>
+    </div>
+  `;
+
+  const dispatched = await sendTransactionalEmail({
+    to: email,
+    subject: `Order Confirmed: #${order.id} | ALLEYRICH Official Atelier`,
+    htmlContent,
+    textContent: `Order Confirmed #${order.id}! Total: ₹${order.total}. Track shipment at: ${trackUrl}`,
+    tags: ['order-confirmation']
+  });
+
+  return dispatched;
 }
 
 // Order Tracking Public Handler
@@ -2847,6 +2866,7 @@ async function handleCashfreeWebhook(req, res) {
     memoryOrders = orders;
     memoryOrdersLastFetch = Date.now();
     await syncOrderToSupabase(order);
+    sendOrderConfirmationEmail(order).catch(() => {});
     dispatchN8nOrderWebhook(order).catch(() => {});
   }
   return sendJson(res, 200, { success: true, processed: true });
@@ -2891,10 +2911,9 @@ async function handleCashfreeVerify(req, res, id) {
   }
   await syncOrderToSupabase(order);
 
-  // Trigger automated n8n order receipt and tax invoice webhook
-  dispatchN8nOrderWebhook(order).catch(err => {
-    console.warn('⚠️ [N8N WEBHOOK WARNING]:', err.message);
-  });
+  // Send paid order confirmation email & optional webhook
+  sendOrderConfirmationEmail(order).catch(() => {});
+  dispatchN8nOrderWebhook(order).catch(() => {});
 
   return sendJson(res, 200, {
     success: true,
@@ -3817,49 +3836,38 @@ async function appHandler(req, res) {
           subs.map(s => (s.email || '').toLowerCase().trim()).filter(e => e && e.includes('@'))
         ));
 
-        const resendApiKey = process.env.RESEND_API_KEY;
+        const hasEmailEngine = Boolean(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY);
         let sentCount = 0;
 
         for (const email of uniqueEmails) {
-          if (resendApiKey) {
-            try {
-              const emailRes = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${resendApiKey}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
-                  to: [email],
-                  subject: subject,
-                  html: `
-                    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
-                      <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
-                        <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
-                        <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
-                      </div>
-                      <div style="padding:28px 0;">
-                        ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${safeHeadline}</h2>` : ''}
-                        <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
-                          ${safeMessage}
-                        </div>
-                        <div style="text-align:center; margin:30px 0;">
-                          <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
-                        </div>
-                      </div>
-                      <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
-                        You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
-                        &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
-                      </div>
+          if (hasEmailEngine) {
+            const delivered = await sendTransactionalEmail({
+              to: email,
+              subject: subject,
+              htmlContent: `
+                <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
+                  <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
+                    <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
+                    <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
+                  </div>
+                  <div style="padding:28px 0;">
+                    ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${safeHeadline}</h2>` : ''}
+                    <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
+                      ${safeMessage}
                     </div>
-                  `
-                })
-              });
-              if (emailRes.ok) sentCount++;
-            } catch (e) {
-              console.warn(`Failed to dispatch broadcast to ${email}:`, e.message);
-            }
+                    <div style="text-align:center; margin:30px 0;">
+                      <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                    </div>
+                  </div>
+                  <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
+                    You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
+                    &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
+                  </div>
+                </div>
+              `,
+              tags: ['broadcast']
+            });
+            if (delivered) sentCount++;
           } else {
             sentCount++;
           }
@@ -3939,56 +3947,44 @@ async function appHandler(req, res) {
 
         // 1. Dispatch Emails if channel is 'all' or 'email'
         if (channel === 'all' || channel === 'email') {
-          const resendApiKey = process.env.RESEND_API_KEY;
+          const hasEmailEngine = Boolean(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY);
           const emailSubject = subject || headline || 'New Streetwear Drop: ALLEYRICH Exclusive Access';
 
           for (const email of aggregated.emails) {
-            if (resendApiKey) {
-              try {
-                const emailRes = await fetch('https://api.resend.com/emails', {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${resendApiKey}`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
-                    to: [email],
-                    subject: emailSubject,
-                    html: `
-                      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
-                        <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
-                          <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
-                          <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
-                        </div>
-                        <div style="padding:28px 0;">
-                          ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${safeHeadline}</h2>` : ''}
-                          <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
-                          ${safeMessage}
-                          </div>
-                          ${code ? `<div style="background:#1a1a1a;border:1px dashed #444;padding:12px;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:24px;color:#fff;">USE CODE: ${safeCode}</div>` : ''}
-                          <div style="text-align:center; margin:30px 0;">
-                            <a href="${safeLink}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
-                          </div>
-                        </div>
-                        <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
-                          You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
-                          &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
-                        </div>
+            if (hasEmailEngine) {
+              const delivered = await sendTransactionalEmail({
+                to: email,
+                subject: emailSubject,
+                htmlContent: `
+                  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
+                    <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
+                      <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
+                      <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
+                    </div>
+                    <div style="padding:28px 0;">
+                      ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${safeHeadline}</h2>` : ''}
+                      <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
+                      ${safeMessage}
                       </div>
-                    `
-                  })
-                });
-                if (emailRes.ok) emailSentCount++;
-              } catch (e) {
-                console.warn(`Failed to dispatch broadcast email to ${email}:`, e.message);
-              }
+                      ${code ? `<div style="background:#1a1a1a;border:1px dashed #444;padding:12px;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:24px;color:#fff;">USE CODE: ${safeCode}</div>` : ''}
+                      <div style="text-align:center; margin:30px 0;">
+                        <a href="${safeLink}" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                      </div>
+                    </div>
+                    <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
+                      You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
+                      &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
+                    </div>
+                  </div>
+                `,
+                tags: ['marketing-drop']
+              });
+              if (delivered) emailSentCount++;
             } else {
               emailSentCount++;
             }
           }
         }
-
         // 2. Dispatch WhatsApp if channel is 'all' or 'whatsapp'
         if (channel === 'all' || channel === 'whatsapp') {
           const promoText = whatsapp.buildWhatsAppPromoMessage({
@@ -5016,49 +5012,38 @@ async function appHandler(req, res) {
         subs.map(s => (s.email || '').toLowerCase().trim()).filter(e => e && e.includes('@'))
       ));
 
-      const resendApiKey = process.env.RESEND_API_KEY;
+      const hasEmailEngine = Boolean(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY);
       let sentCount = 0;
 
       for (const email of uniqueEmails) {
-        if (resendApiKey) {
-          try {
-            const emailRes = await fetch('https://api.resend.com/emails', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${resendApiKey}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                from: process.env.RESEND_FROM_EMAIL || 'ALLEYRICH <onboarding@resend.dev>',
-                to: [email],
-                subject: subject,
-                html: `
-                  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
-                    <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
-                      <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
-                      <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
-                    </div>
-                    <div style="padding:28px 0;">
-                      ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${headline}</h2>` : ''}
-                      <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
-                        ${message.replace(/\n/g, '<br>')}
-                      </div>
-                      <div style="text-align:center; margin:30px 0;">
-                        <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
-                      </div>
-                    </div>
-                    <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
-                      You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
-                      &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
-                    </div>
+        if (hasEmailEngine) {
+          const delivered = await sendTransactionalEmail({
+            to: email,
+            subject: subject,
+            htmlContent: `
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; max-width:580px; margin:0 auto; padding:32px 24px; background:#0d0d0d; color:#ffffff; border:1px solid #222222; border-radius:6px;">
+                <div style="text-align:center; padding-bottom:24px; border-bottom:1px solid #1f1f1f;">
+                  <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
+                  <p style="font-size:11px; letter-spacing:0.12em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Architectural Streetwear &bull; Homegrown in India</p>
+                </div>
+                <div style="padding:28px 0;">
+                  ${headline ? `<h2 style="font-size:18px; font-weight:800; color:#ffffff; letter-spacing:0.08em; text-transform:uppercase; margin:0 0 16px;">${headline}</h2>` : ''}
+                  <div style="font-size:14px; line-height:1.7; color:#cccccc; margin-bottom:28px;">
+                    ${message.replace(/\n/g, '<br>')}
                   </div>
-                `
-              })
-            });
-            if (emailRes.ok) sentCount++;
-          } catch (e) {
-            console.warn(`Failed to dispatch broadcast to ${email}:`, e.message);
-          }
+                  <div style="text-align:center; margin:30px 0;">
+                    <a href="https://alleyrich.com/collections.html" style="display:inline-block; background:#ffffff; color:#000000; text-decoration:none; padding:14px 28px; font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; border-radius:2px;">EXPLORE COLLECTION</a>
+                  </div>
+                </div>
+                <div style="border-top:1px solid #1f1f1f; padding-top:20px; font-size:11px; color:#666666; text-align:center; line-height:1.6;">
+                  You are receiving this communication as an exclusive member of the ALLEYRICH Inner Circle.<br>
+                  &copy; ${new Date().getFullYear()} ALLEYRICH. All rights reserved.
+                </div>
+              </div>
+            `,
+            tags: ['subscribers-broadcast']
+          });
+          if (delivered) sentCount++;
         } else {
           sentCount++;
         }

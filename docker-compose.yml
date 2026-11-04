@@ -32,10 +32,11 @@ services:
       - CASHFREE_SECRET_KEY=${CASHFREE_SECRET_KEY:-}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-ALLYRICH <onboarding@resend.dev>}
-      - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-https://priyanshuf1.app.n8n.cloud/webhook/allyrich-orders}
-      - N8N_OTP_WEBHOOK_URL=${N8N_OTP_WEBHOOK_URL:-}
       - BREVO_API_KEY=${BREVO_API_KEY:-}
       - BREVO_SENDER_EMAIL=${BREVO_SENDER_EMAIL:-support@allyrich.com}
+      - BREVO_SENDER_NAME=${BREVO_SENDER_NAME:-ALLEYRICH}
+      - N8N_ORDER_WEBHOOK_URL=${N8N_ORDER_WEBHOOK_URL:-}
+      - N8N_OTP_WEBHOOK_URL=${N8N_OTP_WEBHOOK_URL:-}
       - APP_DOMAIN=${APP_DOMAIN:-alleyrich.com}
       - ADMIN_SECRET_KEY=${ADMIN_SECRET_KEY:-genrage_super_admin_secret_key_2026}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-Deepak_is_admin}

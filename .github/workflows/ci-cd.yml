@@ -37,6 +37,9 @@ jobs:
       - name: Test Production Logistics, OTP, and n8n Webhook Pipeline
         run: node test_complete_fixes.js
 
+      - name: Test Direct Brevo & Resend Transactional Email Engine
+        run: node test_brevo_email.js
+
       - name: Test D2C Features & 60 FPS Performance Optimizations
         run: node test_d2c_performance.js
 
@@ -171,6 +174,8 @@ jobs:
             echo "BREVO_API_KEY=${BREVO_API_KEY:-}" >> .env
             sed -i '/^BREVO_SENDER_EMAIL=/d' .env
             echo "BREVO_SENDER_EMAIL=support@allyrich.com" >> .env
+            sed -i '/^BREVO_SENDER_NAME=/d' .env
+            echo "BREVO_SENDER_NAME=ALLEYRICH" >> .env
             sed -i '/^N8N_OTP_WEBHOOK_URL=/d' .env
             echo "N8N_OTP_WEBHOOK_URL=${N8N_OTP_WEBHOOK_URL:-}" >> .env
             # Cleanly stop and remove any old/orphan containers to prevent port collisions
