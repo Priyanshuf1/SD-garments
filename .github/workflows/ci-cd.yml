@@ -34,7 +34,7 @@ jobs:
       - name: Test Security & Abuse Controls (Rate Limiting, Brute Force, SSRF)
         run: node test_security_abuse_controls.js
 
-      - name: Test Production Logistics, OTP, and n8n Webhook Pipeline
+      - name: Test Production Logistics, OTP, and Order Receipt Pipeline
         run: node test_complete_fixes.js
 
       - name: Test Direct Brevo & Resend Transactional Email Engine
@@ -105,7 +105,6 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          N8N_ORDER_WEBHOOK_URL: ${{ secrets.N8N_ORDER_WEBHOOK_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -123,7 +122,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: GEMINI_API_KEY,N8N_ORDER_WEBHOOK_URL,RESEND_API_KEY,BREVO_API_KEY,DB_NAME,DB_USER,DB_PASSWORD,CASHFREE_APP_ID,CASHFREE_SECRET_KEY,ADMIN_SECRET_KEY,ADMIN_USERNAME,ADMIN_PASSWORD,ADMIN_2FA_SECRET,AUTH_SESSION_SECRET,DELHIVERY_API_TOKEN
+          envs: GEMINI_API_KEY,RESEND_API_KEY,BREVO_API_KEY,DB_NAME,DB_USER,DB_PASSWORD,CASHFREE_APP_ID,CASHFREE_SECRET_KEY,ADMIN_SECRET_KEY,ADMIN_USERNAME,ADMIN_PASSWORD,ADMIN_2FA_SECRET,AUTH_SESSION_SECRET,DELHIVERY_API_TOKEN
           script: |
             cd ~/SD-garments
             mkdir -p ~/SD-garments-data-backup ~/SD-garments-uploads-backup assets/uploads
@@ -145,7 +144,6 @@ jobs:
             if [ -n "$GEMINI_API_KEY" ]; then
               write_env GEMINI_API_KEY "$GEMINI_API_KEY"
             fi
-            [ -z "$N8N_ORDER_WEBHOOK_URL" ] || write_env N8N_ORDER_WEBHOOK_URL "$N8N_ORDER_WEBHOOK_URL"
             [ -z "$RESEND_API_KEY" ] || write_env RESEND_API_KEY "$RESEND_API_KEY"
             [ -z "$BREVO_API_KEY" ] || write_env BREVO_API_KEY "$BREVO_API_KEY"
             write_env DB_NAME "${DB_NAME:-alleyrich_production}"
@@ -176,12 +174,10 @@ jobs:
             echo "BREVO_SENDER_EMAIL=alleyrich11@gmail.com" >> .env
             sed -i '/^BREVO_SENDER_NAME=/d' .env
             echo "BREVO_SENDER_NAME=ALLEYRICH" >> .env
-            sed -i '/^N8N_OTP_WEBHOOK_URL=/d' .env
-            echo "N8N_OTP_WEBHOOK_URL=${N8N_OTP_WEBHOOK_URL:-}" >> .env
             # Cleanly stop and remove any old/orphan containers to prevent port collisions
             sudo docker compose down --remove-orphans || true
-            sudo docker stop allyrich-web allyrich-db alleyrich-storefront alleyrich-db 2>/dev/null || true
-            sudo docker rm allyrich-web allyrich-db alleyrich-storefront alleyrich-db 2>/dev/null || true
+            sudo docker stop allyrich-web allyrich-db alleyrich-storefront alleyrich-db n8n 2>/dev/null || true
+            sudo docker rm allyrich-web allyrich-db alleyrich-storefront alleyrich-db n8n 2>/dev/null || true
             sudo docker compose build --no-cache web
             sudo docker compose up -d --remove-orphans
             echo "Waiting for services to initialize..."

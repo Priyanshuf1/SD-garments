@@ -62,7 +62,7 @@ The application is deployed live in production on an **AWS EC2 infrastructure st
              - Delhivery Express Production API: Live 19,000+ PIN verification & AWB generation
              - Cashfree Payments: PCI-DSS compliant UPI, Cards, NetBanking aggregator
              - Resend & Brevo APIs: Transactional OTP verification & customer notifications
-             - n8n Cloud Webhook: Automated event streaming to fulfillment pipelines
+             - Brevo API: Direct transactional order receipts, tax invoices & OTP delivery
 ```
 
 ### Actual AWS Cloud Components in Production
@@ -98,7 +98,7 @@ Every code push to `main` triggers a fully automated 3-stage pipeline defined in
  │ STAGE 1: AUTOMATED SECURITY, COMPLIANCE & PERFORMANCE AUDIT (test-and-verify)        │
  │ • Run DPDP Act 2023 & Consumer Protection E-Commerce Rules test (test_legal_policies) │
  │ • Run Rate Limiting, 5-Attempt Brute-Force & SSRF guard test (test_security_abuse)   │
- │ • Run Production Logistics, OTP & n8n webhook integration test (test_complete_fixes) │
+ │ • Run Production Logistics, OTP & Order integration test (test_complete_fixes) │
  │ • Run D2C Features, DPR Clamping & 60 FPS WebGL test (test_d2c_performance.js)       │
  └──────────────────────────────────────────────────────────────────────────────────────┘
        │ [All tests pass]

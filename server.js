@@ -1130,30 +1130,7 @@ async function sendOtpEmail(email, otpCode) {
     tags: ['auth-otp']
   });
 
-  // 3. Optional fallback: n8n OTP Webhook (if specifically configured)
-  const n8nOtpUrl = process.env.N8N_OTP_WEBHOOK_URL;
-  if (!emailDispatched && n8nOtpUrl && n8nOtpUrl.startsWith('http')) {
-    try {
-      const res = await fetch(n8nOtpUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'auth.otp',
-          email: cleanEmail,
-          otpCode,
-          expiresAt: Date.now() + 10 * 60 * 1000
-        })
-      });
-      if (res.ok) {
-        emailDispatched = true;
-        console.log(`✅ [N8N OTP DISPATCH] Successfully triggered n8n OTP delivery for ${cleanEmail}`);
-      }
-    } catch (err) {
-      console.warn(`⚠️ [N8N OTP NOTICE]:`, err.message);
-    }
-  }
-
-  // 4. Supabase OTP Magic Link Fallback
+  // 3. Supabase OTP Magic Link Fallback
   if (!emailDispatched && supabase.isConfigured) {
     try {
       const supaRes = await supabase.auth.sendMagicLink({ email: cleanEmail });
@@ -1168,56 +1145,7 @@ async function sendOtpEmail(email, otpCode) {
   return emailDispatched;
 }
 
-// Optional n8n Webhook Dispatch Service (Graceful fallback)
-async function dispatchN8nOrderWebhook(order) {
-  const n8nUrl = process.env.N8N_ORDER_WEBHOOK_URL;
-  if (!n8nUrl || !n8nUrl.startsWith('http')) return false;
 
-  try {
-    const taxInvoice = order.taxInvoice || {
-      invoiceNumber: `INV-${order.id}`,
-      date: order.createdAt || new Date().toISOString(),
-      gstin: '09AAECS1234F1Z5',
-      subtotal: order.subtotal || order.total,
-      cgst: Number(((order.total || 0) * 0.025).toFixed(2)),
-      sgst: Number(((order.total || 0) * 0.025).toFixed(2)),
-      igst: 0,
-      totalTax: Number(((order.total || 0) * 0.05).toFixed(2)),
-      grandTotal: order.total
-    };
-
-    const res = await fetch(n8nUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: 'order.created',
-        orderId: order.id,
-        createdAt: order.createdAt || new Date().toISOString(),
-        customer: order.customer,
-        items: order.items,
-        total: order.total,
-        subtotal: order.subtotal,
-        shipping: order.shipping,
-        paymentMethod: order.paymentMethod,
-        paymentStatus: order.paymentStatus,
-        orderStatus: order.orderStatus,
-        taxInvoice,
-        trackingNumber: order.trackingNumber || order.delhiveryWaybill || '',
-        trackingUrl: order.trackingUrl || `http://${process.env.APP_DOMAIN || 'alleyrich.com'}/pages/track-order.html?order=${encodeURIComponent(order.id)}`
-      })
-    });
-    if (res.ok) {
-      console.log(`🚀 [N8N WEBHOOK DISPATCH] Successfully triggered n8n workflow for order ${order.id}`);
-      return true;
-    } else {
-      const err = await res.text();
-      console.warn(`⚠️ [N8N WEBHOOK NOTICE]: n8n response: ${err}`);
-    }
-  } catch (err) {
-    console.warn(`ℹ️ [N8N WEBHOOK NOTICE]: n8n webhook offline or trial expired (${err.message}). Direct email engine handled customer delivery.`);
-  }
-  return false;
-}
 
 // Order Confirmation & Tax Invoice Email Service (Brevo + Resend)
 async function sendOrderConfirmationEmail(order) {
@@ -2325,9 +2253,6 @@ async function handleCreateOrder(req, res, isCheckout = false) {
   sendOrderConfirmationEmail(newOrder).catch(err => {
     console.warn('⚠️ [ASYNC ORDER EMAIL WARNING]:', err.message);
   });
-  dispatchN8nOrderWebhook(newOrder).catch(err => {
-    console.warn('⚠️ [N8N WEBHOOK WARNING]:', err.message);
-  });
 
   return sendJson(res, 201, {
     success: true,
@@ -2870,7 +2795,6 @@ async function handleCashfreeWebhook(req, res) {
     memoryOrdersLastFetch = Date.now();
     await syncOrderToSupabase(order);
     sendOrderConfirmationEmail(order).catch(() => {});
-    dispatchN8nOrderWebhook(order).catch(() => {});
   }
   return sendJson(res, 200, { success: true, processed: true });
 }
@@ -2916,7 +2840,6 @@ async function handleCashfreeVerify(req, res, id) {
 
   // Send paid order confirmation email & optional webhook
   sendOrderConfirmationEmail(order).catch(() => {});
-  dispatchN8nOrderWebhook(order).catch(() => {});
 
   return sendJson(res, 200, {
     success: true,
@@ -4349,7 +4272,7 @@ async function appHandler(req, res) {
         }
       }
 
-      // Send real email via Resend / Brevo / n8n / Supabase custom SMTP
+      // Send real email via Brevo / Resend / Supabase custom SMTP
       const dispatched = await sendOtpEmail(email, otpCode);
 
       // Return clean, secure customer response without exposing the OTP code in prod when delivered,

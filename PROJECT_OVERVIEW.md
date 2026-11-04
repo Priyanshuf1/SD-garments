@@ -53,7 +53,7 @@
     - PostgreSQL 16 (AWS RDS / Docker)                      - Cashfree Payments (PCI-DSS Aggregator)
     - Persistent Docker Volumes                             - Delhivery Express (Live AWB Tracking & Dispatch)
     - Local JSON Resilient Caching                          - Resend & Brevo APIs (Transactional OTP & Notifications)
-    - Multi-Device Profile & Wishlist Sync                  - n8n Cloud Webhook (Order Automation)
+    - Multi-Device Profile & Wishlist Sync                  - Brevo Transactional Email Engine (300/day free)
 ```
 
 ---

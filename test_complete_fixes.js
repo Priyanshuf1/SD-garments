@@ -3,7 +3,7 @@
  * 1. Delhivery Shipping Label Proxy (No 401 Authentication errors, HTTP 302 or 200 printable barcode slip)
  * 2. Delhivery Courier Cancellation Endpoint (POST /api/admin/orders/:id/delhivery-cancel)
  * 3. Robust OTP System (send-otp, verify-otp, DB persistence, fallback delivery)
- * 4. Automated n8n Order Receipt & Tax Invoice Delivery (event: 'order.created' with tax invoice)
+ * 4. Automated Brevo Order Receipt & Tax Invoice Delivery (event: 'order.created' with tax invoice)
  */
 
 const http = require('http');
@@ -16,7 +16,6 @@ process.env.PORT = '3459';
 process.env.DELHIVERY_API_TOKEN = process.env.DELHIVERY_API_TOKEN || 'test-delhivery-token-not-for-production';
 process.env.ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'test-admin-secret-key-not-for-production-32';
 process.env.ALLOW_SYNTHETIC_AWB = 'true';
-process.env.N8N_ORDER_WEBHOOK_URL = 'https://priyanshuf1.app.n8n.cloud/webhook/allyrich-orders';
 process.env.APP_DOMAIN = 'alleyrich.com';
 
 const appHandler = require('./server.js');
@@ -225,9 +224,9 @@ async function runTests() {
     logPass('OTP email case-normalization verified successfully');
 
     // -----------------------------------------------------------------
-    // TEST SUITE 4: Order Creation & n8n Webhook Dispatch
+    // TEST SUITE 4: Order Creation & Order Receipt Pipeline
     // -----------------------------------------------------------------
-    console.log('\n[4] Testing Order Creation & n8n Order Receipt Webhook:');
+    console.log('\n[4] Testing Order Creation & Order Receipt Pipeline:');
 
     const catalogResponse = await request('GET', '/api/products');
     const catalogProduct = catalogResponse.json?.products?.find(p => p.variants?.[0]?.available !== false);
