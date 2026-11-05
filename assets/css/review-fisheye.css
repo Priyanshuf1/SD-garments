@@ -6,6 +6,9 @@
 #shopify-section-client-reviews #canvas-container,
 #shopify-section-client-reviews canvas {
   touch-action: pan-y !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 
 #shopify-section-client-reviews {

@@ -3930,4 +3930,678 @@ void main() {
     }
   }
 }
-class yc{constructor(){this.container=document.getElementById("review-canvas-container")||document.getElementById("canvas-container"),this.container&&(this.width=this.container.clientWidth||window.innerWidth,this.height=this.container.clientHeight||Math.min(window.innerHeight*.82,720),this.audio=new tv,this.pos=0,this.targetPos=0,this.isDragging=!1,this.startX=0,this.lastX=0,this.dragDistance=0,this.snapTimeout=null,this.lastIntPos=0,this.lastDetent=0,this.autoScrollSpeed=.22,this.lastInteractionTime=0,this.lastFrameTime=performance.now(),this.isFisheye=!0,this.fisheyeAmount=1,this.fisheyeTween=null,this.raycaster=new Lg,this.mouse=new He,this.fisheyeBtn=document.getElementById("fisheye-btn"),this.initThree(),this.loadTextures(),this.createCards(),this.createFisheyePipeline(),setTimeout(()=>{try{this.cubeCamera.position.copy(this.camera.position);this.cubeCamera.update(this.renderer,this.scene);this.renderer.render(this.postScene,this.postCamera)}catch(e){}},300),this.bindEvents(),this.animate=this.animate.bind(this),window.__reviewGallery=this,this.isInViewport=!1,this.rafId=null,"IntersectionObserver"in window?this.setupObserver():(this.isInViewport=!0,this.rafId=requestAnimationFrame(this.animate)))}setupObserver(){this.observer=new IntersectionObserver(e=>{e.forEach(t=>{this.isInViewport=t.isIntersecting,this.isInViewport&&!this.rafId?(this.lastFrameTime=performance.now(),this.rafId=requestAnimationFrame(this.animate)):!this.isInViewport&&this.rafId&&(cancelAnimationFrame(this.rafId),this.rafId=null)})},{threshold:0}),this.observer.observe(this.container)}initThree(){this.renderer=new ru({powerPreference:"high-performance",antialias:!0,alpha:!1}),this.renderer.setSize(this.width,this.height),this.renderer.setPixelRatio(Math.min(Math.min(window.devicePixelRatio||1,1.5),1.25)),this.renderer.setClearColor(12895428,1),this.renderer.outputColorSpace=ht,this.container.appendChild(this.renderer.domElement),this.scene=new ec,this.scene.background=new ke(12895428),this.camera=new nn(_s,this.width/this.height,.1,1e3),this.camera.position.set(0,0,Ec)}loadTextures(){const e=new Pg;this.textures=[],Sc.forEach((t,n)=>{const i=e.load(t,()=>{i.colorSpace=ht,i.minFilter=ir,i.magFilter=Dt,i.generateMipmaps=!0,this.updateCardCover(n)});this.textures.push(i)})}getVisibleSize(){const e=this.width/Math.max(1,this.height),t=2*Math.tan(Ri.degToRad(_s*.5))*Ec;return{visibleW:t*e,visibleH:t}}getCardDimensions(){const{visibleH:e}=this.getVisibleSize(),t=1+.35*this.fisheyeAmount;let n=e*.74*t;this.width<=760&&(n=e*.8*t);const i=n*Tc,s=i*1.14;return{cardW:i,cardH:n,spacing:s}}createCards(){this.cardsGroup=new Mr,this.scene.add(this.cardsGroup),this.cardMeshes=[];const e=new Dr(1,1);for(let t=0;t<Ca;t++){const n=new Un({vertexShader:$0,fragmentShader:J0,uniforms:{uMap:{value:this.textures[0]||null},uCoverUv:{value:new gt(1,1,0,0)},uParallax:{value:new B(0,0,.88)},uSat:{value:1},uOpacity:{value:1}},transparent:!0,depthWrite:!1}),i=new gn(e,n);this.cardsGroup.add(i),this.cardMeshes.push({mesh:i,material:n,assignedIndex:-1,currentWrappedOffset:0})}}updateCardCover(e){const t=this.textures[e];if(!t||!t.image)return;const n=t.image.width||1,i=t.image.height||1,s=n/i,o=Tc,a=s>o?o/s:1,l=s>o?1:s/o,c=(1-a)/2,u=(1-l)/2;this.cardMeshes.forEach(h=>{h.assignedIndex===e&&h.material.uniforms.uCoverUv.value.set(a,l,c,u)})}createFisheyePipeline(){this.cubeRenderTarget=new Zc(512,{generateMipmaps:!1,minFilter:Dt,magFilter:Dt}),this.cubeRenderTarget.texture.colorSpace=ht,this.cubeCamera=new Yc(.1,1e3,this.cubeRenderTarget),this.cubeCamera.position.copy(this.camera.position),this.postScene=new ec,this.postCamera=new ao,this.lensMaterial=new Un({vertexShader:Q0,fragmentShader:ev,uniforms:{uScene:{value:this.cubeRenderTarget.texture},uResolution:{value:new He(this.width,this.height)},uAmount:{value:1},uRadius:{value:.86*Math.hypot(this.width,this.height)},uFocal:{value:this.height/(2*Math.tan(Ri.degToRad(_s*.5)))}},transparent:!0,depthTest:!1,depthWrite:!1});const e=new gn(new Dr(2,2),this.lensMaterial);e.frustumCulled=!1,this.postScene.add(e);try{this.cubeCamera.update(this.renderer,this.scene);this._hasRenderedCube=!0}catch(err){}}bindEvents(){window.addEventListener("resize",()=>this.onResize(),{passive:!0});["pointerdown","touchstart","keydown"].forEach(k=>window.addEventListener(k,()=>this.audio.init(),{passive:!0}));const e=i=>{this.audio.init(),this.isDragging=!0,this.lastInteractionTime=performance.now(),this.startX=i,this.lastX=i,this.dragDistance=0,this.snapTimeout&&clearTimeout(this.snapTimeout)},t=i=>{if(!this.isDragging)return;this.lastInteractionTime=performance.now();const s=i-this.lastX;this.lastX=i,this.dragDistance+=Math.abs(s);const{cardW:o}=this.getCardDimensions(),a=o/this.getVisibleSize().visibleW*this.width,l=s/(a*1.15);this.targetPos-=l,this.pos-=l*.95},n=i=>{this.isDragging&&(this.isDragging=!1,this.lastInteractionTime=performance.now(),this.dragDistance<8&&i?this.handleCardClick(i.clientX,i.clientY):this.scheduleSnap(100))};this.container.addEventListener("pointerdown",i=>e(i.clientX),{passive:!0}),window.addEventListener("pointermove",i=>t(i.clientX),{passive:!0}),window.addEventListener("pointerup",n,{passive:!0}),window.addEventListener("pointercancel",n,{passive:!0}),this.container.addEventListener("wheel",i=>{const isHorizontal=Math.abs(i.deltaX)>Math.abs(i.deltaY)||i.shiftKey;if(!isHorizontal)return;this.audio.init(),this.lastInteractionTime=performance.now();const o=i.shiftKey?i.deltaY:i.deltaX;this.targetPos+=o*.0022,this.scheduleSnap(220)},{passive:!0}),window.addEventListener("keydown",i=>{this.isInViewport&&(i.key==="ArrowRight"?(this.audio.init(),this.lastInteractionTime=performance.now(),this.targetPos=Math.round(this.targetPos)+1,this.scheduleSnap(40)):i.key==="ArrowLeft"&&(this.audio.init(),this.lastInteractionTime=performance.now(),this.targetPos=Math.round(this.targetPos)-1,this.scheduleSnap(40)))}),this.fisheyeBtn&&this.fisheyeBtn.addEventListener("click",()=>{this.lastInteractionTime=performance.now(),this.toggleFisheye()})}isElementInViewport(e){return this.isInViewport}handleCardClick(e,t){const n=this.container.getBoundingClientRect(),i=e-n.left,s=t-n.top;if(this.fisheyeAmount>.5){const l=this.width/2;this.lastInteractionTime=performance.now(),i<l-120?(this.targetPos=Math.round(this.targetPos)-1,this.audio.playTick(.88)):i>l+120&&(this.targetPos=Math.round(this.targetPos)+1,this.audio.playTick(.88));return}this.mouse.x=i/this.width*2-1,this.mouse.y=-(s/this.height)*2+1,this.raycaster.setFromCamera(this.mouse,this.camera);const o=this.cardMeshes.map(l=>l.mesh),a=this.raycaster.intersectObjects(o);if(a.length>0){const l=a[0].object,c=this.cardMeshes.find(u=>u.mesh===l);if(c){this.lastInteractionTime=performance.now();const u=Math.round(c.currentWrappedOffset);Math.abs(u)>0&&(this.targetPos=Math.round(this.pos)+u,this.audio.playTick(.88))}}}scheduleSnap(e=150){this.snapTimeout&&clearTimeout(this.snapTimeout),this.snapTimeout=setTimeout(()=>{this.targetPos=Math.round(this.targetPos)},e)}toggleFisheye(){this.audio.init(),this.audio.playTick(.85),this.isFisheye=!this.isFisheye;const e=this.isFisheye?1:0;this.fisheyeBtn&&(this.fisheyeBtn.classList.toggle("is-active",this.isFisheye),this.fisheyeBtn.setAttribute("aria-pressed",String(this.isFisheye)),this.fisheyeBtn.innerHTML=this.isFisheye?'<span class="btn-text">FISHEYE: [ON]</span>':'<span class="btn-text">FISHEYE: [OFF]</span>'),this.fisheyeTween&&this.fisheyeTween.kill(),this.fisheyeTween=th.to(this,{fisheyeAmount:e,duration:1.4,ease:"power2.inOut",onUpdate:()=>{this.lensMaterial.uniforms.uAmount.value=this.fisheyeAmount}})}onResize(){this.container&&(this.width=this.container.clientWidth,this.height=this.container.clientHeight||Math.min(window.innerHeight*.82,720),this.renderer.setSize(this.width,this.height),this.renderer.setPixelRatio(Math.min(Math.min(window.devicePixelRatio||1,1.5),1.25)),this.camera.aspect=this.width/this.height,this.camera.updateProjectionMatrix(),this.lensMaterial.uniforms.uResolution.value.set(this.width,this.height),this.lensMaterial.uniforms.uRadius.value=.86*Math.hypot(this.width,this.height),this.lensMaterial.uniforms.uFocal.value=this.height/(2*Math.tan(Ri.degToRad(_s*.5))))}animate(){if(!this.isInViewport||window.__isPageScrolling){this.rafId=null;return}this.rafId=requestAnimationFrame(this.animate);const e=performance.now(),t=this.lastFrameTime?Math.min((e-this.lastFrameTime)/1e3,.1):.016;this.lastFrameTime=e;if(!this.isDragging&&!window.__isPageScrolling&&e-this.lastInteractionTime>2e3){this.targetPos+=this.autoScrollSpeed*t}const prevPos=this.pos;this.pos+=(this.targetPos-this.pos)*.1;const cardsMoved=Math.abs(this.pos-prevPos)>0.0001||this.isDragging||!this._hasRenderedCube;const c=Math.round(this.pos);if(c!==this.lastIntPos){this.lastIntPos=c;this.audio.playTick(.88)}const u=Math.floor(this.pos*3.5);if(u!==this.lastDetent&&Math.abs(this.targetPos-this.pos)>.015){this.lastDetent=u;this.audio.playTick(.55)}const{cardW:i,cardH:s,spacing:o}=this.getCardDimensions(),a=Math.floor(Ca/2),l=Sc.length;this.cardMeshes.forEach((h,f)=>{const m=f-a,g=Ri.euclideanModulo(m-this.pos+a,Ca)-a;h.currentWrappedOffset=g;const _=g*o;h.mesh.position.set(_,0,0),h.mesh.scale.set(i,s,1);const p=Ri.euclideanModulo(Math.round(this.pos+g),l);h.assignedIndex!==p&&(h.assignedIndex=p,h.material.uniforms.uMap.value=this.textures[p],this.updateCardCover(p));const d=Math.abs(g),S=Math.max(0,1-d*.85),x=Math.pow(S,1.2),E=.42+.58*S;h.material.uniforms.uSat.value=x,h.material.uniforms.uOpacity.value=E;const w=Ri.clamp(-g*.04,-.08,.08);h.material.uniforms.uParallax.value.x=w}),this.fisheyeAmount>1e-4?(cardsMoved&&(this.cubeCamera.position.copy(this.camera.position),this.cubeCamera.update(this.renderer,this.scene),this._hasRenderedCube=!0),this.renderer.render(this.postScene,this.postCamera)):this.renderer.render(this.scene,this.camera)}}function initReviewGallery(){const e=document.getElementById("review-canvas-container")||document.getElementById("canvas-container");if(!e)return;if("IntersectionObserver"in window){const t=new IntersectionObserver(n=>{n[0].isIntersecting&&(t.disconnect(),new yc)},{rootMargin:"400px 0px 400px 0px"});t.observe(e)}else new yc}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",initReviewGallery):initReviewGallery();
+class yc {
+  constructor() {
+    this.container = document.getElementById("review-canvas-container") || document.getElementById("canvas-container");
+    if (!this.container) return;
+
+    this.width = this.container.clientWidth || window.innerWidth;
+    this.height = this.container.clientHeight || Math.min(window.innerHeight * 0.82, 720);
+    this.audio = new tv();
+    this.pos = 0;
+    this.targetPos = 0;
+    this.isDragging = false;
+    this.startX = 0;
+    this.lastX = 0;
+    this.dragDistance = 0;
+    this.snapTimeout = null;
+    this.lastIntPos = 0;
+    this.lastDetent = 0;
+    this.autoScrollSpeed = 0.22;
+    this.lastInteractionTime = 0;
+    this.lastFrameTime = performance.now();
+    this.isFisheye = true;
+    this.fisheyeAmount = 1;
+    this.fisheyeTween = null;
+    this.raycaster = new Lg();
+    this.mouse = new He();
+    this.fisheyeBtn = document.getElementById("fisheye-btn");
+
+    this.initThree();
+    this.loadTextures();
+    this.createCards();
+    this.createFisheyePipeline();
+
+    setTimeout(() => {
+      try {
+        this.cubeCamera.position.copy(this.camera.position);
+        this.cubeCamera.update(this.renderer, this.scene);
+        this.renderer.render(this.postScene, this.postCamera);
+      } catch (e) {}
+    }, 300);
+
+    this.bindEvents();
+    this.animate = this.animate.bind(this);
+    window.__reviewGallery = this;
+    this.isInViewport = false;
+    this.rafId = null;
+
+    if ("IntersectionObserver" in window) {
+      this.setupObserver();
+    } else {
+      this.isInViewport = true;
+      this.rafId = requestAnimationFrame(this.animate);
+    }
+  }
+
+  setupObserver() {
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        this.isInViewport = entry.isIntersecting;
+        if (this.isInViewport && !this.rafId) {
+          this.lastFrameTime = performance.now();
+          this.rafId = requestAnimationFrame(this.animate);
+        } else if (!this.isInViewport && this.rafId) {
+          cancelAnimationFrame(this.rafId);
+          this.rafId = null;
+        }
+      });
+    }, { threshold: 0 });
+    this.observer.observe(this.container);
+  }
+
+  initThree() {
+    this.renderer = new ru({
+      powerPreference: "high-performance",
+      antialias: true,
+      alpha: false
+    });
+    this.renderer.setSize(this.width, this.height);
+    const isMobile = window.innerWidth <= 768;
+    const maxDpr = isMobile ? 1.0 : (window.chrome ? 1.0 : 1.25);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+    this.renderer.setClearColor(12895428, 1);
+    this.renderer.outputColorSpace = ht;
+    this.container.appendChild(this.renderer.domElement);
+    this.scene = new ec();
+    this.scene.background = new ke(12895428);
+    this.camera = new nn(_s, this.width / this.height, 0.1, 1000);
+    this.camera.position.set(0, 0, Ec);
+  }
+
+  loadTextures() {
+    const loader = new Pg();
+    this.textures = [];
+    Sc.forEach((url, idx) => {
+      const tex = loader.load(url, () => {
+        tex.colorSpace = ht;
+        tex.minFilter = ir;
+        tex.magFilter = Dt;
+        tex.generateMipmaps = true;
+        this.updateCardCover(idx);
+      });
+      this.textures.push(tex);
+    });
+  }
+
+  getVisibleSize() {
+    const aspect = this.width / Math.max(1, this.height);
+    const visibleH = 2 * Math.tan(Ri.degToRad(_s * 0.5)) * Ec;
+    return { visibleW: visibleH * aspect, visibleH: visibleH };
+  }
+
+  getCardDimensions() {
+    const { visibleH } = this.getVisibleSize();
+    const t = 1 + 0.35 * this.fisheyeAmount;
+    let cardH = visibleH * 0.74 * t;
+    if (this.width <= 760) cardH = visibleH * 0.80 * t;
+    const cardW = cardH * Tc;
+    const spacing = cardW * 1.14;
+    return { cardW, cardH, spacing };
+  }
+
+  getDragFactor() {
+    const isMobile = this.width <= 768;
+    const pixelsPerCard = isMobile ? Math.min(this.width * 0.44, 180) : Math.min(this.width * 0.32, 420);
+    return 1.0 / Math.max(80, pixelsPerCard);
+  }
+
+  createCards() {
+    this.cardsGroup = new Mr();
+    this.scene.add(this.cardsGroup);
+    this.cardMeshes = [];
+    const geom = new Dr(1, 1);
+    for (let i = 0; i < Ca; i++) {
+      const mat = new Un({
+        vertexShader: $0,
+        fragmentShader: J0,
+        uniforms: {
+          uMap: { value: this.textures[0] || null },
+          uCoverUv: { value: new gt(1, 1, 0, 0) },
+          uParallax: { value: new B(0, 0, 0.88) },
+          uSat: { value: 1 },
+          uOpacity: { value: 1 }
+        },
+        transparent: true,
+        depthWrite: false
+      });
+      const mesh = new gn(geom, mat);
+      this.cardsGroup.add(mesh);
+      this.cardMeshes.push({
+        mesh,
+        material: mat,
+        assignedIndex: -1,
+        currentWrappedOffset: 0
+      });
+    }
+  }
+
+  updateCardCover(idx) {
+    const tex = this.textures[idx];
+    if (!tex || !tex.image) return;
+    const imgW = tex.image.width || 1;
+    const imgH = tex.image.height || 1;
+    const aspect = imgW / imgH;
+    const targetAspect = Tc;
+    const scaleX = aspect > targetAspect ? targetAspect / aspect : 1;
+    const scaleY = aspect > targetAspect ? 1 : aspect / targetAspect;
+    const offX = (1 - scaleX) / 2;
+    const offY = (1 - scaleY) / 2;
+    this.cardMeshes.forEach((card) => {
+      if (card.assignedIndex === idx) {
+        card.material.uniforms.uCoverUv.value.set(scaleX, scaleY, offX, offY);
+      }
+    });
+  }
+
+  createFisheyePipeline() {
+    this.cubeRenderTarget = new Zc(512, {
+      generateMipmaps: false,
+      minFilter: Dt,
+      magFilter: Dt
+    });
+    this.cubeRenderTarget.texture.colorSpace = ht;
+    this.cubeCamera = new Yc(0.1, 1000, this.cubeRenderTarget);
+    this.cubeCamera.position.copy(this.camera.position);
+    this.postScene = new ec();
+    this.postCamera = new ao();
+    this.lensMaterial = new Un({
+      vertexShader: Q0,
+      fragmentShader: ev,
+      uniforms: {
+        uScene: { value: this.cubeRenderTarget.texture },
+        uResolution: { value: new He(this.width, this.height) },
+        uAmount: { value: 1 },
+        uRadius: { value: 0.86 * Math.hypot(this.width, this.height) },
+        uFocal: { value: this.height / (2 * Math.tan(Ri.degToRad(_s * 0.5))) }
+      },
+      transparent: true,
+      depthTest: false,
+      depthWrite: false
+    });
+    const quad = new gn(new Dr(2, 2), this.lensMaterial);
+    quad.frustumCulled = false;
+    this.postScene.add(quad);
+    try {
+      this.cubeCamera.update(this.renderer, this.scene);
+      this._hasRenderedCube = true;
+    } catch (err) {}
+  }
+
+  bindEvents() {
+    window.addEventListener("resize", () => this.onResize(), { passive: true });
+    ["pointerdown", "touchstart", "keydown"].forEach((evt) => {
+      window.addEventListener(evt, () => this.audio.init(), { passive: true });
+    });
+
+    // -------------------------------------------------------------------------
+    // 1. MOBILE TOUCH NAVIGATION: Directional Disambiguation & Butter-Smooth Fling
+    // -------------------------------------------------------------------------
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let touchDirection = null; // null | 'horizontal' | 'vertical'
+    let isTouchActive = false;
+    let touchMoveHistory = [];
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      touchStartTime = performance.now();
+      touchDirection = null;
+      isTouchActive = true;
+      this.dragDistance = 0;
+      touchMoveHistory = [{ x: t.clientX, time: touchStartTime }];
+      if (this.snapTimeout) clearTimeout(this.snapTimeout);
+      this.audio.init();
+    };
+
+    const handleTouchMove = (e) => {
+      if (!isTouchActive || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const curX = t.clientX;
+      const curY = t.clientY;
+      const dx = curX - touchStartX;
+      const dy = curY - touchStartY;
+
+      // Determine gesture direction on first 6px of motion
+      if (!touchDirection) {
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+          if (Math.abs(dy) >= Math.abs(dx) * 0.82) {
+            // User is scrolling the page vertically! Let browser handle native scroll with 0 interference
+            touchDirection = 'vertical';
+            this.isDragging = false;
+            return;
+          } else {
+            // User is sliding the reviews horizontally!
+            touchDirection = 'horizontal';
+            this.isDragging = true;
+            this.lastInteractionTime = performance.now();
+          }
+        } else {
+          return;
+        }
+      }
+
+      if (touchDirection === 'horizontal') {
+        // Prevent vertical page scroll stutter while swiping reviews
+        if (e.cancelable) e.preventDefault();
+        this.lastInteractionTime = performance.now();
+
+        const lastX = touchMoveHistory.length > 0 ? touchMoveHistory[touchMoveHistory.length - 1].x : curX;
+        const stepDelta = curX - lastX;
+        this.dragDistance += Math.abs(stepDelta);
+
+        touchMoveHistory.push({ x: curX, time: performance.now() });
+        if (touchMoveHistory.length > 6) touchMoveHistory.shift();
+
+        const dragFactor = this.getDragFactor();
+        this.targetPos -= stepDelta * dragFactor;
+
+        // Keep render loop awake
+        if (!this.rafId && this.isInViewport) {
+          this.lastFrameTime = performance.now();
+          this.rafId = requestAnimationFrame(this.animate);
+        }
+      }
+    };
+
+    const handleTouchEnd = (e) => {
+      if (!isTouchActive) return;
+      isTouchActive = false;
+      const wasHorizontal = (touchDirection === 'horizontal');
+      this.isDragging = false;
+      this.lastInteractionTime = performance.now();
+
+      if (wasHorizontal) {
+        const now = performance.now();
+        const recentMoves = touchMoveHistory.filter(m => now - m.time < 120);
+        let releaseVelocity = 0;
+        if (recentMoves.length >= 2) {
+          const first = recentMoves[0];
+          const last = recentMoves[recentMoves.length - 1];
+          const dt = last.time - first.time;
+          if (dt > 10) {
+            releaseVelocity = (last.x - first.x) / dt;
+          }
+        }
+
+        if (Math.abs(releaseVelocity) > 0.28) {
+          // Rapid swipe / flick gesture
+          if (releaseVelocity < -0.28) {
+            // Flick left -> next card
+            const nextTarget = Math.round(this.pos + 0.45);
+            this.targetPos = nextTarget > Math.round(this.pos) ? nextTarget : Math.round(this.pos) + 1;
+          } else {
+            // Flick right -> prev card
+            const prevTarget = Math.round(this.pos - 0.45);
+            this.targetPos = prevTarget < Math.round(this.pos) ? prevTarget : Math.round(this.pos) - 1;
+          }
+        } else {
+          // Gentle release -> snap to nearest card
+          this.targetPos = Math.round(this.targetPos);
+        }
+
+        this.scheduleSnap(60);
+
+        if (!this.rafId && this.isInViewport) {
+          this.lastFrameTime = performance.now();
+          this.rafId = requestAnimationFrame(this.animate);
+        }
+      } else if (!touchDirection && this.dragDistance < 8) {
+        // Clean tap without drag
+        if (e.changedTouches && e.changedTouches[0]) {
+          const t = e.changedTouches[0];
+          this.handleCardClick(t.clientX, t.clientY);
+        }
+      }
+      touchDirection = null;
+      touchMoveHistory = [];
+    };
+
+    this.container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+
+    // -------------------------------------------------------------------------
+    // 2. DESKTOP MOUSE DRAG & CLICK
+    // -------------------------------------------------------------------------
+    let isMouseDown = false;
+    let mouseStartX = 0;
+    let mouseLastX = 0;
+    let mouseMoveHistory = [];
+
+    const handleMouseDown = (e) => {
+      if (e.button !== 0) return;
+      isMouseDown = true;
+      this.isDragging = true;
+      mouseStartX = e.clientX;
+      mouseLastX = e.clientX;
+      this.dragDistance = 0;
+      mouseMoveHistory = [{ x: e.clientX, time: performance.now() }];
+      if (this.snapTimeout) clearTimeout(this.snapTimeout);
+      this.audio.init();
+      this.lastInteractionTime = performance.now();
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isMouseDown) return;
+      this.lastInteractionTime = performance.now();
+      const stepDelta = e.clientX - mouseLastX;
+      mouseLastX = e.clientX;
+      this.dragDistance += Math.abs(stepDelta);
+
+      mouseMoveHistory.push({ x: e.clientX, time: performance.now() });
+      if (mouseMoveHistory.length > 6) mouseMoveHistory.shift();
+
+      const dragFactor = this.getDragFactor();
+      this.targetPos -= stepDelta * dragFactor;
+
+      if (!this.rafId && this.isInViewport) {
+        this.lastFrameTime = performance.now();
+        this.rafId = requestAnimationFrame(this.animate);
+      }
+    };
+
+    const handleMouseUp = (e) => {
+      if (!isMouseDown) return;
+      isMouseDown = false;
+      this.isDragging = false;
+      this.lastInteractionTime = performance.now();
+
+      if (this.dragDistance < 8) {
+        this.handleCardClick(e.clientX, e.clientY);
+      } else {
+        const now = performance.now();
+        const recentMoves = mouseMoveHistory.filter(m => now - m.time < 120);
+        let releaseVelocity = 0;
+        if (recentMoves.length >= 2) {
+          const first = recentMoves[0];
+          const last = recentMoves[recentMoves.length - 1];
+          const dt = last.time - first.time;
+          if (dt > 10) releaseVelocity = (last.x - first.x) / dt;
+        }
+
+        if (Math.abs(releaseVelocity) > 0.35) {
+          if (releaseVelocity < -0.35) {
+            const nextTarget = Math.round(this.pos + 0.45);
+            this.targetPos = nextTarget > Math.round(this.pos) ? nextTarget : Math.round(this.pos) + 1;
+          } else {
+            const prevTarget = Math.round(this.pos - 0.45);
+            this.targetPos = prevTarget < Math.round(this.pos) ? prevTarget : Math.round(this.pos) - 1;
+          }
+        } else {
+          this.targetPos = Math.round(this.targetPos);
+        }
+
+        this.scheduleSnap(80);
+      }
+
+      mouseMoveHistory = [];
+      if (!this.rafId && this.isInViewport) {
+        this.lastFrameTime = performance.now();
+        this.rafId = requestAnimationFrame(this.animate);
+      }
+    };
+
+    this.container.addEventListener("mousedown", handleMouseDown, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mouseup", handleMouseUp, { passive: true });
+
+    // -------------------------------------------------------------------------
+    // 3. HORIZONTAL TRACKPAD / WHEEL GESTURES
+    // -------------------------------------------------------------------------
+    this.container.addEventListener("wheel", (e) => {
+      const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
+      if (!isHorizontal) return;
+      this.audio.init();
+      this.lastInteractionTime = performance.now();
+      const delta = e.shiftKey ? e.deltaY : e.deltaX;
+      this.targetPos += delta * 0.0022;
+      this.scheduleSnap(220);
+
+      if (!this.rafId && this.isInViewport) {
+        this.lastFrameTime = performance.now();
+        this.rafId = requestAnimationFrame(this.animate);
+      }
+    }, { passive: true });
+
+    // -------------------------------------------------------------------------
+    // 4. KEYBOARD ARROW CONTROLS
+    // -------------------------------------------------------------------------
+    window.addEventListener("keydown", (e) => {
+      if (!this.isInViewport) return;
+      if (e.key === "ArrowRight") {
+        this.audio.init();
+        this.lastInteractionTime = performance.now();
+        this.targetPos = Math.round(this.targetPos) + 1;
+        this.scheduleSnap(40);
+        if (!this.rafId) {
+          this.lastFrameTime = performance.now();
+          this.rafId = requestAnimationFrame(this.animate);
+        }
+      } else if (e.key === "ArrowLeft") {
+        this.audio.init();
+        this.lastInteractionTime = performance.now();
+        this.targetPos = Math.round(this.targetPos) - 1;
+        this.scheduleSnap(40);
+        if (!this.rafId) {
+          this.lastFrameTime = performance.now();
+          this.rafId = requestAnimationFrame(this.animate);
+        }
+      }
+    });
+
+    if (this.fisheyeBtn) {
+      this.fisheyeBtn.addEventListener("click", () => {
+        this.lastInteractionTime = performance.now();
+        this.toggleFisheye();
+      });
+    }
+  }
+
+  isElementInViewport(e) {
+    return this.isInViewport;
+  }
+
+  handleCardClick(clientX, clientY) {
+    const rect = this.container.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    if (this.fisheyeAmount > 0.5) {
+      const mid = this.width / 2;
+      this.lastInteractionTime = performance.now();
+      if (x < mid - 120) {
+        this.targetPos = Math.round(this.targetPos) - 1;
+        this.audio.playTick(0.88);
+      } else if (x > mid + 120) {
+        this.targetPos = Math.round(this.targetPos) + 1;
+        this.audio.playTick(0.88);
+      }
+      if (!this.rafId && this.isInViewport) {
+        this.lastFrameTime = performance.now();
+        this.rafId = requestAnimationFrame(this.animate);
+      }
+      return;
+    }
+
+    this.mouse.x = (x / this.width) * 2 - 1;
+    this.mouse.y = -(y / this.height) * 2 + 1;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const meshes = this.cardMeshes.map(c => c.mesh);
+    const hits = this.raycaster.intersectObjects(meshes);
+    if (hits.length > 0) {
+      const targetObj = hits[0].object;
+      const found = this.cardMeshes.find(c => c.mesh === targetObj);
+      if (found) {
+        this.lastInteractionTime = performance.now();
+        const offset = Math.round(found.currentWrappedOffset);
+        if (Math.abs(offset) > 0) {
+          this.targetPos = Math.round(this.pos) + offset;
+          this.audio.playTick(0.88);
+          if (!this.rafId && this.isInViewport) {
+            this.lastFrameTime = performance.now();
+            this.rafId = requestAnimationFrame(this.animate);
+          }
+        }
+      }
+    }
+  }
+
+  scheduleSnap(delay = 120) {
+    if (this.snapTimeout) clearTimeout(this.snapTimeout);
+    this.snapTimeout = setTimeout(() => {
+      this.targetPos = Math.round(this.targetPos);
+      if (!this.rafId && this.isInViewport) {
+        this.lastFrameTime = performance.now();
+        this.rafId = requestAnimationFrame(this.animate);
+      }
+    }, delay);
+  }
+
+  toggleFisheye() {
+    this.audio.init();
+    this.audio.playTick(0.85);
+    this.isFisheye = !this.isFisheye;
+    const targetAmount = this.isFisheye ? 1 : 0;
+    if (this.fisheyeBtn) {
+      this.fisheyeBtn.classList.toggle("is-active", this.isFisheye);
+      this.fisheyeBtn.setAttribute("aria-pressed", String(this.isFisheye));
+      this.fisheyeBtn.innerHTML = this.isFisheye
+        ? '<span class="btn-text">FISHEYE: [ON]</span>'
+        : '<span class="btn-text">FISHEYE: [OFF]</span>';
+    }
+    if (this.fisheyeTween) this.fisheyeTween.kill();
+    this.fisheyeTween = th.to(this, {
+      fisheyeAmount: targetAmount,
+      duration: 1.4,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        this.lensMaterial.uniforms.uAmount.value = this.fisheyeAmount;
+      }
+    });
+  }
+
+  onResize() {
+    if (!this.container) return;
+    this.width = this.container.clientWidth;
+    this.height = this.container.clientHeight || Math.min(window.innerHeight * 0.82, 720);
+    this.renderer.setSize(this.width, this.height);
+    const isMobile = window.innerWidth <= 768;
+    const maxDpr = isMobile ? 1.0 : (window.chrome ? 1.0 : 1.25);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+    this.camera.aspect = this.width / this.height;
+    this.camera.updateProjectionMatrix();
+    this.lensMaterial.uniforms.uResolution.value.set(this.width, this.height);
+    this.lensMaterial.uniforms.uRadius.value = 0.86 * Math.hypot(this.width, this.height);
+    this.lensMaterial.uniforms.uFocal.value = this.height / (2 * Math.tan(Ri.degToRad(_s * 0.5)));
+  }
+
+  animate() {
+    const isSettled = Math.abs(this.targetPos - this.pos) < 0.0006;
+    if (!this.isInViewport || (window.__isPageScrolling && isSettled && !this.isDragging)) {
+      this.rafId = null;
+      return;
+    }
+    this.rafId = requestAnimationFrame(this.animate);
+
+    const now = performance.now();
+    const dt = this.lastFrameTime ? Math.min((now - this.lastFrameTime) / 1000, 0.1) : 0.016;
+    this.lastFrameTime = now;
+
+    // Gentle auto-scroll after 6 seconds of inactivity
+    if (!this.isDragging && !window.__isPageScrolling && now - this.lastInteractionTime > 6000) {
+      this.targetPos += this.autoScrollSpeed * dt;
+    }
+
+    const prevPos = this.pos;
+    const lerpRate = this.isDragging ? 0.28 : 0.088;
+    this.pos += (this.targetPos - this.pos) * lerpRate;
+
+    if (isSettled && !this.isDragging) {
+      this.pos = this.targetPos;
+    }
+
+    const cardsMoved = Math.abs(this.pos - prevPos) > 0.0001 || this.isDragging || !this._hasRenderedCube;
+    const currentCard = Math.round(this.pos);
+    if (currentCard !== this.lastIntPos) {
+      this.lastIntPos = currentCard;
+      this.audio.playTick(0.88);
+    }
+
+    const currentDetent = Math.floor(this.pos * 3.5);
+    if (currentDetent !== this.lastDetent && Math.abs(this.targetPos - this.pos) > 0.015) {
+      this.lastDetent = currentDetent;
+      this.audio.playTick(0.55);
+    }
+
+    const { cardW: i, cardH: s, spacing: o } = this.getCardDimensions();
+    const a = Math.floor(Ca / 2);
+    const l = Sc.length;
+
+    this.cardMeshes.forEach((h, f) => {
+      const m = f - a;
+      const g = Ri.euclideanModulo(m - this.pos + a, Ca) - a;
+      h.currentWrappedOffset = g;
+      const _ = g * o;
+      h.mesh.position.set(_, 0, 0);
+      h.mesh.scale.set(i, s, 1);
+      const p = Ri.euclideanModulo(Math.round(this.pos + g), l);
+      if (h.assignedIndex !== p) {
+        h.assignedIndex = p;
+        h.material.uniforms.uMap.value = this.textures[p];
+        this.updateCardCover(p);
+      }
+      const d = Math.abs(g);
+      const S = Math.max(0, 1 - d * 0.85);
+      const x = Math.pow(S, 1.2);
+      const E = 0.42 + 0.58 * S;
+      h.material.uniforms.uSat.value = x;
+      h.material.uniforms.uOpacity.value = E;
+      const w = Ri.clamp(-g * 0.04, -0.08, 0.08);
+      h.material.uniforms.uParallax.value.x = w;
+    });
+
+    if (this.fisheyeAmount > 0.0001) {
+      if (cardsMoved) {
+        this.cubeCamera.position.copy(this.camera.position);
+        this.cubeCamera.update(this.renderer, this.scene);
+        this._hasRenderedCube = true;
+      }
+      this.renderer.render(this.postScene, this.postCamera);
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
+  }
+}
+
+function initReviewGallery() {
+  const container = document.getElementById("review-canvas-container") || document.getElementById("canvas-container");
+  if (!container) return;
+  if ("IntersectionObserver" in window) {
+    const initObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        initObserver.disconnect();
+        new yc();
+      }
+    }, { rootMargin: "400px 0px 400px 0px" });
+    initObserver.observe(container);
+  } else {
+    new yc();
+  }
+}
+document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initReviewGallery) : initReviewGallery();
