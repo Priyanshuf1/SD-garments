@@ -2273,7 +2273,7 @@ async function handleUpdateOrder(req, res, id) {
   }
 
   const allowedOrderStatuses = new Set(['Processing', 'Pending', 'Shipped', 'Delivered', 'Cancelled', 'Refunded']);
-  const allowedPaymentStatuses = new Set(['Pending', 'Pending COD', 'Failed', 'Refunded']);
+  const allowedPaymentStatuses = new Set(['Paid', 'Pending', 'Pending COD', 'Failed', 'Refunded']);
   if (payload.orderStatus) {
     if (!allowedOrderStatuses.has(String(payload.orderStatus))) return sendJson(res, 400, { success: false, message: 'Invalid order status.' });
     order.orderStatus = String(payload.orderStatus);
