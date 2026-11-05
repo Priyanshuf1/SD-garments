@@ -1146,6 +1146,24 @@ first.parentNode.insertBefore(script, first);
       visibility: hidden !important;
     }
   </style>
+
+  <!-- Resilient Fashion Asset Fallback Guard -->
+  <script>
+  window.addEventListener('error', function(e) {
+    if (e.target && e.target.tagName === 'IMG') {
+      const src = e.target.getAttribute('src') || '';
+      if (src && !src.startsWith('/images/photo_')) {
+        e.target.onerror = null;
+        const seed = e.target.alt || e.target.src || '1';
+        let hash = 0;
+        for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+        const photoIdx = (Math.abs(hash) % 16) + 1;
+        e.target.src = '/images/photo_' + photoIdx + '.webp';
+      }
+    }
+  }, true);
+  </script>
+
 </head>
 
   <body class="features--button-transition  color-scheme color-scheme--scheme-1">
@@ -6803,7 +6821,7 @@ first.parentNode.insertBefore(script, first);
 
   async function syncProductsFromBackend() {
     try {
-      const res = await fetch('/api/admin/products');
+      const res = await fetch('/api/products');
       const data = await res.json();
       if (!data.success || !Array.isArray(data.products)) return;
 
@@ -6964,7 +6982,7 @@ first.parentNode.insertBefore(script, first);
         if (foundInTarget) return;
 
         // If not already present in the section, prepend it using Zara minimalist card layout
-        const fallbackImg = 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+        const fallbackImg = '/images/photo_1.webp';
         const primaryImg = p.images?.[0]?.src || p.image || fallbackImg;
         const secondaryImg = p.images?.[1]?.src || p.hoverImage || '';
         const rawPrice = Number(p.variants?.[0]?.price || p.price || 1000);

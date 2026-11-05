@@ -871,6 +871,24 @@
     font-weight: inherit !important;
   }
 </style>
+
+  <!-- Resilient Fashion Asset Fallback Guard -->
+  <script>
+  window.addEventListener('error', function(e) {
+    if (e.target && e.target.tagName === 'IMG') {
+      const src = e.target.getAttribute('src') || '';
+      if (src && !src.startsWith('/images/photo_')) {
+        e.target.onerror = null;
+        const seed = e.target.alt || e.target.src || '1';
+        let hash = 0;
+        for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+        const photoIdx = (Math.abs(hash) % 16) + 1;
+        e.target.src = '/images/photo_' + photoIdx + '.webp';
+      }
+    }
+  }, true);
+  </script>
+
 </head>
 <div class="loader loader--done" id="ForumLoader" aria-hidden="true" style="display:none !important;">
     <div class="loader__stack">
@@ -2061,7 +2079,7 @@
         const wishlistedHandles = new Set(wishlist.map(i => (typeof i === 'string' ? i : i.handle)));
 
         grid.innerHTML = this.filteredProducts.map((p, idx) => {
-          const primaryImg = p.images?.[0]?.src || p.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+          const primaryImg = p.images?.[0]?.src || p.image || '/images/photo_1.webp';
           const secondaryImg = p.images?.[1]?.src || p.hoverImage || '';
           const rawPrice = Number(p.variants?.[0]?.price || p.price || 1000);
           const rawCompare = p.variants?.[0]?.compare_at_price ? Number(p.variants[0].compare_at_price) : (p.compare_at_price ? Number(p.compare_at_price) : 0);
@@ -2084,8 +2102,8 @@
                 </button>
 
                 <a href="/products/${p.handle}" class="product-card__media" draggable="false" data-instant>
-                  <img src="${primaryImg}" alt="${p.title}" loading="${isAboveFold ? 'eager' : 'lazy'}" ${idx < 4 ? 'fetchpriority="high"' : ''} decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall">
-                  ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary">` : ''}
+                  <img src="${primaryImg}" alt="${p.title}" loading="${isAboveFold ? 'eager' : 'lazy'}" ${idx < 4 ? 'fetchpriority="high"' : ''} decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall" onerror="this.onerror=null;this.src='/images/photo_' + ((Math.abs(Array.from(this.alt||'1').reduce((a,c)=>a+c.charCodeAt(0),0)) % 16) + 1) + '.webp';">
+                  ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary" onerror="this.style.display='none';">` : ''}
                 </a>
               </div>
 
