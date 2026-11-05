@@ -1732,9 +1732,15 @@ x-header.is-solid:hover {
 }
 
 .product-card__image--primary {
-  transition: opacity 0.12s ease-in-out, transform 0.25s ease !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
   display: block;
-  width: 100%;
+  transition: opacity 0.12s ease-in-out, transform 0.25s ease !important;
 }
 
 .product-card__image--secondary {

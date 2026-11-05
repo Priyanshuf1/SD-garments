@@ -5445,8 +5445,15 @@ async function appHandler(req, res) {
       return serveVideoWithRange(req, res, localPath);
     }
 
+    const isImmutable = /\.(webp|splinecode|glb|gltf|png|jpg|jpeg|gif|woff2|woff|ttf|svg|ico)$/i.test(ext) || pathname.startsWith('/assets/') || pathname.startsWith('/images/');
+    const cacheHeader = isImmutable 
+      ? 'public, max-age=31536000, immutable' 
+      : (/\.(js|css)$/i.test(ext) ? 'public, max-age=86400, stale-while-revalidate=604800' : 'public, max-age=3600');
+
     res.writeHead(200, {
-      'Content-Type': contentType
+      'Content-Type': contentType,
+      'Cache-Control': cacheHeader,
+      'Access-Control-Allow-Origin': '*'
     });
     return fs.createReadStream(localPath).pipe(res);
   }
