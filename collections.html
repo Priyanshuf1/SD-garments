@@ -153,12 +153,12 @@
       min-width: 580px;
       padding: 1.25rem 1.5rem;
       display: none;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       gap: 1.25rem;
     }
     .nav-dropdown-menu.mega-dropdown-2col {
       min-width: 420px;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
     .nav-item-dropdown:hover .nav-dropdown-menu.mega-dropdown {
       display: grid;
@@ -380,33 +380,38 @@
       background-color: #c4c4c4 !important;
     }
     .product-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       gap: 20px;
     }
     @media (max-width: 1024px) {
       .product-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         gap: 16px;
       }
     }
     @media (max-width: 699px) {
       .product-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 12px;
       }
     }
     .product-grid.grid-cols-3 {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
     .product-grid.grid-cols-1 {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr) !important;
       max-width: 700px;
       margin: 0 auto;
     }
 
     /* Product Card Styling (Match #C4C4C4 Page BG) */
+    product-card,
     .product-card {
+      min-width: 0 !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
       background: transparent !important;
       background-color: transparent !important;
       border-radius: 0 !important;
@@ -571,6 +576,10 @@
 
     /* Card Details */
     .product-card__info {
+      min-width: 0 !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
       padding: 0.65rem 0 0.85rem;
       text-align: left;
       background: transparent !important;
@@ -886,6 +895,10 @@
 
   /* Row 1: Product Title & '+' Quick Add Button */
   .product-card__title-row {
+      min-width: 0 !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -1348,14 +1361,13 @@
     <div class="collection-subnav__inner" id="category-chips">
       <a href="/collections/shop" class="category-chip active" data-cat="all">All Drops</a>
       <a href="/collections/new-arrivals" class="category-chip" data-cat="new-arrivals">New Arrivals</a>
-      <a href="/collections/mens-wear" class="category-chip" data-cat="mens-wear">Men's Wear</a>
-      <a href="/collections/mens-bottom-wear" class="category-chip" data-cat="mens-bottom-wear">Bottom Wear</a>
-      <a href="/collections/mens-top-wear" class="category-chip" data-cat="mens-top-wear">Top Wear</a>
+      <a href="/collections/shirts" class="category-chip" data-cat="shirts">Shirts</a>
+      <a href="/collections/t-shirts" class="category-chip" data-cat="t-shirts">T-Shirts</a>
+      <a href="/collections/hoodies" class="category-chip" data-cat="hoodies">Hoodies</a>
+      <a href="/collections/mens-jeans" class="category-chip" data-cat="mens-jeans">Jeans</a>
+      <a href="/collections/cargo-joggers" class="category-chip" data-cat="cargo-joggers">Cargo / Joggers</a>
       <a href="/collections/party-wear" class="category-chip" data-cat="party-wear">Party Wear</a>
       <a href="/collections/kids-wear" class="category-chip" data-cat="kids-wear">Kids Wear</a>
-      <a href="/collections/boys-clothing" class="category-chip" data-cat="boys-clothing">Boys</a>
-      <a href="/collections/girls-clothing" class="category-chip" data-cat="girls-clothing">Girls</a>
-      <a href="/collections/baby-clothing" class="category-chip" data-cat="baby-clothing">Baby (0–2Y)</a>
       <a href="/collections/accessories" class="category-chip" data-cat="accessories">Accessories</a>
     </div>
   </nav>
@@ -2039,11 +2051,15 @@
           ];
         }
 
-        // 5. Default Top-Level Drops (All Drops, New Arrivals, Men's, Party, Kids, Accessories)
+        // 5. Default Top-Level Drops (Specific Wearable Drops - No redundant department names)
         return [
           { cat: 'all', label: 'All Drops', href: '/collections/shop' },
           { cat: 'new-arrivals', label: 'New Arrivals', href: '/collections/new-arrivals' },
-          { cat: 'mens-wear', label: 'Men\'s Wear', href: '/collections/mens-wear' },
+          { cat: 'shirts', label: 'Shirts', href: '/collections/shirts' },
+          { cat: 't-shirts', label: 'T-Shirts', href: '/collections/t-shirts' },
+          { cat: 'hoodies', label: 'Hoodies', href: '/collections/hoodies' },
+          { cat: 'mens-jeans', label: 'Jeans', href: '/collections/mens-jeans' },
+          { cat: 'cargo-joggers', label: 'Cargo / Joggers', href: '/collections/cargo-joggers' },
           { cat: 'party-wear', label: 'Party Wear', href: '/collections/party-wear' },
           { cat: 'kids-wear', label: 'Kids Wear', href: '/collections/kids-wear' },
           { cat: 'accessories', label: 'Accessories', href: '/collections/accessories' }

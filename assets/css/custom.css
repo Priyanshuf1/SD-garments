@@ -647,21 +647,21 @@ x-header.is-solid:hover {
    PRODUCT GRID & PRODUCT CARDS
    ========================================================================== */
 .product-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 1rem;
 }
 
 @media (min-width: 768px) {
   .product-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 1.5rem;
   }
 }
 
 @media (min-width: 1150px) {
   .product-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 2rem;
   }
 }
@@ -2098,6 +2098,10 @@ x-header.is-solid:hover {
    ========================================================================== */
   product-card,
   .product-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -2113,6 +2117,10 @@ x-header.is-solid:hover {
   }
 
   .product-card__info {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     text-align: left !important;
     justify-items: flex-start !important;
     align-items: flex-start !important;
@@ -2125,6 +2133,10 @@ x-header.is-solid:hover {
 
   /* Row 1: Product Title & '+' Quick Add Button */
   .product-card__title-row {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;

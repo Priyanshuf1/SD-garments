@@ -517,7 +517,7 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
       const deltaBeta = rawBeta - baseGyroBeta;
 
       // Deadband Filter: ignore micro-jitter below 0.22 degrees
-      if (Math.abs(deltaGamma - smoothGamma) < 0.22 && Math.abs(deltaBeta - smoothBeta) < 0.22 && lastInteractionType === 'gyro') {
+      if (Math.abs(deltaGamma - smoothGamma) < 0.35 && Math.abs(deltaBeta - smoothBeta) < 0.35 && lastInteractionType === 'gyro') {
         return;
       }
 
@@ -812,8 +812,11 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
 
       // Cap pixel ratio across all devices to prevent choking high-DPI GPUs
       splineApp._getPixelRatio = function() {
+        const isLowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+                         (navigator.deviceMemory && navigator.deviceMemory <= 4) ||
+                         /Android.*Chrome\/[.0-9]*\s+(Mobile)?/i.test(navigator.userAgent);
         const isMobile = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const maxDpr = isMobile ? 1.0 : (window.chrome ? 1.0 : 1.25);
+        const maxDpr = isLowEnd ? 0.75 : (isMobile ? 1.0 : (window.chrome ? 1.0 : 1.25));
         return Math.min(window.devicePixelRatio || 1, maxDpr);
       };
 
@@ -835,6 +838,8 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
       }
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
+      canvas.classList.add('is-ready');
+      canvas.style.opacity = '1';
       // Clamp WebGL renderer pixelRatio across ALL devices (laptops, desktops, phones) to avoid high-res GPU overloads
       const isMob = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       const heroMaxDpr = isMob ? 1.0 : (window.chrome ? 1.0 : 1.25);
