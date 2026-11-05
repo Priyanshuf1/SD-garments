@@ -7123,5 +7123,34 @@ first.parentNode.insertBefore(script, first);
   <script src="/assets/js/size-guide-modal.js" defer></script>
   <script src="/assets/js/ai-support.js" defer></script>
 <script src="/assets/js/cookie-consent.js" defer></script>
+
+  <script>
+    // Desktop Mega-Menu Hover for Home Page
+    (function() {
+      function initHomeMegaHover() {
+        document.querySelectorAll('details.header__menu-disclosure').forEach(details => {
+          let timer = null;
+          details.addEventListener('mouseenter', () => {
+            clearTimeout(timer);
+            document.querySelectorAll('details.header__menu-disclosure[open]').forEach(d => {
+              if (d !== details) d.removeAttribute('open');
+            });
+            details.setAttribute('open', '');
+          });
+          details.addEventListener('mouseleave', () => {
+            timer = setTimeout(() => {
+              details.removeAttribute('open');
+            }, 220);
+          });
+        });
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initHomeMegaHover);
+      } else {
+        initHomeMegaHover();
+      }
+    })();
+  </script>
+
 </body>
 </html>

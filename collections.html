@@ -683,7 +683,119 @@
       font-size: 0.85rem;
       border-radius: 2px;
     }
-  </style>
+  
+    /* Dropdown Hover Bridge & Positioning */
+    .nav-item-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .nav-dropdown-menu::before {
+      content: '';
+      position: absolute;
+      top: -24px;
+      left: 0;
+      right: 0;
+      height: 24px;
+      background: transparent;
+    }
+    .nav-item-dropdown:hover .nav-dropdown-menu,
+    .nav-item-dropdown.is-open .nav-dropdown-menu {
+      display: block !important;
+    }
+    .nav-item-dropdown:hover .nav-dropdown-menu.mega-dropdown,
+    .nav-item-dropdown.is-open .nav-dropdown-menu.mega-dropdown {
+      display: grid !important;
+    }
+    /* Boundary protection for rightmost mega dropdowns */
+    .nav-item-dropdown:nth-last-child(-n+3) .nav-dropdown-menu.mega-dropdown {
+      left: auto;
+      right: -20px;
+    }
+
+    /* Mobile Drawer & Accordion Styles */
+    .mobile-nav-toggle {
+      display: none;
+    }
+    @media (max-width: 1180px) {
+      .mobile-nav-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    .mobile-nav-item {
+      display: block;
+      padding: 12px 1.5rem;
+      color: #fff;
+      text-decoration: none;
+      font-family: var(--heading-font-family);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1px solid #161616;
+    }
+    .mobile-nav-item:hover {
+      background: #181818;
+    }
+    .mobile-accordion {
+      border-bottom: 1px solid #161616;
+    }
+    .mobile-accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 1.5rem;
+      color: #fff;
+      cursor: pointer;
+      font-family: var(--heading-font-family);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .mobile-accordion-header:hover {
+      background: #181818;
+    }
+    .mobile-accordion-arrow {
+      transition: transform 0.25s ease;
+      color: #888;
+    }
+    .mobile-accordion.is-open .mobile-accordion-arrow {
+      transform: rotate(180deg);
+      color: #ff8585;
+    }
+    .mobile-accordion-body {
+      display: none;
+      padding: 0.5rem 1.5rem 1rem 2rem;
+      background: #111111;
+    }
+    .mobile-accordion.is-open .mobile-accordion-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .mobile-accordion-body a {
+      color: #bbb;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 4px 0;
+    }
+    .mobile-accordion-body a:hover {
+      color: #fff;
+    }
+    .mobile-subgroup-title {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #ff8585;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 10px;
+      margin-bottom: 2px;
+    }
+
+</style>
   <!-- AlleyRich Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -915,7 +1027,14 @@
     <div class="site-header__inner">
       
       <!-- Left: Brand Logo -->
-      <div style="display:flex; align-items:center; gap: 1.25rem; flex-shrink: 0; min-width: max-content;">
+      <div style="display:flex; align-items:center; gap: 0.75rem; flex-shrink: 0; min-width: max-content;">
+        <button type="button" class="mobile-nav-toggle" onclick="CollectionEngine.toggleMobileDrawer(true)" aria-label="Open Navigation Menu" style="background:none; border:none; color:#fff; padding:6px; cursor:pointer;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <a href="/" class="allyrich-header-brand" aria-label="ALLEYRICH Home" style="flex-shrink: 0; min-width: max-content;">
           <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="52" height="52">
           <span class="allyrich-header-brand-name">ALLEYRICH</span>
@@ -1072,7 +1191,117 @@
 
       </div>
     </div>
-  </header>
+  
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobile-nav-backdrop" onclick="CollectionEngine.toggleMobileDrawer(false)" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:99998; backdrop-filter:blur(4px);"></div>
+
+  <aside id="mobile-nav-drawer" style="position:fixed; top:0; left:0; bottom:0; width:min(340px, 86vw); background:#0c0c0c; border-right:1px solid #222; z-index:99999; transform:translateX(-100%); transition:transform 0.3s cubic-bezier(0.16,1,0.3,1); display:flex; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch; box-shadow:8px 0 30px rgba(0,0,0,0.8);">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:1.25rem 1.5rem; border-bottom:1px solid #1a1a1a;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="/assets/ar-logo.png" alt="AR" width="32" height="32">
+        <span style="font-family:var(--heading-font-family); font-weight:800; font-size:1.1rem; color:#fff; letter-spacing:0.06em;">ALLEYRICH</span>
+      </div>
+      <button type="button" onclick="CollectionEngine.toggleMobileDrawer(false)" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer; padding:4px 8px;">✕</button>
+    </div>
+
+    <nav style="padding:0.75rem 0; flex:1;">
+      <a href="/collections/new-arrivals" class="mobile-nav-item" onclick="CollectionEngine.toggleMobileDrawer(false)">NEW ARRIVALS</a>
+
+      <!-- MEN'S WEAR Accordion -->
+      <div class="mobile-accordion is-open">
+        <div class="mobile-accordion-header" onclick="CollectionEngine.toggleAccordion(this)">
+          <span>MEN'S WEAR</span>
+          <svg class="mobile-accordion-arrow" width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+        <div class="mobile-accordion-body">
+          <a href="/collections/mens-wear" onclick="CollectionEngine.toggleMobileDrawer(false)" style="font-weight:800; color:#fff;">ALL MEN'S WEAR</a>
+          <div class="mobile-subgroup-title">TOP WEAR</div>
+          <a href="/collections/mens-top-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">All Top Wear</a>
+          <a href="/collections/shirts" onclick="CollectionEngine.toggleMobileDrawer(false)">Shirts</a>
+          <a href="/collections/t-shirts" onclick="CollectionEngine.toggleMobileDrawer(false)">T-Shirts</a>
+          <a href="/collections/hoodies" onclick="CollectionEngine.toggleMobileDrawer(false)">Hoodies</a>
+          <a href="/collections/sweatshirts" onclick="CollectionEngine.toggleMobileDrawer(false)">Sweatshirts</a>
+          <a href="/collections/sweaters" onclick="CollectionEngine.toggleMobileDrawer(false)">Sweaters</a>
+          <a href="/collections/jackets" onclick="CollectionEngine.toggleMobileDrawer(false)">Jackets</a>
+          <a href="/collections/short-kurtas" onclick="CollectionEngine.toggleMobileDrawer(false)">Short Kurtas</a>
+
+          <div class="mobile-subgroup-title">BOTTOM WEAR</div>
+          <a href="/collections/mens-bottom-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">All Bottom Wear</a>
+          <a href="/collections/mens-jeans" onclick="CollectionEngine.toggleMobileDrawer(false)">Jeans</a>
+          <a href="/collections/straight-fit-jeans" onclick="CollectionEngine.toggleMobileDrawer(false)">— Straight Fit Jeans</a>
+          <a href="/collections/baggy-fit-jeans" onclick="CollectionEngine.toggleMobileDrawer(false)">— Baggy Fit Jeans</a>
+          <a href="/collections/cargo-joggers" onclick="CollectionEngine.toggleMobileDrawer(false)">Cargo / Joggers</a>
+          <a href="/collections/formal-pants" onclick="CollectionEngine.toggleMobileDrawer(false)">Formal Pants</a>
+          <a href="/collections/trousers" onclick="CollectionEngine.toggleMobileDrawer(false)">Trousers</a>
+
+          <div class="mobile-subgroup-title">SETS</div>
+          <a href="/collections/mens-coord-sets" onclick="CollectionEngine.toggleMobileDrawer(false)">Co-ord Sets</a>
+        </div>
+      </div>
+
+      <!-- PARTY WEAR Accordion -->
+      <div class="mobile-accordion">
+        <div class="mobile-accordion-header" onclick="CollectionEngine.toggleAccordion(this)">
+          <span>PARTY WEAR</span>
+          <svg class="mobile-accordion-arrow" width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+        <div class="mobile-accordion-body">
+          <a href="/collections/party-wear" onclick="CollectionEngine.toggleMobileDrawer(false)" style="font-weight:800; color:#fff;">ALL PARTY WEAR</a>
+          <a href="/collections/jodhpuri-suits" onclick="CollectionEngine.toggleMobileDrawer(false)">Jodhpuri Suits</a>
+          <a href="/collections/blazers" onclick="CollectionEngine.toggleMobileDrawer(false)">Blazers</a>
+          <a href="/collections/three-piece-suits" onclick="CollectionEngine.toggleMobileDrawer(false)">Three-Piece Suits</a>
+          <a href="/collections/indo-western" onclick="CollectionEngine.toggleMobileDrawer(false)">Indo-Western Wear</a>
+          <a href="/collections/koti-kurta-sets" onclick="CollectionEngine.toggleMobileDrawer(false)">Koti-Kurta Sets</a>
+          <a href="/collections/long-kurtas" onclick="CollectionEngine.toggleMobileDrawer(false)">Long Kurtas</a>
+          <a href="/collections/nehru-jackets" onclick="CollectionEngine.toggleMobileDrawer(false)">Nehru Jackets</a>
+        </div>
+      </div>
+
+      <!-- KIDS WEAR Accordion -->
+      <div class="mobile-accordion">
+        <div class="mobile-accordion-header" onclick="CollectionEngine.toggleAccordion(this)">
+          <span>KIDS WEAR</span>
+          <svg class="mobile-accordion-arrow" width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="m1 3 4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+        <div class="mobile-accordion-body">
+          <a href="/collections/kids-wear" onclick="CollectionEngine.toggleMobileDrawer(false)" style="font-weight:800; color:#fff;">ALL KIDS WEAR</a>
+          <div class="mobile-subgroup-title">BOYS' CLOTHING</div>
+          <a href="/collections/boys-clothing" onclick="CollectionEngine.toggleMobileDrawer(false)">All Boys' Clothing</a>
+          <a href="/collections/boys-casual-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">Casual Wear</a>
+          <a href="/collections/boys-ethnic-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">Ethnic Wear</a>
+
+          <div class="mobile-subgroup-title">GIRLS' CLOTHING</div>
+          <a href="/collections/girls-clothing" onclick="CollectionEngine.toggleMobileDrawer(false)">All Girls' Clothing</a>
+          <a href="/collections/girls-casual-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">Casual & Daily</a>
+          <a href="/collections/girls-party-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">Party Wear</a>
+          <a href="/collections/girls-winter-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">Winter Wear</a>
+
+          <div class="mobile-subgroup-title">BABY CLOTHING (0–2Y)</div>
+          <a href="/collections/baby-clothing" onclick="CollectionEngine.toggleMobileDrawer(false)">All Baby Clothing</a>
+          <a href="/collections/baby-rompers" onclick="CollectionEngine.toggleMobileDrawer(false)">Rompers & Jumpsuits</a>
+          <a href="/collections/newborn-baby-clothes" onclick="CollectionEngine.toggleMobileDrawer(false)">Newborn Clothes</a>
+          <a href="/collections/baby-clothing-sets" onclick="CollectionEngine.toggleMobileDrawer(false)">Clothing Sets</a>
+          <a href="/collections/baby-frocks" onclick="CollectionEngine.toggleMobileDrawer(false)">Baby Frocks</a>
+        </div>
+      </div>
+
+      <a href="/collections/accessories" class="mobile-nav-item" onclick="CollectionEngine.toggleMobileDrawer(false)">ACCESSORIES</a>
+      <a href="/pages/contact.html" class="mobile-nav-item" onclick="CollectionEngine.toggleMobileDrawer(false); if(window.openChatModal){window.openChatModal(); return false;}">CHAT WITH US</a>
+    </nav>
+
+    <div style="padding:1.25rem 1.5rem; border-top:1px solid #1a1a1a; display:flex; flex-direction:column; gap:10px;">
+      <a href="/account.html" style="color:#aaa; text-decoration:none; font-size:0.85rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Account / Orders
+      </a>
+      <a href="/collections/wishlist" style="color:#aaa; text-decoration:none; font-size:0.85rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        Saved Wishlist
+      </a>
+    </div>
+  </aside>
+
+</header>
 
   <!-- ============================================================== -->
   <!-- 3. SECONDARY HORIZONTAL SUB-CATEGORY NAV ROW                   -->
@@ -1453,6 +1682,7 @@
       init() {
         this.loadCartFromStorage();
         this.parseUrlCategory();
+        this.updateActiveChip();
         this.setupEventListeners();
 
         // Instant 0ms Wishlist Pre-render: if opening wishlist view, immediately render cached items
@@ -1571,6 +1801,33 @@
           });
         });
 
+        // Desktop Hover Intent & Click Toggle for Dropdowns (Zero Glitch / Grace Period)
+        document.querySelectorAll('.nav-item-dropdown').forEach(dropdown => {
+          let closeTimer = null;
+          dropdown.addEventListener('mouseenter', () => {
+            clearTimeout(closeTimer);
+            document.querySelectorAll('.nav-item-dropdown.is-open').forEach(d => {
+              if (d !== dropdown) d.classList.remove('is-open');
+            });
+            dropdown.classList.add('is-open');
+          });
+          dropdown.addEventListener('mouseleave', () => {
+            closeTimer = setTimeout(() => {
+              dropdown.classList.remove('is-open');
+            }, 220);
+          });
+
+          const triggerLink = dropdown.querySelector('.header-nav-link');
+          if (triggerLink) {
+            triggerLink.addEventListener('click', (e) => {
+              if (window.innerWidth > 900) {
+                // If clicked, toggle dropdown open/close
+                dropdown.classList.toggle('is-open');
+              }
+            });
+          }
+        });
+
         // Browser back/forward button support
         window.addEventListener('popstate', () => {
           this.parseUrlCategory();
@@ -1641,13 +1898,128 @@
       },
 
       updateActiveChip() {
-        document.querySelectorAll('.category-chip').forEach(c => {
-          c.classList.toggle('active', c.dataset.cat === this.activeCategory);
-        });
-
+        this.renderCategoryChips();
         const title = this.categoryMap[this.activeCategory] || 'ALL STREETWEAR';
         document.getElementById('page-title').textContent = title;
         document.title = `${title} | ALLEYRICH Official Store`;
+      },
+
+      toggleMobileDrawer(show = null) {
+        const drawer = document.getElementById('mobile-nav-drawer');
+        const backdrop = document.getElementById('mobile-nav-backdrop');
+        if (!drawer || !backdrop) return;
+        const isOpen = drawer.style.transform === 'translateX(0px)' || drawer.style.transform === 'translateX(0)';
+        const willOpen = show !== null ? show : !isOpen;
+        backdrop.style.display = willOpen ? 'block' : 'none';
+        drawer.style.transform = willOpen ? 'translateX(0)' : 'translateX(-100%)';
+        document.body.style.overflow = willOpen ? 'hidden' : '';
+      },
+
+      toggleAccordion(headerEl) {
+        const accordion = headerEl.closest('.mobile-accordion');
+        if (accordion) {
+          accordion.classList.toggle('is-open');
+        }
+      },
+
+      getCategoryTaxonomy(activeCat) {
+        const cat = (activeCat || 'all').toLowerCase();
+
+        // 1. Party Wear context -> ONLY party wear subcategories
+        const partyHandles = ['party-wear', 'jodhpuri-suits', 'blazers', 'three-piece-suits', 'indo-western', 'koti-kurta-sets', 'long-kurtas', 'nehru-jackets'];
+        if (partyHandles.includes(cat)) {
+          return [
+            { cat: 'party-wear', label: 'All Party Wear', href: '/collections/party-wear' },
+            { cat: 'jodhpuri-suits', label: 'Jodhpuri Suits', href: '/collections/jodhpuri-suits' },
+            { cat: 'blazers', label: 'Blazers', href: '/collections/blazers' },
+            { cat: 'three-piece-suits', label: 'Three-Piece Suits', href: '/collections/three-piece-suits' },
+            { cat: 'indo-western', label: 'Indo-Western', href: '/collections/indo-western' },
+            { cat: 'koti-kurta-sets', label: 'Koti-Kurta Sets', href: '/collections/koti-kurta-sets' },
+            { cat: 'long-kurtas', label: 'Long Kurtas', href: '/collections/long-kurtas' },
+            { cat: 'nehru-jackets', label: 'Nehru Jackets', href: '/collections/nehru-jackets' }
+          ];
+        }
+
+        // 2. Kids Wear context -> ONLY kids wear subcategories
+        const kidsHandles = ['kids-wear', 'boys-clothing', 'boys-casual-wear', 'boys-ethnic-wear', 'girls-clothing', 'girls-casual-wear', 'girls-party-wear', 'girls-winter-wear', 'baby-clothing', 'baby-rompers', 'newborn-baby-clothes', 'baby-clothing-sets', 'baby-frocks'];
+        if (kidsHandles.includes(cat)) {
+          return [
+            { cat: 'kids-wear', label: 'All Kids Wear', href: '/collections/kids-wear' },
+            { cat: 'boys-clothing', label: 'Boys\' Clothing', href: '/collections/boys-clothing' },
+            { cat: 'girls-clothing', label: 'Girls\' Clothing', href: '/collections/girls-clothing' },
+            { cat: 'baby-clothing', label: 'Baby (0–2Y)', href: '/collections/baby-clothing' }
+          ];
+        }
+
+        // 3. Men's Wear context -> ONLY men's wear subcategories (Top Wear, Shirts, T-Shirts, Hoodies, Bottom Wear, Jeans, Cargo)
+        const mensHandles = [
+          'mens-wear', 'mens-top-wear', 'mens-bottom-wear', 'shirts', 'shirt', 't-shirts', 'tshirts',
+          'hoodies', 'sweatshirts', 'sweaters', 'jackets', 'half-jackets', 'short-kurtas',
+          'mens-jeans', 'straight-fit-jeans', 'baggy-fit-jeans', 'narrow-fit-jeans',
+          'cargo-joggers', 'formal-pants', 'trousers', 'lowers', 'mens-coord-sets'
+        ];
+        if (mensHandles.includes(cat)) {
+          return [
+            { cat: 'mens-wear', label: 'All Men\'s Wear', href: '/collections/mens-wear' },
+            { cat: 'mens-top-wear', label: 'Top Wear', href: '/collections/mens-top-wear' },
+            { cat: 'shirts', label: 'Shirts', href: '/collections/shirts' },
+            { cat: 't-shirts', label: 'T-Shirts', href: '/collections/t-shirts' },
+            { cat: 'hoodies', label: 'Hoodies', href: '/collections/hoodies' },
+            { cat: 'mens-bottom-wear', label: 'Bottom Wear', href: '/collections/mens-bottom-wear' },
+            { cat: 'mens-jeans', label: 'Jeans', href: '/collections/mens-jeans' },
+            { cat: 'cargo-joggers', label: 'Cargo / Joggers', href: '/collections/cargo-joggers' },
+            { cat: 'trousers', label: 'Trousers', href: '/collections/trousers' },
+            { cat: 'mens-coord-sets', label: 'Co-ord Sets', href: '/collections/mens-coord-sets' }
+          ];
+        }
+
+        // 4. Accessories context
+        if (cat === 'accessories') {
+          return [
+            { cat: 'accessories', label: 'All Accessories', href: '/collections/accessories' }
+          ];
+        }
+
+        // 5. Default Top-Level Drops (All Drops, New Arrivals, Men's, Party, Kids, Accessories)
+        return [
+          { cat: 'all', label: 'All Drops', href: '/collections/shop' },
+          { cat: 'new-arrivals', label: 'New Arrivals', href: '/collections/new-arrivals' },
+          { cat: 'mens-wear', label: 'Men\'s Wear', href: '/collections/mens-wear' },
+          { cat: 'party-wear', label: 'Party Wear', href: '/collections/party-wear' },
+          { cat: 'kids-wear', label: 'Kids Wear', href: '/collections/kids-wear' },
+          { cat: 'accessories', label: 'Accessories', href: '/collections/accessories' }
+        ];
+      },
+
+      renderCategoryChips() {
+        const container = document.getElementById('category-chips');
+        if (!container) return;
+
+        const chips = this.getCategoryTaxonomy(this.activeCategory);
+        container.innerHTML = chips.map(item => {
+          const isActive = (item.cat === this.activeCategory) || 
+                           (item.cat === 'all' && (this.activeCategory === 'shop' || this.activeCategory === 'all')) ||
+                           (item.cat === 'mens-wear' && this.activeCategory === 'mens-wear') ||
+                           (item.cat === 'party-wear' && this.activeCategory === 'party-wear') ||
+                           (item.cat === 'kids-wear' && this.activeCategory === 'kids-wear');
+          return '<a href="' + item.href + '" class="category-chip ' + (isActive ? 'active' : '') + '" data-cat="' + item.cat + '">' + item.label + '</a>';
+        }).join('');
+
+        // Attach click listeners to freshly generated dynamic chips
+        container.querySelectorAll('.category-chip').forEach(chip => {
+          chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetCat = chip.dataset.cat;
+            const href = chip.getAttribute('href');
+            this.setCategory(targetCat, href);
+          });
+        });
+
+        // Smooth scroll active chip into view horizontally on phone
+        const activeEl = container.querySelector('.category-chip.active');
+        if (activeEl && container.scrollWidth > container.clientWidth) {
+          activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
       },
 
       handleSearchInput(val) {
@@ -1671,7 +2043,7 @@
       matchesCategory(product, targetCat) {
         if (!targetCat || targetCat === 'all' || targetCat === 'shop') return true;
         const handle = targetCat.toLowerCase();
-        const pDept = (product.department || '').toLowerCase();
+        let pDept = (product.department || '').toLowerCase();
         const pCat = (product.category || '').toLowerCase();
         const pSub = (product.sub_category || '').toLowerCase();
         const pFit = (product.fit || '').toLowerCase();
@@ -1680,13 +2052,28 @@
         const pTitle = (product.title || '').toLowerCase();
         const pType = (product.product_type || '').toLowerCase();
 
+        // Intelligent auto-derivation if department was not set (e.g. manual admin products)
+        if (!pDept) {
+          const combo = (pCat + ' ' + pType + ' ' + pTitle + ' ' + pTags.join(' ')).toLowerCase();
+          if (combo.includes('boy') || combo.includes('girl') || combo.includes('baby') || combo.includes('kid') || combo.includes('infant') || combo.includes('romper') || combo.includes('frock')) {
+            pDept = 'kids';
+          } else if (combo.includes('party') || combo.includes('jodhpuri') || combo.includes('blazer') || combo.includes('indo-western') || combo.includes('suit') || combo.includes('sherwani') || combo.includes('koti')) {
+            pDept = 'party';
+          } else if (combo.includes('accessory') || combo.includes('accessories') || combo.includes('belt') || combo.includes('wallet') || combo.includes('sunglass')) {
+            pDept = 'accessories';
+          } else {
+            // Default domain is Men's Streetwear
+            pDept = 'men';
+          }
+        }
+
         // New Arrivals
         if (handle === 'new-arrivals' || handle === 'newarrivals') {
           return product.homepage_section === 'new_arrivals' || pTags.includes('new arrival') || pTags.includes('new arrivals') || pTags.includes('new-arrival') || pTags.includes('new in');
         }
         // Accessories
         if (handle === 'accessories') {
-          return pDept === 'accessories' || pCat === 'accessories' || pTags.includes('accessories') || pType.includes('jewelry') || pType.includes('bag');
+          return pDept === 'accessories' || pCat === 'accessories' || pTags.includes('accessories') || pType.includes('jewelry') || pType.includes('bag') || pType.includes('sunglass');
         }
         // Basics
         if (handle === 'basics-genrage' || handle === 'basics') {
@@ -1704,10 +2091,18 @@
           return pDept.includes("men");
         }
         if (handle === 'mens-bottom-wear' || handle === 'bottoms') {
-          return pDept.includes("men") && (pCat.includes("bottom") || pSub.includes("jean") || pSub.includes("pant") || pSub.includes("lower") || pSub.includes("cargo") || pSub.includes("trouser"));
+          return pDept.includes("men") && (
+            pCat.includes("bottom") || pSub.includes("jean") || pSub.includes("pant") || pSub.includes("lower") || pSub.includes("cargo") || pSub.includes("trouser") ||
+            pTitle.includes("jean") || pTitle.includes("cargo") || pTitle.includes("pant") || pTitle.includes("trouser") || pTitle.includes("lower") ||
+            pTags.some(t => t.includes('bottom') || t.includes('jean') || t.includes('cargo') || t.includes('pant') || t.includes('trouser'))
+          );
         }
         if (handle === 'mens-top-wear' || handle === 'tops') {
-          return pDept.includes("men") && (pCat.includes("top") || pSub.includes("shirt") || pSub.includes("hoodie") || pSub.includes("jacket") || pSub.includes("sweater") || pSub.includes("t-shirt"));
+          return pDept.includes("men") && (
+            pCat.includes("top") || pSub.includes("shirt") || pSub.includes("hoodie") || pSub.includes("jacket") || pSub.includes("sweater") || pSub.includes("t-shirt") ||
+            pTitle.includes("shirt") || pTitle.includes("tee") || pTitle.includes("t-shirt") || pTitle.includes("hoodie") || pTitle.includes("jacket") || pTitle.includes("sweater") ||
+            pType.includes("shirt") || pType.includes("top") || pTags.some(t => t.includes('shirt') || t.includes('tee') || t.includes('top'))
+          );
         }
         if (handle === 'mens-coord-sets') {
           return pDept.includes("men") && (pCat.includes("co-ord") || pSub.includes("co-ord") || pTags.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
@@ -1739,9 +2134,14 @@
           return pDept.includes("men") && (pSub.includes("lower") || pTitle.includes("lower") || pTitle.includes("sweatpant") || pTags.includes("lowers"));
         }
 
-        // Top Wear Subcategories
-        if (handle === 'shirts') {
-          return pDept.includes("men") && (pSub.includes("shirt") && !pSub.includes("t-shirt") && !pSub.includes("sweatshirt") || pTitle.includes("shirt") && !pTitle.includes("t-shirt") && !pTitle.includes("sweatshirt") || pTags.includes("shirts"));
+        // Top Wear Subcategories (Robust Shirt matching for all manual products)
+        if (handle === 'shirts' || handle === 'shirt') {
+          return (pDept.includes("men") || pDept.includes("top")) && 
+            ((pSub.includes("shirt") && !pSub.includes("t-shirt") && !pSub.includes("sweatshirt")) ||
+             (pTitle.includes("shirt") && !pTitle.includes("t-shirt") && !pTitle.includes("sweatshirt")) ||
+             (pCat.includes("shirt") && !pCat.includes("t-shirt") && !pCat.includes("sweatshirt")) ||
+             (pType.includes("shirt") && !pType.includes("t-shirt") && !pType.includes("sweatshirt")) ||
+             pTags.some(t => t === 'shirt' || t === 'shirts' || (t.includes('shirt') && !t.includes('t-shirt') && !t.includes('sweatshirt'))));
         }
         if (handle === 't-shirts' || handle === 'tshirts') {
           return pDept.includes("men") && (pSub.includes("t-shirt") || pTitle.includes("t-shirt") || pTitle.includes("tshirt") || pTitle.includes("tee") || pTags.includes("t-shirts"));
@@ -1797,102 +2197,102 @@
         }
         // Boys' Clothing
         if (handle === 'boys-clothing') {
-          return pCat.includes("boys");
+          return pCat.includes("boys") || pTitle.includes("boy");
         }
         if (handle === 'boys-casual-wear') {
-          return pCat.includes("boys") && (pSub.includes("casual") || pTags.includes("casual-wear") || (!pSub.includes("ethnic") && !pTitle.includes("kurta") && !pTitle.includes("suit")));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pSub.includes("casual") || pTags.includes("casual-wear") || (!pSub.includes("ethnic") && !pTitle.includes("kurta") && !pTitle.includes("suit")));
         }
         if (handle === 'boys-t-shirts') {
-          return pCat.includes("boys") && (pFit.includes("t-shirt") || pTitle.includes("tee") || pTitle.includes("t-shirt"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("t-shirt") || pTitle.includes("tee") || pTitle.includes("t-shirt"));
         }
         if (handle === 'boys-shirts') {
-          return pCat.includes("boys") && (pFit.includes("shirt") && !pFit.includes("t-shirt") || pTitle.includes("shirt") && !pTitle.includes("t-shirt"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("shirt") && !pFit.includes("t-shirt") || pTitle.includes("shirt") && !pTitle.includes("t-shirt"));
         }
         if (handle === 'boys-jeans') {
-          return pCat.includes("boys") && (pFit.includes("jean") || pTitle.includes("jean"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("jean") || pTitle.includes("jean"));
         }
         if (handle === 'boys-cargo-joggers') {
-          return pCat.includes("boys") && (pFit.includes("cargo") || pFit.includes("jogger") || pTitle.includes("cargo") || pTitle.includes("jogger"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("cargo") || pFit.includes("jogger") || pTitle.includes("cargo") || pTitle.includes("jogger"));
         }
         if (handle === 'boys-lowers') {
-          return pCat.includes("boys") && (pFit.includes("lower") || pTitle.includes("lower") || pTitle.includes("pant"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("lower") || pTitle.includes("lower") || pTitle.includes("pant"));
         }
         if (handle === 'boys-coord-sets') {
-          return pCat.includes("boys") && (pFit.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
         }
         if (handle === 'boys-night-suits') {
-          return pCat.includes("boys") && (pFit.includes("night") || pTitle.includes("night") || pTitle.includes("pajama"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("night") || pTitle.includes("night") || pTitle.includes("pajama"));
         }
         if (handle === 'boys-ethnic-wear') {
-          return pCat.includes("boys") && (pSub.includes("ethnic") || pTitle.includes("kurta") || pTitle.includes("suit") || pTitle.includes("indo"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pSub.includes("ethnic") || pTitle.includes("kurta") || pTitle.includes("suit") || pTitle.includes("indo"));
         }
         if (handle === 'boys-kurta-pajama') {
-          return pCat.includes("boys") && (pFit.includes("kurta") || pTitle.includes("kurta"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("kurta") || pTitle.includes("kurta"));
         }
         if (handle === 'boys-indo-western') {
-          return pCat.includes("boys") && (pFit.includes("indo") || pTitle.includes("indo"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("indo") || pTitle.includes("indo"));
         }
         if (handle === 'boys-jodhpuri') {
-          return pCat.includes("boys") && (pFit.includes("jodhpuri") || pTitle.includes("jodhpuri"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("jodhpuri") || pTitle.includes("jodhpuri"));
         }
         if (handle === 'boys-three-piece-suits') {
-          return pCat.includes("boys") && (pFit.includes("three-piece") || pTitle.includes("three-piece") || pTitle.includes("suit"));
+          return (pCat.includes("boys") || pTitle.includes("boy")) && (pFit.includes("three-piece") || pTitle.includes("three-piece") || pTitle.includes("suit"));
         }
 
         // Girls' Clothing
         if (handle === 'girls-clothing') {
-          return pCat.includes("girls");
+          return pCat.includes("girls") || pTitle.includes("girl");
         }
         if (handle === 'girls-casual-wear') {
-          return pCat.includes("girls") && (pSub.includes("casual") || pTags.includes("casual-wear") || pTitle.includes("tee") || pTitle.includes("top") || pTitle.includes("jean") || pTitle.includes("midi"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pSub.includes("casual") || pTags.includes("casual-wear") || pTitle.includes("tee") || pTitle.includes("top") || pTitle.includes("jean") || pTitle.includes("midi"));
         }
         if (handle === 'girls-jeans') {
-          return pCat.includes("girls") && (pFit.includes("jean") || pTitle.includes("jean"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("jean") || pTitle.includes("jean"));
         }
         if (handle === 'girls-tops-tshirts') {
-          return pCat.includes("girls") && (pFit.includes("top") || pFit.includes("t-shirt") || pTitle.includes("tee") || pTitle.includes("top"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("top") || pFit.includes("t-shirt") || pTitle.includes("tee") || pTitle.includes("top"));
         }
         if (handle === 'girls-coord-sets') {
-          return pCat.includes("girls") && (pFit.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("co-ord") || pTitle.includes("co-ord") || pTitle.includes("set"));
         }
         if (handle === 'girls-jumpsuits') {
-          return pCat.includes("girls") && (pFit.includes("jumpsuit") || pTitle.includes("jumpsuit"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("jumpsuit") || pTitle.includes("jumpsuit"));
         }
         if (handle === 'girls-midi-dresses') {
-          return pCat.includes("girls") && (pFit.includes("midi") || pTitle.includes("midi"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("midi") || pTitle.includes("midi"));
         }
         if (handle === 'girls-party-wear') {
-          return pCat.includes("girls") && (pSub.includes("party") || pTitle.includes("frock") || pTitle.includes("gown") || pTitle.includes("lehenga") || pTitle.includes("dress"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pSub.includes("party") || pTitle.includes("frock") || pTitle.includes("gown") || pTitle.includes("lehenga") || pTitle.includes("dress"));
         }
         if (handle === 'girls-frocks') {
-          return pCat.includes("girls") && (pFit.includes("frock") || pTitle.includes("frock"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("frock") || pTitle.includes("frock"));
         }
         if (handle === 'girls-gowns') {
-          return pCat.includes("girls") && (pFit.includes("gown") || pTitle.includes("gown"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("gown") || pTitle.includes("gown"));
         }
         if (handle === 'girls-lehenga-sets') {
-          return pCat.includes("girls") && (pFit.includes("lehenga") || pTitle.includes("lehenga"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("lehenga") || pTitle.includes("lehenga"));
         }
         if (handle === 'girls-dresses') {
-          return pCat.includes("girls") && (pFit.includes("dress") || pTitle.includes("dress"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("dress") || pTitle.includes("dress"));
         }
         if (handle === 'girls-winter-wear') {
-          return pCat.includes("girls") && (pSub.includes("winter") || pTitle.includes("sweater") || pTitle.includes("jacket") || pTitle.includes("hoodie") || pTitle.includes("sweatshirt"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pSub.includes("winter") || pTitle.includes("sweater") || pTitle.includes("jacket") || pTitle.includes("hoodie") || pTitle.includes("sweatshirt"));
         }
         if (handle === 'girls-sweaters') {
-          return pCat.includes("girls") && (pFit.includes("sweater") || pTitle.includes("sweater"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("sweater") || pTitle.includes("sweater"));
         }
         if (handle === 'girls-jackets') {
-          return pCat.includes("girls") && (pFit.includes("jacket") || pTitle.includes("jacket"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("jacket") || pTitle.includes("jacket"));
         }
         if (handle === 'girls-hoodies') {
-          return pCat.includes("girls") && (pFit.includes("hoodie") || pTitle.includes("hoodie"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("hoodie") || pTitle.includes("hoodie"));
         }
         if (handle === 'girls-sweatshirts') {
-          return pCat.includes("girls") && (pFit.includes("sweatshirt") || pTitle.includes("sweatshirt"));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("sweatshirt") || pTitle.includes("sweatshirt"));
         }
         if (handle === 'girls-winter-coord-sets') {
-          return pCat.includes("girls") && (pFit.includes("winter co-ord") || (pTitle.includes("winter") && pTitle.includes("co-ord")));
+          return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("winter co-ord") || (pTitle.includes("winter") && pTitle.includes("co-ord")));
         }
 
         // Baby Clothing (0–2 Years) / Newborn
