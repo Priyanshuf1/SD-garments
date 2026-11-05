@@ -296,6 +296,8 @@ const MIME_TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.bin': 'application/octet-stream',
+  '.splinecode': 'application/octet-stream',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -370,6 +372,17 @@ function proxyRequest(req, res, targetUrl) {
   };
 
   const proxy = https.request({ ...options, timeout: 8000 }, (remoteRes) => {
+    if (remoteRes.statusCode >= 400 && /\.(png|jpe?g|webp|gif|svg)$/i.test(parsed.pathname)) {
+      const fallbackPath = path.join(PUBLIC_DIR, 'images', 'photo_1.webp');
+      if (fs.existsSync(fallbackPath)) {
+        res.writeHead(200, {
+          'Content-Type': 'image/webp',
+          'Cache-Control': 'public, max-age=86400',
+          'Access-Control-Allow-Origin': '*'
+        });
+        return fs.createReadStream(fallbackPath).pipe(res);
+      }
+    }
     res.writeHead(remoteRes.statusCode, {
       'Content-Type': remoteRes.headers['content-type'] || 'application/octet-stream',
       'Cache-Control': remoteRes.headers['cache-control'] || 'public, max-age=300'
@@ -5433,6 +5446,9 @@ async function appHandler(req, res) {
 
   // Check local files
   let localPath = path.resolve(PUBLIC_DIR, `.${pathname}`);
+  if (pathname === '/assets/spline/scene.bin') {
+    localPath = path.resolve(PUBLIC_DIR, 'assets', 'spline', 'scene.splinecode');
+  }
   const publicRoot = path.resolve(PUBLIC_DIR) + path.sep;
   if (!localPath.startsWith(publicRoot)) {
     return sendJson(res, 403, { success: false, message: 'Forbidden' });
@@ -5445,7 +5461,7 @@ async function appHandler(req, res) {
       return serveVideoWithRange(req, res, localPath);
     }
 
-    const isImmutable = /\.(webp|splinecode|glb|gltf|png|jpg|jpeg|gif|woff2|woff|ttf|svg|ico)$/i.test(ext) || pathname.startsWith('/assets/') || pathname.startsWith('/images/');
+    const isImmutable = /\.(webp|splinecode|bin|glb|gltf|png|jpg|jpeg|gif|woff2|woff|ttf|svg|ico)$/i.test(ext) || pathname.startsWith('/assets/') || pathname.startsWith('/images/');
     const cacheHeader = isImmutable 
       ? 'public, max-age=31536000, immutable' 
       : (/\.(js|css)$/i.test(ext) ? 'public, max-age=86400, stale-while-revalidate=604800' : 'public, max-age=3600');

@@ -818,9 +818,15 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
       };
 
       try {
-        await splineApp.load('/assets/spline/scene.splinecode');
+        await splineApp.load('/assets/spline/scene.bin');
       } catch (e) {
-        await splineApp.load('https://prod.spline.design/VVdTRfsKk3fopW3m/scene.splinecode');
+        console.warn('[AllyRich 3D] scene.bin load failed, trying scene.splinecode:', e);
+        try {
+          await splineApp.load('/assets/spline/scene.splinecode');
+        } catch (e2) {
+          console.warn('[AllyRich 3D] local splinecode failed, trying CDN:', e2);
+          await splineApp.load('https://prod.spline.design/VVdTRfsKk3fopW3m/scene.splinecode');
+        }
       }
 
       if (loaderBadge) {
@@ -875,15 +881,15 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
     startSpline();
   }
 
-  if ('IntersectionObserver' in window && container) {
-    const preloadObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        preloadObserver.disconnect();
-        triggerSplineStart();
-      }
-    }, { rootMargin: '350px 0px 350px 0px' });
-    preloadObserver.observe(container);
+  // Pre-warm Spline scene in background immediately during idle time or 300ms delay
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(() => triggerSplineStart(), { timeout: 1500 });
   } else {
-    setTimeout(triggerSplineStart, 1200);
+    setTimeout(triggerSplineStart, 300);
   }
+
+  // Also trigger on first user interaction
+  window.addEventListener("scroll", triggerSplineStart, { passive: true, once: true });
+  window.addEventListener("touchstart", triggerSplineStart, { passive: true, once: true });
+  window.addEventListener("mousemove", triggerSplineStart, { passive: true, once: true });
 })();
