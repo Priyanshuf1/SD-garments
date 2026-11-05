@@ -157,7 +157,7 @@
     "supabaseId": "c24478eb-ba94-4eda-b0e4-6717cc84ddd3",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792408974935@testgenrage.com",
+      "email": "reviewer_1792408974935@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -168,7 +168,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -192,7 +192,7 @@
     "supabaseId": "aab5d539-3e33-42ee-8a42-930c499ace51",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792408936840@testgenrage.com",
+      "email": "reviewer_1792408936840@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -203,7 +203,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -227,7 +227,7 @@
     "supabaseId": "279c63b4-8f51-4a3a-baa6-66c1a1707c32",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792357646978@testgenrage.com",
+      "email": "reviewer_1792357646978@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -238,7 +238,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -262,7 +262,7 @@
     "supabaseId": "b81b778a-afd2-4d96-905a-cd41c9e0801f",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792357464260@testgenrage.com",
+      "email": "reviewer_1792357464260@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -273,7 +273,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -297,7 +297,7 @@
     "supabaseId": "6ef21e59-1212-46d0-b2fc-490ae3d4f7d8",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792357434891@testgenrage.com",
+      "email": "reviewer_1792357434891@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -308,7 +308,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -332,7 +332,7 @@
     "supabaseId": "e81b759b-8390-4d34-80eb-0f20f447e164",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792355759521@testgenrage.com",
+      "email": "reviewer_1792355759521@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -343,7 +343,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -367,7 +367,7 @@
     "supabaseId": "25389f75-8578-4203-b194-7c579f9884ac",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792355582708@testgenrage.com",
+      "email": "reviewer_1792355582708@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -378,7 +378,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -402,7 +402,7 @@
     "supabaseId": "9b81f719-3db6-40f8-b082-65ce1819db35",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792355475417@testgenrage.com",
+      "email": "reviewer_1792355475417@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -413,7 +413,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -448,7 +448,7 @@
       {
         "id": "590c78a2-8647-4a2b-a6a0-c839c6f896c1",
         "size": "M",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-genrage-1.png?v=1788529843",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-1.png?v=1788529843",
         "price": 1299,
         "title": "Reign Grey Tshirt",
         "quantity": 1
@@ -472,7 +472,7 @@
     "supabaseId": "811a2c12-cd44-49b7-a218-246a8430b9b2",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792335069784@testgenrage.com",
+      "email": "reviewer_1792335069784@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -483,7 +483,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -507,7 +507,7 @@
     "supabaseId": "05b73d5b-b430-4531-ac38-279ec4044b14",
     "customer": {
       "name": "Reviewer Test",
-      "email": "reviewer_1792334754388@testgenrage.com",
+      "email": "reviewer_1792334754388@alleyrich.com",
       "phone": "+91 99999 22222",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -518,7 +518,7 @@
       {
         "id": "62b2f18f-7621-4adb-bbca-151b3efad093",
         "size": "L",
-        "image": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -727,7 +727,7 @@
     "items": [
       {
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-genrage-1.png?v=1788529843",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-1.png?v=1788529843",
         "price": 1499,
         "title": "Auto Test Streetwear Tee",
         "quantity": 1
@@ -761,7 +761,7 @@
     "items": [
       {
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-genrage-1.png?v=1788529843",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-1.png?v=1788529843",
         "price": 1499,
         "title": "Auto Test Streetwear Tee",
         "quantity": 1
@@ -795,7 +795,7 @@
     "items": [
       {
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-genrage-1.png?v=1788529843",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/reign-grey-boxy-oversized-tshirt-1.png?v=1788529843",
         "price": 1499,
         "title": "Auto Test Streetwear Tee",
         "quantity": 1
@@ -830,7 +830,7 @@
       {
         "id": 9581723900003,
         "size": "30",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/dawn-unisex-straight-fit-baggy-pants-genrage-1_140x140.png?v=1788529016",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/dawn-unisex-straight-fit-baggy-pants-1.png?v=1788529016",
         "price": 1999,
         "title": "Dawn Unisex Straight Fit Baggy Pants",
         "quantity": 1
@@ -900,7 +900,7 @@
       {
         "id": 9581723900002,
         "size": "XL",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/sinutation-unisex-grey-boxy-oversized-tshirt-genrage-1_140x140.png?v=1788528958",
+        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/sinutation-unisex-grey-boxy-oversized-tshirt-1.png?v=1788528958",
         "price": 1299,
         "title": "Sinutation Grey Boxy Oversized Tshirt",
         "quantity": 2
@@ -943,7 +943,7 @@
       {
         "id": 9581723900001,
         "size": "32",
-        "image": "https://genrage.com/cdn/shop/files/front_79f62e01-7f3f-468e-903c-959328f4d873.png?v=1758346828&width=400",
+        "image": "/images/photo_1.webp",
         "price": 1899,
         "title": "Typhoon Black Straight Fit Baggy Pants",
         "quantity": 1

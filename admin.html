@@ -1692,7 +1692,7 @@
                 <option value="all">All Showcase Status</option>
                 <option value="just_dropped">⭐ JUST DROPPED</option>
                 <option value="new_arrivals">⭐ NEW ARRIVALS</option>
-                <option value="genrage_basics">⭐ ALLEYRICH BASICS</option>
+                <option value="alleyrich_basics">⭐ ALLEYRICH BASICS</option>
                 <option value="none">Catalog Only (Not on Homepage)</option>
               </select>
             </div>
@@ -2275,7 +2275,7 @@
           <option value="none">None (General Catalog Only)</option>
           <option value="just_dropped">JUST DROPPED (Homepage Hero Drops)</option>
           <option value="new_arrivals">NEW ARRIVALS (Curated Streetwear Arrivals)</option>
-          <option value="genrage_basics">ALLEYRICH BASICS (Signature Pants & Basics)</option>
+          <option value="alleyrich_basics">ALLEYRICH BASICS (Signature Pants & Basics)</option>
         </select>
       </div>
 
@@ -3319,7 +3319,7 @@ const Admin = {
         sectionBadge = '<span class="badge badge-danger" style="font-size:11.5px;font-weight:800;letter-spacing:0.02em;">⭐ JUST DROPPED</span>';
       } else if (hSection === 'new_arrivals') {
         sectionBadge = '<span class="badge badge-info" style="font-size:11.5px;font-weight:800;letter-spacing:0.02em;">⭐ NEW ARRIVALS</span>';
-      } else if (hSection === 'genrage_basics') {
+      } else if ((hSection === 'alleyrich_basics' || hSection === 'genrage_basics')) {
         sectionBadge = '<span class="badge badge-warning" style="font-size:11.5px;font-weight:800;letter-spacing:0.02em;">⭐ ALLEYRICH BASICS</span>';
       }
 
@@ -3347,7 +3347,7 @@ const Admin = {
               <option value="none" ${hSection === 'none' ? 'selected' : ''}>Catalog Only</option>
               <option value="just_dropped" ${hSection === 'just_dropped' ? 'selected' : ''}>⭐ Just Dropped</option>
               <option value="new_arrivals" ${hSection === 'new_arrivals' ? 'selected' : ''}>⭐ New Arrivals</option>
-              <option value="genrage_basics" ${hSection === 'genrage_basics' ? 'selected' : ''}>⭐ Alleyrich Basics</option>
+              <option value="alleyrich_basics" ${(hSection === 'alleyrich_basics' || hSection === 'genrage_basics') ? 'selected' : ''}>⭐ Alleyrich Basics</option>
             </select>
           </td>
           <td style="font-weight:700;">₹${Number(price).toLocaleString('en-IN')}</td>
@@ -3581,7 +3581,7 @@ const Admin = {
       badge.style.background = '';
       badge.style.color = '';
       badge.textContent = '⭐ NEW ARRIVALS';
-    } else if (val === 'genrage_basics') {
+    } else if ((val === 'alleyrich_basics' || val === 'genrage_basics')) {
       badge.className = 'badge badge-warning';
       badge.style.background = '';
       badge.style.color = '';
@@ -3607,7 +3607,7 @@ const Admin = {
     
     // Default primary flatlay + default model hover
     const defaultPrimary = 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
-    const defaultHover = 'https://genrage.com/cdn/shop/files/front_79f62e01-7f3f-468e-903c-959328f4d873.png?v=1758346828&width=800';
+    const defaultHover = '/images/photo_1.webp';
 
     document.getElementById('edit-prod-image').value = defaultPrimary;
     document.getElementById('edit-prod-hover-image').value = defaultHover;
@@ -3869,6 +3869,7 @@ const Admin = {
           'none': 'Catalog Only (Removed from Homepage)',
           'just_dropped': '⭐ JUST DROPPED Carousel',
           'new_arrivals': '⭐ NEW ARRIVALS Carousel',
+          'alleyrich_basics': '⭐ ALLEYRICH BASICS Carousel',
           'genrage_basics': '⭐ ALLEYRICH BASICS Carousel'
         };
         this.showToast(`✅ Showcase updated: "${p?.title || id}" → ${labels[section] || section}`);
@@ -3906,7 +3907,7 @@ const Admin = {
     }
 
     grid.innerHTML = this.filteredCollections.map(c => {
-      const img = c.image?.src || 'https://genrage.com/cdn/shop/files/front_79f62e01-7f3f-468e-903c-959328f4d873.png?v=1758346828&width=600';
+      const img = c.image?.src || '/images/photo_1.webp';
       return `
         <div class="collection-card">
           <div class="collection-img-box">
@@ -4472,7 +4473,7 @@ const Admin = {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `genrage_orders_${Date.now()}.csv`;
+    a.download = `alleyrich_orders_${Date.now()}.csv`;
     a.click();
     this.showToast('📥 Orders CSV exported.');
   },
@@ -4664,7 +4665,7 @@ const Admin = {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `genrage_customers_${Date.now()}.csv`;
+    a.download = `alleyrich_customers_${Date.now()}.csv`;
     a.click();
     this.showToast('📥 Customers CSV exported.');
   },

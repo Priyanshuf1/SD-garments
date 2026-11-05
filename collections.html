@@ -35,7 +35,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Sticky Header - Pure Black Style 1:1 with Official Genrage Site */
+    /* Sticky Header - Pure Black Style 1:1 with Official Alleyrich Site */
     .site-header {
       background: #000000;
       border-bottom: 1px solid #1a1a1a;
@@ -122,7 +122,7 @@
       border-radius: 2px;
       min-width: 200px;
       padding: 0.75rem 0;
-      z-index: 200;
+      z-index: 999999;
     }
     .nav-dropdown-menu::before {
       content: '';
@@ -1406,7 +1406,7 @@
 
     <!-- Centered: Product Count -->
     <p class="collection-toolbar__products-count" id="page-count-text">
-      244 PRODUCTS
+      LOADING PRODUCTS...
     </p>
 
     <!-- Top-Right: Filter Button -->
@@ -1502,7 +1502,7 @@
   </aside>
 
   <!-- ============================================================== -->
-  <!-- 7. CART DRAWER (Official Genrage Style - NO Cashfree Branding)  -->
+  <!-- 7. CART DRAWER (Official Alleyrich Style - NO Cashfree Branding)  -->
   <!-- ============================================================== -->
   <div id="cart-drawer-backdrop" onclick="CollectionEngine.closeCartDrawer()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; backdrop-filter:blur(3px);"></div>
   
@@ -1717,7 +1717,7 @@
       "baby-frocks": "BABY FROCKS",
       "baby-dresses": "BABY DRESSES",
       "accessories": "ACCESSORIES",
-      "basics-genrage": "ALLEYRICH BASICS",
+      "basics-alleyrich": "ALLEYRICH BASICS",
       "newarrivals": "NEW ARRIVALS",
       "tops": "TOPS & TEES",
       "bottoms": "PANTS & BOTTOMS",
@@ -2151,7 +2151,7 @@
           return pDept === 'accessories' || pCat === 'accessories' || pTags.includes('accessories') || pType.includes('jewelry') || pType.includes('bag') || pType.includes('sunglass');
         }
         // Basics
-        if (handle === 'basics-genrage' || handle === 'basics') {
+        if (handle === 'basics-alleyrich' || handle === 'basics') {
           return product.homepage_section === 'genrage_basics' || pTags.includes('basic') || pTags.includes('basics');
         }
         // Clearance
@@ -2209,14 +2209,12 @@
           return pDept.includes("men") && (pSub.includes("lower") || pTitle.includes("lower") || pTitle.includes("sweatpant") || pTags.includes("lowers"));
         }
 
-        // Top Wear Subcategories (Robust Shirt matching for all manual products)
+        // Top Wear Subcategories (Accurate Shirt matching - excludes T-shirts, Tees, Sweatshirts)
         if (handle === 'shirts' || handle === 'shirt') {
-          return (pDept.includes("men") || pDept.includes("top")) && 
-            ((pSub.includes("shirt") && !pSub.includes("t-shirt") && !pSub.includes("sweatshirt")) ||
-             (pTitle.includes("shirt") && !pTitle.includes("t-shirt") && !pTitle.includes("sweatshirt")) ||
-             (pCat.includes("shirt") && !pCat.includes("t-shirt") && !pCat.includes("sweatshirt")) ||
-             (pType.includes("shirt") && !pType.includes("t-shirt") && !pType.includes("sweatshirt")) ||
-             pTags.some(t => t === 'shirt' || t === 'shirts' || (t.includes('shirt') && !t.includes('t-shirt') && !t.includes('sweatshirt'))));
+          const combo = (pTitle + ' ' + pCat + ' ' + pSub + ' ' + pType + ' ' + pTags.join(' ')).toLowerCase();
+          const isTeeOrSweat = combo.includes('t-shirt') || combo.includes('tshirt') || combo.includes('tee') || combo.includes('sweatshirt') || combo.includes('hoodie') || combo.includes('vest') || combo.includes('tank');
+          if (isTeeOrSweat) return false;
+          return combo.includes('shirt');
         }
         if (handle === 't-shirts' || handle === 'tshirts') {
           return pDept.includes("men") && (pSub.includes("t-shirt") || pTitle.includes("t-shirt") || pTitle.includes("tshirt") || pTitle.includes("tee") || pTags.includes("t-shirts"));
@@ -2534,7 +2532,7 @@
               <div style="grid-column: 1/-1; background:#c4c4c4; border-radius:4px; padding:4rem 2rem; text-align:center; color:#111; border:1px solid rgba(0,0,0,0.12);">
                 <h3 style="margin:0 0 8px; text-transform:uppercase; color:#111; font-weight:800;">No Drops Found for "${this.searchQuery}"</h3>
                 <p style="font-size:0.85rem; margin-bottom:1.5rem; color:#666;">Try searching for generic terms like "hoodie", "pants", "tee", or "black".</p>
-                <button onclick="CollectionEngine.clearSearch();" style="background:#000; color:#fff; border:none; padding:12px 24px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; cursor:pointer; letter-spacing:0.04em;">VIEW ALL 244 PRODUCTS</button>
+                <button onclick="CollectionEngine.clearSearch();" style="background:#000; color:#fff; border:none; padding:12px 24px; font-weight:800; font-size:0.85rem; text-transform:uppercase; border-radius:2px; cursor:pointer; letter-spacing:0.04em;">VIEW ALL PRODUCTS</button>
               </div>
             `;
             return;
@@ -2577,7 +2575,7 @@
                 </button>
 
                 <a href="/products/${p.handle}" class="product-card__media" draggable="false" data-instant>
-                  <img src="${primaryImg}" alt="${p.title}" loading="${isAboveFold ? 'eager' : 'lazy'}" ${idx < 4 ? 'fetchpriority="high"' : ''} decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall" onerror="this.onerror=null;this.src='/images/photo_' + ((Math.abs(Array.from(this.alt||'1').reduce((a,c)=>a+c.charCodeAt(0),0)) % 16) + 1) + '.webp';">
+                  <img src="${primaryImg}" alt="${(p.title || 'Streetwear').replace(/"/g, '&quot;')}" loading="${isAboveFold ? 'eager' : 'lazy'}" ${idx < 4 ? 'fetchpriority="high"' : ''} decoding="async" class="product-card__image product-card__image--primary object-cover aspect-tall" onerror="this.onerror=null;this.src='/images/photo_' + ((Math.abs(Array.from(this.alt||'1').reduce((a,c)=>a+c.charCodeAt(0),0)) % 16) + 1) + '.webp';">
                   ${secondaryImg ? `<img src="${secondaryImg}" alt="${p.title} Model View" decoding="async" class="product-card__image product-card__image--secondary" onerror="this.style.display='none';">` : ''}
                 </a>
               </div>

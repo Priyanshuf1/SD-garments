@@ -64,7 +64,7 @@
       "vendor": "ALLEYRICH",
       "category": "Bottom Wear",
       "product_type": "Pants & Bottoms",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "Shop",
         "Basics",
@@ -94,12 +94,12 @@
       "images": [
         {
           "id": 1792792091291,
-          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-1.png?v=1788529155&width=800",
+          "src": "/images/photo_5.webp",
           "position": 1
         },
         {
           "id": 1792792091292,
-          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-2.png?v=1788529155&width=800",
+          "src": "/images/photo_6.webp",
           "position": 2
         }
       ],
@@ -146,12 +146,12 @@
       "images": [
         {
           "id": 1792792091278,
-          "src": "/assets/uploads/genrage_1792772231587_Screenshot_2026-10-11_003704_w.webp",
+          "src": "/assets/uploads/alleyrich_1792772231587_Screenshot_2026-10-11_003704_w.webp",
           "position": 1
         },
         {
           "id": 1792792091279,
-          "src": "/assets/uploads/genrage_1792772248666_Screenshot_2026-10-11_003804_w.webp",
+          "src": "/assets/uploads/alleyrich_1792772248666_Screenshot_2026-10-11_003804_w.webp",
           "position": 2
         }
       ],
@@ -199,12 +199,12 @@
       "images": [
         {
           "id": 1792792091264,
-          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-1.png?v=1788529155&width=800",
+          "src": "/images/photo_5.webp",
           "position": 1
         },
         {
           "id": 1792792091265,
-          "src": "https://genrage.com/cdn/shop/files/witch-unisex-straight-fit-baggy-pants-genrage-2.png?v=1788529155&width=800",
+          "src": "/images/photo_6.webp",
           "position": 2
         }
       ],
@@ -252,12 +252,12 @@
       "images": [
         {
           "id": 1792792091251,
-          "src": "https://genrage.com/cdn/shop/files/quill-black-tshirt-genrage-6.png?v=1786176078&width=800",
+          "src": "/images/photo_1.webp",
           "position": 1
         },
         {
           "id": 1792792091252,
-          "src": "https://genrage.com/cdn/shop/files/quill-black-tshirt-genrage-7.png?v=1786176081&width=800",
+          "src": "/images/photo_3.webp",
           "position": 2
         }
       ],
@@ -301,12 +301,12 @@
       "images": [
         {
           "id": 1,
-          "src": "/assets/uploads/genrage_1792772231587_Screenshot_2026-10-11_003704_w.webp",
+          "src": "/assets/uploads/alleyrich_1792772231587_Screenshot_2026-10-11_003704_w.webp",
           "position": 1
         },
         {
           "id": 2,
-          "src": "/assets/uploads/genrage_1792772248666_Screenshot_2026-10-11_003804_w.webp",
+          "src": "/assets/uploads/alleyrich_1792772248666_Screenshot_2026-10-11_003804_w.webp",
           "position": 2
         }
       ],
@@ -352,22 +352,22 @@
       "images": [
         {
           "id": "6883adc4-d986-4182-bd8e-1c0c9c1646dd",
-          "src": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+          "src": "/images/photo_1.webp",
           "position": 1
         },
         {
           "id": "4a7edef2-98a5-4c46-8aa2-b5670ce769b0",
-          "src": "https://genrage.com/cdn/shop/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+          "src": "/images/photo_1.webp",
           "position": 1
         },
         {
           "id": "bdc84d51-fa27-4d39-b3f1-97cfa9012a0a",
-          "src": "https://genrage.com/cdn/shop/files/2_cccbb52d-ae40-4e13-a967-4a113f6a103a.png?v=1792222977",
+          "src": "/images/photo_3.webp",
           "position": 2
         },
         {
           "id": "62f08473-bb0a-46ea-9b76-cf0428338863",
-          "src": "https://genrage.com/cdn/shop/files/2_cccbb52d-ae40-4e13-a967-4a113f6a103a.png?v=1792222977",
+          "src": "/images/photo_3.webp",
           "position": 2
         }
       ],
@@ -2700,13 +2700,13 @@
     },
     {
       "id": "d7924c0e-36b7-4ece-8f82-fa4e41b54c62",
-      "handle": "genrage-beige-balloon-pants",
-      "title": "Genrage Beige Balloon Pants",
+      "handle": "alleyrich-beige-balloon-pants",
+      "title": "Alleyrich Beige Balloon Pants",
       "body_html": "<ul>\n<li>Elastic Waist with Adjustable Drawstrings</li>\n<li>2 Functional Side Pockets</li>\n<li>100% Premium Biowashed Cotton</li>\n<li>350 GSM Sturdy Fabric</li>\n<li>Heavy Brushed Cotton Fleece</li>\n<li>Unique Beige Colour</li>\n<li>Combed | Hypo-Allergic | GOTS Organic Cotton Certified</li>\n</ul>\n<p><span>\"BASICS\" BY RAGE STUDIOS ©<br></span><span> <br></span><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India</span></p>\n<p><span>note : the above product is artisan stitched and screen printed, crafted by human hands, not machines :))</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "New-Launch-2026",
@@ -3695,7 +3695,7 @@
     },
     {
       "id": "a7c94c5e-9100-475c-9a6b-b1f12b6d10b2",
-      "handle": "vexor-genrage-charm-pendant",
+      "handle": "vexor-alleyrich-charm-pendant",
       "title": "Vexor Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"VEXOR\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -4550,9 +4550,9 @@
     },
     {
       "id": "6a89e68e-aa78-41e1-8454-12b8932a27e6",
-      "handle": "genrage-pendant-chain",
-      "title": "GENRAGE Pendant Chain",
-      "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with this statement chain.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"GENRAGE CHAIN\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
+      "handle": "alleyrich-pendant-chain",
+      "title": "ALLEYRICH Pendant Chain",
+      "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with this statement chain.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"ALLEYRICH CHAIN\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Jewelry & Pendants",
@@ -5523,7 +5523,7 @@
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "New-Launch-2026",
         "Schizophrenia",
@@ -5640,7 +5640,7 @@
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "New-Launch-2026",
         "Schizophrenia",
@@ -6725,7 +6725,7 @@
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "New-Launch-2026",
         "Schizophrenia",
@@ -9105,13 +9105,13 @@
     },
     {
       "id": "b807fac4-ff9c-4668-9876-dd13cd4c406f",
-      "handle": "dark-grey-basic-genrage-baggy-pants",
+      "handle": "dark-grey-basic-alleyrich-baggy-pants",
       "title": "Dark Grey Basic Baggy Pants",
       "body_html": "<div>\n<div>\n<div>\n<meta charset=\"utf-8\">\n<ul>\n<li><span><strong></strong>Unisex<strong> </strong>Baggy Straight Fit</span></li>\n<li><span>Elastic Waist with Adjustable Drawstrings</span></li>\n<li><span>2 Functional Side Pockets</span></li>\n<li><span>100% Premium Biowashed Cotton</span></li>\n<li><span>Heavy Brushed Cotton Fleece Interior</span></li>\n<li><span>Dark Grey Colour</span></li>\n<li><span>Combed | Hypo-Allergic | GOTS Organic Cotton Certified</span></li>\n</ul>\n</div>\n</div>\n</div>\n<p><span>\"BASIC\" BY RAGE STUDIOS ©<br></span><span> <br></span><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India</span></p>\n<p><span>note : the above product is artisan stitched and screen printed, crafted by human hands, not machines :))</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "Shop",
@@ -9223,7 +9223,7 @@
       "id": "64649fa1-249a-4de4-8076-8dfbea754577",
       "handle": "grind-leather-duffle-bag",
       "title": "GRIND LEATHER DUFFLE BAG",
-      "body_html": "<p><meta charset=\"utf-8\">PREMIUM FOAM MATTE FAUX LEATHER<br>CUSTOM DEBOSSED PUNCH GENRAGE BRANDING</p>\n<ul>\n<li><strong>DUAL-WAY TOP ZIP CLOSURE</strong></li>\n<li><strong>DEDICATED SHOE COMPARTMENT WITH ZIP</strong></li>\n<li><strong>CAPACITY – 25 LITRES</strong></li>\n<li><strong>BUILT FOR TRAINING, TRAVEL &amp; EVERYDAY USE</strong></li>\n<li><strong style=\"font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; font-size: 0.875rem;\">DESIGNED AND CONSTRUCTED BY GENRAGE</strong></li>\n</ul>\n<p style=\"text-align: left;\"><span>\"GRIND\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p style=\"text-align: left;\"><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
+      "body_html": "<p><meta charset=\"utf-8\">PREMIUM FOAM MATTE FAUX LEATHER<br>CUSTOM DEBOSSED PUNCH ALLEYRICH BRANDING</p>\n<ul>\n<li><strong>DUAL-WAY TOP ZIP CLOSURE</strong></li>\n<li><strong>DEDICATED SHOE COMPARTMENT WITH ZIP</strong></li>\n<li><strong>CAPACITY – 25 LITRES</strong></li>\n<li><strong>BUILT FOR TRAINING, TRAVEL &amp; EVERYDAY USE</strong></li>\n<li><strong style=\"font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; font-size: 0.875rem;\">DESIGNED AND CONSTRUCTED BY ALLEYRICH</strong></li>\n</ul>\n<p style=\"text-align: left;\"><span>\"GRIND\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p style=\"text-align: left;\"><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Bags & Accessories",
@@ -12235,7 +12235,7 @@
     },
     {
       "id": "306e2919-7f40-4319-8957-831a780bf737",
-      "handle": "grave-genrage-charm-pendant",
+      "handle": "grave-alleyrich-charm-pendant",
       "title": "Grave Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"GRAVE\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -12275,7 +12275,7 @@
     },
     {
       "id": "168ab21d-2034-4bfe-aa26-cc1dd06e3449",
-      "handle": "scar-genrage-charm-pendant",
+      "handle": "scar-alleyrich-charm-pendant",
       "title": "Scar Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"SCAR\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -12315,7 +12315,7 @@
     },
     {
       "id": "1992fc18-fb4e-4872-977c-567a385ff942",
-      "handle": "ascend-genrage-charm-pendant",
+      "handle": "ascend-alleyrich-charm-pendant",
       "title": "Ascend Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"ASCEND\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -13403,7 +13403,7 @@
     },
     {
       "id": "fdda9e1c-c5b3-4609-8720-9f61e66752f6",
-      "handle": "sword-genrage-charm-pendant",
+      "handle": "sword-alleyrich-charm-pendant",
       "title": "Sword Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"SWORD\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -13784,7 +13784,7 @@
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "New-Launch-2026",
@@ -14793,7 +14793,7 @@
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "New-Launch-2026",
@@ -15295,13 +15295,13 @@
     },
     {
       "id": "215ba0fb-86ca-46f4-9468-0ef6ac816bfb",
-      "handle": "genrage-white-balloon-pants",
-      "title": "Genrage White Balloon Pants",
+      "handle": "alleyrich-white-balloon-pants",
+      "title": "Alleyrich White Balloon Pants",
       "body_html": "<ul>\n<li>Elastic Waist with Adjustable Drawstrings</li>\n<li>2 Functional Side Pockets</li>\n<li>100% Premium Biowashed Cotton</li>\n<li>350 GSM Sturdy Fabric</li>\n<li>Heavy Brushed Cotton Fleece</li>\n<li>Classic White Colour</li>\n<li>Combed | Hypo-Allergic | GOTS Organic Cotton Certified</li>\n</ul>\n<p><span>\"BASICS\" BY RAGE STUDIOS ©<br></span><span> <img><br></span><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India</span></p>\n<p><span>note : the above product is artisan stitched and screen printed, crafted by human hands, not machines :))</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "New-Launch-2026",
@@ -15830,7 +15830,7 @@
     },
     {
       "id": "b50740c0-d422-4e2c-97e3-9c9c3eb47aec",
-      "handle": "ignis-genrage-charm-pendant",
+      "handle": "ignis-alleyrich-charm-pendant",
       "title": "Ignis Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"IGNIS</span><span>\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -16720,13 +16720,13 @@
     },
     {
       "id": "e4bd3fea-f3e4-4801-9839-667c9fe5594d",
-      "handle": "genrage-melange-balloon-supper-baggy-pants",
-      "title": "Genrage Grey Balloon Pants",
+      "handle": "alleyrich-melange-balloon-supper-baggy-pants",
+      "title": "Alleyrich Grey Balloon Pants",
       "body_html": "<ul>\n<li>Elastic Waist with Adjustable Drawstrings</li>\n<li>2 Functional Side Pockets</li>\n<li>100% Premium Biowashed Cotton</li>\n<li>350 GSM Sturdy Fabric</li>\n<li>Heavy Brushed Cotton Fleece</li>\n<li>Classic Melange Grey Colour</li>\n<li>Combed | Hypo-Allergic | GOTS Organic Cotton Certified</li>\n</ul>\n<p><span>\"BASICS\" BY RAGE STUDIOS ©<br></span><span> <br></span><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India</span></p>\n<p><span>note : the above product is artisan stitched and screen printed, crafted by human hands, not machines :))</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "New-Launch-2026",
@@ -17528,7 +17528,7 @@
     },
     {
       "id": "9cb98111-f535-4045-b9ee-3fe0d835e71f",
-      "handle": "sigil-genrage-charm-pendant",
+      "handle": "sigil-alleyrich-charm-pendant",
       "title": "Sigil Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"SIGIL\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -18095,7 +18095,7 @@
     },
     {
       "id": "64b66477-0150-47c2-a006-cdb07176b343",
-      "handle": "creed-genrage-charm-pendant",
+      "handle": "creed-alleyrich-charm-pendant",
       "title": "Creed Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"CREED\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -18219,7 +18219,7 @@
     },
     {
       "id": "06a288a4-87ce-4f42-900b-fa919600e3d2",
-      "handle": "wound-genrage-charm-pendant",
+      "handle": "wound-alleyrich-charm-pendant",
       "title": "Wound Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"WOUND\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -18259,7 +18259,7 @@
     },
     {
       "id": "a7cbc9dd-7ae0-4f03-a207-8d35efcd7859",
-      "handle": "cosma-genrage-charm-pendant",
+      "handle": "cosma-alleyrich-charm-pendant",
       "title": "Cosma Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\">\n<br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"COSMA\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -18299,7 +18299,7 @@
     },
     {
       "id": "5cda87dc-cfca-45f5-b646-d9b6ae7bd640",
-      "handle": "starlit-genrage-charm-pendant",
+      "handle": "starlit-alleyrich-charm-pendant",
       "title": "Starlit Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"STARLIT\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -19507,7 +19507,7 @@
     },
     {
       "id": "c2172bb8-b552-4f32-88e4-6e0dd208227b",
-      "handle": "berserk-genrage-charm-pendant",
+      "handle": "berserk-alleyrich-charm-pendant",
       "title": "Berserk Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"BERSERK\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -19547,7 +19547,7 @@
     },
     {
       "id": "127a21a6-79d9-4d14-82ff-d4c0a3c325e0",
-      "handle": "saint-genrage-charm-pendant",
+      "handle": "saint-alleyrich-charm-pendant",
       "title": "Saint Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"SAINT\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -19587,7 +19587,7 @@
     },
     {
       "id": "f27ea83b-2dcf-4114-a7bb-129809ebe487",
-      "handle": "ash-genrage-charm-pendant",
+      "handle": "ash-alleyrich-charm-pendant",
       "title": "Ash Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"ASH\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -19627,7 +19627,7 @@
     },
     {
       "id": "cb6475c6-0cb8-4995-b19f-f42da1a42570",
-      "handle": "vile-genrage-charm-pendant",
+      "handle": "vile-alleyrich-charm-pendant",
       "title": "Vile Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"VILE\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -19667,7 +19667,7 @@
     },
     {
       "id": "a50c325a-e061-412a-a4f9-be129654b02c",
-      "handle": "sin-genrage-charm-pendant",
+      "handle": "sin-alleyrich-charm-pendant",
       "title": "Sin Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"SIN\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -19707,7 +19707,7 @@
     },
     {
       "id": "42963334-51d5-487c-be8c-0d9b1ab9b279",
-      "handle": "rift-genrage-charm-pendant",
+      "handle": "rift-alleyrich-charm-pendant",
       "title": "Rift Charm Pendant",
       "body_html": "<p><meta charset=\"utf-8\">Elevate your everyday with statement charms/ pendants.</p>\n<ul>\n<li>Stainless Steel<meta charset=\"utf-8\"> <br>\n</li>\n<li>\n<meta charset=\"utf-8\">Sweat &amp; Water Resistant</li>\n<li>\n<meta charset=\"utf-8\">Skin-Friendly</li>\n</ul>\n<p><span>\"RIFT\" BY RAGE STUDIOS ©</span><span> </span></p>\n<p><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India.</span></p>",
       "vendor": "ALLEYRICH",
@@ -21358,7 +21358,7 @@
       "id": "a3be4854-4119-4b82-b012-032736073fdd",
       "handle": "leather-bagpack",
       "title": "LEATHER BAGPACK",
-      "body_html": "<p><meta charset=\"utf-8\"><strong>PREMIUM MATTE LEATHERITE FABRIC WITH COATING</strong><br><strong>CUSTOM DEBOSSED PUNCH GENRAGE BRANDING</strong></p>\n<p><strong><meta charset=\"utf-8\">CAPACITY – 20 L</strong></p>\n<ul>\n<li style=\"font-weight: bold;\"><strong><meta charset=\"utf-8\">ADJUSTABLE BACKPACK STRAPS WITH TOP GRAB HANDLE</strong></li>\n<li style=\"font-weight: bold;\"><strong>DUAL-WAY TOP ZIP CLOSURE FOR EASY ACCESS</strong></li>\n<li style=\"font-weight: bold;\"><strong>FRONT UTILITY POCKET WITH DUAL ZIP OPENINGS</strong></li>\n<li style=\"font-weight: bold;\"><strong>SIDE FABRIC POCKET FOR QUICK ESSENTIALS</strong></li>\n<li style=\"font-weight: bold;\"><strong>BLACK WATERPROOF ZIPPERS WITH BLACK PULLERS</strong></li>\n<li style=\"font-weight: bold;\"><strong>CAN FIT A 16'INCH LAPTOP EASILY</strong></li>\n<li style=\"font-weight: bold;\"><strong>FABRIC-COVERED TOP ZIP FOR CLEAN FINISH</strong></li>\n</ul>\n<p><strong><meta charset=\"utf-8\">BUILT FOR EVERYDAY MOVEMENT &amp; TRAVEL</strong><br><strong>DESIGNED AND CONSTRUCTED BY GENRAGE</strong></p>",
+      "body_html": "<p><meta charset=\"utf-8\"><strong>PREMIUM MATTE LEATHERITE FABRIC WITH COATING</strong><br><strong>CUSTOM DEBOSSED PUNCH ALLEYRICH BRANDING</strong></p>\n<p><strong><meta charset=\"utf-8\">CAPACITY – 20 L</strong></p>\n<ul>\n<li style=\"font-weight: bold;\"><strong><meta charset=\"utf-8\">ADJUSTABLE BACKPACK STRAPS WITH TOP GRAB HANDLE</strong></li>\n<li style=\"font-weight: bold;\"><strong>DUAL-WAY TOP ZIP CLOSURE FOR EASY ACCESS</strong></li>\n<li style=\"font-weight: bold;\"><strong>FRONT UTILITY POCKET WITH DUAL ZIP OPENINGS</strong></li>\n<li style=\"font-weight: bold;\"><strong>SIDE FABRIC POCKET FOR QUICK ESSENTIALS</strong></li>\n<li style=\"font-weight: bold;\"><strong>BLACK WATERPROOF ZIPPERS WITH BLACK PULLERS</strong></li>\n<li style=\"font-weight: bold;\"><strong>CAN FIT A 16'INCH LAPTOP EASILY</strong></li>\n<li style=\"font-weight: bold;\"><strong>FABRIC-COVERED TOP ZIP FOR CLEAN FINISH</strong></li>\n</ul>\n<p><strong><meta charset=\"utf-8\">BUILT FOR EVERYDAY MOVEMENT &amp; TRAVEL</strong><br><strong>DESIGNED AND CONSTRUCTED BY ALLEYRICH</strong></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Bags & Accessories",
@@ -22236,13 +22236,13 @@
     },
     {
       "id": "f1820e84-87ef-40f2-ab2b-ee7414766265",
-      "handle": "genrage-balloon-baggy-pants",
-      "title": "Genrage Black Balloon Pants",
+      "handle": "alleyrich-balloon-baggy-pants",
+      "title": "Alleyrich Black Balloon Pants",
       "body_html": "<ul>\n<li>Elastic Waist with Adjustable Drawstrings</li>\n<li>2 Functional Side Pockets</li>\n<li>100% Premium Biowashed Cotton</li>\n<li>350 GSM Sturdy Fabric</li>\n<li>Heavy Brushed Cotton Fleece</li>\n<li>Classic Black Colour</li>\n<li>Combed | Hypo-Allergic | GOTS Organic Cotton Certified</li>\n</ul>\n<p><span>\"BASICS\" BY RAGE STUDIOS ©<br></span><span> <br></span><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India</span></p>\n<p><span>note : the above product is artisan stitched and screen printed, crafted by human hands, not machines :))</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "New-Launch-2026",
@@ -23158,9 +23158,9 @@
     },
     {
       "id": "358ac914-4a12-408a-a0e3-9b3dadcfde8c",
-      "handle": "genrage-freebie",
-      "title": "GENRAGE TOTE BAG",
-      "body_html": "<p>WHEN YOUR ORDER REACHES OVER ₹5000, GENRAGE TOTE BAG WILL BE AUTOMATICALLY ADDED TO YOUR CART. ENJOY YOUR GIFT!</p>",
+      "handle": "alleyrich-freebie",
+      "title": "ALLEYRICH TOTE BAG",
+      "body_html": "<p>WHEN YOUR ORDER REACHES OVER ₹5000, ALLEYRICH TOTE BAG WILL BE AUTOMATICALLY ADDED TO YOUR CART. ENJOY YOUR GIFT!</p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Bags & Accessories",
@@ -23316,7 +23316,7 @@
       "id": "4aa89106-7059-42b1-9889-7cb91b13b50b",
       "handle": "leather-duffle-bag",
       "title": "LEATHER DUFFLE BAG",
-      "body_html": "<p><meta charset=\"utf-8\"><strong data-start=\"171\" data-end=\"194\">PREMIUM FOAM GLOSS FAUX LEATHER<br></strong><strong data-start=\"229\" data-end=\"268\">CUSTOM DEBOSSED PUNCH GENRAGE BRANDING</strong></p>\n<ul>\n<li><strong data-start=\"271\" data-end=\"313\">DETACHABLE &amp; ADJUSTABLE SHOULDER STRAP</strong></li>\n<li><strong data-start=\"316\" data-end=\"360\" data-is-only-node=\"\">PADDED SHOULDER SUPPORT WITH LOGO DETAIL</strong></li>\n<li><strong data-start=\"363\" data-end=\"391\">DUAL-WAY TOP ZIP CLOSURE</strong></li>\n<li><strong data-start=\"394\" data-end=\"435\">SIDE MESH POCKET FOR QUICK ESSENTIALS</strong></li>\n<li><strong data-start=\"438\" data-end=\"477\">DEDICATED SHOE COMPARTMENT WITH ZIP</strong></li>\n<li><strong data-start=\"480\" data-end=\"504\">CAPACITY – 25 LITRES</strong></li>\n<li><strong data-start=\"507\" data-end=\"552\">BUILT FOR TRAINING, TRAVEL &amp; EVERYDAY USE</strong></li>\n<li><strong data-start=\"507\" data-end=\"552\">DESIGNED AND CONSTRUCTED BY GENRAGE</strong></li>\n</ul>",
+      "body_html": "<p><meta charset=\"utf-8\"><strong data-start=\"171\" data-end=\"194\">PREMIUM FOAM GLOSS FAUX LEATHER<br></strong><strong data-start=\"229\" data-end=\"268\">CUSTOM DEBOSSED PUNCH ALLEYRICH BRANDING</strong></p>\n<ul>\n<li><strong data-start=\"271\" data-end=\"313\">DETACHABLE &amp; ADJUSTABLE SHOULDER STRAP</strong></li>\n<li><strong data-start=\"316\" data-end=\"360\" data-is-only-node=\"\">PADDED SHOULDER SUPPORT WITH LOGO DETAIL</strong></li>\n<li><strong data-start=\"363\" data-end=\"391\">DUAL-WAY TOP ZIP CLOSURE</strong></li>\n<li><strong data-start=\"394\" data-end=\"435\">SIDE MESH POCKET FOR QUICK ESSENTIALS</strong></li>\n<li><strong data-start=\"438\" data-end=\"477\">DEDICATED SHOE COMPARTMENT WITH ZIP</strong></li>\n<li><strong data-start=\"480\" data-end=\"504\">CAPACITY – 25 LITRES</strong></li>\n<li><strong data-start=\"507\" data-end=\"552\">BUILT FOR TRAINING, TRAVEL &amp; EVERYDAY USE</strong></li>\n<li><strong data-start=\"507\" data-end=\"552\">DESIGNED AND CONSTRUCTED BY ALLEYRICH</strong></li>\n</ul>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Bags & Accessories",
@@ -25052,13 +25052,13 @@
     },
     {
       "id": "f3f00c13-aa3b-4a29-a994-e75fd93eb2f1",
-      "handle": "basic-grey-genrage-baggy-pants",
+      "handle": "basic-grey-baggy-pants",
       "title": "Basic Grey Baggy Pants",
       "body_html": "<div>\n<meta charset=\"utf-8\">\n<ul>\n<li><span>Unisex Baggy Straight Fit</span></li>\n<li><span>Elastic Waist with Adjustable Drawstrings</span></li>\n<li><span>2 Functional Side Pockets</span></li>\n<li><span>100% Premium Biowashed Cotton</span></li>\n<li><span>Heavy Brushed Cotton </span></li>\n<li><span>Melange Grey Colour</span></li>\n<li><span>Combed | Hypo-Allergic | GOTS Organic Cotton Certified</span></li>\n</ul>\n</div>\n<p><span>\"BASIC\" BY RAGE STUDIOS ©<br></span><span> <br></span><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India</span></p>\n<p><span>note : the above product is artisan stitched and screen printed, crafted by human hands, not machines :))</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "Shop",
@@ -25178,13 +25178,13 @@
     },
     {
       "id": "386a2ca6-3fdf-456e-8810-87c531ce8efb",
-      "handle": "basic-black-genrage-baggy-pants",
+      "handle": "basic-black-baggy-pants",
       "title": "Basic Black Baggy Pants",
       "body_html": "<ul>\n<li><span>Unisex Baggy Straight Fit</span></li>\n<li><span>Elastic Waist with Adjustable Drawstrings</span></li>\n<li><span>2 Functional Side Pockets</span></li>\n<li><span>100% Premium Biowashed Cotton</span></li>\n<li><span>Heavy Brushed Cotton </span></li>\n<li><span>Classic Black Colour</span></li>\n<li><span>Combed | Hypo-Allergic | GOTS Organic Cotton Certified</span></li>\n</ul>\n<p><span>\"BASIC\" BY RAGE STUDIOS ©<br></span><span> <br></span><span>♡ ( ͡~ ͜ʖ ͡°) ♡ <br></span><span>Proudly Made in India</span></p>\n<p><span>note : the above product is artisan stitched and screen printed, crafted by human hands, not machines :))</span></p>",
       "vendor": "ALLEYRICH",
       "category": "Accessories",
       "product_type": "Baggy Pants",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "cat-a",
         "Shop",
@@ -25356,11 +25356,11 @@
       "id": "f9a8c9c9-8b73-456f-9de6-f281d16c6228",
       "handle": "basic-white-baggy-pants",
       "title": "Basic White Baggy Pants",
-      "body_html": "<p>Signature Genrage heavyweight cotton white baggy pants with relaxed wide leg drop.</p>",
+      "body_html": "<p>Signature Alleyrich heavyweight cotton white baggy pants with relaxed wide leg drop.</p>",
       "vendor": "ALLEYRICH",
       "category": "Bottom Wear",
       "product_type": "Pants & Bottoms",
-      "homepage_section": "genrage_basics",
+      "homepage_section": "alleyrich_basics",
       "tags": [
         "Shop",
         "Pants",
@@ -25388,12 +25388,12 @@
       "images": [
         {
           "id": "d6cb5555-92fb-4170-bee5-6c0f5b63b710",
-          "src": "https://genrage.com/cdn/shop/files/Artboard1_5_82984cdd-972f-4b5b-a210-dcaed2709686.png?v=1792262710&width=1536",
+          "src": "/images/photo_5.webp",
           "position": 1
         },
         {
           "id": "85e49a6e-a466-48cd-8479-c841e6d25584",
-          "src": "https://genrage.com/cdn/shop/files/Artboard4_1a338260-649e-4d62-859e-72bffceea4b2.png?v=1792262709&width=1536",
+          "src": "/images/photo_6.webp",
           "position": 2
         }
       ],

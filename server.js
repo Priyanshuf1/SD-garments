@@ -915,7 +915,7 @@ async function syncProductToSupabase(product) {
       handle: product.handle,
       title: product.title,
       description: product.body_html || product.description || '',
-      vendor: product.vendor || 'GENRAGE',
+      vendor: product.vendor || 'ALLEYRICH',
       category: product.category || 'Apparel',
       product_type: product.product_type || product.category || 'Streetwear',
       homepage_section: product.homepage_section || 'none',
@@ -1628,7 +1628,7 @@ async function handleGetSingleOrder(req, res, orderId) {
 
 async function handleGetProducts(req, res, parsedUrl) {
   const clientIp = security.getClientIp(req);
-  const searchLimit = security.checkRateLimit(`product_search:${clientIp}`, 100, 60);
+  const searchLimit = security.checkRateLimit(`product_search:${clientIp}`, 600, 60);
   if (!searchLimit.allowed) {
     return sendJson(res, 429, { success: false, message: 'Too many catalog requests. Please wait a moment.' }, { 'Retry-After': String(searchLimit.resetAfterSeconds) });
   }
@@ -1738,7 +1738,7 @@ async function handleCreateProduct(req, res) {
     title: payload.title || 'Untitled Product',
     handle: payload.handle || (payload.title ? payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`),
     body_html: payload.description || payload.body_html || '',
-    vendor: payload.vendor || 'GENRAGE',
+    vendor: payload.vendor || 'ALLEYRICH',
     department: prodDepartment,
     category: prodCategory,
     sub_category: payload.sub_category || '',
@@ -3326,7 +3326,7 @@ async function appHandler(req, res) {
           description: payload.description || '',
           published_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          image: payload.image ? { src: payload.image } : { src: 'https://genrage.com/cdn/shop/files/front_79f62e01-7f3f-468e-903c-959328f4d873.png?v=1758346828&width=600' },
+          image: payload.image ? { src: payload.image } : { src: '/images/photo_1.webp' },
           products_count: Number(payload.products_count) || 0
         };
         collections.unshift(newCollection);
@@ -3620,7 +3620,7 @@ async function appHandler(req, res) {
       }
 
       const rawName = (payload.filename || 'photo').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
-      const filename = `genrage_${Date.now()}_${rawName}${extension}`;
+      const filename = `alleyrich_${Date.now()}_${rawName}${extension}`;
       const uploadDir = path.join(PUBLIC_DIR, 'assets', 'uploads');
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -5536,7 +5536,7 @@ const server = http.createServer(appHandler);
 if (!process.env.VERCEL && require.main === module) {
   server.listen(PORT, () => {
     console.log(`\n==================================================`);
-    console.log(`🔥 GENRAGE 1:1 DITTO Server Running!`);
+    console.log(`🔥 ALLEYRICH Production Server Running!`);
     console.log(`📍 Storefront: http://localhost:${PORT}`);
     console.log(`⚡ Admin Portal: http://localhost:${PORT}/allyrich-hq (or /admin on localhost)`);
     console.log(`🎥 6 High-Definition Videos Ready & Streaming Locally`);

@@ -706,3 +706,8 @@ const GenrageApp = {
 
 // Auto start when DOM is ready
 document.addEventListener('DOMContentLoaded', () => GenrageApp.init());
+
+if (typeof window !== 'undefined') {
+  window.GenrageApp = GenrageApp;
+  window.AlleyrichApp = GenrageApp;
+}

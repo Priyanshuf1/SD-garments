@@ -18,6 +18,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - TRUST_PROXY=true
       - DB_TYPE=postgres
       - DATABASE_URL=postgres://${DB_USER:-alleyrich_admin}:${DB_PASSWORD:-AlleyRichSecurePass2026}@postgres:5432/${DB_NAME:-alleyrich_production}?sslmode=disable
       - DB_HOST=postgres
