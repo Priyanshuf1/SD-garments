@@ -400,14 +400,11 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
     window.addEventListener('resize', syncCanvasTouchBehavior, { passive: true });
     window.addEventListener('orientationchange', syncCanvasTouchBehavior, { passive: true });
 
-    // Active page scroll listener: pauses WebGL rendering and disables pointer-events for 60fps Chrome scrolling
+    // Active page scroll listener: pauses WebGL rendering for 60-120fps stutter-free native scrolling
     function handleWindowScroll() {
       if (!isWindowScrolling) {
         isWindowScrolling = true;
         window.__isPageScrolling = true;
-        document.body.classList.add('is-scrolling');
-        if (canvas) canvas.style.pointerEvents = 'none';
-        if (container) container.style.pointerEvents = 'none';
 
         // Pause Spline WebGL during active scrolling
         if (typeof splineApp.stop === 'function') {
@@ -423,13 +420,17 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
       scrollDebounceTimer = setTimeout(() => {
         isWindowScrolling = false;
         window.__isPageScrolling = false;
-        document.body.classList.remove('is-scrolling');
-        syncCanvasTouchBehavior();
 
         // Render exactly 1 frame on scroll rest if visible, without starting a redundant 60fps loop
         if (isHeroVisible) {
           if (typeof splineApp.requestRender === 'function') {
             splineApp.requestRender();
+          }
+          if (typeof splineApp.play === 'function') {
+            try { splineApp.play(); } catch (e) {}
+          }
+          if (!motionRafId) {
+            motionRafId = requestAnimationFrame(animateMotion);
           }
         }
 
@@ -438,7 +439,7 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
           window.__reviewGallery.lastFrameTime = performance.now();
           window.__reviewGallery.rafId = requestAnimationFrame(window.__reviewGallery.animate);
         }
-      }, 150);
+      }, 100);
     }
     window.addEventListener('scroll', handleWindowScroll, { passive: true });
 
@@ -479,65 +480,105 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
       }
     }, { passive: true });
 
-    // 1. Mobile Gyroscope ("Zyro") Motion Tracking (DeviceOrientation gamma & beta)
+    // --------------------------------------------------------------------------
+    // 1. Mobile Gyroscope ("Zyro") with Adaptive Calibration & Low-Pass Filter
+    // --------------------------------------------------------------------------
+    let baseGyroGamma = null;
+    let baseGyroBeta = null;
+    let smoothGamma = 0;
+    let smoothBeta = 0;
+    let gyroEventPending = false;
+    let lastSensorGamma = 0;
+    let lastSensorBeta = 0;
+
+    // Reset gyro baseline on orientation change or when section enters view
+    function resetGyroBaseline() {
+      baseGyroGamma = null;
+      baseGyroBeta = null;
+      smoothGamma = 0;
+      smoothBeta = 0;
+    }
+    window.addEventListener('orientationchange', resetGyroBaseline, { passive: true });
+
+    function processGyroMovement(rawGamma, rawBeta) {
+      if (!isHeroVisible || isWindowScrolling || window.__isPageScrolling) return;
+
+      // Auto-Center Baseline: first sensor reading when viewing the model becomes the calibrated zero
+      if (baseGyroGamma === null || baseGyroBeta === null) {
+        baseGyroGamma = rawGamma;
+        baseGyroBeta = rawBeta;
+      } else {
+        // Slowly adapt baseline (0.3% per frame) so posture changes (sitting, lying down) recalibrate smoothly
+        baseGyroGamma = baseGyroGamma * 0.997 + rawGamma * 0.003;
+        baseGyroBeta = baseGyroBeta * 0.997 + rawBeta * 0.003;
+      }
+
+      const deltaGamma = rawGamma - baseGyroGamma;
+      const deltaBeta = rawBeta - baseGyroBeta;
+
+      // Deadband Filter: ignore micro-jitter below 0.22 degrees
+      if (Math.abs(deltaGamma - smoothGamma) < 0.22 && Math.abs(deltaBeta - smoothBeta) < 0.22 && lastInteractionType === 'gyro') {
+        return;
+      }
+
+      // Exponential Low-Pass Filter (LPF) to eliminate sensor vibration completely
+      const lpfWeight = 0.14;
+      smoothGamma += (deltaGamma - smoothGamma) * lpfWeight;
+      smoothBeta += (deltaBeta - smoothBeta) * lpfWeight;
+
+      // Normalized tilt angle with comfortable 32-degree sensitivity
+      const maxTilt = 32.0;
+      const normX = Math.max(-1, Math.min(1, smoothGamma / maxTilt));
+      const normY = Math.max(-1, Math.min(1, smoothBeta / maxTilt));
+
+      // Soft Luxury S-Curve Easing (avoids abrupt angular stops)
+      const easeX = Math.sign(normX) * (1 - Math.pow(1 - Math.abs(normX), 1.8));
+      const easeY = Math.sign(normY) * (1 - Math.pow(1 - Math.abs(normY), 1.8));
+
+      // Luxury Micro-Parallax Range (Subtle, Exquisite Holographic Depth)
+      targetRotY = baseRotY + easeX * 0.16; // ~9.1 degrees max yaw
+      targetRotX = baseRotX + easeY * 0.12; // ~6.8 degrees max pitch
+      targetRotZ = baseRotZ - easeX * 0.04; // ~2.3 degrees subtle bank
+      targetPosX = basePosX + easeX * 14;   // 14px subtle shift
+      targetPosY = basePosY - easeY * 10;   // 10px subtle shift
+
+      wakeMotionLoop();
+    }
+
     function handleDeviceOrientation(e) {
       if (!e) return;
-      // Strictly ignore gyro on desktop to prevent laptop motion sensors from hijacking mouse tracking
       if (!isMobileView()) return;
 
       const rawGamma = typeof e.gamma === 'number' ? e.gamma : null;
       const rawBeta = typeof e.beta === 'number' ? e.beta : null;
       if (rawGamma === null && rawBeta === null) return;
 
+      lastSensorGamma = rawGamma !== null ? rawGamma : 0;
+      lastSensorBeta = rawBeta !== null ? rawBeta : 45;
+
       lastInteractionType = 'gyro';
       lastGyroTime = performance.now();
       lastInteractionTime = lastGyroTime;
 
-      const gamma = rawGamma !== null ? rawGamma : 0;
-      const beta = rawBeta !== null ? rawBeta : 45;
-
-      // Neutral portrait holding posture: gamma = 0 deg (lateral tilt), beta = 45 deg (handheld viewing angle)
-      // Max tilt angle sensitivity (degrees)
-      const maxTilt = 24;
-      const normX = Math.max(-1, Math.min(1, gamma / maxTilt));
-      const normY = Math.max(-1, Math.min(1, (beta - 45) / maxTilt));
-
-      // Map phone tilt directly to 3D rotation and subtle parallax translation
-      targetRotY = baseRotY + normX * 0.50;
-      targetRotX = baseRotX + normY * 0.38;
-      targetRotZ = baseRotZ - normX * 0.14;
-      targetPosX = basePosX + normX * 22;
-        targetPosY = basePosY - normY * 16;
-
-      wakeMotionLoop();
+      // Throttle calculations to requestAnimationFrame to prevent event loop saturation (up to 120Hz on Android)
+      if (!gyroEventPending) {
+        gyroEventPending = true;
+        requestAnimationFrame(() => {
+          gyroEventPending = false;
+          processGyroMovement(lastSensorGamma, lastSensorBeta);
+        });
+      }
     }
 
-    // Register device orientation events (both standard and absolute)
+    // Register ONLY standard deviceorientation (remove deviceorientationabsolute to prevent dual-firing conflicts)
     window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-    window.addEventListener('deviceorientationabsolute', handleDeviceOrientation, { passive: true });
 
     // Expose window simulation helper for test suites and mobile verification
     window.__allyrichSimulateOrientation = function (gamma, beta, alpha = 0) {
-      // Force mobile simulation path if invoked in test
-      const originalIsMob = isMobileView();
-      if (!originalIsMob) {
-        const rawGamma = typeof gamma === 'number' ? gamma : 0;
-        const rawBeta = typeof beta === 'number' ? beta : 45;
-        lastInteractionType = 'gyro';
-        lastGyroTime = performance.now();
-        lastInteractionTime = lastGyroTime;
-        const maxTilt = 24;
-        const normX = Math.max(-1, Math.min(1, rawGamma / maxTilt));
-        const normY = Math.max(-1, Math.min(1, (rawBeta - 45) / maxTilt));
-        targetRotY = baseRotY + normX * 0.50;
-        targetRotX = baseRotX + normY * 0.38;
-        targetRotZ = baseRotZ - normX * 0.14;
-        targetPosX = basePosX + normX * 22;
-      targetPosY = basePosY - normY * 16;
-        wakeMotionLoop();
-        return;
-      }
-      handleDeviceOrientation({ gamma, beta, alpha });
+      lastInteractionType = 'gyro';
+      lastGyroTime = performance.now();
+      lastInteractionTime = lastGyroTime;
+      processGyroMovement(typeof gamma === 'number' ? gamma : 0, typeof beta === 'number' ? beta : 45);
     };
 
     window.__allyrichGetMotionState = function () {
@@ -574,7 +615,7 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
                 if (state === 'granted') {
                   permissionRequested = true;
                   window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-                  window.addEventListener('deviceorientationabsolute', handleDeviceOrientation, { passive: true });
+                  // deviceorientationabsolute omitted to avoid Android/iOS double-dispatch
                   console.log('[AllyRich 3D] iOS DeviceOrientation permission granted.');
                   window.removeEventListener('click', requestGyroPermission);
                   window.removeEventListener('touchend', requestGyroPermission);
@@ -789,7 +830,8 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
       // Clamp WebGL renderer pixelRatio across ALL devices (laptops, desktops, phones) to avoid high-res GPU overloads
-      const heroMaxDpr = window.chrome ? 1.0 : 1.25;
+      const isMob = window.innerWidth < 900 || ('ontouchstart' in window) || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const heroMaxDpr = isMob ? 1.0 : (window.chrome ? 1.0 : 1.25);
       if (splineApp._renderer && typeof splineApp._renderer.setPixelRatio === 'function') {
         splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
         if (heroMaxDpr < 1.5) splineApp._renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, heroMaxDpr));
@@ -822,9 +864,26 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
     }
   }
 
-  // Eagerly preload AR logo
+  // Eagerly preload AR logo canvas
   getARCanvas();
 
-  // Start Spline immediately
-  startSpline();
+  // Lazy-load Spline scene when approaching viewport (saves ~15MB initial parsing and prevents scroll lag)
+  let splineStarted = false;
+  function triggerSplineStart() {
+    if (splineStarted) return;
+    splineStarted = true;
+    startSpline();
+  }
+
+  if ('IntersectionObserver' in window && container) {
+    const preloadObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        preloadObserver.disconnect();
+        triggerSplineStart();
+      }
+    }, { rootMargin: '350px 0px 350px 0px' });
+    preloadObserver.observe(container);
+  } else {
+    setTimeout(triggerSplineStart, 1200);
+  }
 })();
