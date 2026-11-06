@@ -3066,7 +3066,24 @@ async function appHandler(req, res) {
     if (req.method === 'GET' && prodId) {
       return await handleGetSingleProduct(req, res, prodId);
     }
-    // Live Public Collections & Seasonal Drops API
+  // Catalog mutation requires admin authorization
+    if ((req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE')) {
+      if (!security.isAdminAuthorized(req, parsedUrl)) {
+        return sendJson(res, 401, { success: false, message: 'Unauthorized: Administrator privileges required to modify catalog products.' });
+      }
+    }
+    if (req.method === 'POST' && !prodId) {
+      return await handleCreateProduct(req, res);
+    }
+    if (req.method === 'PUT' && prodId) {
+      return await handleUpdateProduct(req, res, prodId);
+    }
+    if (req.method === 'DELETE' && prodId) {
+      return await handleDeleteProduct(req, res, prodId);
+    }
+  }
+
+  // Live Public Collections & Seasonal Drops API
   if (pathname === '/api/collections' || pathname.startsWith('/api/collections/')) {
     if (req.method === 'GET') {
       const collLimit = security.checkRateLimit(`colls:${security.getClientIp(req)}`, 240, 60);
@@ -3082,23 +3099,6 @@ async function appHandler(req, res) {
         );
       }
       return sendJson(res, 200, { success: true, count: filtered.length, collections: filtered });
-    }
-  }
-
-  // Catalog mutation requires admin authorization
-    if ((req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE')) {
-      if (!security.isAdminAuthorized(req, parsedUrl)) {
-        return sendJson(res, 401, { success: false, message: 'Unauthorized: Administrator privileges required to modify catalog products.' });
-      }
-    }
-    if (req.method === 'POST' && !prodId) {
-      return await handleCreateProduct(req, res);
-    }
-    if (req.method === 'PUT' && prodId) {
-      return await handleUpdateProduct(req, res, prodId);
-    }
-    if (req.method === 'DELETE' && prodId) {
-      return await handleDeleteProduct(req, res, prodId);
     }
   }
 
