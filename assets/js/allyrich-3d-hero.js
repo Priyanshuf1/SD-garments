@@ -152,6 +152,8 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
 
     const mat = screenObj.material;
 
+    const screenUrl = '/assets/spline-phone-screen.jpg?v=20261106';
+
     // 3. Port exact material layer handling from allyrich-loader
     if (mat.layers && Array.isArray(mat.layers)) {
       for (let i = 0; i < mat.layers.length; i++) {
@@ -161,6 +163,11 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
         if (layer.type === 'video') {
           layer.visible = false;
           layer.alpha = 0;
+          if (typeof layer.updateTexture === 'function') {
+            try {
+              layer.updateTexture(screenUrl);
+            } catch (e) {}
+          }
           if (layer.texture) {
             if (layer.texture.video) {
               try {
@@ -173,10 +180,19 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
           }
         }
 
-        // Layer 0: Texture layer (Base screen) - directly bind canvas to avoid 250ms synchronous toDataURL main-thread freeze
+        // Layer 0: Texture layer (Base screen)
         if (layer.type === 'texture') {
           layer.visible = true;
           layer.alpha = 1;
+          // Spline runtime requires layer.updateTexture to bind the texture sampler uniform
+          if (typeof layer.updateTexture === 'function') {
+            try {
+              console.log('[AllyRich 3D] Updating layer 0 texture via updateTexture to phone screen image...');
+              layer.updateTexture(screenUrl);
+            } catch (e) {
+              console.debug('[AllyRich 3D] updateTexture error:', e);
+            }
+          }
           if (layer.texture) {
             layer.texture.image = arCanvas;
             layer.texture.needsUpdate = true;
@@ -821,14 +837,13 @@ import { Application } from '/assets/spline/runtime.js?v=60fps';
       };
 
       try {
-        await splineApp.load('/assets/spline/scene.bin');
+        await splineApp.load('/assets/spline/scene.splinecode');
       } catch (e) {
-        console.warn('[AllyRich 3D] scene.bin load failed, trying scene.splinecode:', e);
+        console.warn('[AllyRich 3D] local scene.splinecode load failed, trying CDN:', e);
         try {
-          await splineApp.load('/assets/spline/scene.splinecode');
-        } catch (e2) {
-          console.warn('[AllyRich 3D] local splinecode failed, trying CDN:', e2);
           await splineApp.load('https://prod.spline.design/VVdTRfsKk3fopW3m/scene.splinecode');
+        } catch (e2) {
+          console.error('[AllyRich 3D] Spline load failed:', e2);
         }
       }
 

@@ -1505,6 +1505,10 @@
           <span class="btn-text">STOREFRONT</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
         </a>
+        <button class="btn btn-secondary btn-sm header-action-btn" onclick="Admin.openAddCollectionModal()" title="Add New Collection / Drop">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span class="btn-text">NEW COLLECTION</span>
+        </button>
         <button class="btn btn-primary btn-sm header-action-btn" id="btn-add-product-quick" title="Add New Product">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           <span class="btn-text">NEW PRODUCT</span>
@@ -1575,6 +1579,10 @@
           <button class="btn btn-primary btn-sm" onclick="Admin.openAddProductModal()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>New Product</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="Admin.openAddCollectionModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>New Collection</span>
           </button>
           <button class="btn btn-secondary btn-sm" onclick="navigateToSection('orders'); openModal('manual-order-modal');">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -1748,10 +1756,11 @@
               <span class="panel-title-badge" id="coll-total-count">30 Collections</span>
             </div>
             <div class="panel-actions">
-              <input type="text" id="coll-search-input" placeholder="Search collection title..." style="width: 220px; height: 34px;">
-              <button class="btn btn-primary btn-sm" id="btn-add-collection">
-                + New Drop
+              <button class="btn btn-primary btn-sm" id="btn-add-collection" onclick="Admin.openAddCollectionModal()" style="display:inline-flex;align-items:center;gap:6px;font-weight:700;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>+ Add Collection</span>
               </button>
+              <input type="text" id="coll-search-input" placeholder="Search collection title..." style="width: 200px; height: 34px;">
             </div>
           </div>
           <div class="panel-body">
@@ -3309,7 +3318,7 @@ const Admin = {
       const price = p.variants?.[0]?.price || p.price || '1000';
       const comparePrice = p.variants?.[0]?.compare_at_price || p.compare_at_price || '';
       const stock = p.variants?.[0]?.inventory_quantity ?? 100;
-      const img = p.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+      const img = p.images?.[0]?.src || '/images/photo_1.webp';
       const hoverImg = p.images?.[1]?.src || p.hoverImage || '';
       const cat = p.category || p.product_type || 'Streetwear';
       const hSection = p.homepage_section || 'none';
@@ -3328,7 +3337,7 @@ const Admin = {
           <td>
             <div class="prod-cell" style="display:flex;align-items:center;gap:0.75rem;">
               <div class="prod-thumb-box" style="position:relative;width:44px;height:44px;border-radius:var(--radius-sm);overflow:hidden;background:#111;flex-shrink:0;border:1px solid var(--border-color);cursor:pointer;" title="${hoverImg ? 'Hover to preview model fit' : 'Primary flatlay image'}">
-                <img src="${img}" class="prod-thumb" alt="${p.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:opacity 0.2s ease;" onerror="this.onerror=null;this.src='https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';" onmouseover="${hoverImg ? `this.dataset.orig=this.src;this.src='${hoverImg.replace(/'/g, "\\'")}'` : ''}" onmouseout="${hoverImg ? `if(this.dataset.orig)this.src=this.dataset.orig;` : ''}">
+                <img src="${img}" class="prod-thumb" alt="${p.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:opacity 0.2s ease;" onerror="this.onerror=null;this.src='/images/photo_1.webp';" onmouseover="${hoverImg ? `this.dataset.orig=this.src;this.src='${hoverImg.replace(/'/g, "\\'")}'` : ''}" onmouseout="${hoverImg ? `if(this.dataset.orig)this.src=this.dataset.orig;` : ''}">
                 ${hoverImg ? `<span class="badge badge-warning" style="position:absolute;bottom:1px;right:1px;font-size:11.5px;padding:0 3px;border-radius:2px;line-height:1.2;font-weight:700;" title="Dual Photo Active (Flatlay + Model)">2P</span>` : ''}
               </div>
               <div class="prod-info">
@@ -3605,19 +3614,28 @@ const Admin = {
     document.getElementById('edit-prod-homepage-section').value = 'none';
     this.updateFeaturedBadge('none');
     
-    // Default primary flatlay + default model hover
-    const defaultPrimary = 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
-    const defaultHover = '/images/photo_1.webp';
-
-    document.getElementById('edit-prod-image').value = defaultPrimary;
-    document.getElementById('edit-prod-hover-image').value = defaultHover;
+    // Clean empty state - ZERO prefilled demo images
+    document.getElementById('edit-prod-image').value = '';
+    document.getElementById('edit-prod-hover-image').value = '';
     document.getElementById('edit-prod-tags').value = 'Shop, New Arrivals, Unisex';
     
     this.switchPhotoTab('primary', 'link');
     this.switchPhotoTab('hover', 'link');
-    this.previewProductImage(defaultPrimary);
-    this.previewProductHoverImage(defaultHover);
+    this.previewProductImage('');
+    this.previewProductHoverImage('');
+    this.editingProductImages = [];
+    this.renderProductGalleryList();
     openModal('product-modal');
+  },
+
+  openAddCollectionModal() {
+    document.getElementById('coll-title').value = '';
+    document.getElementById('coll-handle').value = '';
+    document.getElementById('coll-image').value = '';
+    document.getElementById('coll-desc').value = '';
+    this.switchCollPhotoTab('link');
+    this.clearCollectionPhoto();
+    openModal('collection-modal');
   },
 
   openEditProductModal(id) {
@@ -3685,7 +3703,7 @@ const Admin = {
 
     list.innerHTML = this.editingProductImages.map((src, idx) => `
       <div style="position:relative;background:#000;border:1px solid var(--border-color);border-radius:var(--radius-sm);overflow:hidden;text-align:center;">
-        <img src="${src}" alt="View #${idx + 3}" style="width:100%;height:100px;object-fit:cover;display:block;" onerror="this.src='https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'">
+        <img src="${src}" alt="View #${idx + 3}" style="width:100%;height:100px;object-fit:cover;display:block;" onerror="this.src='/images/photo_1.webp'">
         <span class="badge" style="position:absolute;top:4px;left:4px;font-size:11.5px;background:rgba(0,0,0,0.75);color:#fff;padding:2px 5px;">View #${idx + 3}</span>
         <button type="button" onclick="Admin.removeGalleryImage(${idx})" style="position:absolute;top:4px;right:4px;background:rgba(229,9,20,0.9);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:13px;padding:2px 6px;line-height:1;" title="Remove this view">✕</button>
       </div>
@@ -3914,8 +3932,8 @@ const Admin = {
             <img src="${img}" alt="${c.title}" loading="lazy">
           </div>
           <div class="collection-card-body">
-            <span class="collection-card-title">${c.title}</span>
-            <span class="collection-card-handle">/collections/${c.handle}</span>
+            <a href="/collections/${c.handle}" target="_blank" class="collection-card-title" style="color:var(--text-main);text-decoration:none;display:block;" title="View on storefront">${c.title} ↗</a>
+            <a href="/collections/${c.handle}" target="_blank" class="collection-card-handle" style="color:var(--text-muted);text-decoration:none;" title="View on storefront">/collections/${c.handle}</a>
             <div class="collection-card-footer">
               <span class="badge badge-dark">${c.products_count || 0} Products</span>
               <button class="btn btn-danger btn-sm" onclick="Admin.deleteCollection('${c.id}')">Delete</button>
@@ -4085,15 +4103,15 @@ const Admin = {
         size: 'L',
         quantity: 1,
         price: o.total,
-        image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+        image: '/images/photo_1.webp'
       }];
 
       const itemsHtml = itemsList.map(it => `
         <div style="display:flex;align-items:center;gap:8px;padding:3px 0;">
-          <img src="${it.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}"
+          <img src="${it.image || '/images/photo_1.webp'}"
                alt="${it.title}"
                style="width:38px;height:38px;object-fit:cover;border-radius:4px;border:1px solid var(--border-color);flex-shrink:0;background:rgba(255,255,255,0.03);"
-               onerror="this.src='https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'">
+               onerror="this.src='/images/photo_1.webp'">
           <div style="font-size:13px;line-height:1.25;overflow:hidden;">
             <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${it.title}">${it.title}</div>
             <div style="color:var(--text-muted);font-size:13px;margin-top:2px;">
@@ -4181,7 +4199,7 @@ const Admin = {
       size: 'L',
       quantity: 1,
       price: order.total,
-      image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+      image: '/images/photo_1.webp'
     }];
 
     container.innerHTML = `
@@ -4259,10 +4277,10 @@ const Admin = {
           ${items.map(item => `
             <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.75rem 0.9rem;background:rgba(255,255,255,0.02);border:1px solid var(--border-color);border-radius:var(--radius-sm);">
               <div style="display:flex;align-items:center;gap:0.9rem;">
-                <img src="${item.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}"
+                <img src="${item.image || '/images/photo_1.webp'}"
                      alt="${item.title}"
                      style="width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border-color);flex-shrink:0;background:#000;"
-                     onerror="this.src='https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'">
+                     onerror="this.src='/images/photo_1.webp'">
                 <div>
                   <div style="font-weight:700;font-size:0.88rem;letter-spacing:0.02em;">${item.title}</div>
                   <div style="display:flex;align-items:center;gap:0.5rem;margin-top:4px;font-size:13px;">
@@ -4433,7 +4451,7 @@ const Admin = {
     }
 
     const matchedProduct = this.products.find(p => p.title.toLowerCase() === title.toLowerCase());
-    const image = matchedProduct?.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+    const image = matchedProduct?.images?.[0]?.src || '/images/photo_1.webp';
 
     const payload = {
       customer: { name, phone, email, city, address, pincode },

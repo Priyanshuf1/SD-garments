@@ -14,8 +14,9 @@
     </title><meta name="description" content="Explore ALLEYRICH: high-end streetwear, tailored baggy pants, boxy oversized silhouettes, and architectural aesthetic drops. Free shipping in India.">
 <link rel="canonical" href="https://alleyrich.com/">
     <!-- High-Performance Edge Preloads for 3D Hero and Fisheye Review Slider -->
-    <link rel="preload" href="/assets/spline/scene.bin" as="fetch" crossorigin="anonymous">
-    <link rel="modulepreload" href="/assets/js/allyrich-3d-hero.js?v=lux-v3">
+    <link rel="preload" href="/assets/spline/scene.splinecode" as="fetch" crossorigin="anonymous">
+    <link rel="preload" href="/assets/spline-phone-screen.jpg?v=20261106" as="image">
+    <link rel="modulepreload" href="/assets/js/allyrich-3d-hero.js?v=20261106-screen-v4">
     <link rel="modulepreload" href="/assets/js/review-fisheye.js?v=lux-v3">
     <link rel="preload" href="/images/photo_1.webp" as="image">
     <link rel="preload" href="/images/photo_2.webp" as="image">
@@ -1472,6 +1473,46 @@ first.parentNode.insertBefore(script, first);
                 <a href="/collections/new-arrivals" data-title="NEW ARRIVALS" class="block h6">NEW ARRIVALS</a>
               </li>
 
+              <!-- COLLECTIONS & DROPS Dropdown -->
+              <li class="header__primary-nav-item">
+                <mega-menu-disclosure follow-summary-link trigger="hover" class="contents">
+                  <details class="header__menu-disclosure">
+                    <summary data-follow-link="/collections" class="h6" data-title="COLLECTIONS">COLLECTIONS</summary>
+                    <div class="mega-menu" style="grid-template-columns: repeat(2, minmax(0, 1fr)) 340px;">
+                      <!-- Col 1: Seasonal Drops -->
+                      <ul class="mega-menu__linklist unstyled-list">
+                        <li class="v-stack justify-items-start gap-4">
+                          <span class="h6" style="color:var(--accent-gold, #ff8585); font-weight:800; letter-spacing:0.08em; font-size:0.75rem;">CAPSULE DROPS</span>
+                          <a href="/collections" class="h6" style="font-weight:700;">ALL DROPS & COLLECTIONS</a>
+                          <a href="/collections/new-arrivals" class="h6">New Arrivals Drop</a>
+                          <a href="/collections/mens-wear" class="h6">Men's Streetwear</a>
+                          <a href="/collections/party-wear" class="h6">Party Wear Capsule</a>
+                        </li>
+                      </ul>
+                      <!-- Col 2: Curated Fits -->
+                      <ul class="mega-menu__linklist unstyled-list">
+                        <li class="v-stack justify-items-start gap-4">
+                          <span class="h6" style="color:var(--accent-gold, #ff8585); font-weight:800; letter-spacing:0.08em; font-size:0.75rem;">CURATED CATEGORIES</span>
+                          <a href="/collections/shirts" class="h6">Streetwear Shirts</a>
+                          <a href="/collections/t-shirts" class="h6">Heavyweight T-Shirts</a>
+                          <a href="/collections/hoodies" class="h6">Boxy Hoodies</a>
+                          <a href="/collections/mens-jeans" class="h6">Baggy Denim & Cargo</a>
+                          <a href="/collections/accessories" class="h6">Bags & Accessories</a>
+                        </li>
+                      </ul>
+                      <!-- Promo image -->
+                      <div class="mega-menu__promo">
+                        <a href="/collections" class="v-stack justify-items-center gap-4 sm:gap-5 group">
+                          <div class="overflow-hidden">
+                            <img src="/images/photo_1.webp" alt="AlleyRich Collections" width="1500" height="1500" loading="lazy" sizes="315px" class="zoom-image group-hover:zoom">
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+                  </details>
+                </mega-menu-disclosure>
+              </li>
+
               <!-- MEN'S WEAR Mega-Menu -->
               <li class="header__primary-nav-item">
                 <mega-menu-disclosure follow-summary-link trigger="hover" class="contents">
@@ -1727,6 +1768,7 @@ first.parentNode.insertBefore(script, first);
     <div class="header-sidebar__scroller">
       <ul class="header-sidebar__linklist divide-y unstyled-list" role="list">
         <li><a href="/collections/new-arrivals" class="header-sidebar__linklist-button h6">NEW ARRIVALS</a></li>
+        <li><a href="/collections" class="header-sidebar__linklist-button h6" style="color:var(--accent-gold, #ff8585); font-weight:700;">COLLECTIONS & DROPS</a></li>
         <li>
           <button type="button" class="header-sidebar__linklist-button h6" aria-controls="header-panel-mens" aria-expanded="false">
             MEN'S WEAR

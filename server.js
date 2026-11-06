@@ -3066,7 +3066,26 @@ async function appHandler(req, res) {
     if (req.method === 'GET' && prodId) {
       return await handleGetSingleProduct(req, res, prodId);
     }
-    // Catalog mutation requires admin authorization
+    // Live Public Collections & Seasonal Drops API
+  if (pathname === '/api/collections' || pathname.startsWith('/api/collections/')) {
+    if (req.method === 'GET') {
+      const collLimit = security.checkRateLimit(`colls:${security.getClientIp(req)}`, 240, 60);
+      if (!collLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many collection requests.' }, { 'Retry-After': String(collLimit.resetAfterSeconds) });
+      const cData = readJsonFile('collections.json', { collections: [] });
+      const collections = cData.collections || [];
+      const query = parsedUrl.searchParams.get('search')?.toLowerCase();
+      let filtered = collections;
+      if (query) {
+        filtered = filtered.filter(c =>
+          (c.title && c.title.toLowerCase().includes(query)) ||
+          (c.handle && c.handle.toLowerCase().includes(query))
+        );
+      }
+      return sendJson(res, 200, { success: true, count: filtered.length, collections: filtered });
+    }
+  }
+
+  // Catalog mutation requires admin authorization
     if ((req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE')) {
       if (!security.isAdminAuthorized(req, parsedUrl)) {
         return sendJson(res, 401, { success: false, message: 'Unauthorized: Administrator privileges required to modify catalog products.' });
