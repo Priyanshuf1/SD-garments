@@ -4009,7 +4009,8 @@ class yc {
     this.renderer.setSize(this.width, this.height);
     const isMobile = window.innerWidth <= 768;
     const maxDpr = isMobile ? 1.0 : (window.chrome ? 1.0 : 1.25);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+    if (maxDpr < 1.5) this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
     this.renderer.setClearColor(12895428, 1);
     this.renderer.outputColorSpace = ht;
     this.container.appendChild(this.renderer.domElement);
