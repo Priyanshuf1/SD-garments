@@ -851,6 +851,14 @@ import { Application } from '/assets/spline/runtime.js?v=gold-screen-v6';
         loaderBadge.style.opacity = '0';
         setTimeout(() => loaderBadge.remove(), 400);
       }
+      const poster = document.getElementById('spline-phone-poster');
+      if (poster) {
+        poster.style.opacity = '0';
+        setTimeout(() => poster.remove(), 400);
+      }
+      if (container) {
+        container.style.backgroundImage = "url('/assets/allyrich-hero-bg.png?v=4')";
+      }
 
       console.log('[AllyRich 3D] Spline scene loaded successfully!');
       canvas.classList.add('is-ready');

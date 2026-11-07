@@ -16,7 +16,7 @@
     <!-- High-Performance Edge Preloads for 3D Hero and Fisheye Review Slider -->
     <link rel="preload" href="/assets/spline/scene.splinecode" as="fetch" crossorigin="anonymous">
     <link rel="preload" href="/assets/spline-phone-screen.jpg?v=20261106" as="image">
-    <link rel="modulepreload" href="/assets/js/allyrich-3d-hero.js?v=gold-screen-v6">
+    <link rel="modulepreload" href="/assets/js/allyrich-3d-hero.js?v=clean-bg-v7">
     <link rel="modulepreload" href="/assets/js/review-fisheye.js?v=autoscroll-v4">
     <link rel="preload" href="/images/photo_1.webp" as="image">
     <link rel="preload" href="/images/photo_2.webp" as="image">
@@ -4561,8 +4561,8 @@ first.parentNode.insertBefore(script, first);
       width: 100%;
       height: 100%;
       background-color: #c4c4c4;
-      background-image: url('/assets/spline-phone-poster.webp'), url('/assets/allyrich-hero-bg.png?v=4');
-      background-size: contain, cover;
+      background-image: url('/assets/allyrich-hero-bg.png?v=4');
+      background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
       display: flex;
@@ -4639,12 +4639,13 @@ first.parentNode.insertBefore(script, first);
     }
   </style>
   <div id="allyrich-3d-hero-container" class="allyrich-hero-page">
-    <canvas id="allyrich-spline-canvas"></canvas>
+    <div id="spline-phone-poster" style="position:absolute; inset:0; background: url('/assets/spline-phone-poster.webp') center center / contain no-repeat; pointer-events:none; transition: opacity 0.4s ease; z-index: 1;"></div>
+    <canvas id="allyrich-spline-canvas" style="z-index: 2;"></canvas>
     <div id="spline-loader-indicator" class="spline-loading-pulse">
       <div class="spline-spinner"></div>
     </div>
   </div>
-  <script type="module" src="/assets/js/allyrich-3d-hero.js?v=gold-screen-v6"></script>
+  <script type="module" src="/assets/js/allyrich-3d-hero.js?v=clean-bg-v7"></script>
 </section><section id="shopify-section-client-reviews" class="shopify-section shopify-section--client-reviews">
   <link rel="stylesheet" href="/assets/css/review-fisheye.css?v=autoscroll-v4">
   
