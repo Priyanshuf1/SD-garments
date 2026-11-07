@@ -1543,13 +1543,12 @@
             </label>
             <select id="revenue-timeframe-select" onchange="Admin.setTimeframe(this.value)" style="background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:3px; padding:7px 12px; font-weight:700; font-size:0.8rem; cursor:pointer; outline:none;">
               <option value="all">All Time</option>
-              <option value="today">Today (Past 24 Hours)</option>
-              <option value="3days">Past 3 Days</option>
-              <option value="5days">Past 5 Days</option>
-              <option value="7days">Past 7 Days (1 Week)</option>
-              <option value="14days">Past 14 Days</option>
-              <option value="30days">Past 30 Days (1 Month)</option>
-              <option value="90days">Past 90 Days</option>
+              <option value="1day">1 Day</option>
+              <option value="1week">1 Week</option>
+              <option value="2weeks">2 Weeks</option>
+              <option value="3weeks">3 Weeks</option>
+              <option value="4weeks">4 Weeks</option>
+              <option value="1month">1 Month</option>
             </select>
           </div>
         </div>
@@ -3225,10 +3224,30 @@ const Admin = {
     let filteredOrders = this.orders || [];
     let periodSub = 'all recorded orders';
 
-    if (this.selectedTimeframe === 'today') {
+    if (this.selectedTimeframe === '1day' || this.selectedTimeframe === 'today') {
       const cutoff = now - (24 * 60 * 60 * 1000);
       filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
-      periodSub = 'the past 24 hours';
+      periodSub = '1 day (past 24 hours)';
+    } else if (this.selectedTimeframe === '1week' || this.selectedTimeframe === '7days') {
+      const cutoff = now - (7 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = '1 week (past 7 days)';
+    } else if (this.selectedTimeframe === '2weeks' || this.selectedTimeframe === '14days') {
+      const cutoff = now - (14 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = '2 weeks (past 14 days)';
+    } else if (this.selectedTimeframe === '3weeks' || this.selectedTimeframe === '21days') {
+      const cutoff = now - (21 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = '3 weeks (past 21 days)';
+    } else if (this.selectedTimeframe === '4weeks' || this.selectedTimeframe === '28days') {
+      const cutoff = now - (28 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = '4 weeks (past 28 days)';
+    } else if (this.selectedTimeframe === '1month' || this.selectedTimeframe === '30days') {
+      const cutoff = now - (30 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = '1 month (past 30 days)';
     } else if (this.selectedTimeframe === '3days') {
       const cutoff = now - (3 * 24 * 60 * 60 * 1000);
       filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
@@ -3237,18 +3256,6 @@ const Admin = {
       const cutoff = now - (5 * 24 * 60 * 60 * 1000);
       filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
       periodSub = 'the past 5 days';
-    } else if (this.selectedTimeframe === '7days') {
-      const cutoff = now - (7 * 24 * 60 * 60 * 1000);
-      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
-      periodSub = 'the past 7 days (1 week)';
-    } else if (this.selectedTimeframe === '14days') {
-      const cutoff = now - (14 * 24 * 60 * 60 * 1000);
-      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
-      periodSub = 'the past 14 days';
-    } else if (this.selectedTimeframe === '30days') {
-      const cutoff = now - (30 * 24 * 60 * 60 * 1000);
-      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
-      periodSub = 'the past 30 days (1 month)';
     } else if (this.selectedTimeframe === '90days') {
       const cutoff = now - (90 * 24 * 60 * 60 * 1000);
       filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);

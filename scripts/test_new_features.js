@@ -51,26 +51,30 @@ assert(colHtml.includes('.category-chip.active::after'), 'collections.html categ
 console.log('✅ PASS: Mobile category chips bar shifted cleanly below header (0px overlap) & desktop dropdowns visible on all subpages');
 
 // ------------------------------------------------------------------
-// REQUIREMENT 4: Admin Revenue & Sales Timeframe Filter
+// REQUIREMENT 4: Admin Revenue & Sales Timeframe Filter (1 Day, 1-4 Weeks, 1 Month)
 // ------------------------------------------------------------------
 console.log('\n--- 4. Testing Admin Revenue & Sales Timeframe Filter ---');
 const adminHtml = fs.readFileSync('admin.html', 'utf8');
 
 assert(adminHtml.includes('id="revenue-timeframe-select"'), 'admin.html must contain revenue timeframe selector');
-assert(adminHtml.includes('value="today"'), 'admin.html selector must support Today (24 Hours)');
-assert(adminHtml.includes('value="3days"'), 'admin.html selector must support Past 3 Days');
-assert(adminHtml.includes('value="5days"'), 'admin.html selector must support Past 5 Days');
-assert(adminHtml.includes('value="7days"'), 'admin.html selector must support Past 7 Days');
-assert(adminHtml.includes('value="30days"'), 'admin.html selector must support Past 30 Days');
 assert(adminHtml.includes('value="all"'), 'admin.html selector must support All Time');
+assert(adminHtml.includes('value="1day"'), 'admin.html selector must support 1 Day');
+assert(adminHtml.includes('value="1week"'), 'admin.html selector must support 1 Week');
+assert(adminHtml.includes('value="2weeks"'), 'admin.html selector must support 2 Weeks');
+assert(adminHtml.includes('value="3weeks"'), 'admin.html selector must support 3 Weeks');
+assert(adminHtml.includes('value="4weeks"'), 'admin.html selector must support 4 Weeks');
+assert(adminHtml.includes('value="1month"'), 'admin.html selector must support 1 Month');
 assert(adminHtml.includes('selectedTimeframe: \'all\''), 'Admin must have selectedTimeframe state');
 assert(adminHtml.includes('setTimeframe('), 'Admin must have setTimeframe method');
-assert(adminHtml.includes('cutoff = now - (24 * 60 * 60 * 1000)'), 'renderDashboard must compute 24h cutoff');
-assert(adminHtml.includes('cutoff = now - (7 * 24 * 60 * 60 * 1000)'), 'renderDashboard must compute 7d cutoff');
-assert(adminHtml.includes('cutoff = now - (30 * 24 * 60 * 60 * 1000)'), 'renderDashboard must compute 30d cutoff');
+assert(adminHtml.includes('cutoff = now - (24 * 60 * 60 * 1000)'), 'renderDashboard must compute 1day cutoff');
+assert(adminHtml.includes('cutoff = now - (7 * 24 * 60 * 60 * 1000)'), 'renderDashboard must compute 1week cutoff');
+assert(adminHtml.includes('cutoff = now - (14 * 24 * 60 * 60 * 1000)'), 'renderDashboard must compute 2weeks cutoff');
+assert(adminHtml.includes('cutoff = now - (21 * 24 * 60 * 60 * 1000)'), 'renderDashboard must compute 3weeks cutoff');
+assert(adminHtml.includes('cutoff = now - (28 * 24 * 60 * 60 * 1000)'), 'renderDashboard must compute 4weeks cutoff');
+assert(adminHtml.includes('cutoff = now - (30 * 24 * 60 * 60 * 1000)'), 'renderDashboard must compute 1month cutoff');
 assert(adminHtml.includes('totalRev = filteredOrders.reduce'), 'renderDashboard must dynamically sum totalRev of filtered orders');
 assert(adminHtml.includes('aov = orderCount > 0 ? Math.round(totalRev / orderCount) : 0'), 'renderDashboard must dynamically compute AOV');
-console.log('✅ PASS: Admin revenue timeframe filter, dynamic order filtering, and recalculations verified');
+console.log('✅ PASS: Admin revenue timeframe filter with 1 Day, 1 Week, 2-3-4 Weeks, 1 Month verified');
 
 console.log('\n====================================================');
 console.log('🎉 ALL 4 USER REQUIREMENTS VERIFIED SUCCESSFULLY!');
