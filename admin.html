@@ -1524,6 +1524,36 @@
       <!-- SECTION 1: DASHBOARD -->
       <!-- ============================================================== -->
       <section class="admin-section active" id="sec-dashboard">
+        
+        <!-- Sales & Revenue Performance Timeframe Control -->
+        <div class="revenue-analytics-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:4px; padding:1rem 1.25rem;">
+          <div>
+            <div style="font-family:var(--heading-font-family); font-weight:800; font-size:1rem; letter-spacing:0.04em; color:var(--text-primary); text-transform:uppercase;">
+              Sales & Revenue Performance
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;" id="revenue-timeframe-label">
+              Showing total revenue across all recorded orders
+            </div>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label for="revenue-timeframe-select" style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; display:flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              Time Period:
+            </label>
+            <select id="revenue-timeframe-select" onchange="Admin.setTimeframe(this.value)" style="background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:3px; padding:7px 12px; font-weight:700; font-size:0.8rem; cursor:pointer; outline:none;">
+              <option value="all">All Time</option>
+              <option value="today">Today (Past 24 Hours)</option>
+              <option value="3days">Past 3 Days</option>
+              <option value="5days">Past 5 Days</option>
+              <option value="7days">Past 7 Days (1 Week)</option>
+              <option value="14days">Past 14 Days</option>
+              <option value="30days">Past 30 Days (1 Month)</option>
+              <option value="90days">Past 90 Days</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card">
@@ -2992,6 +3022,11 @@ const Admin = {
   subscribers: [],
   filteredSubscribers: [],
   reviews: [],
+  selectedTimeframe: 'all',
+  setTimeframe(tf) {
+    this.selectedTimeframe = tf;
+    this.renderDashboard();
+  },
   filteredReviews: [],
   activeOrderId: null,
   discounts: [],
@@ -3186,9 +3221,52 @@ const Admin = {
   // Dashboard Renderer
   // -------------------------------------------------------------
   renderDashboard() {
-    document.getElementById('stat-revenue').textContent = '₹' + (this.stats.totalRevenue || 11302).toLocaleString('en-IN');
-    document.getElementById('stat-orders').textContent = this.orders.length;
-    document.getElementById('stat-aov').textContent = '₹' + (this.stats.averageOrderValue || 2260).toLocaleString('en-IN');
+    const now = Date.now();
+    let filteredOrders = this.orders || [];
+    let periodSub = 'all recorded orders';
+
+    if (this.selectedTimeframe === 'today') {
+      const cutoff = now - (24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'the past 24 hours';
+    } else if (this.selectedTimeframe === '3days') {
+      const cutoff = now - (3 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'the past 3 days';
+    } else if (this.selectedTimeframe === '5days') {
+      const cutoff = now - (5 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'the past 5 days';
+    } else if (this.selectedTimeframe === '7days') {
+      const cutoff = now - (7 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'the past 7 days (1 week)';
+    } else if (this.selectedTimeframe === '14days') {
+      const cutoff = now - (14 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'the past 14 days';
+    } else if (this.selectedTimeframe === '30days') {
+      const cutoff = now - (30 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'the past 30 days (1 month)';
+    } else if (this.selectedTimeframe === '90days') {
+      const cutoff = now - (90 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'the past 90 days';
+    }
+
+    const totalRev = filteredOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+    const orderCount = filteredOrders.length;
+    const aov = orderCount > 0 ? Math.round(totalRev / orderCount) : 0;
+
+    const tfLabel = document.getElementById('revenue-timeframe-label');
+    if (tfLabel) {
+      tfLabel.textContent = `Showing sales & revenue for ${periodSub} (${orderCount} ${orderCount === 1 ? 'order' : 'orders'})`;
+    }
+
+    document.getElementById('stat-revenue').textContent = '₹' + totalRev.toLocaleString('en-IN');
+    document.getElementById('stat-orders').textContent = orderCount;
+    document.getElementById('stat-aov').textContent = '₹' + aov.toLocaleString('en-IN');
     document.getElementById('stat-products').textContent = this.products.length;
     document.getElementById('sidebar-prod-count').textContent = this.products.length;
     document.getElementById('sidebar-order-count').textContent = this.orders.length;
@@ -3199,15 +3277,20 @@ const Admin = {
     document.getElementById('sidebar-rev-count').textContent = this.reviews.length;
     document.getElementById('sidebar-coll-count').textContent = this.collections.length;
 
-    const deliveredCount = this.orders.filter(o => o.orderStatus === 'Delivered').length;
-    const processingCount = this.orders.filter(o => o.orderStatus === 'Processing' || o.orderStatus === 'Shipped').length;
+    const deliveredCount = filteredOrders.filter(o => o.orderStatus === 'Delivered').length;
+    const processingCount = filteredOrders.filter(o => o.orderStatus === 'Processing' || o.orderStatus === 'Shipped').length;
     document.getElementById('stat-delivered').textContent = deliveredCount + ' Delivered';
-    document.getElementById('stat-processing').textContent = processingCount + ' Processing';
+    document.getElementById('stat-processing').textContent = processingCount + ' Active';
 
-    // Render Recent Orders Table
-    const recent = this.orders.slice(0, 5);
+    // Render Recent Orders Table filtered by timeframe
+    const recent = filteredOrders.slice(0, 10);
     const tbody = document.getElementById('dashboard-recent-orders');
     if (!tbody) return;
+
+    if (recent.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">No orders recorded for ${periodSub}. Switch time period above to view historical sales.</td></tr>`;
+      return;
+    }
 
     tbody.innerHTML = recent.map(o => `
       <tr>
