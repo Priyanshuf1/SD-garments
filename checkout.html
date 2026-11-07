@@ -477,7 +477,7 @@
         const price = Number(item.price || item.variants?.[0]?.price || 1899);
         const qty = Number(item.quantity || 1);
         subtotal += price * qty;
-        const img = item.image || item.images?.[0]?.src || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+        const img = item.image || item.images?.[0]?.src || '/images/photo_1.webp';
 
         return `
           <div class="order-item">

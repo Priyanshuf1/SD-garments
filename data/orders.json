@@ -19,7 +19,7 @@
         "size": "L",
         "price": 2499,
         "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "image": "/images/photo_1.webp"
       }
     ],
     "subtotal": 2499,
@@ -29,20 +29,18 @@
     "paymentMethod": "Cash on Delivery (COD)",
     "paymentStatus": "Pending COD",
     "orderStatus": "Shipped",
-    "trackingNumber": "140928449908",
+    "trackingNumber": "48005610000125",
     "createdAt": "2026-10-23T16:29:30.123Z",
-    "updatedAt": "2026-10-24T16:56:40.926Z",
+    "updatedAt": "2026-11-07T16:12:33.624Z",
     "cashfreeOrderId": null,
     "cashfreePaymentId": null,
-    "delhiveryWaybill": "140928449908",
+    "delhiveryWaybill": "48005610000125",
     "carrier": "Delhivery Express Air Priority",
-    "trackingUrl": "https://www.delhivery.com/track/package/140928449908",
+    "trackingUrl": "https://www.delhivery.com/track/package/48005610000125",
     "shippingDetails": {
-      "awb": "140928449908",
-      "waybill": "140928449908",
+      "waybill": "48005610000125",
       "carrier": "Delhivery Express Air Priority",
-      "trackingUrl": "https://www.delhivery.com/track/package/140928449908",
-      "status": "Manifested & Shipped"
+      "trackingUrl": "https://www.delhivery.com/track/package/48005610000125"
     }
   },
   {
@@ -65,7 +63,7 @@
         "size": "XL",
         "price": 2499,
         "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "image": "/images/photo_1.webp"
       }
     ],
     "subtotal": 2499,
@@ -101,7 +99,7 @@
         "size": "XL",
         "price": 1599,
         "quantity": 1,
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977"
+        "image": "/images/photo_1.webp"
       }
     ],
     "subtotal": 1599,
@@ -133,7 +131,7 @@
       {
         "id": "3755b5a3-0b16-4de2-96c1-f1e32440df3e",
         "size": "XL",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png",
+        "image": "/images/photo_1.webp",
         "price": 2199,
         "title": "Automated Test Gothic Cyber Oversized Tee (V2 Gold Edition)",
         "quantity": 2
@@ -553,7 +551,7 @@
       {
         "id": 1792316101545,
         "size": "34",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1899,
         "title": "Basic White Baggy Pants",
         "quantity": 1
@@ -588,7 +586,7 @@
       {
         "id": 1792312474030,
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1499,
         "title": "Auto Test Streetwear Tee",
         "quantity": 1
@@ -623,7 +621,7 @@
       {
         "id": 1792312312997,
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1499,
         "title": "Auto Test Streetwear Tee",
         "quantity": 1
@@ -658,7 +656,7 @@
       {
         "id": 1792312196797,
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1499,
         "title": "Auto Test Streetwear Tee",
         "quantity": 1
@@ -693,7 +691,7 @@
       {
         "id": 1792312158821,
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1499,
         "title": "Auto Test Streetwear Tee",
         "quantity": 1
@@ -865,7 +863,7 @@
       {
         "id": 9581723877614,
         "size": "M",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -935,7 +933,7 @@
       {
         "id": 9581723877614,
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1599,
         "title": "Zaraki Corduroy Full Sleeves",
         "quantity": 1
@@ -978,7 +976,7 @@
       {
         "id": 9581723900004,
         "size": "L",
-        "image": "https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977",
+        "image": "/images/photo_1.webp",
         "price": 1199,
         "title": "Heavyweight Boxy Drop-Shoulder Tee",
         "quantity": 2

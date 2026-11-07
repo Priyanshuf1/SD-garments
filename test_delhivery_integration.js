@@ -36,7 +36,7 @@ async function runTests() {
   // 4. Packing Slip URL builder
   console.log('\n[4] Testing Packing Slip URL Generation:');
   const testAwb = '1409212345678';
-  const labelUrl = delhivery.getPackingSlipUrl(testAwb);
+  const labelUrl = delhivery.getPackingSlipPdfUrl(testAwb);
   assert.ok(labelUrl.includes(testAwb), 'Label URL must contain waybill');
   assert.ok(labelUrl.includes('pdf=true'), 'Label URL must request PDF');
   console.log(`  ✅ [PASS] Packing slip URL verified: ${labelUrl}`);

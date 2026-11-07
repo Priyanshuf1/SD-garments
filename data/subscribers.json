@@ -1,5 +1,95 @@
 [
   {
+    "id": "SUB-1794067890135",
+    "email": "spam_1794067888116_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-07T16:11:30.135Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1794067886104",
+    "email": "spam_1794067884095_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-07T16:11:26.104Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1794067882074",
+    "email": "spam_1794067880057_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-07T16:11:22.074Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1794067878043",
+    "email": "spam_1794067876032_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-07T16:11:18.043Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1794067874017",
+    "email": "spam_1794067872005_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-07T16:11:14.017Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1793950370461",
+    "email": "spam_1793950368447_4@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-06T07:32:50.461Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1793950366424",
+    "email": "spam_1793950364417_3@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-06T07:32:46.424Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1793950362398",
+    "email": "spam_1793950360378_2@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-06T07:32:42.398Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1793950358353",
+    "email": "spam_1793950356347_1@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-06T07:32:38.353Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
+    "id": "SUB-1793950354334",
+    "email": "spam_1793950352324_0@test.com",
+    "phone": "",
+    "name": "",
+    "subscribedAt": "2026-11-06T07:32:34.334Z",
+    "source": "footer_newsletter",
+    "status": "Active"
+  },
+  {
     "id": "SUB-1792860999226",
     "email": "spam_1792860999226_4@test.com",
     "phone": "",

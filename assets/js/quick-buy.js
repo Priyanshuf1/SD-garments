@@ -292,7 +292,7 @@
 
       content.innerHTML = `
         <div class="qb-product-header">
-          <img src="${img || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'}" alt="${product.title}" class="qb-thumb">
+          <img src="${img || '/images/photo_1.webp'}" alt="${product.title}" class="qb-thumb">
           <div class="qb-meta">
             <div class="qb-vendor">${product.vendor || 'ALLEYRICH'}</div>
             <div class="qb-title" title="${product.title}">${product.title}</div>
@@ -701,7 +701,7 @@
         const price = Number(item.price || 1899);
         const qty = Number(item.quantity || 1);
         subtotal += price * qty;
-        const img = item.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+        const img = item.image || '/images/photo_1.webp';
 
         return `
           <div style="display:flex; gap:12px; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid #f0f0f0; align-items:center;">

@@ -38,3 +38,7 @@ optimize_images.js
 
 .vercel
 .env*
+
+scripts/*.png
+scripts/*.jpg
+scripts/*.mp4

@@ -288,12 +288,12 @@
           title: 'Streetwear Apparel',
           quantity: 1,
           price: o.total || 1899,
-          image: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977'
+          image: '/images/photo_1.webp'
         }];
 
         const itemsHtml = itemsList.map(i => `
           <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
-            <img src="${escapeAccountHtml(i.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977')}" alt="${escapeAccountHtml(i.title || 'Ordered product item')}" style="width:40px; height:50px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
+            <img src="${escapeAccountHtml(i.image || '/images/photo_1.webp')}" alt="${escapeAccountHtml(i.title || 'Ordered product item')}" style="width:40px; height:50px; object-fit:cover; border-radius:2px; background:#f0f0f0;">
             <div style="flex:1; font-size:0.85rem;">
               <strong>${escapeAccountHtml(i.title)}</strong>
               <span style="color:#666;">(Qty: ${Number(i.quantity || 1)})</span>
@@ -591,7 +591,7 @@
           const handle = typeof item === 'string' ? item : item.handle;
           const cleanH = handle ? String(handle).split('?')[0].split('#')[0].trim().toLowerCase() : '';
           const prod = prods.find(p => (p.handle || '').toLowerCase() === cleanH) || (typeof item === 'object' ? item : { title: handle, handle });
-          const img = prod.images?.[0]?.src || prod.image || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+          const img = prod.images?.[0]?.src || prod.image || '/images/photo_1.webp';
           const price = prod.variants?.[0]?.price || prod.price || '1899';
 
           return `

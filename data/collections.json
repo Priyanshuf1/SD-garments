@@ -6,8 +6,10 @@
       "handle": "all",
       "description": "Explore the full ALLEYRICH catalogue across Men's Wear, Party Wear, and Kids Collections.",
       "department": "All",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80"
+      },
+      "products_count": 304
     },
     {
       "id": 10002,
@@ -15,8 +17,10 @@
       "handle": "new-arrivals",
       "description": "The latest luxury streetwear drops, party wear ensembles, and seasonal collections.",
       "department": "All",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "/assets/uploads/alleyrich_1792772231587_Screenshot_2026-10-11_003704_w.webp"
+      },
+      "products_count": 97
     },
     {
       "id": 11000,
@@ -24,8 +28,10 @@
       "handle": "mens-wear",
       "description": "Luxury oversized streetwear, premium bottom wear, signature top wear, and co-ords.",
       "department": "Men's Wear",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80"
+      },
+      "products_count": 157
     },
     {
       "id": 11100,
@@ -34,7 +40,9 @@
       "description": "Architectural baggy pants, custom denim, tailored trousers, and streetwear lowers.",
       "department": "Men's Wear",
       "category": "Bottom Wear",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -45,8 +53,10 @@
       "department": "Men's Wear",
       "category": "Bottom Wear",
       "sub_category": "Jeans",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 7
     },
     {
       "id": 11111,
@@ -57,8 +67,10 @@
       "category": "Bottom Wear",
       "sub_category": "Jeans",
       "fit": "Straight Fit Jeans",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 11112,
@@ -69,8 +81,10 @@
       "category": "Bottom Wear",
       "sub_category": "Jeans",
       "fit": "Baggy Fit Jeans",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 4
     },
     {
       "id": 11113,
@@ -81,8 +95,10 @@
       "category": "Bottom Wear",
       "sub_category": "Jeans",
       "fit": "Narrow Fit Jeans",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 11120,
@@ -92,8 +108,10 @@
       "department": "Men's Wear",
       "category": "Bottom Wear",
       "sub_category": "Cargo / Jogger Pants",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "/images/photo_5.webp"
+      },
+      "products_count": 1
     },
     {
       "id": 11130,
@@ -103,8 +121,10 @@
       "department": "Men's Wear",
       "category": "Bottom Wear",
       "sub_category": "Formal Pants",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 11140,
@@ -114,8 +134,10 @@
       "department": "Men's Wear",
       "category": "Bottom Wear",
       "sub_category": "Trousers",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 11150,
@@ -125,8 +147,10 @@
       "department": "Men's Wear",
       "category": "Bottom Wear",
       "sub_category": "Lowers",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "/images/photo_5.webp"
+      },
+      "products_count": 11
     },
     {
       "id": 11200,
@@ -135,7 +159,9 @@
       "description": "Oversized graphic tees, luxury boxy shirts, heavy fleece hoodies, and jackets.",
       "department": "Men's Wear",
       "category": "Top Wear",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -146,8 +172,10 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "Shirts",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80"
+      },
+      "products_count": 4
     },
     {
       "id": 11220,
@@ -157,8 +185,10 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "T-Shirts",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "/images/photo_1.webp"
+      },
+      "products_count": 84
     },
     {
       "id": 11230,
@@ -168,8 +198,10 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "Hoodies",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "/assets/uploads/alleyrich_1792772231587_Screenshot_2026-10-11_003704_w.webp"
+      },
+      "products_count": 9
     },
     {
       "id": 11240,
@@ -179,8 +211,10 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "Sweatshirts",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 11250,
@@ -190,8 +224,10 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "Sweaters",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 11260,
@@ -201,8 +237,10 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "Jackets",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 13
     },
     {
       "id": 11270,
@@ -212,7 +250,9 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "Half Jackets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -223,8 +263,10 @@
       "department": "Men's Wear",
       "category": "Top Wear",
       "sub_category": "Short Kurtas",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 11300,
@@ -233,8 +275,10 @@
       "description": "Seamlessly paired two-piece oversized shirt and trouser/short ensembles.",
       "department": "Men's Wear",
       "category": "Co-ord Sets",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 12000,
@@ -242,8 +286,10 @@
       "handle": "party-wear",
       "description": "Exquisite celebratory suits, tailored blazers, and regal Indo-Western garments.",
       "department": "Party Wear",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 18
     },
     {
       "id": 12010,
@@ -252,8 +298,10 @@
       "description": "Royal bandhgala jackets paired with slim-fit formal trousers.",
       "department": "Party Wear",
       "category": "Jodhpuri Suits",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 12020,
@@ -262,8 +310,10 @@
       "description": "Single and double-breasted structured blazers crafted in velvet, jacquard, and wool.",
       "department": "Party Wear",
       "category": "Blazers",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 12030,
@@ -272,8 +322,10 @@
       "description": "Complete formal blazer, tailored waistcoat, and pleated trouser ensembles.",
       "department": "Party Wear",
       "category": "Three-Piece Suits",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 3
     },
     {
       "id": 12040,
@@ -282,8 +334,10 @@
       "description": "Asymmetrical silhouette jackets, open achkans, and high-fashion fusion sets.",
       "department": "Party Wear",
       "category": "Indo-Western Wear (Indo)",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 3
     },
     {
       "id": 12050,
@@ -292,8 +346,10 @@
       "description": "Traditional embroidered silk and georgette kurtas layered with matching kotis.",
       "department": "Party Wear",
       "category": "Koti-Kurta Sets",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 12060,
@@ -302,8 +358,10 @@
       "description": "Full-length raw silk and chanderi celebration kurtas with intricate threadwork.",
       "department": "Party Wear",
       "category": "Long Kurtas",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 12070,
@@ -312,8 +370,10 @@
       "description": "Mandarin-collar sleeveless ethnic jackets adorned with metallic button details.",
       "department": "Party Wear",
       "category": "Nehru Jackets",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 2
     },
     {
       "id": 20000,
@@ -321,8 +381,10 @@
       "handle": "kids-wear",
       "description": "Premium clothing for Boys, Girls, and Newborns engineered for comfort and style.",
       "department": "Kids Wear",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 32
     },
     {
       "id": 21000,
@@ -331,8 +393,10 @@
       "description": "Casual streetwear and majestic ethnic celebrations for young gentlemen.",
       "department": "Kids Wear",
       "category": "Boys' Clothing",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 11
     },
     {
       "id": 21100,
@@ -342,7 +406,9 @@
       "department": "Kids Wear",
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -354,7 +420,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
       "item": "T-Shirts",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -366,7 +434,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
       "item": "Shirts",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -378,7 +448,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
       "item": "Jeans",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -390,7 +462,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
       "item": "Cargo Pants / Joggers",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -402,7 +476,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
       "item": "Lowers",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -414,7 +490,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
       "item": "Co-ord Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -426,7 +504,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Casual Wear",
       "item": "Night Suits",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -437,7 +517,9 @@
       "department": "Kids Wear",
       "category": "Boys' Clothing",
       "sub_category": "Ethnic Wear",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -449,7 +531,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Ethnic Wear",
       "item": "Kurta Pajama Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -461,7 +545,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Ethnic Wear",
       "item": "Indo-Western Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -473,7 +559,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Ethnic Wear",
       "item": "Jodhpuri Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -485,7 +573,9 @@
       "category": "Boys' Clothing",
       "sub_category": "Ethnic Wear",
       "item": "Three-Piece Suits",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -495,8 +585,10 @@
       "description": "Graceful party frocks, festive lehengas, trendy casuals, and winter wear.",
       "department": "Kids Wear",
       "category": "Girls' Clothing",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 13
     },
     {
       "id": 22100,
@@ -506,7 +598,9 @@
       "department": "Kids Wear",
       "category": "Girls' Clothing",
       "sub_category": "Casual & Daily Wear",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -518,7 +612,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Casual & Daily Wear",
       "item": "Jeans",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -530,7 +626,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Casual & Daily Wear",
       "item": "Tops & T-Shirts",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -542,7 +640,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Casual & Daily Wear",
       "item": "Co-ord Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -554,7 +654,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Casual & Daily Wear",
       "item": "Jumpsuits",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -566,7 +668,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Casual & Daily Wear",
       "item": "Midi Dresses",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -577,7 +681,9 @@
       "department": "Kids Wear",
       "category": "Girls' Clothing",
       "sub_category": "Party Wear",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -589,7 +695,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Party Wear",
       "item": "Frocks",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -601,7 +709,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Party Wear",
       "item": "Gowns",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -613,7 +723,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Party Wear",
       "item": "Lehenga Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -625,7 +737,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Party Wear",
       "item": "Dresses",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -636,7 +750,9 @@
       "department": "Kids Wear",
       "category": "Girls' Clothing",
       "sub_category": "Winter Wear",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -648,7 +764,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Winter Wear",
       "item": "Sweaters",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -660,7 +778,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Winter Wear",
       "item": "Jackets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -672,7 +792,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Winter Wear",
       "item": "Hoodies",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -684,7 +806,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Winter Wear",
       "item": "Sweatshirts",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -696,7 +820,9 @@
       "category": "Girls' Clothing",
       "sub_category": "Winter Wear",
       "item": "Winter Co-ord Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -706,7 +832,9 @@
       "description": "Feather-soft, chemical-free organic cotton essentials for newborns and infants.",
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -717,7 +845,9 @@
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
       "item": "Rompers",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -728,7 +858,9 @@
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
       "item": "Jumpsuits",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -739,8 +871,10 @@
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
       "item": "Newborn Baby Clothes",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 23040,
@@ -750,8 +884,10 @@
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
       "item": "Baby Clothing Sets",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 23050,
@@ -761,7 +897,9 @@
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
       "item": "Baby Co-ord Sets",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     },
     {
@@ -772,8 +910,10 @@
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
       "item": "Baby Frocks",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 23070,
@@ -783,8 +923,10 @@
       "department": "Kids Wear",
       "category": "Baby Clothing (0–2 Years)",
       "item": "Baby Dresses",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 1
     },
     {
       "id": 30000,
@@ -792,8 +934,10 @@
       "handle": "accessories",
       "description": "Handcrafted stainless steel pendants, rings, luxury crossbody bags, and headwear.",
       "department": "Accessories",
-      "image": null,
-      "products_count": 0
+      "image": {
+        "src": "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=900&q=80"
+      },
+      "products_count": 101
     },
     {
       "id": 30010,
@@ -801,7 +945,9 @@
       "handle": "basics-alleyrich",
       "description": "Essential monochrome heavyweight basics and everyday wardrobe foundations.",
       "department": "Basics",
-      "image": null,
+      "image": {
+        "src": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+      },
       "products_count": 0
     }
   ]

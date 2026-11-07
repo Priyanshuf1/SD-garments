@@ -664,7 +664,7 @@ function formatSupabaseProductToLocal(s) {
         src: img.src,
         position: img.position || idx + 1
       }))
-    : [{ id: 1, src: 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977', position: 1 }];
+    : [{ id: 1, src: '/images/photo_1.webp', position: 1 }];
 
   return {
     id: s.id,
@@ -1177,7 +1177,7 @@ async function sendOrderConfirmationEmail(order) {
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="width: 54px; vertical-align: top; padding-right: 12px;">
-              <img src="${escapeHtml(safeHttpUrl(item.image, 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png'))}" width="48" height="60" style="object-fit: cover; border-radius: 4px; display: block; background: #222;" alt="${escapeHtml(item.title || 'Streetwear')}">
+              <img src="${escapeHtml(safeHttpUrl(item.image, '/images/photo_1.webp'))}" width="48" height="60" style="object-fit: cover; border-radius: 4px; display: block; background: #222;" alt="${escapeHtml(item.title || 'Streetwear')}">
             </td>
             <td style="vertical-align: top;">
               <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${escapeHtml(item.title || item.name || 'ALLEYRICH Streetwear Item')}</div>
@@ -1700,7 +1700,7 @@ async function handleCreateProduct(req, res) {
       prodDepartment = "Men's Wear";
     }
   }
-  const primaryImage = payload.image || (payload.images && payload.images[0]?.src) || 'https://cdn.shopify.com/s/files/1/0633/9339/9022/files/1_cd34702d-ac3b-4ee4-a9d4-1733e518d430.png?v=1792222977';
+  const primaryImage = payload.image || (payload.images && payload.images[0]?.src) || '/images/photo_1.webp';
   const hoverImage = payload.hoverImage || (payload.images && payload.images[1]?.src) || null;
 
   let productImages = [];
