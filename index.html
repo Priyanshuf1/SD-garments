@@ -338,6 +338,49 @@
   }@view-transition {
       navigation: auto;
     }
+  
+    /* Mobile Category Navigation Chips Bar (Shifted below header, 0px overlap) */
+    @media (min-width: 901px) {
+      .mobile-cat-chips-bar { display: none !important; }
+    }
+    @media (max-width: 900px) {
+      .mobile-cat-chips-bar {
+        display: block !important;
+        background: #000000 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+        position: sticky !important;
+        top: var(--header-height, 76px) !important;
+        z-index: 99 !important;
+        width: 100% !important;
+      }
+      .mobile-cat-chips-scroller {
+        display: flex !important;
+        align-items: center !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 16px !important;
+        padding: 8px 1rem !important;
+        white-space: nowrap !important;
+      }
+      .mobile-cat-chips-scroller::-webkit-scrollbar { display: none !important; }
+      .mobile-cat-chip {
+        color: #cccccc !important;
+        text-decoration: none !important;
+        font-family: inherit !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.04em !important;
+        padding: 4px 6px !important;
+        text-transform: uppercase !important;
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+        transition: color 0.15s !important;
+      }
+      .mobile-cat-chip:active, .mobile-cat-chip:hover {
+        color: #ffffff !important;
+      }
+    }
   </style>
 <script>
   // This allows to expose several variables to the global scope, to be used in scripts
@@ -1122,7 +1165,7 @@ first.parentNode.insertBefore(script, first);
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Barlow:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,300&family=Shippori+Mincho+B1:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/allyrich.css">
+  <link rel="stylesheet" href="/assets/css/allyrich.css?v=20261108_dropdown_fix">
   
   <!-- Critical Render-Blocking Preloader (Frame 0 Display) -->
   <link rel="preload" as="image" href="/assets/ar-logo.png" fetchpriority="high">
@@ -1860,7 +1903,21 @@ first.parentNode.insertBefore(script, first);
 
 
 </header>
-<!-- END sections: header-group --><!-- BEGIN sections: overlay-group -->
+<!-- END sections: header-group -->
+  <!-- Mobile Quick Category Navigation Bar (Shifted downward below header, 0px overlap) -->
+  <nav class="mobile-cat-chips-bar" aria-label="Mobile Category Navigation">
+    <div class="mobile-cat-chips-scroller">
+      <a href="/collections/new-arrivals" class="mobile-cat-chip">New In</a>
+      <a href="/collections/shirts" class="mobile-cat-chip">Shirts</a>
+      <a href="/collections/t-shirts" class="mobile-cat-chip">T-Shirts</a>
+      <a href="/collections/hoodies" class="mobile-cat-chip">Hoodies</a>
+      <a href="/collections/mens-jeans" class="mobile-cat-chip">Jeans</a>
+      <a href="/collections/cargo-joggers" class="mobile-cat-chip">Cargo / Joggers</a>
+      <a href="/collections/party-wear" class="mobile-cat-chip">Party Wear</a>
+      <a href="/collections/kids-wear" class="mobile-cat-chip">Kids Wear</a>
+      <a href="/collections/accessories" class="mobile-cat-chip">Accessories</a>
+    </div>
+  </nav><!-- BEGIN sections: overlay-group -->
 <section id="shopify-section-sections--23671272767726__cart-drawer" class="shopify-section shopify-section-group-overlay-group shopify-section--cart-drawer"><cart-drawer
   id="cart-drawer"
   aria-label="Cart"

@@ -35,16 +35,20 @@ assert(!colHtml.includes('>COLLECTIONS & DROPS</a>'), 'collections.html mobile d
 console.log('✅ PASS: COLLECTIONS dropdown removed completely from desktop headers and mobile drawers');
 
 // ------------------------------------------------------------------
-// REQUIREMENT 3: Mobile Category Pills Navigation & Zero Header Overlay
+// REQUIREMENT 3: Mobile Category Pills Navigation (Shifted Down, 0px Overlap) & Desktop Dropdowns
 // ------------------------------------------------------------------
-console.log('\n--- 3. Testing Mobile Category Pills Navigation Bar & Header Offset ---');
-assert(!indexHtml.includes('mobile-cat-chips-bar'), 'index.html must NOT have mobile category chips bar (prevents header overlay/collision)');
+console.log('\n--- 3. Testing Mobile Category Pills Navigation Bar & Desktop Dropdowns ---');
+assert(indexHtml.includes('class="mobile-cat-chips-bar"'), 'index.html must have mobile category chips bar for quick section navigation');
+assert(indexHtml.includes('top: var(--header-height, 76px) !important;'), 'index.html mobile bar must be shifted down to --header-height (0px overlap)');
+assert(colHtml.includes('overflow: visible !important;'), 'collections.html .site-header__nav must have overflow: visible to show desktop dropdowns');
+const prodHtml = fs.readFileSync('product.html', 'utf8');
+assert(prodHtml.includes('overflow: visible !important;'), 'product.html .site-header__nav must have overflow: visible to show desktop dropdowns');
 assert(colHtml.includes('position: sticky !important;'), 'collections.html subnav must be sticky on mobile');
 assert(colHtml.includes('top: var(--site-header-height'), 'collections.html subnav must align dynamically to --site-header-height');
 assert(colHtml.includes('syncHeaderHeight()'), 'collections.html must define syncHeaderHeight to prevent overlap on scroll/resize');
 assert(colHtml.includes('{ cat: \'new-arrivals\', label: \'New In\''), 'collections.html category chips taxonomy must include "New In"');
 assert(colHtml.includes('.category-chip.active::after'), 'collections.html category chips must have active underline');
-console.log('✅ PASS: Header overlay eliminated on homepage & collections sticky category chips perfectly synchronized');
+console.log('✅ PASS: Mobile category chips bar shifted cleanly below header (0px overlap) & desktop dropdowns visible on all subpages');
 
 // ------------------------------------------------------------------
 // REQUIREMENT 4: Admin Revenue & Sales Timeframe Filter
