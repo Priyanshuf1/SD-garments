@@ -2247,7 +2247,7 @@
         // Top Wear Subcategories (Accurate Shirt matching - excludes T-shirts, Tees, Sweatshirts)
         if (handle === 'shirts' || handle === 'shirt') {
           const combo = (pTitle + ' ' + pCat + ' ' + pSub + ' ' + pType + ' ' + pTags.join(' ')).toLowerCase();
-          const isTeeOrSweat = combo.includes('t-shirt') || combo.includes('tshirt') || combo.includes('tee') || combo.includes('sweatshirt') || combo.includes('hoodie') || combo.includes('vest') || combo.includes('tank');
+          const isTeeOrSweat = combo.includes('t-shirt') || combo.includes('tshirt') || /\\btees?\\b/.test(combo) || combo.includes('sweatshirt') || combo.includes('hoodie') || combo.includes('vest') || combo.includes('tank');
           if (isTeeOrSweat) return false;
           return combo.includes('shirt');
         }

@@ -4704,7 +4704,7 @@ async function appHandler(req, res) {
   if ((pathname === '/api/discounts/validate' || pathname === '/api/coupons/validate') && req.method === 'POST') {
     const payload = await parseBody(req);
     const code = cleanText(payload.code || payload.discountCode || payload.couponCode || '', 50).toUpperCase();
-    const subtotal = Math.max(0, Number(payload.subtotal) || 0);
+    const subtotal = Math.max(0, Number(payload.subtotal ?? payload.cartTotal ?? payload.total ?? payload.amount) || 0);
 
     if (!code) {
       return sendJson(res, 400, { success: false, valid: false, message: 'Please enter a discount code.' });
@@ -4767,7 +4767,7 @@ async function appHandler(req, res) {
     if ((checkoutRoute === 'validate-discount' || checkoutRoute === 'validate-coupon') && req.method === 'POST') {
       const payload = await parseBody(req);
       const code = cleanText(payload.code || payload.discountCode || payload.couponCode || '', 50).toUpperCase();
-      const subtotal = Math.max(0, Number(payload.subtotal) || 0);
+      const subtotal = Math.max(0, Number(payload.subtotal ?? payload.cartTotal ?? payload.total ?? payload.amount) || 0);
 
       if (!code) {
         return sendJson(res, 400, { success: false, valid: false, message: 'Please enter a discount code.' });

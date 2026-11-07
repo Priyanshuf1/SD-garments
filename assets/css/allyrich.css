@@ -1121,3 +1121,62 @@
     padding: 18px 16px 14px;
   }
 }
+
+
+/* ==============================================================
+   HEADER MEGA MENU & DROPDOWN HOVER BRIDGE & FLICKER MITIGATION
+   ============================================================== */
+.header__menu-disclosure .mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+}
+
+.header__menu-disclosure .mega-menu::before {
+  content: '';
+  position: absolute;
+  top: -45px;
+  left: 0;
+  right: 0;
+  height: 45px;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.header__menu-disclosure:hover > .mega-menu,
+.header__menu-disclosure[open] > .mega-menu {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Collections page dropdown hover bridge */
+.nav-item-dropdown:hover .nav-dropdown-menu,
+.nav-item-dropdown.is-open .nav-dropdown-menu {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.nav-item-dropdown:hover .nav-dropdown-menu.mega-dropdown,
+.nav-item-dropdown.is-open .nav-dropdown-menu.mega-dropdown {
+  display: grid !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.nav-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: transparent;
+  pointer-events: auto;
+}
