@@ -199,10 +199,15 @@
       background: #c4c4c4 !important;
       border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
       position: sticky !important;
-      top: 50px !important;
+      top: var(--site-header-height, 60px) !important;
       z-index: 95 !important;
       backdrop-filter: blur(10px) !important;
       -webkit-backdrop-filter: blur(10px) !important;
+    }
+    @media (min-width: 1181px) {
+      .collection-subnav {
+        top: var(--site-header-height, 71px) !important;
+      }
     }
     .collection-subnav__inner {
       max-width: 1440px;
@@ -1836,7 +1841,16 @@
       "drops": "COLLECTIONS & SEASONAL DROPS"
 },
 
+      syncHeaderHeight() {
+        const header = document.querySelector('.site-header');
+        if (header) {
+          document.documentElement.style.setProperty('--site-header-height', header.offsetHeight + 'px');
+        }
+      },
+
       init() {
+        this.syncHeaderHeight();
+        window.addEventListener('resize', () => this.syncHeaderHeight());
         this.loadCartFromStorage();
         this.parseUrlCategory();
         this.updateActiveChip();

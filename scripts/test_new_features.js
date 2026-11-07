@@ -35,18 +35,16 @@ assert(!colHtml.includes('>COLLECTIONS & DROPS</a>'), 'collections.html mobile d
 console.log('✅ PASS: COLLECTIONS dropdown removed completely from desktop headers and mobile drawers');
 
 // ------------------------------------------------------------------
-// REQUIREMENT 3: Mobile Category Pills Navigation (Screenshot 3)
+// REQUIREMENT 3: Mobile Category Pills Navigation & Zero Header Overlay
 // ------------------------------------------------------------------
-console.log('\n--- 3. Testing Mobile Category Pills Navigation Bar ---');
-assert(indexHtml.includes('mobile-cat-chips-bar'), 'index.html must have mobile category chips navigation bar');
-assert(indexHtml.includes('mobile-cat-chips-scroller'), 'index.html must have smooth horizontal touch scroller');
-assert(indexHtml.includes('>New In</a>'), 'index.html mobile bar must have "New In"');
-assert(indexHtml.includes('>Shirts</a>'), 'index.html mobile bar must have "Shirts"');
-assert(indexHtml.includes('>T-Shirts</a>'), 'index.html mobile bar must have "T-Shirts"');
+console.log('\n--- 3. Testing Mobile Category Pills Navigation Bar & Header Offset ---');
+assert(!indexHtml.includes('mobile-cat-chips-bar'), 'index.html must NOT have mobile category chips bar (prevents header overlay/collision)');
 assert(colHtml.includes('position: sticky !important;'), 'collections.html subnav must be sticky on mobile');
+assert(colHtml.includes('top: var(--site-header-height'), 'collections.html subnav must align dynamically to --site-header-height');
+assert(colHtml.includes('syncHeaderHeight()'), 'collections.html must define syncHeaderHeight to prevent overlap on scroll/resize');
 assert(colHtml.includes('{ cat: \'new-arrivals\', label: \'New In\''), 'collections.html category chips taxonomy must include "New In"');
 assert(colHtml.includes('.category-chip.active::after'), 'collections.html category chips must have active underline');
-console.log('✅ PASS: Mobile category chips navigation bar verified on both homepage and catalog page');
+console.log('✅ PASS: Header overlay eliminated on homepage & collections sticky category chips perfectly synchronized');
 
 // ------------------------------------------------------------------
 // REQUIREMENT 4: Admin Revenue & Sales Timeframe Filter

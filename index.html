@@ -338,46 +338,6 @@
   }@view-transition {
       navigation: auto;
     }
-    /* Mobile Category Navigation Chips Bar (Screenshot 3) */
-    @media (min-width: 901px) {
-      .mobile-cat-chips-bar { display: none !important; }
-    }
-    @media (max-width: 900px) {
-      .mobile-cat-chips-bar {
-        display: block !important;
-        background: #0d0d0d !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-        position: sticky !important;
-        top: 52px !important;
-        z-index: 85 !important;
-      }
-      .mobile-cat-chips-scroller {
-        display: flex !important;
-        align-items: center !important;
-        overflow-x: auto !important;
-        scrollbar-width: none !important;
-        -webkit-overflow-scrolling: touch !important;
-        gap: 18px !important;
-        padding: 0 1rem !important;
-        white-space: nowrap !important;
-      }
-      .mobile-cat-chips-scroller::-webkit-scrollbar { display: none !important; }
-      .mobile-cat-chip {
-        color: #b0b0b0 !important;
-        text-decoration: none !important;
-        font-family: var(--heading-font-family, sans-serif) !important;
-        font-size: 13px !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.04em !important;
-        padding: 10px 2px !important;
-        text-transform: uppercase !important;
-        display: inline-block !important;
-        transition: color 0.15s !important;
-      }
-      .mobile-cat-chip:active, .mobile-cat-chip:hover {
-        color: #ffffff !important;
-      }
-    }
   </style>
 <script>
   // This allows to expose several variables to the global scope, to be used in scripts
@@ -1900,21 +1860,6 @@ first.parentNode.insertBefore(script, first);
 
 
 </header>
-
-  <!-- Mobile Quick Category Navigation Bar (Screenshot 3) -->
-  <nav class="mobile-cat-chips-bar" aria-label="Mobile Category Navigation">
-    <div class="mobile-cat-chips-scroller">
-      <a href="/collections/new-arrivals" class="mobile-cat-chip">New In</a>
-      <a href="/collections/shirts" class="mobile-cat-chip">Shirts</a>
-      <a href="/collections/t-shirts" class="mobile-cat-chip">T-Shirts</a>
-      <a href="/collections/hoodies" class="mobile-cat-chip">Hoodies</a>
-      <a href="/collections/mens-jeans" class="mobile-cat-chip">Jeans</a>
-      <a href="/collections/cargo-joggers" class="mobile-cat-chip">Cargo / Joggers</a>
-      <a href="/collections/party-wear" class="mobile-cat-chip">Party Wear</a>
-      <a href="/collections/kids-wear" class="mobile-cat-chip">Kids Wear</a>
-      <a href="/collections/accessories" class="mobile-cat-chip">Accessories</a>
-    </div>
-  </nav>
 <!-- END sections: header-group --><!-- BEGIN sections: overlay-group -->
 <section id="shopify-section-sections--23671272767726__cart-drawer" class="shopify-section shopify-section-group-overlay-group shopify-section--cart-drawer"><cart-drawer
   id="cart-drawer"
