@@ -1489,7 +1489,46 @@ first.parentNode.insertBefore(script, first);
       #shopify-section-sections--23671272669422__header {
         --header-logo-width: 140px;
       }
-    }</style>
+    }
+  @media screen and (max-width: 768px) {
+    #shopify-section-sections--23671272669422__header {
+      --header-padding-block: 0.65rem;
+    }
+    .header {
+      padding-inline: 0.5rem !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      box-sizing: border-box !important;
+      background: #000000 !important;
+    }
+    .allyrich-header-logo-img {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    .allyrich-header-brand-name {
+      font-size: 0.98rem !important;
+      letter-spacing: 0.08em !important;
+    }
+    .header__secondary-nav ul {
+      gap: 0.2rem !important;
+    }
+    .header__secondary-nav a,
+    .header__secondary-nav button,
+    .header__secondary-nav li a {
+      min-width: 36px !important;
+      min-height: 36px !important;
+      width: 36px !important;
+      height: 36px !important;
+      padding: 4px !important;
+      box-sizing: border-box !important;
+    }
+    .header__secondary-nav svg {
+      width: 20px !important;
+      height: 20px !important;
+    }
+  }
+
+</style>
 
 <height-observer variable="header">
   <x-header

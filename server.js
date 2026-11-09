@@ -3007,20 +3007,10 @@ async function appHandler(req, res) {
   // Admin Portal Page Route
   // -------------------------------------------------------------
   // -------------------------------------------------------------
-  // Stealth Admin Route: /allyrich-hq (Fake 404 on /admin)
+  // Admin Portal Page Route (/admin, /admin.html, /allyrich-hq)
   // -------------------------------------------------------------
-  if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html') {
-    const host = req.headers.host || '';
-    if (host.includes('localhost') || host.includes('127.0.0.1')) {
-      res.writeHead(302, { 'Location': '/allyrich-hq' });
-      return res.end();
-    }
-    // Stealth Mode: Deceive unauthorized scanners with an authentic 404
-    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    return res.end('<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style="background:#09090b;color:#666;font-family:sans-serif;text-align:center;padding:5rem;"><h1>404 Not Found</h1><p>The requested resource does not exist on this server.</p></body></html>');
-  }
-
-  if (pathname === '/allyrich-hq' || pathname === '/allyrich-hq/' || pathname === '/allyrich-hq.html') {
+  if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html' ||
+      pathname === '/allyrich-hq' || pathname === '/allyrich-hq/' || pathname === '/allyrich-hq.html') {
     const adminPath = path.join(PUBLIC_DIR, 'admin.html');
     if (fs.existsSync(adminPath)) {
       res.writeHead(200, {
@@ -3032,6 +3022,7 @@ async function appHandler(req, res) {
 
   // -------------------------------------------------------------
   // Data JSON Endpoints (Intercepted to serve live in-memory & Supabase state)
+  // -------------------------------------------------------------
   // -------------------------------------------------------------
   if (pathname === '/data/products.json') {
     const products = await getAllProducts();

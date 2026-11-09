@@ -35,15 +35,18 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Sticky Header - Pure Black Style 1:1 with Official Alleyrich Site */
+/* Sticky Header - Pure Black Style 1:1 with Official Alleyrich Site */
     .site-header {
-      background: #000000;
+      background: #000000 !important;
       border-bottom: 1px solid #1a1a1a;
       padding: 0.9rem 1.5rem;
       position: sticky;
       top: 0;
       z-index: 100;
       box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 100vw;
+      box-sizing: border-box;
     }
     .site-header__inner {
       max-width: 1440px;
@@ -52,6 +55,95 @@
       align-items: center;
       justify-content: space-between;
       gap: 1.5rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    @media (max-width: 900px) {
+      html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+      }
+      .site-header {
+        padding: 0.55rem 0.65rem !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
+        background: #000000 !important;
+      }
+      .site-header__inner {
+        gap: 0.25rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .site-header__brand-group {
+        gap: 0.35rem !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+      }
+      .allyrich-header-brand {
+        gap: 0.35rem !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+      }
+      .allyrich-header-logo-img {
+        width: 32px !important;
+        height: 32px !important;
+      }
+      .allyrich-header-brand-name {
+        font-size: 0.96rem !important;
+        letter-spacing: 0.08em !important;
+        white-space: nowrap !important;
+      }
+      .mobile-nav-toggle {
+        padding: 4px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+      }
+      .mobile-nav-toggle svg {
+        width: 20px !important;
+        height: 20px !important;
+      }
+      .header-actions-group {
+        gap: 0.2rem !important;
+        min-width: 0 !important;
+        flex-shrink: 0 !important;
+      }
+      .header-actions-group .action-touch-btn {
+        min-width: 34px !important;
+        min-height: 34px !important;
+        width: 34px !important;
+        height: 34px !important;
+        padding: 4px !important;
+        box-sizing: border-box !important;
+      }
+      .header-actions-group .action-touch-btn svg {
+        width: 19px !important;
+        height: 19px !important;
+      }
+      .wishlist-count-badge, #header-cart-badge {
+        width: 15px !important;
+        height: 15px !important;
+        font-size: 0.6rem !important;
+        top: -1px !important;
+        right: -1px !important;
+      }
+    }
+    @media (max-width: 360px) {
+      .site-header {
+        padding: 0.45rem 0.4rem !important;
+      }
+      .allyrich-header-brand-name {
+        font-size: 0.88rem !important;
+        letter-spacing: 0.04em !important;
+      }
+      .header-actions-group .action-touch-btn {
+        min-width: 30px !important;
+        min-height: 30px !important;
+        width: 30px !important;
+        height: 30px !important;
+        padding: 2px !important;
+      }
     }
     .site-header__nav {
       display: flex;
@@ -1186,7 +1278,7 @@
     <div class="site-header__inner">
       
       <!-- Left: Brand Logo -->
-      <div style="display:flex; align-items:center; gap: 0.75rem; flex-shrink: 0; min-width: max-content;">
+      <div class="site-header__brand-group" style="display:flex; align-items:center; gap: 0.75rem; flex-shrink: 0; min-width: max-content;">
         <button type="button" class="mobile-nav-toggle" onclick="CollectionEngine.toggleMobileDrawer(true)" aria-label="Open Navigation Menu" style="background:none; border:none; color:#fff; padding:6px; cursor:pointer;">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
