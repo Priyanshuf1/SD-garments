@@ -39,6 +39,11 @@ console.log('✅ PASS: COLLECTIONS dropdown removed completely from desktop head
 // ------------------------------------------------------------------
 console.log('\n--- 3. Testing Mobile Category Pills Navigation Bar & Desktop Dropdowns ---');
 assert(indexHtml.includes('class="mobile-cat-chips-bar"'), 'index.html must have mobile category chips bar for quick section navigation');
+assert(indexHtml.includes('>NEW ARRIVALS</a>'), 'index.html mobile bar must have NEW ARRIVALS');
+assert(indexHtml.includes('>MEN\'S WEAR</a>'), 'index.html mobile bar must have MEN\'S WEAR');
+assert(indexHtml.includes('>PARTY WEAR</a>'), 'index.html mobile bar must have PARTY WEAR');
+assert(indexHtml.includes('>KIDS WEAR</a>'), 'index.html mobile bar must have KIDS WEAR');
+assert(indexHtml.includes('>ACCESSORIES</a>'), 'index.html mobile bar must have ACCESSORIES');
 assert(indexHtml.includes('top: var(--header-height, 76px) !important;'), 'index.html mobile bar must be shifted down to --header-height (0px overlap)');
 assert(colHtml.includes('overflow: visible !important;'), 'collections.html .site-header__nav must have overflow: visible to show desktop dropdowns');
 const prodHtml = fs.readFileSync('product.html', 'utf8');
