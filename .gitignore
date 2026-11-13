@@ -42,3 +42,6 @@ optimize_images.js
 scripts/*.png
 scripts/*.jpg
 scripts/*.mp4
+
+# Agent harnesses & teamwork logs
+.agents/

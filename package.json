@@ -16,6 +16,10 @@
     "url": "https://github.com/Priyanshuf1/SD-garments.git"
   },
   "dependencies": {
+    "ioredis": "^5.11.1",
     "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "autocannon": "^9.0.0"
   }
 }

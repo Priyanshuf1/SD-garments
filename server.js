@@ -38,6 +38,7 @@ const crypto = require('crypto');
 
 const supabase = require('./lib/supabase.js');
 const security = require('./lib/security.js');
+const redis = require('./lib/redis.js');
 const whatsapp = require('./lib/whatsapp.js');
 const delhivery = require('./lib/delhivery.js');
 const totp = require('./lib/totp.js');
@@ -227,6 +228,7 @@ async function releaseLocalInventory(items) {
 async function reserveInventory(items) {
   // Database-backed deployments should use the atomic SQL function. Local
   // development/fallback mode uses the serialized JSON reservation below.
+  let success = false;
   const canUseCloudInventory = supabase.isConfigured && typeof supabase.rpc === 'function' &&
     items.every(item => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.variantId || '')));
   if (canUseCloudInventory) {
@@ -239,15 +241,21 @@ async function reserveInventory(items) {
         if (!ok) throw new Error('Insufficient inventory');
         reserved.push(item);
       }
-      return true;
+      success = true;
     } catch (_) {
       if (reserved.length && typeof supabase.rpc === 'function') {
         for (const item of reserved) await supabase.rpc('increment_stock', { p_variant_id: item.variantId, p_quantity: item.quantity }).catch(() => {});
       }
       return false;
     }
+  } else {
+    reserveLocalInventory(items);
+    success = true;
   }
-  return reserveLocalInventory(items);
+  if (success) {
+    await redis.cacheDel('alleyrich:catalog:products:*');
+  }
+  return success;
 }
 
 async function releaseInventory(items) {
@@ -259,9 +267,10 @@ async function releaseInventory(items) {
         await supabase.rpc('increment_stock', { p_variant_id: item.variantId, p_quantity: item.quantity }).catch(() => {});
       }
     }
-    return;
+  } else {
+    releaseLocalInventory(items);
   }
-  return releaseLocalInventory(items);
+  await redis.cacheDel('alleyrich:catalog:products:*');
 }
 
 function parseRawBody(req, maxBytes = 1024 * 1024) {
@@ -1586,8 +1595,12 @@ Provide an elegant, helpful, and concise response in markdown.`;
 }
 
 async function handleGetSingleProduct(req, res, idOrHandle) {
-  const products = await getAllProducts();
   const queryStr = decodeURIComponent(idOrHandle).trim().toLowerCase();
+  const cacheKey = `alleyrich:catalog:products:handle:${queryStr}`;
+  const cached = await redis.cacheGet(cacheKey);
+  if (cached) return sendJson(res, 200, cached);
+
+  const products = await getAllProducts();
   const product = products.find(p =>
     String(p.id).toLowerCase() === queryStr ||
     (p.handle && p.handle.toLowerCase() === queryStr)
@@ -1597,7 +1610,9 @@ async function handleGetSingleProduct(req, res, idOrHandle) {
     return sendJson(res, 404, { success: false, message: `Product '${idOrHandle}' not found` });
   }
 
-  return sendJson(res, 200, { success: true, product });
+  const responseData = { success: true, product };
+  await redis.cacheSet(cacheKey, responseData, 300);
+  return sendJson(res, 200, responseData);
 }
 
 async function handleGetSingleOrder(req, res, orderId) {
@@ -1628,12 +1643,11 @@ async function handleGetSingleOrder(req, res, orderId) {
 
 async function handleGetProducts(req, res, parsedUrl) {
   const clientIp = security.getClientIp(req);
-  const searchLimit = security.checkRateLimit(`product_search:${clientIp}`, 600, 60);
+  const searchLimit = await redis.checkRateLimit(`product_search:${clientIp}`, 600, 60);
   if (!searchLimit.allowed) {
     return sendJson(res, 429, { success: false, message: 'Too many catalog requests. Please wait a moment.' }, { 'Retry-After': String(searchLimit.resetAfterSeconds) });
   }
 
-  const products = await getAllProducts();
   const rawQuery = parsedUrl.searchParams.get('search') || parsedUrl.searchParams.get('q') || '';
   const query = rawQuery.slice(0, 80).toLowerCase().trim();
   const collection = parsedUrl.searchParams.get('collection');
@@ -1641,6 +1655,14 @@ async function handleGetProducts(req, res, parsedUrl) {
   const stock = parsedUrl.searchParams.get('stock');
   const homepage_section = parsedUrl.searchParams.get('homepage_section');
   const sort = parsedUrl.searchParams.get('sort');
+
+  const isDefaultQuery = !query && !collection && !category && !stock && !homepage_section && !sort;
+  if (isDefaultQuery) {
+    const cached = await redis.cacheGet('alleyrich:catalog:products:all');
+    if (cached) return sendJson(res, 200, cached);
+  }
+
+  const products = await getAllProducts();
 
   let filtered = products;
   if (query) {
@@ -1676,11 +1698,16 @@ async function handleGetProducts(req, res, parsedUrl) {
     else if (sort === 'newest') filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   }
 
-  return sendJson(res, 200, {
+  const responseData = {
     success: true,
     count: filtered.length,
     products: filtered
-  });
+  };
+  if (isDefaultQuery) {
+    await redis.cacheSet('alleyrich:catalog:products:all', responseData, 300);
+  }
+
+  return sendJson(res, 200, responseData);
 }
 
 async function handleCreateProduct(req, res) {
@@ -1784,6 +1811,7 @@ async function handleCreateProduct(req, res) {
   memoryProducts = products;
   memoryProductsLastFetch = Date.now();
   writeJsonFile('products.json', { products });
+  await redis.cacheDel('alleyrich:catalog:products:*');
 
   return sendJson(res, 201, { success: true, product: newProduct });
 }
@@ -1883,6 +1911,7 @@ async function handleUpdateProduct(req, res, id) {
   writeJsonFile('products.json', { products });
   await syncProductToSupabase(current);
   memoryProductsLastFetch = Date.now();
+  await redis.cacheDel('alleyrich:catalog:products:*');
 
   return sendJson(res, 200, { success: true, product: current });
 }
@@ -1906,6 +1935,7 @@ async function handleDeleteProduct(req, res, id) {
 
   await deleteProductFromSupabase(toDelete.id, toDelete.handle);
   memoryProductsLastFetch = Date.now();
+  await redis.cacheDel('alleyrich:catalog:products:*');
 
   return sendJson(res, 200, { success: true, message: 'Product deleted' });
 }
@@ -1933,7 +1963,7 @@ async function handleGetOrders(req, res, parsedUrl) {
 
   // Rate limit customer order lookups (30 req/min)
   const clientIp = security.getClientIp(req);
-  const lookupLimit = security.checkRateLimit(`order_lookup:${clientIp}`, 30, 60);
+  const lookupLimit = await redis.checkRateLimit(`order_lookup:${clientIp}`, 30, 60);
   if (!lookupLimit.allowed) {
     return sendJson(res, 429, { success: false, message: 'Too many order lookups. Please wait a minute.' }, { 'Retry-After': String(lookupLimit.resetAfterSeconds) });
   }
@@ -2055,7 +2085,7 @@ async function verifyCashfreeOrder(order) {
 
 async function handleCreateOrder(req, res, isCheckout = false) {
   const clientIp = security.getClientIp(req);
-  const createLimit = security.checkRateLimit(`order_create:${clientIp}`, 10, 300);
+  const createLimit = await redis.checkRateLimit(`order_create:${clientIp}`, 10, 300);
   if (!createLimit.allowed) {
     return sendJson(res, 429, { success: false, message: 'Too many order submissions. Please wait a few minutes before trying again.' }, { 'Retry-After': String(createLimit.resetAfterSeconds) });
   }
@@ -2332,6 +2362,21 @@ async function handleDelhiveryAwb(req, res, id) {
   const order = orders.find(o => String(o.id) === String(id));
   if (!order) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
+  }
+
+  // ── Idempotency guard: if already dispatched, return existing waybill ──────
+  if (order.delhiveryWaybill || order.trackingNumber) {
+    const existingAwb = order.delhiveryWaybill || order.trackingNumber;
+    return sendJson(res, 200, {
+      success: true,
+      idempotent: true,
+      awb: existingAwb,
+      waybill: existingAwb,
+      trackingUrl: order.trackingUrl || `https://www.delhivery.com/track/package/${existingAwb}`,
+      shippingLabelUrl: order.shippingLabelUrl || delhivery.getPackingSlipUrl(existingAwb),
+      message: `Waybill ${existingAwb} already assigned for this order. Returning existing waybill (idempotent).`,
+      order,
+    });
   }
 
   let delhiveryAwb = '';
@@ -2664,18 +2709,20 @@ async function handleShippingLabel(req, res, id) {
     return sendJson(res, 404, { success: false, message: 'AWB tracking number not generated for this order yet' });
   }
 
-  try {
-    const pdfUrl = await delhivery.getPackingSlipPdfUrl(waybill);
-    if (pdfUrl && pdfUrl.startsWith('http')) {
-      // 302 redirect directly to Delhivery's pre-signed Amazon S3 PDF sticker
-      res.writeHead(302, {
-        'Location': pdfUrl,
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
-      });
-      return res.end();
+  if (process.env.ALLOW_SYNTHETIC_AWB !== 'true') {
+    try {
+      const pdfUrl = await delhivery.getPackingSlipPdfUrl(waybill);
+      if (pdfUrl && pdfUrl.startsWith('http')) {
+        // 302 redirect directly to Delhivery's pre-signed Amazon S3 PDF sticker
+        res.writeHead(302, {
+          'Location': pdfUrl,
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        });
+        return res.end();
+      }
+    } catch (err) {
+      console.warn(`Delhivery live packing slip note for ${waybill}:`, err.message);
     }
-  } catch (err) {
-    console.warn(`Delhivery live packing slip note for ${waybill}:`, err.message);
   }
 
   if (!order) {
@@ -2778,7 +2825,8 @@ async function handleCashfreeWebhook(req, res) {
   }
 
   const eventId = String(req.headers['x-idempotency-key'] || event.event_id || hashSecret(rawBody.toString('utf8')));
-  if (cashfreeWebhookEvents.has(eventId)) return sendJson(res, 200, { success: true, duplicate: true });
+  const isNew = await redis.checkWebhookIdempotency(eventId, 86400);
+  if (!isNew || cashfreeWebhookEvents.has(eventId)) return sendJson(res, 200, { success: true, duplicate: true });
   cashfreeWebhookEvents.set(eventId, Date.now());
 
   const data = event.data || {};
@@ -2977,8 +3025,8 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   // Keep-Alive & Health Check (Vercel + Supabase Never-Sleep)
   // -------------------------------------------------------------
-  if (pathname === '/api/health' || pathname === '/api/ping') {
-    const healthLimit = security.checkRateLimit(`health:${security.getClientIp(req)}`, 30, 60);
+  if (pathname === '/api/health' || pathname === '/api/ping' || pathname === '/health') {
+    const healthLimit = await redis.checkRateLimit(`health:${security.getClientIp(req)}`, 30, 60);
     if (!healthLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many health checks.' }, { 'Retry-After': String(healthLimit.resetAfterSeconds) });
     let supabaseStatus = 'disconnected';
     if (supabase.isConfigured) {
@@ -2998,6 +3046,7 @@ async function appHandler(req, res) {
       status: 'ok',
       service: 'SD-garments',
       supabase: supabaseStatus,
+      redis: redis.isRedisAvailable() ? 'connected' : 'fallback',
       uptimeSeconds: Math.floor(process.uptime()),
       timestamp: new Date().toISOString()
     });
@@ -3077,11 +3126,17 @@ async function appHandler(req, res) {
   // Live Public Collections & Seasonal Drops API
   if (pathname === '/api/collections' || pathname.startsWith('/api/collections/')) {
     if (req.method === 'GET') {
-      const collLimit = security.checkRateLimit(`colls:${security.getClientIp(req)}`, 240, 60);
+      const collLimit = await redis.checkRateLimit(`colls:${security.getClientIp(req)}`, 240, 60);
       if (!collLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many collection requests.' }, { 'Retry-After': String(collLimit.resetAfterSeconds) });
+
+      const query = parsedUrl.searchParams.get('search')?.toLowerCase();
+      if (!query) {
+        const cachedColls = await redis.cacheGet('alleyrich:catalog:collections:all');
+        if (cachedColls) return sendJson(res, 200, cachedColls);
+      }
+
       const cData = readJsonFile('collections.json', { collections: [] });
       const collections = cData.collections || [];
-      const query = parsedUrl.searchParams.get('search')?.toLowerCase();
       let filtered = collections;
       if (query) {
         filtered = filtered.filter(c =>
@@ -3089,14 +3144,18 @@ async function appHandler(req, res) {
           (c.handle && c.handle.toLowerCase().includes(query))
         );
       }
-      return sendJson(res, 200, { success: true, count: filtered.length, collections: filtered });
+      const responseData = { success: true, count: filtered.length, collections: filtered };
+      if (!query) {
+        await redis.cacheSet('alleyrich:catalog:collections:all', responseData, 300);
+      }
+      return sendJson(res, 200, responseData);
     }
   }
 
     // Live Public Delhivery Pincode Serviceability API
   if (pathname.startsWith('/api/shipping/pincode') || pathname === '/api/shipping/serviceability') {
     if (req.method === 'GET') {
-      const pincodeLimit = security.checkRateLimit(`pincode:${security.getClientIp(req)}`, 30, 60);
+      const pincodeLimit = await redis.checkRateLimit(`pincode:${security.getClientIp(req)}`, 30, 60);
       if (!pincodeLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many pincode checks.' }, { 'Retry-After': String(pincodeLimit.resetAfterSeconds) });
       const pinParam = pathname.startsWith('/api/shipping/pincode/') 
         ? pathname.replace('/api/shipping/pincode/', '').trim()
@@ -3165,12 +3224,12 @@ async function appHandler(req, res) {
   if (pathname === '/api/admin/login' && req.method === 'POST') {
     const clientIp = security.getClientIp(req);
     // Rate limit: max 5 failed attempts per 15 minutes by IP
-    const rateCheck = security.checkRateLimit(`admin_login:${clientIp}`, 5, 15 * 60);
+    const rateCheck = await redis.checkRateLimit(`admin_login:${clientIp}`, 5, 15 * 60);
     if (!rateCheck.allowed) {
       return sendJson(res, 429, {
         success: false,
         message: `Security Lockout: Too many failed attempts. Try again in ${rateCheck.resetAfterSeconds} seconds.`
-      });
+      }, { 'Retry-After': String(rateCheck.resetAfterSeconds) });
     }
 
     const payload = await parseBody(req);
@@ -3212,6 +3271,7 @@ async function appHandler(req, res) {
 
     // Both password and 2FA verified! Create 12-hour session
     const session = security.createAdminSession(username);
+    await redis.setAdminSession(session.token, { username, createdAt: Date.now() }, 43200);
     return sendJson(res, 200, {
       success: true,
       token: session.token,
@@ -3223,6 +3283,7 @@ async function appHandler(req, res) {
   if (pathname === '/api/admin/logout' && req.method === 'POST') {
     const token = req.headers['x-admin-token'] || req.headers['x-admin-key'] || '';
     security.revokeAdminSession(token);
+    await redis.delAdminSession(token);
     return sendJson(res, 200, { success: true, message: 'Logged out successfully.' });
   }
 
@@ -3238,7 +3299,7 @@ async function appHandler(req, res) {
 
     // 2. Enforce Admin API Rate Limit (120 req/min)
     const adminIp = security.getClientIp(req);
-    const adminLimit = security.checkRateLimit(`admin_api:${adminIp}`, 120, 60);
+    const adminLimit = await redis.checkRateLimit(`admin_api:${adminIp}`, 120, 60);
     if (!adminLimit.allowed) {
       return sendJson(res, 429, {
         success: false,
@@ -3341,6 +3402,7 @@ async function appHandler(req, res) {
         };
         collections.unshift(newCollection);
         writeJsonFile('collections.json', { collections });
+        await redis.cacheDel('alleyrich:catalog:collections:*');
         return sendJson(res, 201, { success: true, collection: newCollection });
       }
 
@@ -3359,6 +3421,7 @@ async function appHandler(req, res) {
         col.updated_at = new Date().toISOString();
 
         writeJsonFile('collections.json', { collections });
+        await redis.cacheDel('alleyrich:catalog:collections:*');
         return sendJson(res, 200, { success: true, collection: col });
       }
 
@@ -3370,6 +3433,7 @@ async function appHandler(req, res) {
           return sendJson(res, 404, { success: false, message: 'Collection not found' });
         }
         writeJsonFile('collections.json', { collections: filtered });
+        await redis.cacheDel('alleyrich:catalog:collections:*');
         return sendJson(res, 200, { success: true, message: 'Collection deleted' });
       }
     }
@@ -3988,7 +4052,7 @@ async function appHandler(req, res) {
 
     // POST /api/auth/signup
     if (authRoute === 'signup' && req.method === 'POST') {
-      const signupLimit = security.checkRateLimit(`signup:${security.getClientIp(req)}`, 5, 3600);
+      const signupLimit = await redis.checkRateLimit(`signup:${security.getClientIp(req)}`, 5, 3600);
       if (!signupLimit.allowed) return sendJson(res, 429, { success: false, message: 'Too many registration attempts. Please try again later.' }, { 'Retry-After': String(signupLimit.resetAfterSeconds) });
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
@@ -4100,7 +4164,7 @@ async function appHandler(req, res) {
     // POST /api/auth/login
     if (authRoute === 'login' && req.method === 'POST') {
       const clientIp = security.getClientIp(req);
-      const loginLimit = security.checkRateLimit(`login_ip:${clientIp}`, 10, 300);
+      const loginLimit = await redis.checkRateLimit(`login_ip:${clientIp}`, 10, 300);
       if (!loginLimit.allowed) {
         return sendJson(res, 429, {
           success: false,
@@ -4260,7 +4324,9 @@ async function appHandler(req, res) {
 
       // 1. Enforce strict OTP dispatch cooldown & rate limits (60s cooldown, max 5/hr per email, max 15/hr per IP)
       const clientIp = security.getClientIp(req);
-      const cooldownCheck = security.checkOtpSendCooldown(email, clientIp);
+      const cooldownCheck = (typeof security.checkOtpSendCooldownAsync === 'function')
+        ? (await security.checkOtpSendCooldownAsync(email, clientIp))
+        : security.checkOtpSendCooldown(email, clientIp);
       if (!cooldownCheck.allowed) {
         return sendJson(res, 429, { success: false, message: cooldownCheck.message }, { 'Retry-After': String(cooldownCheck.retryAfterSeconds || 60) });
       }
@@ -4273,6 +4339,7 @@ async function appHandler(req, res) {
         expiresAt,
         attempts: 0
       });
+      await redis.cacheSet(`otp:${email}`, { code: otpCode, expiresAt, attempts: 0 }, 600);
 
       // Record dispatch timestamp to enforce cooldown
       security.recordOtpSent(email);
@@ -4379,6 +4446,7 @@ async function appHandler(req, res) {
 
         // Cleanup verified OTP so it cannot be reused
         otpCache.delete(email);
+        await redis.cacheDel(`otp:${email}`);
         if (db && db.events && typeof db.events.deleteOtp === 'function') {
           await db.events.deleteOtp(email).catch(() => {});
         }
@@ -4503,6 +4571,8 @@ async function appHandler(req, res) {
       const attemptRes = security.recordOtpVerifyAttempt(email, clientIp, false);
       if (attemptRes.lockedOut) {
         otpCache.delete(email);
+        await redis.cacheDel(`otp:${email}`);
+        await redis.cacheSet(`otp_fail:${email}`, 5, 900);
         if (db && db.events && typeof db.events.deleteOtp === 'function') {
           await db.events.deleteOtp(email).catch(() => {});
         }
@@ -4818,7 +4888,7 @@ async function appHandler(req, res) {
     // POST /api/checkout/verify-payment
     if (checkoutRoute === 'verify-payment' && req.method === 'POST') {
       const clientIp = security.getClientIp(req);
-      const payVerifyLimit = security.checkRateLimit(`pay_verify:${clientIp}`, 10, 600);
+      const payVerifyLimit = await redis.checkRateLimit(`pay_verify:${clientIp}`, 10, 600);
       if (!payVerifyLimit.allowed) {
         return sendJson(res, 429, { success: false, message: 'Too many payment verification requests. Please wait.' }, { 'Retry-After': String(payVerifyLimit.resetAfterSeconds) });
       }
@@ -4870,7 +4940,7 @@ async function appHandler(req, res) {
   if (pathname === '/api/newsletter' || pathname === '/api/subscribers') {
     if (req.method === 'POST') {
       const clientIp = security.getClientIp(req);
-      const nlLimit = security.checkRateLimit(`newsletter:${clientIp}`, 5, 600);
+      const nlLimit = await redis.checkRateLimit(`newsletter:${clientIp}`, 5, 600);
       if (!nlLimit.allowed) {
         return sendJson(res, 429, {
           success: false,
@@ -5236,6 +5306,10 @@ async function appHandler(req, res) {
       const cart = Array.isArray(payload.cart) ? payload.cart.slice(0, 100) : [];
 
       const lookupId = userId || email;
+      await redis.setUserCart(lookupId, cart, 2592000);
+      if (email && email !== lookupId) {
+        await redis.setUserCart(email, cart, 2592000);
+      }
 
       // Update local customers.json
       let customers = readJsonFile('customers.json', []);
@@ -5273,18 +5347,27 @@ async function appHandler(req, res) {
       const email = identity.email;
 
       const lookupId = userId || email;
-      let cart = [];
-      let customers = readJsonFile('customers.json', []);
-      const cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email.toLowerCase()));
-      if (cust && Array.isArray(cust.cart)) cart = cust.cart;
+      let cart = await redis.getUserCart(lookupId);
+      if (!cart && email) {
+        cart = await redis.getUserCart(email);
+      }
+      if (!cart) {
+        cart = [];
+        let customers = readJsonFile('customers.json', []);
+        const cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email.toLowerCase()));
+        if (cust && Array.isArray(cust.cart)) cart = cust.cart;
 
-      if (supabase.isConfigured) {
-        try {
-          const supaProfile = await supabase.profiles.getByEmail(email || lookupId) || await supabase.profiles.get(lookupId, email);
-          if (supaProfile && Array.isArray(supaProfile.cart) && supaProfile.cart.length > 0) {
-            cart = supaProfile.cart;
-          }
-        } catch (e) {}
+        if (supabase.isConfigured) {
+          try {
+            const supaProfile = await supabase.profiles.getByEmail(email || lookupId) || await supabase.profiles.get(lookupId, email);
+            if (supaProfile && Array.isArray(supaProfile.cart) && supaProfile.cart.length > 0) {
+              cart = supaProfile.cart;
+            }
+          } catch (e) {}
+        }
+        if (cart.length > 0) {
+          await redis.setUserCart(lookupId, cart, 2592000);
+        }
       }
 
       return sendJson(res, 200, { success: true, count: cart.length, cart });
