@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 // Load environment variables from .env and .env.local if present
 ['.env', '.env.local'].forEach(file => {
@@ -58,6 +59,56 @@ let orderMutationQueue = Promise.resolve();
 const FREE_SHIPPING_THRESHOLD = 1999;
 const DEFAULT_SHIPPING_FEE = Number.isFinite(Number(process.env.SHIPPING_FEE_INR)) ? Math.max(0, Number(process.env.SHIPPING_FEE_INR)) : 99;
 const CASHFREE_API_VERSION = '2023-08-01';
+
+// High-speed in-memory cache for static HTML templates (sub-millisecond RAM delivery)
+const staticHtmlCache = new Map();
+
+function serveCachedHtml(req, res, filePath) {
+  let cached = staticHtmlCache.get(filePath);
+  if (!cached) {
+    if (fs.existsSync(filePath)) {
+      const buffer = fs.readFileSync(filePath);
+      const gzipped = zlib.gzipSync(buffer);
+      const etag = '"' + crypto.createHash('md5').update(buffer).digest('hex') + '"';
+      cached = {
+        raw: buffer,
+        gzipped: gzipped,
+        etag: etag
+      };
+      staticHtmlCache.set(filePath, cached);
+    }
+  }
+  if (!cached) {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    return res.end('Page Not Found');
+  }
+
+  if (req && req.headers && req.headers['if-none-match'] === cached.etag) {
+    res.writeHead(304, { 'ETag': cached.etag, 'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400' });
+    return res.end();
+  }
+
+  const acceptEncoding = (req && req.headers) ? String(req.headers['accept-encoding'] || '') : '';
+  if (acceptEncoding.includes('gzip')) {
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Content-Encoding': 'gzip',
+      'Content-Length': cached.gzipped.length,
+      'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400',
+      'Vary': 'Accept-Encoding',
+      'ETag': cached.etag
+    });
+    return res.end(cached.gzipped);
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Content-Length': cached.raw.length,
+    'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400',
+    'ETag': cached.etag
+  });
+  return res.end(cached.raw);
+}
 
 function getConfiguredOrigin(req) {
   const configured = String(process.env.APP_ORIGIN || 'https://alleyrich.com').replace(/\/$/, '');
@@ -595,20 +646,48 @@ function parseBody(req) {
   });
 }
 
-function sendJson(res, statusCode, data, extraHeaders = {}) {
+function sendJson(res, statusCode, data, extraHeaders = {}, req = null) {
   if (res.headersSent) {
-    try {
-      res.end(JSON.stringify(data));
-    } catch (e) {}
+    try { res.end(typeof data === 'string' ? data : JSON.stringify(data)); } catch (e) {}
     return;
   }
+  const jsonStr = typeof data === 'string' ? data : JSON.stringify(data);
+  const acceptEncoding = req ? String(req.headers['accept-encoding'] || '') : '';
+
+  if (jsonStr.length > 2048 && acceptEncoding.includes('gzip')) {
+    zlib.gzip(Buffer.from(jsonStr), (err, gzipped) => {
+      if (!err && gzipped) {
+        res.writeHead(statusCode, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Encoding': 'gzip',
+          'Content-Length': gzipped.length,
+          'Vary': 'Accept-Encoding',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token',
+          ...extraHeaders
+        });
+        return res.end(gzipped);
+      }
+      res.writeHead(statusCode, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': Buffer.byteLength(jsonStr),
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token',
+        ...extraHeaders
+      });
+      res.end(jsonStr);
+    });
+    return;
+  }
+
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': Buffer.byteLength(jsonStr),
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token',
     ...extraHeaders
   });
-  res.end(JSON.stringify(data));
+  res.end(jsonStr);
 }
 
 // =============================================================
@@ -3086,13 +3165,7 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html' ||
       pathname === '/allyrich-hq' || pathname === '/allyrich-hq/' || pathname === '/allyrich-hq.html') {
-    const adminPath = path.join(PUBLIC_DIR, 'admin.html');
-    if (fs.existsSync(adminPath)) {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8'
-      });
-      return fs.createReadStream(adminPath).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'admin.html'));
   }
 
   // -------------------------------------------------------------
@@ -3101,7 +3174,7 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   if (pathname === '/data/products.json') {
     const products = await getAllProducts();
-    return sendJson(res, 200, { products });
+    return sendJson(res, 200, { products }, {}, req);
   }
 
   if (pathname === '/data/orders.json') {
@@ -5401,71 +5474,41 @@ async function appHandler(req, res) {
   }
 
   // -------------------------------------------------------------
-  // Storefront Static Pages
+  // Storefront Static Pages (Sub-millisecond in-memory delivery)
   // -------------------------------------------------------------
   // Serve Homepage
   if (pathname === '/' || pathname === '/index.html') {
-    const indexPath = path.join(PUBLIC_DIR, 'index.html');
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    return fs.createReadStream(indexPath).pipe(res);
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'index.html'));
   }
 
   // Serve Checkout Page
   if (pathname === '/checkout' || pathname === '/checkout/' || pathname === '/checkout.html') {
-    const chkPath = path.join(PUBLIC_DIR, 'checkout.html');
-    if (fs.existsSync(chkPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return fs.createReadStream(chkPath).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'checkout.html'));
   }
 
   // Serve Customer Account Page
   if (pathname === '/account' || pathname === '/account/' || pathname === '/account.html') {
-    const accPath = path.join(PUBLIC_DIR, 'account.html');
-    if (fs.existsSync(accPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return fs.createReadStream(accPath).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'account.html'));
   }
 
   // Serve Customer Login Page
   if (pathname === '/login' || pathname === '/login/' || pathname === '/login.html') {
-    const loginPath = path.join(PUBLIC_DIR, 'login.html');
-    if (fs.existsSync(loginPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return fs.createReadStream(loginPath).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'login.html'));
   }
 
   // Serve Order Success Page
   if (pathname === '/order-success' || pathname === '/order-success/' || pathname === '/order-success.html') {
-    const succPath = path.join(PUBLIC_DIR, 'order-success.html');
-    if (fs.existsSync(succPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return fs.createReadStream(succPath).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'order-success.html'));
   }
 
   // Serve Collections Page for ANY collection / category URL
   if (pathname.startsWith('/collections')) {
-    const colPath = path.join(PUBLIC_DIR, 'collections.html');
-    if (fs.existsSync(colPath)) {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8'
-      });
-      return fs.createReadStream(colPath).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'collections.html'));
   }
 
   // Serve Search Route (HTML search results via collections.html engine)
   if (pathname === '/search' || pathname === '/search/' || pathname === '/search.html') {
-    const searchPage = path.join(PUBLIC_DIR, 'collections.html');
-    if (fs.existsSync(searchPage)) {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8'
-      });
-      return fs.createReadStream(searchPage).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'collections.html'));
   }
 
   // Handle /cart Route (Redirect to collections with openCart drawer)
@@ -5523,36 +5566,18 @@ async function appHandler(req, res) {
   const normPolicyPath = pathname.toLowerCase().replace(/\/+$/, '');
   if (policyMap[normPolicyPath] || policyMap[pathname]) {
     const pageFileName = policyMap[normPolicyPath] || policyMap[pathname];
-    const pageFile = path.join(PUBLIC_DIR, 'pages', pageFileName);
-    if (fs.existsSync(pageFile)) {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8'
-      });
-      return fs.createReadStream(pageFile).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'pages', pageFileName));
   }
 
   if (pathname.startsWith('/pages/')) {
     let pName = pathname.replace('/pages/', '').split('?')[0];
     if (!pName.endsWith('.html')) pName += '.html';
-    const pageFile = path.join(PUBLIC_DIR, 'pages', pName);
-    if (fs.existsSync(pageFile)) {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8'
-      });
-      return fs.createReadStream(pageFile).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'pages', pName));
   }
 
   // Serve Single Product Page
   if (pathname.startsWith('/products/')) {
-    const prodPath = path.join(PUBLIC_DIR, 'product.html');
-    if (fs.existsSync(prodPath)) {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8'
-      });
-      return fs.createReadStream(prodPath).pipe(res);
-    }
+    return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'product.html'));
   }
 
   // Handle Video files with HTTP 206 Range support
@@ -5655,17 +5680,34 @@ server.keepAliveTimeout = 65000; // 65s keep-alive window for AWS ALB / CloudFro
 server.headersTimeout = 66000;
 server.maxRequestsPerSocket = 0; // High-throughput socket re-use without premature resets
 
+const cluster = require('cluster');
+const os = require('os');
+
 if (!process.env.VERCEL && require.main === module) {
-  server.listen(PORT, () => {
-    console.log(`\n==================================================`);
-    console.log(`🔥 ALLEYRICH Production Server Running!`);
-    console.log(`📍 Storefront: http://localhost:${PORT}`);
-    console.log(`⚡ Admin Portal: http://localhost:${PORT}/allyrich-hq (or /admin on localhost)`);
-    console.log(`🎥 6 High-Definition Videos Ready & Streaming Locally`);
-    console.log(`==================================================\n`);
-  });
+  const numCPUs = (os.cpus() || []).length || 1;
+  const isClusterMode = process.env.NODE_ENV === 'production' && numCPUs > 1 && process.env.DISABLE_CLUSTER !== 'true';
+
+  if (isClusterMode && cluster.isPrimary) {
+    console.log('\n==================================================');
+    console.log('🚀 ALLEYRICH Multi-Core Cluster Active!');
+    console.log('⚡ Master PID: ' + process.pid + ' - Spawning ' + numCPUs + ' Workers across CPU cores');
+    console.log('==================================================\n');
+    for (let i = 0; i < numCPUs; i++) cluster.fork();
+    cluster.on('exit', (w, code, signal) => {
+      console.warn('Worker ' + w.process.pid + ' exited (' + (signal || code) + '). Spawning replacement...');
+      cluster.fork();
+    });
+  } else {
+    server.listen(PORT, () => {
+      console.log('\n==================================================');
+      console.log('🔥 ALLEYRICH Production Server Running! [PID: ' + process.pid + ']');
+      console.log('📍 Storefront: http://localhost:' + PORT);
+      console.log('⚡ Admin Portal: http://localhost:' + PORT + '/allyrich-hq (or /admin on localhost)');
+      console.log('🎥 6 High-Definition Videos Ready & Streaming Locally');
+      console.log('==================================================\n');
+    });
+  }
 }
 
 module.exports = appHandler;
 module.exports.server = server;
-
