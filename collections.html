@@ -1385,8 +1385,8 @@
               <a href="/collections/girls-hoodies" class="nav-dropdown-link">Hoodies & Sweatshirts</a>
             </div>
             <div class="nav-mega-col">
-              <div class="nav-mega-col-title">BABY CLOTHING (0–2Y)</div>
-              <a href="/collections/baby-clothing" class="nav-dropdown-link" style="font-weight:800; color:#fff;">All Baby Wear</a>
+              <div class="nav-mega-col-title">NEW BORN</div>
+              <a href="/collections/baby-clothing" class="nav-dropdown-link" style="font-weight:800; color:#fff;">All New Born</a>
               <a href="/collections/baby-rompers" class="nav-dropdown-link">Rompers</a>
               <a href="/collections/baby-jumpsuits" class="nav-dropdown-link">Jumpsuits</a>
               <a href="/collections/newborn-baby-clothes" class="nav-dropdown-link">Newborn Baby Clothes</a>
@@ -1525,8 +1525,8 @@
           <a href="/collections/girls-party-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">Party Wear</a>
           <a href="/collections/girls-winter-wear" onclick="CollectionEngine.toggleMobileDrawer(false)">Winter Wear</a>
 
-          <div class="mobile-subgroup-title">BABY CLOTHING (0–2Y)</div>
-          <a href="/collections/baby-clothing" onclick="CollectionEngine.toggleMobileDrawer(false)">All Baby Clothing</a>
+          <div class="mobile-subgroup-title">NEW BORN</div>
+          <a href="/collections/baby-clothing" onclick="CollectionEngine.toggleMobileDrawer(false)">All New Born</a>
           <a href="/collections/baby-rompers" onclick="CollectionEngine.toggleMobileDrawer(false)">Rompers & Jumpsuits</a>
           <a href="/collections/newborn-baby-clothes" onclick="CollectionEngine.toggleMobileDrawer(false)">Newborn Clothes</a>
           <a href="/collections/baby-clothing-sets" onclick="CollectionEngine.toggleMobileDrawer(false)">Clothing Sets</a>
@@ -1911,7 +1911,7 @@
       "girls-hoodies": "GIRLS' HOODIES",
       "girls-sweatshirts": "GIRLS' SWEATSHIRTS",
       "girls-winter-coord-sets": "GIRLS' WINTER CO-ORD SETS",
-      "baby-clothing": "BABY CLOTHING (0–2 YEARS)",
+      "baby-clothing": "NEW BORN",
       "baby-rompers": "ROMPERS",
       "baby-jumpsuits": "BABY JUMPSUITS",
       "newborn-baby-clothes": "NEWBORN BABY CLOTHES",
@@ -2250,7 +2250,7 @@
             { cat: 'kids-wear', label: 'All Kids Wear', href: '/collections/kids-wear' },
             { cat: 'boys-clothing', label: 'Boys\' Clothing', href: '/collections/boys-clothing' },
             { cat: 'girls-clothing', label: 'Girls\' Clothing', href: '/collections/girls-clothing' },
-            { cat: 'baby-clothing', label: 'Baby (0–2Y)', href: '/collections/baby-clothing' }
+            { cat: 'baby-clothing', label: 'New Born', href: '/collections/baby-clothing' }
           ];
         }
 
@@ -2601,9 +2601,9 @@
           return (pCat.includes("girls") || pTitle.includes("girl")) && (pFit.includes("winter co-ord") || (pTitle.includes("winter") && pTitle.includes("co-ord")));
         }
 
-        // Baby Clothing (0–2 Years) / Newborn
+        // New Born / Baby Clothing
         if (handle === 'baby-clothing' || handle === 'babytee') {
-          return pCat.includes("baby") || pDept.includes("baby") || pTitle.includes("baby");
+          return pCat.includes("new born") || pCat.includes("baby") || pDept.includes("baby") || pTitle.includes("baby");
         }
         if (handle === 'baby-rompers') {
           return (pCat.includes("baby") || pDept.includes("baby")) && (pSub.includes("romper") || pTitle.includes("romper") || pFit.includes("romper"));

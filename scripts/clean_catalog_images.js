@@ -46,7 +46,7 @@ const CATEGORY_FALLBACKS = {
     'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=900&q=80',
     'https://images.unsplash.com/photo-1502781252888-9143ba7f074e?auto=format&fit=crop&w=900&q=80'
   ],
-  'Baby Clothing (0–2 Years)': [
+  'New Born': [
     'https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=900&q=80',
     'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80'
   ],

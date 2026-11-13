@@ -827,11 +827,11 @@
     },
     {
       "id": 23000,
-      "title": "BABY CLOTHING (0–2 YEARS)",
+      "title": "NEW BORN",
       "handle": "baby-clothing",
       "description": "Feather-soft, chemical-free organic cotton essentials for newborns and infants.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "image": {
         "src": "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"
       },
@@ -843,7 +843,7 @@
       "handle": "baby-rompers",
       "description": "Snap-button organic cotton one-piece rompers for effortless dressing.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "item": "Rompers",
       "image": {
         "src": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80"
@@ -856,7 +856,7 @@
       "handle": "baby-jumpsuits",
       "description": "Cozy full-coverage footie jumpsuits and sleepsuits.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "item": "Jumpsuits",
       "image": {
         "src": "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80"
@@ -869,7 +869,7 @@
       "handle": "newborn-baby-clothes",
       "description": "Ultra-gentle jhablas, wrap-around mittens, and newborn welcome sets.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "item": "Newborn Baby Clothes",
       "image": {
         "src": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80"
@@ -882,7 +882,7 @@
       "handle": "baby-clothing-sets",
       "description": "Complete 5-piece and 7-piece gifting and daily wear infant sets.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "item": "Baby Clothing Sets",
       "image": {
         "src": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80"
@@ -895,7 +895,7 @@
       "handle": "baby-coord-sets",
       "description": "Adorable printed cotton top and bloomer/pajama pairs.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "item": "Baby Co-ord Sets",
       "image": {
         "src": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
@@ -908,7 +908,7 @@
       "handle": "baby-frocks",
       "description": "Hypoallergenic soft layered frocks designed for infant celebrations.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "item": "Baby Frocks",
       "image": {
         "src": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80"
@@ -921,7 +921,7 @@
       "handle": "baby-dresses",
       "description": "Gentle christening and celebration dresses for baby girls.",
       "department": "Kids Wear",
-      "category": "Baby Clothing (0–2 Years)",
+      "category": "New Born",
       "item": "Baby Dresses",
       "image": {
         "src": "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=900&q=80"
