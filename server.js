@@ -616,11 +616,13 @@ function sendJson(res, statusCode, data, extraHeaders = {}) {
 // =============================================================
 let memoryProducts = null;
 let memoryProductsLastFetch = 0;
-const PRODUCTS_CACHE_TTL_MS = 3000;
+const PRODUCTS_CACHE_TTL_MS = 60000; // 60 seconds (sub-millisecond serving from RAM, invalidated on admin edit)
+let inFlightProductsPromise = null;
 
 let memoryOrders = null;
 let memoryOrdersLastFetch = 0;
-const ORDERS_CACHE_TTL_MS = 2000;
+const ORDERS_CACHE_TTL_MS = 5000;
+let inFlightOrdersPromise = null;
 let lastAwsDbErrorTime = 0;
 const AWS_DB_ERROR_COOLDOWN_MS = 30000;
 
@@ -698,53 +700,65 @@ async function getAllProducts() {
   if (memoryProducts && (now - memoryProductsLastFetch < PRODUCTS_CACHE_TTL_MS)) {
     return memoryProducts;
   }
+  // Anti-stampede: coalesce concurrent cold fetches into one single in-flight promise
+  if (inFlightProductsPromise) {
+    return await inFlightProductsPromise;
+  }
 
-  if (db && db.isConfigured && (now - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
+  inFlightProductsPromise = (async () => {
     try {
-      const awsProducts = await db.products.getAll();
-      if (Array.isArray(awsProducts) && awsProducts.length > 0) {
-        const localList = getMemoryProducts();
-        let fullList = awsProducts;
-        if (localList && localList.length > awsProducts.length) {
-          const existingHandles = new Set(awsProducts.map(p => p.handle));
-          const merged = [...awsProducts];
-          for (const lp of localList) {
-            if (!existingHandles.has(lp.handle)) {
-              merged.push(lp);
+      if (db && db.isConfigured && (Date.now() - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
+        try {
+          const awsProducts = await db.products.getAll();
+          if (Array.isArray(awsProducts) && awsProducts.length > 0) {
+            const localList = getMemoryProducts();
+            let fullList = awsProducts;
+            if (localList && localList.length > awsProducts.length) {
+              const existingHandles = new Set(awsProducts.map(p => p.handle));
+              const merged = [...awsProducts];
+              for (const lp of localList) {
+                if (!existingHandles.has(lp.handle)) {
+                  merged.push(lp);
+                }
+              }
+              fullList = merged;
             }
+            const filtered = filterOutGiftCards(fullList);
+            memoryProducts = filtered;
+            memoryProductsLastFetch = Date.now();
+            return filtered;
           }
-          fullList = merged;
+        } catch (err) {
+          lastAwsDbErrorTime = Date.now();
+          console.warn('AWS RDS products fetch warning (cooldown 30s):', err.message);
         }
-        const filtered = filterOutGiftCards(fullList);
-        memoryProducts = filtered;
-        memoryProductsLastFetch = Date.now();
-        return filtered;
       }
-    } catch (err) {
-      lastAwsDbErrorTime = Date.now();
-      console.warn('AWS RDS products fetch warning (cooldown 30s):', err.message);
-    }
-  }
 
-  const localList = getMemoryProducts();
-  memoryProducts = localList;
-  memoryProductsLastFetch = Date.now();
-  if (!supabase.isConfigured) return localList;
-
-  try {
-    const supaProducts = await supabase.from('products').select('*,product_variants(*),product_images(*)').execute();
-    if (Array.isArray(supaProducts) && supaProducts.length > 0) {
-      const formatted = supaProducts.map(formatSupabaseProductToLocal);
-      const filtered = filterOutGiftCards(formatted);
-      memoryProducts = filtered;
+      const localList = getMemoryProducts();
+      memoryProducts = localList;
       memoryProductsLastFetch = Date.now();
-      return filtered;
-    }
-  } catch (err) {
-    console.warn('Supabase products fetch warning:', err.message);
-  }
+      if (!supabase.isConfigured) return localList;
 
-  return localList;
+      try {
+        const supaProducts = await supabase.from('products').select('*,product_variants(*),product_images(*)').execute();
+        if (Array.isArray(supaProducts) && supaProducts.length > 0) {
+          const formatted = supaProducts.map(formatSupabaseProductToLocal);
+          const filtered = filterOutGiftCards(formatted);
+          memoryProducts = filtered;
+          memoryProductsLastFetch = Date.now();
+          return filtered;
+        }
+      } catch (err) {
+        console.warn('Supabase products fetch warning:', err.message);
+      }
+
+      return localList;
+    } finally {
+      inFlightProductsPromise = null;
+    }
+  })();
+
+  return await inFlightProductsPromise;
 }
 
 function getMemoryOrders() {
@@ -792,39 +806,51 @@ async function getAllOrders() {
   if (memoryOrders && (now - memoryOrdersLastFetch < ORDERS_CACHE_TTL_MS)) {
     return memoryOrders;
   }
+  // Anti-stampede: coalesce concurrent order fetches into one single in-flight promise
+  if (inFlightOrdersPromise) {
+    return await inFlightOrdersPromise;
+  }
 
-  if (db && db.isConfigured && (now - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
+  inFlightOrdersPromise = (async () => {
     try {
-      const awsOrders = await db.orders.getAll();
-      if (Array.isArray(awsOrders)) {
-        memoryOrders = awsOrders;
-        memoryOrdersLastFetch = Date.now();
-        return awsOrders;
+      if (db && db.isConfigured && (Date.now() - lastAwsDbErrorTime > AWS_DB_ERROR_COOLDOWN_MS)) {
+        try {
+          const awsOrders = await db.orders.getAll();
+          if (Array.isArray(awsOrders)) {
+            memoryOrders = awsOrders;
+            memoryOrdersLastFetch = Date.now();
+            return awsOrders;
+          }
+        } catch (err) {
+          lastAwsDbErrorTime = Date.now();
+          console.warn('AWS RDS orders fetch warning (cooldown 30s):', err.message);
+        }
       }
-    } catch (err) {
-      lastAwsDbErrorTime = Date.now();
-      console.warn('AWS RDS orders fetch warning (cooldown 30s):', err.message);
-    }
-  }
 
-  const localOrders = getMemoryOrders();
-  memoryOrders = localOrders;
-  memoryOrdersLastFetch = Date.now();
-  if (!supabase.isConfigured) return localOrders;
-
-  try {
-    const supaOrders = await supabase.from('orders').select('*').order('created_at', { ascending: false }).execute();
-    if (Array.isArray(supaOrders)) {
-      const formatted = supaOrders.map(formatSupabaseOrderToLocal);
-      memoryOrders = formatted;
+      const localOrders = getMemoryOrders();
+      memoryOrders = localOrders;
       memoryOrdersLastFetch = Date.now();
-      return formatted;
-    }
-  } catch (err) {
-    console.warn('Supabase orders fetch warning:', err.message);
-  }
+      if (!supabase.isConfigured) return localOrders;
 
-  return localOrders;
+      try {
+        const supaOrders = await supabase.from('orders').select('*').order('created_at', { ascending: false }).execute();
+        if (Array.isArray(supaOrders)) {
+          const formatted = supaOrders.map(formatSupabaseOrderToLocal);
+          memoryOrders = formatted;
+          memoryOrdersLastFetch = Date.now();
+          return formatted;
+        }
+      } catch (err) {
+        console.warn('Supabase orders fetch warning:', err.message);
+      }
+
+      return localOrders;
+    } finally {
+      inFlightOrdersPromise = null;
+    }
+  })();
+
+  return await inFlightOrdersPromise;
 }
 
 async function syncOrderToSupabase(order) {
@@ -5625,6 +5651,9 @@ async function appHandler(req, res) {
 }
 
 const server = http.createServer(appHandler);
+server.keepAliveTimeout = 65000; // 65s keep-alive window for AWS ALB / CloudFront compatibility
+server.headersTimeout = 66000;
+server.maxRequestsPerSocket = 0; // High-throughput socket re-use without premature resets
 
 if (!process.env.VERCEL && require.main === module) {
   server.listen(PORT, () => {
