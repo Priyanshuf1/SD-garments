@@ -547,14 +547,19 @@ function writeJsonFile(filename, data) {
   const tempPath = `${p}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
   try {
     fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), { encoding: 'utf8', mode: 0o600 });
-    fs.renameSync(tempPath, p);
+    try {
+      fs.renameSync(tempPath, p);
+    } catch (renameErr) {
+      fs.copyFileSync(tempPath, p);
+      try { fs.unlinkSync(tempPath); } catch (_) {}
+    }
     if (filename === 'products.json') {
       memoryProducts = null;
       memoryProductsLastFetch = 0;
     }
     if (filename === 'orders.json') {
-      memoryOrders = null;
-      memoryOrdersLastFetch = 0;
+      memoryOrders = Array.isArray(data) ? data : null;
+      memoryOrdersLastFetch = Date.now();
     }
     return true;
   } catch (err) {
@@ -840,8 +845,8 @@ async function getAllProducts() {
   return await inFlightProductsPromise;
 }
 
-function getMemoryOrders() {
-  if (!memoryOrders) {
+function getMemoryOrders(forceReload = false) {
+  if (!memoryOrders || forceReload) {
     memoryOrders = readJsonFile('orders.json', []);
     memoryOrdersLastFetch = Date.now();
   }
@@ -906,7 +911,7 @@ async function getAllOrders() {
         }
       }
 
-      const localOrders = getMemoryOrders();
+      const localOrders = getMemoryOrders(true);
       memoryOrders = localOrders;
       memoryOrdersLastFetch = Date.now();
       if (!supabase.isConfigured) return localOrders;
@@ -1721,14 +1726,29 @@ async function handleGetSingleProduct(req, res, idOrHandle) {
 }
 
 async function handleGetSingleOrder(req, res, orderId) {
-  const orders = await getAllOrders();
+  let orders = await getAllOrders();
   const queryStr = decodeURIComponent(orderId).trim().toLowerCase();
-  const order = orders.find(o =>
+  let order = orders.find(o =>
     String(o.id).toLowerCase() === queryStr ||
     (o.supabaseId && String(o.supabaseId).toLowerCase() === queryStr) ||
     (o.trackingNumber && o.trackingNumber.toLowerCase() === queryStr) ||
     (o.delhiveryWaybill && o.delhiveryWaybill.toLowerCase() === queryStr)
   );
+
+  if (!order) {
+    const freshOrders = readJsonFile('orders.json', []);
+    order = freshOrders.find(o =>
+      String(o.id).toLowerCase() === queryStr ||
+      (o.supabaseId && String(o.supabaseId).toLowerCase() === queryStr) ||
+      (o.trackingNumber && o.trackingNumber.toLowerCase() === queryStr) ||
+      (o.delhiveryWaybill && o.delhiveryWaybill.toLowerCase() === queryStr)
+    );
+    if (order) {
+      orders = freshOrders;
+      memoryOrders = freshOrders;
+      memoryOrdersLastFetch = Date.now();
+    }
+  }
 
   if (!order) {
     return sendJson(res, 404, { success: false, message: `Order '${orderId}' not found` });
@@ -2463,8 +2483,12 @@ async function handleUpdateOrder(req, res, id) {
 }
 
 async function handleDelhiveryAwb(req, res, id) {
-  const orders = await getAllOrders();
-  const order = orders.find(o => String(o.id) === String(id));
+  let orders = await getAllOrders();
+  let order = orders.find(o => String(o.id) === String(id));
+  if (!order) {
+    orders = getMemoryOrders(true);
+    order = orders.find(o => String(o.id) === String(id));
+  }
   if (!order) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
   }
@@ -2942,8 +2966,17 @@ async function handleCashfreeWebhook(req, res) {
     return sendJson(res, 200, { success: true, processed: false });
   }
 
-  const orders = await getAllOrders();
-  const order = orders.find(candidate => String(candidate.id) === gatewayOrderId || String(candidate.cashfreeOrderId || '') === gatewayOrderId);
+  let orders = await getAllOrders();
+  let order = orders.find(candidate => String(candidate.id) === gatewayOrderId || String(candidate.cashfreeOrderId || '') === gatewayOrderId);
+  if (!order) {
+    const freshOrders = readJsonFile('orders.json', []);
+    order = freshOrders.find(candidate => String(candidate.id) === gatewayOrderId || String(candidate.cashfreeOrderId || '') === gatewayOrderId);
+    if (order) {
+      orders = freshOrders;
+      memoryOrders = freshOrders;
+      memoryOrdersLastFetch = Date.now();
+    }
+  }
   if (!order) return sendJson(res, 200, { success: true, processed: false });
   if (Math.abs(Number(payment.payment_amount || data.order?.order_amount || 0) - Number(order.total)) >= 0.01 || String(payment.payment_currency || 'INR').toUpperCase() !== 'INR') {
     return sendJson(res, 400, { success: false, message: 'Webhook amount or currency does not match the order.' });
@@ -4999,8 +5032,17 @@ async function appHandler(req, res) {
         return sendJson(res, 400, { success: false, message: 'Order ID is required' });
       }
 
-      const orders = await getAllOrders();
-      const order = orders.find(o => String(o.id) === String(orderId));
+      let orders = await getAllOrders();
+      let order = orders.find(o => String(o.id) === String(orderId));
+      if (!order) {
+        const freshOrders = readJsonFile('orders.json', []);
+        order = freshOrders.find(o => String(o.id) === String(orderId));
+        if (order) {
+          orders = freshOrders;
+          memoryOrders = freshOrders;
+          memoryOrdersLastFetch = Date.now();
+        }
+      }
       if (!order) return sendJson(res, 404, { success: false, message: 'Order not found' });
       if (!isCheckoutTokenValid(order, checkoutToken)) {
         return sendJson(res, 401, { success: false, message: 'Invalid checkout verification credential.' });

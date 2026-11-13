@@ -64,7 +64,8 @@ module.exports = defineSuite({
     // Select an item from index >= 1 (as if on a second slice/page)
     const targetProduct = products[1];
     assert.ok(targetProduct.id, 'Target product must have an ID');
-    assert.ok(Number(targetProduct.price) > 0, 'Target product must have a positive price');
+    const targetPrice = Number(targetProduct.price || (targetProduct.variants && targetProduct.variants[0]?.price) || 0);
+    assert.ok(targetPrice > 0, 'Target product must have a positive price');
 
     // 2. Validate QuickBuy contract in quick-buy.js
     const quickBuyRes = await client.get('/assets/js/quick-buy.js');
@@ -78,7 +79,7 @@ module.exports = defineSuite({
       id: String(targetProduct.id),
       handle: targetProduct.handle,
       title: targetProduct.title,
-      price: Number(targetProduct.price),
+      price: targetPrice,
       size: variant.title || 'M',
       quantity: 2,
       image: targetProduct.images && targetProduct.images[0] ? targetProduct.images[0].src : '/images/photo_1.webp'
@@ -86,7 +87,7 @@ module.exports = defineSuite({
 
     // Calculate line total and progress bar
     const lineTotal = cartItem.price * cartItem.quantity;
-    assert.strictEqual(lineTotal, Number(targetProduct.price) * 2);
+    assert.strictEqual(lineTotal, targetPrice * 2);
 
     const shippingThreshold = 1999;
     const progressPercent = Math.min(100, Math.round((lineTotal / shippingThreshold) * 100));

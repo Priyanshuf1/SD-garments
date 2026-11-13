@@ -13,6 +13,19 @@ const http = require('node:http');
 const https = require('node:https');
 const { URL } = require('node:url');
 
+let globalIpCounter = 1;
+
+/**
+ * Generate a distinct simulated IP address in documentation block 198.51.x.y
+ * to prevent unintentional cross-test rate limit starvation.
+ */
+function generateTestIp() {
+  globalIpCounter = (globalIpCounter % 60000) + 1;
+  const b = Math.floor(globalIpCounter / 250) + 1;
+  const c = (globalIpCounter % 250) + 1;
+  return `198.51.${b}.${c}`;
+}
+
 class HttpClient {
   /**
    * @param {Object} [config]
@@ -179,6 +192,18 @@ class HttpClient {
       if (cookieHeader) {
         headers['Cookie'] = cookieHeader;
       }
+    }
+
+    // Auto-inject simulated client IP header if not manually specified,
+    // ensuring isolated rate-limit buckets across test suites without cross-test starvation.
+    const hasManualIp = Object.keys(headers).some(k => {
+      const lower = k.toLowerCase();
+      return lower === 'cf-connecting-ip' || lower === 'x-forwarded-for' || lower === 'x-real-ip';
+    });
+    if (!hasManualIp) {
+      const autoIp = generateTestIp();
+      headers['cf-connecting-ip'] = autoIp;
+      headers['x-forwarded-for'] = autoIp;
     }
 
     const timeout = typeof options.timeout === 'number' ? options.timeout : this.timeoutMs;

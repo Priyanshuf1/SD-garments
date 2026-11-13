@@ -15,7 +15,7 @@
 |---|---------|-------------|-----------|--------|
 | 1 | Numbered Catalog Pagination | 24 items/page, dynamic ellipsis, URL sync `?page=X` in CollectionEngine | M1 | Survey |
 | 2 | Category Chips | Dynamic taxonomy chips, active indicator, mobile smooth auto-centering | M1 | Survey |
-| 3 | Desktop Mega-Dropdowns | 3-column + promo card grids (Men's, Party, Kids) with 220ms debounce timing | M1 | Survey |
+| 3 | Desktop Mega-Dropdowns | Multi-column + promo card grids (Men's & Kids 3-col, Party 2-col) with 220ms debounce timing | M1 | Survey |
 | 4 | Mobile Edge-to-Edge Header | Sticky `#000000`, 100vw, 28px logo, 32px touch targets, `#mobile-nav-drawer` | M1 | Survey |
 | 5 | Interactive Cart Drawer | QuickBuyEngine, qty controls, ₹1,999 free shipping meter, empty guard, cloud sync | M1 | Survey |
 | 6 | Checkout & Payment Flow | Cashfree JS SDK modal, HMAC checkoutToken verification, webhook, COD | M1 | Survey |

@@ -51,7 +51,7 @@ assert(prodHtml.includes('overflow: visible !important;'), 'product.html .site-h
 assert(colHtml.includes('position: sticky !important;'), 'collections.html subnav must be sticky on mobile');
 assert(colHtml.includes('top: var(--site-header-height'), 'collections.html subnav must align dynamically to --site-header-height');
 assert(colHtml.includes('syncHeaderHeight()'), 'collections.html must define syncHeaderHeight to prevent overlap on scroll/resize');
-assert(colHtml.includes('{ cat: \'new-arrivals\', label: \'New In\''), 'collections.html category chips taxonomy must include "New In"');
+assert(colHtml.includes('{ cat: \'new-arrivals\', label: \'New Arrivals\''), 'collections.html category chips taxonomy must include "New Arrivals"');
 assert(colHtml.includes('.category-chip.active::after'), 'collections.html category chips must have active underline');
 console.log('✅ PASS: Mobile category chips bar shifted cleanly below header (0px overlap) & desktop dropdowns visible on all subpages');
 

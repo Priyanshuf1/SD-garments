@@ -427,7 +427,9 @@ async function runChallengerStressSuite() {
 
     let readErrors = 0;
     let corruptedReads = 0;
-    const readVersions = [];
+    let v1Hits = 0;
+    let v2Hits = 0;
+    let cacheMisses = 0;
 
     console.log(`  Launching ${concurrencyReaders} concurrent reader workers (${totalReads} total reads) against live mutation...`);
 
@@ -437,10 +439,15 @@ async function runChallengerStressSuite() {
         await new Promise(r => setTimeout(r, Math.floor(Math.random() * 5)));
         try {
           const res = await redis.cacheGet(invKey);
-          if (!res || !res.version || (res.version !== 'v1' && res.version !== 'v2')) {
-            corruptedReads++;
+          if (res === null) {
+            // Clean cache miss during invalidation window (expected while purged)
+            cacheMisses++;
+          } else if (res && typeof res === 'object' && (res.version === 'v1' || res.version === 'v2')) {
+            if (res.version === 'v1') v1Hits++;
+            if (res.version === 'v2') v2Hits++;
           } else {
-            readVersions.push(res.version);
+            // Any partial or malformed payload is a genuine corruption
+            corruptedReads++;
           }
         } catch (e) {
           readErrors++;
@@ -454,6 +461,8 @@ async function runChallengerStressSuite() {
       await new Promise(r => setTimeout(r, 4));
       // Purge wildcard
       const delCount = await redis.cacheDel('alleyrich:catalog:products:*');
+      // Small pause to test cache miss window
+      await new Promise(r => setTimeout(r, 2));
       // Set updated V2 catalog
       await redis.cacheSet(invKey, v2Data, 300);
       return delCount;
@@ -465,9 +474,16 @@ async function runChallengerStressSuite() {
       adminWorker()
     ]);
 
+    console.log(`  Telemetry during concurrent invalidation:`);
+    console.log(`     - V1 Hits (pre-mutation):       ${v1Hits}`);
+    console.log(`     - Cache Misses (during purge):   ${cacheMisses}`);
+    console.log(`     - V2 Hits (post-mutation):      ${v2Hits}`);
+    console.log(`     - Corrupted Payloads:           ${corruptedReads}`);
+    console.log(`     - Exceptions / Errors:          ${readErrors}`);
+
     assert(readErrors === 0, `Zero read errors during concurrent cache invalidation (observed: ${readErrors})`);
     assert(corruptedReads === 0, `Zero corrupted payloads during concurrent cache invalidation (observed: ${corruptedReads})`);
-    assert(readVersions.length === totalReads, `All ${totalReads} concurrent reads successfully returned valid data`);
+    assert(v1Hits + cacheMisses + v2Hits === totalReads, `All ${totalReads} reads resolved cleanly (V1: ${v1Hits}, Misses: ${cacheMisses}, V2: ${v2Hits})`);
 
     // Verify all subsequent reads strictly return V2
     const finalRead = await redis.cacheGet(invKey);
@@ -502,6 +518,34 @@ async function runChallengerStressSuite() {
     assert(fbAllowed.length === fbLimit, `Fallback in-memory limiter strictly allowed exactly ${fbLimit} requests under concurrent burst (observed: ${fbAllowed.length})`);
     assert(fbRejected.length === fbBurstCount - fbLimit, `Fallback in-memory limiter rejected exactly ${fbBurstCount - fbLimit} overflow requests`);
     assert(fbRejected.every(r => r.remaining === 0 && r.resetAfterSeconds > 0), 'All fallback rejected requests return remaining === 0 and resetAfterSeconds > 0');
+
+    // =================================================================
+    // SUITE 5: WEBHOOK IDEMPOTENCY CONCURRENCY & BOUNDARY EDGE CASES
+    // =================================================================
+    console.log('\n--- SUITE 5: WEBHOOK IDEMPOTENCY CONCURRENCY & EDGE CASES ---');
+
+    // 5.1 Test in-memory fallback idempotency under concurrent race condition
+    const eventId = `cf_evt_${Date.now()}`;
+    const concurrentEvents = 20;
+    console.log(`  Firing ${concurrentEvents} concurrent webhook idempotency claims for event ${eventId}...`);
+    const idempResults = await Promise.all(
+      Array.from({ length: concurrentEvents }, () => redis.checkWebhookIdempotency(eventId, 3600))
+    );
+    const idempWins = idempResults.filter(r => r === true);
+    const idempRejections = idempResults.filter(r => r === false);
+
+    assert(idempWins.length === 1, `Exactly 1 webhook claim succeeded (observed: ${idempWins.length})`);
+    assert(idempRejections.length === concurrentEvents - 1, `Exactly ${concurrentEvents - 1} duplicate webhook claims rejected`);
+
+    // 5.2 Edge Cases: Non-existent cache key, null session token, empty cart handling
+    const nonExistentKey = await redis.cacheGet('alleyrich:nonexistent:key');
+    assert(nonExistentKey === null, 'cacheGet on non-existent key returns null');
+
+    const nullSession = await redis.getAdminSession('');
+    assert(nullSession === null, 'getAdminSession with empty token returns null');
+
+    const emptyCart = await redis.getUserCart('unknown_user@test.com');
+    assert(emptyCart === null, 'getUserCart on unset customer returns null');
 
     // =================================================================
     // SUMMARY REPORT

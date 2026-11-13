@@ -74,11 +74,19 @@ function getAdminHeaders(extraHeaders = {}) {
   };
 }
 
+let defaultIpCounter = 1;
+
 /**
  * Generate HTTP headers to simulate distinct client IP addresses.
  * Resolves via security.getClientIp(req) to prevent rate limit cross-test collisions.
  */
-function getForwardedIpHeaders(ip = '198.51.100.1') {
+function getForwardedIpHeaders(ip) {
+  if (!ip) {
+    defaultIpCounter = (defaultIpCounter % 60000) + 1;
+    const b = Math.floor(defaultIpCounter / 250) + 1;
+    const c = (defaultIpCounter % 250) + 1;
+    ip = `198.51.${b}.${c}`;
+  }
   return {
     'x-forwarded-for': ip,
     'cf-connecting-ip': ip,

@@ -84,7 +84,8 @@ module.exports = defineSuite({
     const qualifiedQty = Math.max(2, Math.ceil(2000 / unitPrice));
     const qualifiedSubtotal = Number((unitPrice * qualifiedQty).toFixed(2));
     assert.ok(qualifiedSubtotal >= 1999, 'Subtotal must meet or exceed ₹1,999 free shipping threshold');
-    const expectedDiscountQualified = Number((qualifiedSubtotal * 0.10).toFixed(2));
+    // Coupon 'WELCOME' applies 10% discount subject to maxDiscount cap of ₹500
+    const expectedDiscountQualified = Math.min(Number((qualifiedSubtotal * 0.10).toFixed(2)), 500);
 
     const shopper2 = env.createUniqueShopper('threshold_qualified');
     const qualifiedPayload = {
@@ -108,7 +109,7 @@ module.exports = defineSuite({
     const qualifiedOrder = qualifiedOrderRes.data.order;
 
     assert.strictEqual(qualifiedOrder.subtotal, qualifiedSubtotal, 'Subtotal must match qualified item quantity');
-    assert.strictEqual(qualifiedOrder.discount, expectedDiscountQualified, 'Discount must match 10% on qualified subtotal');
+    assert.strictEqual(qualifiedOrder.discount, expectedDiscountQualified, 'Discount must match 10% on qualified subtotal (capped at max ₹500)');
     assert.strictEqual(qualifiedOrder.shipping, 0, 'Shipping fee must be ₹0 when subtotal >= ₹1,999');
     const expectedTotalQualified = Number((qualifiedSubtotal - expectedDiscountQualified).toFixed(2));
     assert.strictEqual(qualifiedOrder.total, expectedTotalQualified, 'Total must equal subtotal - discount with ₹0 shipping');

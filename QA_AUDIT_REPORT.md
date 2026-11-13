@@ -74,7 +74,7 @@ Domain 1 evaluated the customer-facing storefront interfaces across `index.html`
 - **Mobile Horizontal Scrolling & Auto-Centering**: Inspected the mobile viewport CSS (`overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch`) and verified `scrollIntoView({ inline: 'center', behavior: 'smooth' })` centers newly selected category chips.
 
 ### 3.3 Desktop Mega-Dropdowns
-- **3-Column Grid + 340px Promo Layout**: Confirmed Men's Wear, Kids Wear, and Party Wear implement a structured 3-column subcategory link grid paired with a fixed 340px visual promotional banner card.
+- **Multi-Column Grid + 340px Promo Layout**: Confirmed Men's Wear and Kids Wear implement structured 3-column subcategory link grids (`repeat(3, minmax(0, 1fr)) 340px`), while Party Wear implements a 2-column subcategory link grid (`repeat(2, minmax(0, 1fr)) 340px`) paired with a fixed 340px visual promotional banner card per `index.html`.
 - **220ms Mouseleave Debounce**: Verified that mouseleave event handlers across `index.html`, `collections.html`, and `product.html` are strictly aligned to a 220ms debounce timeout, eliminating jitter when moving diagonally across menu boundaries.
 - **Desktop Follow-Summary-Link & Touch 2-Tap Guard**: Verified that on desktop viewports, clicking an already-open `<summary>` element navigates directly to the parent category landing page (`collections.html?category=...`), while on touch devices, the first tap expands the disclosure without accidental premature navigation.
 

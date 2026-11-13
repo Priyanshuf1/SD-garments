@@ -107,16 +107,16 @@
 
 @media (max-width: 699px) {
   .allyrich-header-brand {
-    gap: 8px !important;
+    gap: 6px !important;
   }
   .allyrich-header-logo-img {
-    height: 38px !important;
-    width: 38px !important;
+    height: 28px !important;
+    width: 28px !important;
   }
   .allyrich-header-brand-name {
-    font-size: 16px !important;
-    letter-spacing: 0.2em !important;
-    margin-right: -0.2em !important;
+    font-size: 13px !important;
+    letter-spacing: 0.05em !important;
+    margin-right: 0 !important;
   }
 }
 

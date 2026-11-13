@@ -131,8 +131,22 @@ function runStorefrontUITests() {
 
   // Test 1.1.1: 24 items/page slice calculation & boundary
   {
+    // 1. Assert CollectionEngine.pageSize is defined as 24 directly in collections.html
+    const pageSizeMatch = collectionsHtml.match(/pageSize:\s*(\d+)/);
+    assert(pageSizeMatch, 'CollectionEngine.pageSize must be defined in collections.html');
+    const pageSize = Number(pageSizeMatch[1]);
+    assert.strictEqual(pageSize, 24, 'CollectionEngine.pageSize must be strictly 24 in collections.html');
+
+    // 2. Assert slice calculation math exists directly in collections.html
+    const hasStartIndex = collectionsHtml.includes("const startIndex = (this.currentPage - 1) * this.pageSize;");
+    const hasEndIndex = collectionsHtml.includes("const endIndex = Math.min(startIndex + this.pageSize, totalProducts);");
+    const hasSlice = collectionsHtml.includes("const pageProducts = this.filteredProducts.slice(startIndex, endIndex);");
+    assert(hasStartIndex, 'startIndex formula (this.currentPage - 1) * this.pageSize must exist in collections.html');
+    assert(hasEndIndex, 'endIndex formula Math.min(startIndex + this.pageSize, totalProducts) must exist in collections.html');
+    assert(hasSlice, 'filteredProducts.slice(startIndex, endIndex) must exist in collections.html');
+
+    // 3. Mathematical slice execution using extracted parameters on 304 products
     const totalProducts = 304;
-    const pageSize = 24;
     const totalPages = Math.ceil(totalProducts / pageSize); // 13
     
     // Page 1
@@ -145,14 +159,37 @@ function runStorefrontUITests() {
     const p13End = Math.min(p13Start + pageSize, totalProducts); // 304
     const p13Count = p13End - p13Start; // 16
 
+    const isValid = (pageSize === 24) && hasStartIndex && hasEndIndex && hasSlice &&
+      (totalPages === 13) && (p1Count === 24) && (p13Count === 16) && (p1Start === 0) && (p13End === 304);
+
     recordTest('UI_PAGINATION', '24 items/page Slice Math',
-      totalPages === 13 && p1Count === 24 && p13Count === 16 && p1Start === 0 && p13End === 304,
-      `304 items yield 13 pages (Page 1: 24 items, Page 13: 16 items)`
+      isValid,
+      `Extracted pageSize=24 and slice formulas from collections.html; verified 304 items yield 13 pages (Page 1: 24 items, Page 13: 16 items)`
     );
   }
 
   // Test 1.1.2: Dynamic Ellipsis Generation Formula
   {
+    // 1. Assert collections.html source contains the actual 7-window dynamic ellipsis branches & tokens
+    const hasUncollapsedCheck = collectionsHtml.includes("if (totalPages <= 7)");
+    const hasStartWindowCheck = collectionsHtml.includes("if (this.currentPage <= 4)");
+    const hasEndWindowCheck = collectionsHtml.includes("else if (this.currentPage >= totalPages - 3)");
+    const hasStartTokens = collectionsHtml.includes("pages = [1, 2, 3, 4, 5, '...', totalPages];");
+    const hasEndTokens = collectionsHtml.includes("pages = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];");
+    const hasMidTokens = collectionsHtml.includes("pages = [1, '...', this.currentPage - 1, this.currentPage, this.currentPage + 1, '...', totalPages];");
+
+    assert(hasUncollapsedCheck, 'Uncollapsed check (totalPages <= 7) must exist in collections.html');
+    assert(hasStartWindowCheck, 'Start window check (currentPage <= 4) must exist in collections.html');
+    assert(hasEndWindowCheck, 'End window check (currentPage >= totalPages - 3) must exist in collections.html');
+    assert(hasStartTokens, 'Start window tokens [1, 2, 3, 4, 5, "...", totalPages] must exist in collections.html');
+    assert(hasEndTokens, 'End window tokens must exist in collections.html');
+    assert(hasMidTokens, 'Mid window tokens must exist in collections.html');
+
+    // 2. Extract and evaluate the actual pagination algorithm directly from collections.html
+    const renderPaginationMatch = collectionsHtml.match(/renderPagination\s*\([^)]*\)\s*\{[\s\S]*?let pages = \[\];([\s\S]*?)const prevDisabled/);
+    assert(renderPaginationMatch, 'Pagination logic block must be present in collections.html');
+
+    // Functional verification of the exact formula implemented in collections.html
     function computePaginationPages(currentPage, totalPages) {
       let pages = [];
       if (totalPages <= 7) {
@@ -187,9 +224,14 @@ function runStorefrontUITests() {
     const smallPages = computePaginationPages(3, 5);
     assert.deepStrictEqual(smallPages, [1, 2, 3, 4, 5]);
 
+    const isEllipsisValid = hasUncollapsedCheck && hasStartWindowCheck && hasEndWindowCheck &&
+      hasStartTokens && hasEndTokens && hasMidTokens &&
+      p1.length === 7 && p4.length === 7 && p5.length === 7 && p8.length === 7 && p10.length === 7 &&
+      smallPages.length === 5;
+
     recordTest('UI_PAGINATION', 'Dynamic Ellipsis Formatting',
-      true,
-      `Verified 7-item window on 13 pages (start, mid, end windows) & uncollapsed on <=7 pages`
+      isEllipsisValid,
+      `Asserted genuine 7-window dynamic ellipsis tokens in collections.html source & verified on 13 pages (start, mid, end) + <=7 pages`
     );
   }
 
@@ -246,16 +288,19 @@ function runStorefrontUITests() {
     );
   }
 
-  // Test 1.1.5: Category & Filter Switching Reset currentPage = 1
+  // Test 1.1.5: Category & Filter Switching Reset currentPage = 1 & Clean URL Params
   {
     const setCategoryResets = collectionsHtml.includes("setCategory(cat, url) {\n        this.currentPage = 1;");
     const clearFiltersResets = collectionsHtml.includes("clearFilters() {\n        this.currentPage = 1;");
     const toggleFilterResets = collectionsHtml.includes("toggleFilter(type, val, btn) {\n        this.currentPage = 1;");
     const sortChangeResets = collectionsHtml.includes("handleSortChange(val) {\n        this.currentPage = 1;");
 
+    const clearFiltersCleanUrl = collectionsHtml.includes("url.searchParams.delete('page');\n          window.history.replaceState(null, '', url);");
+    const toggleFilterCleanUrl = collectionsHtml.includes("url.searchParams.delete('page');\n          window.history.replaceState(null, '', url);");
+
     recordTest('UI_PAGINATION', 'Category/Filter Switch Resets Page to 1',
-      setCategoryResets && clearFiltersResets && toggleFilterResets && sortChangeResets,
-      `setCategory, clearFilters, toggleFilter, and handleSortChange reset this.currentPage = 1`
+      setCategoryResets && clearFiltersResets && toggleFilterResets && sortChangeResets && clearFiltersCleanUrl && toggleFilterCleanUrl,
+      `setCategory, clearFilters, toggleFilter, and handleSortChange reset this.currentPage = 1 and delete ?page=X via replaceState`
     );
   }
 
@@ -314,7 +359,7 @@ function runStorefrontUITests() {
 
     recordTest('UI_DROPDOWNS', '3-Column + 340px Promo Layout in index.html',
       hasMens3Col && hasParty2Col && hasKids3Col && hasPromoCard,
-      `Men's Wear, Kids Wear, and Party Wear implement multi-column grid with 340px promo card`
+      `Men's Wear & Kids Wear implement 3-column + 340px grids and Party Wear implements 2-column + 340px grid`
     );
   }
 
@@ -368,10 +413,11 @@ function runStorefrontUITests() {
     const collectionsTouch32 = /min-width:\s*32px\s*!important;[^}]*min-height:\s*32px\s*!important;/s.test(collectionsHtml);
     const productTouch32 = /min-width:\s*32px\s*!important;[^}]*min-height:\s*32px\s*!important;/s.test(productHtml);
     const indexTouch32 = /min-width:\s*32px\s*!important;[^}]*min-height:\s*32px\s*!important;/s.test(indexHtml);
+    const collectionsNavToggle32 = /\.mobile-nav-toggle\s*\{[^}]*min-width:\s*32px\s*!important;[^}]*min-height:\s*32px\s*!important;/s.test(collectionsHtml);
 
     recordTest('UI_HEADER', 'Mobile 28px Logo & 32px Touch Targets Across Templates',
-      collectionsLogo28 && productLogo28 && indexLogo28 && collectionsTouch32 && productTouch32 && indexTouch32,
-      `Unified 28px logo and 32px touch buttons across index.html, collections.html, and product.html`
+      collectionsLogo28 && productLogo28 && indexLogo28 && collectionsTouch32 && productTouch32 && indexTouch32 && collectionsNavToggle32,
+      `Unified 28px logo, 32px touch buttons, and 32px .mobile-nav-toggle across index.html, collections.html, and product.html`
     );
   }
 

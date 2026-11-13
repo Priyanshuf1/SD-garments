@@ -26,15 +26,11 @@ module.exports = defineSuite({
     assert.assertStatus(pageRes, 200);
     assert.assertHtmlContains(pageRes, 'id="category-chips"');
 
-    // Verify presence of top-level chip definitions in collections.html
+    // Verify presence of top-level chip definitions in collections.html (Matches Desktop Header Taxonomy)
     const expectedChips = [
-      { cat: 'all', label: 'All' },
-      { cat: 'new-arrivals', label: 'New In' },
-      { cat: 'shirts', label: 'Shirts' },
-      { cat: 't-shirts', label: 'T-Shirts' },
-      { cat: 'hoodies', label: 'Hoodies' },
-      { cat: 'mens-jeans', label: 'Jeans' },
-      { cat: 'cargo-joggers', label: 'Cargo / Joggers' },
+      { cat: 'all', label: 'All Drops' },
+      { cat: 'new-arrivals', label: 'New Arrivals' },
+      { cat: 'mens-wear', label: 'Men\'s Wear' },
       { cat: 'party-wear', label: 'Party Wear' },
       { cat: 'kids-wear', label: 'Kids Wear' },
       { cat: 'accessories', label: 'Accessories' }
