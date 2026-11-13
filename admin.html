@@ -1528,28 +1528,63 @@
         <!-- Sales & Revenue Performance Timeframe Control -->
         <div class="revenue-analytics-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:4px; padding:1rem 1.25rem;">
           <div>
-            <div style="font-family:var(--heading-font-family); font-weight:800; font-size:1rem; letter-spacing:0.04em; color:var(--text-primary); text-transform:uppercase;">
-              Sales & Revenue Performance
+            <div style="font-family:var(--heading-font-family); font-weight:800; font-size:1rem; letter-spacing:0.04em; color:var(--text-primary); text-transform:uppercase; display:flex; align-items:center; gap:8px;">
+              <span>Sales & Revenue Performance</span>
+              <span class="badge badge-success" style="font-size:0.68rem; padding:2px 8px; letter-spacing:0.04em;">₹ INDIAN REVENUE</span>
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;" id="revenue-timeframe-label">
               Showing total revenue across all recorded orders
             </div>
           </div>
           
-          <div style="display:flex; align-items:center; gap:8px;">
-            <label for="revenue-timeframe-select" style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; display:flex; align-items:center; gap:6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              Time Period:
-            </label>
-            <select id="revenue-timeframe-select" onchange="Admin.setTimeframe(this.value)" style="background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:3px; padding:7px 12px; font-weight:700; font-size:0.8rem; cursor:pointer; outline:none;">
-              <option value="all">All Time</option>
-              <option value="1day">1 Day</option>
-              <option value="1week">1 Week</option>
-              <option value="2weeks">2 Weeks</option>
-              <option value="3weeks">3 Weeks</option>
-              <option value="4weeks">4 Weeks</option>
-              <option value="1month">1 Month</option>
-            </select>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="revenue-timeframe-select" style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; display:flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Time Period:
+              </label>
+              <select id="revenue-timeframe-select" onchange="Admin.setTimeframe(this.value)" style="background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:3px; padding:7px 12px; font-weight:700; font-size:0.8rem; cursor:pointer; outline:none;">
+                <option value="all">All Time</option>
+                <optgroup label="── Day-wise (Daily) ──">
+                  <option value="1day">1 Day (Past 24 Hours)</option>
+                  <option value="today">Today (Day-wise)</option>
+                  <option value="yesterday">Yesterday</option>
+                </optgroup>
+                <optgroup label="── Week-wise (Weekly) ──">
+                  <option value="1week">1 Week (Past 7 Days)</option>
+                  <option value="this_week">This Week (Week-wise)</option>
+                  <option value="2weeks">2 Weeks</option>
+                  <option value="3weeks">3 Weeks</option>
+                  <option value="4weeks">4 Weeks</option>
+                </optgroup>
+                <optgroup label="── Month-wise (Monthly) ──">
+                  <option value="1month">1 Month (Past 30 Days)</option>
+                  <option value="this_month">This Month (Month-wise)</option>
+                  <option value="3months">3 Months (Quarter)</option>
+                </optgroup>
+                <optgroup label="── Year-wise (Yearly) ──">
+                  <option value="1year">1 Year (Past 365 Days)</option>
+                  <option value="this_year">This Year (Year-wise)</option>
+                </optgroup>
+                <optgroup label="── Custom Date Range ──">
+                  <option value="custom">📅 Custom Date Range (Manual)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <!-- Manual Custom Date Range Inputs -->
+            <div id="revenue-custom-range" style="display:none; align-items:center; gap:8px; background:var(--bg-primary); padding:4px 8px; border:1px solid var(--border-color); border-radius:3px; flex-wrap:wrap;">
+              <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">FROM:</span>
+              <input type="date" id="revenue-date-from" onchange="Admin.onCustomDateChange()" style="background:transparent; color:var(--text-primary); border:1px solid var(--border-color); border-radius:2px; padding:3px 6px; font-size:0.75rem; outline:none; height:28px;">
+              <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">TO:</span>
+              <input type="date" id="revenue-date-to" onchange="Admin.onCustomDateChange()" style="background:transparent; color:var(--text-primary); border:1px solid var(--border-color); border-radius:2px; padding:3px 6px; font-size:0.75rem; outline:none; height:28px;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="Admin.applyCustomDateRange()" style="height:28px; padding:0 10px; font-size:0.75rem; font-weight:700;">
+                Apply
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="Admin.resetCustomDateRange()" style="height:28px; padding:0 8px; font-size:0.75rem;" title="Reset Dates">
+                Reset
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1557,13 +1592,14 @@
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-header">
-              <span>Total Revenue</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <span>Total Revenue (INR)</span>
+              <!-- Official Indian Rupee SVG Icon replacing dollar sign -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-gold);"><path d="M6 3h12"></path><path d="M6 8h12"></path><path d="m6 13 8.5 8"></path><path d="M6 13h3a4 4 0 0 0 0-8"></path></svg>
             </div>
             <div class="stat-value" id="stat-revenue">₹11,302</div>
             <div class="stat-footer">
-              <span class="trend-up">↑ 18.4%</span>
-              <span>vs previous drop period</span>
+              <span class="trend-up" id="stat-revenue-trend">↑ 18.4%</span>
+              <span id="stat-revenue-subtitle">vs previous drop period (INR)</span>
             </div>
           </div>
 
@@ -1625,6 +1661,46 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>Promo Code</span>
           </button>
+        </div>
+
+        <!-- Revenue Breakdown Analysis Panel (Day-wise, Week-wise, Month-wise, Year-wise) -->
+        <div class="panel" style="margin-bottom: 2rem;">
+          <div class="panel-header" style="flex-wrap: wrap; gap: 10px;">
+            <div class="panel-title" style="display:flex; align-items:center; gap:8px;">
+              <span>Indian Revenue Breakdown Analysis</span>
+              <span class="panel-title-badge" id="breakdown-mode-badge">Day-wise Breakdown</span>
+            </div>
+            <div class="panel-actions" style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-sm btn-primary revenue-breakdown-tab" id="btn-tab-day" onclick="Admin.setBreakdownView('day')" style="font-size:0.75rem; padding:4px 10px;">
+                📅 Day-wise
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary revenue-breakdown-tab" id="btn-tab-week" onclick="Admin.setBreakdownView('week')" style="font-size:0.75rem; padding:4px 10px;">
+                📆 Week-wise
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary revenue-breakdown-tab" id="btn-tab-month" onclick="Admin.setBreakdownView('month')" style="font-size:0.75rem; padding:4px 10px;">
+                📊 Month-wise
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary revenue-breakdown-tab" id="btn-tab-year" onclick="Admin.setBreakdownView('year')" style="font-size:0.75rem; padding:4px 10px;">
+                📈 Year-wise
+              </button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th id="th-breakdown-period">Date / Day (IST)</th>
+                  <th>Orders Count</th>
+                  <th>Total Revenue (INR)</th>
+                  <th>Avg Order Value</th>
+                  <th>Revenue Share</th>
+                </tr>
+              </thead>
+              <tbody id="revenue-breakdown-tbody">
+                <!-- Dynamically populated by Admin.renderRevenueBreakdown() -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Recent Orders & Fast Actions -->
@@ -3022,9 +3098,217 @@ const Admin = {
   filteredSubscribers: [],
   reviews: [],
   selectedTimeframe: 'all',
+  breakdownView: 'day',
+  currentFilteredOrders: [],
   setTimeframe(tf) {
     this.selectedTimeframe = tf;
+    const customRangeEl = document.getElementById('revenue-custom-range');
+    if (customRangeEl) {
+      if (tf === 'custom') {
+        customRangeEl.style.display = 'flex';
+        const fromInput = document.getElementById('revenue-date-from');
+        const toInput = document.getElementById('revenue-date-to');
+        if (fromInput && !fromInput.value) {
+          if (this.orders && this.orders.length > 0) {
+            const minTime = this.orders.reduce((min, o) => Math.min(min, new Date(o.createdAt).getTime()), Date.now());
+            fromInput.value = new Date(minTime).toISOString().split('T')[0];
+          } else {
+            const d = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
+            fromInput.value = d.toISOString().split('T')[0];
+          }
+        }
+        if (toInput && !toInput.value) {
+          toInput.value = new Date().toISOString().split('T')[0];
+        }
+      } else {
+        customRangeEl.style.display = 'none';
+      }
+    }
     this.renderDashboard();
+  },
+
+  onCustomDateChange() {
+    this.selectedTimeframe = 'custom';
+    const sel = document.getElementById('revenue-timeframe-select');
+    if (sel && sel.value !== 'custom') sel.value = 'custom';
+    this.renderDashboard();
+  },
+
+  applyCustomDateRange() {
+    this.selectedTimeframe = 'custom';
+    const sel = document.getElementById('revenue-timeframe-select');
+    if (sel && sel.value !== 'custom') sel.value = 'custom';
+    this.renderDashboard();
+    if (typeof this.showToast === 'function') {
+      this.showToast('📅 Revenue updated for custom date range');
+    }
+  },
+
+  resetCustomDateRange() {
+    const fromInput = document.getElementById('revenue-date-from');
+    const toInput = document.getElementById('revenue-date-to');
+    if (fromInput) fromInput.value = '';
+    if (toInput) toInput.value = '';
+    const sel = document.getElementById('revenue-timeframe-select');
+    if (sel) sel.value = 'all';
+    this.setTimeframe('all');
+  },
+
+  setBreakdownView(mode) {
+    this.breakdownView = mode;
+    ['day', 'week', 'month', 'year'].forEach(m => {
+      const btn = document.getElementById('btn-tab-' + m);
+      if (btn) {
+        if (m === mode) {
+          btn.classList.add('btn-primary');
+          btn.classList.remove('btn-secondary');
+          btn.style.background = 'var(--text-main)';
+          btn.style.color = 'var(--bg-main)';
+        } else {
+          btn.classList.add('btn-secondary');
+          btn.classList.remove('btn-primary');
+          btn.style.background = '';
+          btn.style.color = '';
+        }
+      }
+    });
+    const badge = document.getElementById('breakdown-mode-badge');
+    if (badge) {
+      const labels = {
+        day: 'Day-wise Breakdown',
+        week: 'Week-wise Breakdown',
+        month: 'Month-wise Breakdown',
+        year: 'Year-wise Breakdown'
+      };
+      badge.textContent = labels[mode] || mode;
+    }
+    const th = document.getElementById('th-breakdown-period');
+    if (th) {
+      const thLabels = {
+        day: 'Date / Day (IST)',
+        week: 'Week Period (Monday - Sunday)',
+        month: 'Calendar Month',
+        year: 'Financial / Calendar Year'
+      };
+      th.textContent = thLabels[mode] || 'Period / Date (IST)';
+    }
+    this.renderRevenueBreakdown();
+  },
+
+  renderRevenueBreakdown() {
+    const tbody = document.getElementById('revenue-breakdown-tbody');
+    if (!tbody) return;
+
+    const orders = this.currentFilteredOrders || this.orders || [];
+    const mode = this.breakdownView || 'day';
+
+    if (orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">No orders found for the active period. Select a different timeframe above to view breakdown.</td></tr>';
+      return;
+    }
+
+    const groups = {};
+
+    orders.forEach(o => {
+      const d = new Date(o.createdAt);
+      if (isNaN(d.getTime())) return;
+
+      let key = '';
+      let sortKey = 0;
+      let displayLabel = '';
+
+      if (mode === 'day') {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(d.getDate()).padStart(2, '0');
+        key = `${y}-${m}-${dayNum}`;
+        sortKey = new Date(y, d.getMonth(), d.getDate()).getTime();
+        displayLabel = d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      } else if (mode === 'week') {
+        const dayOfWeek = d.getDay();
+        const diff = d.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        const mon = new Date(d);
+        mon.setDate(diff);
+        mon.setHours(0, 0, 0, 0);
+        const sun = new Date(mon);
+        sun.setDate(mon.getDate() + 6);
+        key = mon.toISOString().split('T')[0];
+        sortKey = mon.getTime();
+        displayLabel = `${mon.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} - ${sun.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+      } else if (mode === 'month') {
+        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        sortKey = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+        displayLabel = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      } else if (mode === 'year') {
+        key = `${d.getFullYear()}`;
+        sortKey = new Date(d.getFullYear(), 0, 1).getTime();
+        displayLabel = `Year ${d.getFullYear()}`;
+      }
+
+      if (!groups[key]) {
+        groups[key] = { label: displayLabel, sortKey, count: 0, revenue: 0 };
+      }
+      groups[key].count++;
+      groups[key].revenue += (Number(o.total) || 0);
+    });
+
+    const rows = Object.values(groups).sort((a, b) => b.sortKey - a.sortKey);
+    const overallRev = rows.reduce((acc, r) => acc + r.revenue, 0);
+    const overallOrders = rows.reduce((acc, r) => acc + r.count, 0);
+
+    let html = '';
+    rows.forEach(r => {
+      const aov = r.count > 0 ? Math.round(r.revenue / r.count) : 0;
+      const share = overallRev > 0 ? Math.round((r.revenue / overallRev) * 100) : 0;
+
+      html += `
+        <tr>
+          <td style="font-weight:700; color:var(--text-primary); white-space:nowrap;">
+            ${r.label}
+          </td>
+          <td>
+            <span class="badge badge-dark" style="font-size:0.75rem; padding:3px 8px;">${r.count} ${r.count === 1 ? 'order' : 'orders'}</span>
+          </td>
+          <td style="font-weight:800; color:var(--text-primary);">
+            ₹${r.revenue.toLocaleString('en-IN')}
+          </td>
+          <td style="color:var(--text-muted); font-size:0.85rem;">
+            ₹${aov.toLocaleString('en-IN')}
+          </td>
+          <td style="width:200px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="flex:1; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+                <div style="width:${share}%; height:100%; background:var(--accent-gold); border-radius:3px;"></div>
+              </div>
+              <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); min-width:32px;">${share}%</span>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+
+    const overallAov = overallOrders > 0 ? Math.round(overallRev / overallOrders) : 0;
+    html += `
+      <tr style="border-top:2px solid var(--border-color); background:rgba(255,255,255,0.02); font-weight:800;">
+        <td style="color:var(--accent-gold); text-transform:uppercase; letter-spacing:0.05em; font-size:0.8rem;">
+          Total Period Summary
+        </td>
+        <td>
+          <span class="badge badge-success" style="font-size:0.78rem;">${overallOrders} Total Orders</span>
+        </td>
+        <td style="color:var(--accent-gold); font-size:1.05rem;">
+          ₹${overallRev.toLocaleString('en-IN')}
+        </td>
+        <td style="color:var(--text-primary); font-size:0.85rem;">
+          ₹${overallAov.toLocaleString('en-IN')}
+        </td>
+        <td>
+          <span style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">100% Retained</span>
+        </td>
+      </tr>
+    `;
+
+    tbody.innerHTML = html;
   },
   filteredReviews: [],
   activeOrderId: null,
@@ -3256,10 +3540,65 @@ const Admin = {
       const cutoff = now - (5 * 24 * 60 * 60 * 1000);
       filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
       periodSub = 'the past 5 days';
-    } else if (this.selectedTimeframe === '90days') {
+    } else if (this.selectedTimeframe === '90days' || this.selectedTimeframe === '3months') {
       const cutoff = now - (90 * 24 * 60 * 60 * 1000);
       filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
-      periodSub = 'the past 90 days';
+      periodSub = 'the past 3 months (90 days)';
+    } else if (this.selectedTimeframe === 'yesterday') {
+      const startOfYesterday = new Date(now - (24 * 60 * 60 * 1000));
+      startOfYesterday.setHours(0, 0, 0, 0);
+      const endOfYesterday = new Date(startOfYesterday);
+      endOfYesterday.setHours(23, 59, 59, 999);
+      filteredOrders = this.orders.filter(o => {
+        const t = new Date(o.createdAt).getTime();
+        return t >= startOfYesterday.getTime() && t <= endOfYesterday.getTime();
+      });
+      periodSub = 'yesterday (' + startOfYesterday.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ')';
+    } else if (this.selectedTimeframe === 'this_week') {
+      const dNow = new Date(now);
+      const day = dNow.getDay();
+      const diff = dNow.getDate() - day + (day === 0 ? -6 : 1);
+      const mon = new Date(dNow);
+      mon.setDate(diff);
+      mon.setHours(0, 0, 0, 0);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= mon.getTime());
+      periodSub = 'this week (' + mon.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ' onwards)';
+    } else if (this.selectedTimeframe === 'this_month') {
+      const startOfMonth = new Date(now);
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= startOfMonth.getTime());
+      periodSub = 'this month (' + startOfMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) + ')';
+    } else if (this.selectedTimeframe === '1year' || this.selectedTimeframe === '365days') {
+      const cutoff = now - (365 * 24 * 60 * 60 * 1000);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= cutoff);
+      periodSub = 'past 1 year (365 days)';
+    } else if (this.selectedTimeframe === 'this_year') {
+      const startOfYear = new Date(new Date(now).getFullYear(), 0, 1, 0, 0, 0, 0);
+      filteredOrders = this.orders.filter(o => new Date(o.createdAt).getTime() >= startOfYear.getTime());
+      periodSub = 'this year (' + startOfYear.getFullYear() + ')';
+    } else if (this.selectedTimeframe === 'custom') {
+      let fromTime = 0;
+      let toTime = Infinity;
+      const fromInput = document.getElementById('revenue-date-from');
+      const toInput = document.getElementById('revenue-date-to');
+      if (fromInput && fromInput.value) {
+        const dFrom = new Date(fromInput.value);
+        dFrom.setHours(0, 0, 0, 0);
+        fromTime = dFrom.getTime();
+      }
+      if (toInput && toInput.value) {
+        const dTo = new Date(toInput.value);
+        dTo.setHours(23, 59, 59, 999);
+        toTime = dTo.getTime();
+      }
+      filteredOrders = this.orders.filter(o => {
+        const t = new Date(o.createdAt).getTime();
+        return t >= fromTime && t <= toTime;
+      });
+      const fromStr = fromInput && fromInput.value ? new Date(fromInput.value).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'earliest';
+      const toStr = toInput && toInput.value ? new Date(toInput.value).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'today';
+      periodSub = `custom date range (${fromStr} to ${toStr})`;
     }
 
     const totalRev = filteredOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
@@ -3317,6 +3656,10 @@ const Admin = {
         </td>
       </tr>
     `).join('');
+
+    // Also update currentFilteredOrders and render revenue breakdown table
+    this.currentFilteredOrders = filteredOrders;
+    this.renderRevenueBreakdown();
   },
 
   async printLabel(orderId) {
