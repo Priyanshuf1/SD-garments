@@ -576,6 +576,14 @@
       }
     }
 
+    
+    let checkoutIdempotencyKey = (function() {
+      if (window.crypto && window.crypto.randomUUID) {
+        return window.crypto.randomUUID();
+      }
+      return 'idemp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 11);
+    })();
+
     async function submitOrder() {
       if (!checkoutItems || !Array.isArray(checkoutItems) || checkoutItems.length === 0) {
         alert('Your cart is empty! Please add items to your cart before placing an order.');
@@ -652,7 +660,8 @@
 
           if (selectedPayment === 'cashfree') {
             // Show Cashfree payment modal
-            document.getElementById('modal-pay-amount').textContent = `Rs. ${total.toLocaleString('en-IN')}`;
+            const authoritativeTotal = data.order.total ?? total;
+            document.getElementById('modal-pay-amount').textContent = `Rs. ${authoritativeTotal.toLocaleString('en-IN')}`;
             document.getElementById('modal-order-id').textContent = `Order ID: ${currentCreatedOrderId}`;
             document.getElementById('cashfree-modal').style.display = 'flex';
           } else {

@@ -43,6 +43,10 @@ const redis = require('./lib/redis.js');
 const whatsapp = require('./lib/whatsapp.js');
 const delhivery = require('./lib/delhivery.js');
 const totp = require('./lib/totp.js');
+const orderStateMachine = require('./lib/orderStateMachine.js');
+const payments = require('./lib/payments');
+const reconciliation = require('./lib/reconciliation.js');
+const codRisk = require('./lib/codRisk.js');
 let db = null;
 try {
   db = require('./lib/db.js');
@@ -59,6 +63,25 @@ let orderMutationQueue = Promise.resolve();
 const FREE_SHIPPING_THRESHOLD = 1999;
 const DEFAULT_SHIPPING_FEE = Number.isFinite(Number(process.env.SHIPPING_FEE_INR)) ? Math.max(0, Number(process.env.SHIPPING_FEE_INR)) : 99;
 const CASHFREE_API_VERSION = '2023-08-01';
+
+// Phase 2 Production Database Startup Guard
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_JSON_FALLBACK !== 'true') {
+  if (!db || !db.isConfigured) {
+    console.error('FATAL [PRODUCTION STARTUP ABORT]: PostgreSQL database is unconfigured. In production, database is required unless ALLOW_JSON_FALLBACK=true.');
+    process.exit(1);
+  }
+}
+
+// ── Phase 1 Server-Authoritative Pricing & Inventory Controls ──
+const STRICT_PRICING_ENFORCED = process.env.STRICT_PRICING_ENFORCED !== 'false';
+const MAX_CART_ITEMS = Math.max(1, parseInt(process.env.MAX_CART_ITEMS || '50', 10));
+const MAX_QTY_PER_ITEM = Math.max(1, parseInt(process.env.MAX_QTY_PER_ITEM || '10', 10));
+const DROP_ITEM_MAX_QTY = Math.max(1, parseInt(process.env.DROP_ITEM_MAX_QTY || '2', 10));
+const IDEMPOTENCY_REQUIRED = process.env.IDEMPOTENCY_REQUIRED === 'true';
+const FREE_SHIPPING_THRESHOLD_PAISE = 199900; // Rs 1,999.00
+const DEFAULT_SHIPPING_FEE_PAISE = DEFAULT_SHIPPING_FEE * 100;
+const COD_FEE_PAISE = Math.max(0, parseInt(process.env.COD_FEE_PAISE || '0', 10));
+const TAX_RATE_PERCENT = Math.max(0, parseFloat(process.env.TAX_RATE_PERCENT || '0'));
 
 // High-speed in-memory cache for static HTML templates (sub-millisecond RAM delivery)
 const staticHtmlCache = new Map();
@@ -134,7 +157,20 @@ function applyCors(req, res) {
 
 function getBearerToken(req) {
   const header = String(req.headers.authorization || '');
-  return header.replace(/^Bearer\s+/i, '').trim();
+  if (header) {
+    const bearer = header.replace(/^Bearer\s+/i, '').trim();
+    if (bearer) return bearer;
+  }
+  const xAuth = String(req.headers['x-auth-token'] || '').trim();
+  if (xAuth) return xAuth;
+
+  // Extract from Cookie header
+  const cookies = security.parseCookies ? security.parseCookies(req) : {};
+  if (cookies['__Host-alleyrich_session']) return cookies['__Host-alleyrich_session'];
+  if (cookies['alleyrich_session']) return cookies['alleyrich_session'];
+  if (cookies['genrage_session']) return cookies['genrage_session'];
+
+  return '';
 }
 
 function getLocalCustomerClaims(req) {
@@ -143,8 +179,28 @@ function getLocalCustomerClaims(req) {
 
 async function getAuthenticatedIdentity(req) {
   const token = getBearerToken(req);
-  const localClaims = security.validateCustomerSession(token);
-  if (localClaims) return { id: String(localClaims.sub), email: String(localClaims.email || '').toLowerCase(), token };
+  if (!token) return null;
+
+  if (typeof security.validateCustomerSessionAsync === 'function') {
+    const localClaims = await security.validateCustomerSessionAsync(token, req);
+    if (localClaims) {
+      return {
+        id: String(localClaims.sub || localClaims.userId),
+        email: String(localClaims.email || '').toLowerCase(),
+        token
+      };
+    }
+  } else {
+    const localClaims = security.validateCustomerSession(token);
+    if (localClaims) {
+      return {
+        id: String(localClaims.sub),
+        email: String(localClaims.email || '').toLowerCase(),
+        token
+      };
+    }
+  }
+
   if (token && supabase.isConfigured) {
     const user = await supabase.auth.getUser(token).catch(() => null);
     if (user?.id) return { id: String(user.id), email: String(user.email || '').toLowerCase(), token };
@@ -225,6 +281,8 @@ function customerOrderView(order) {
   delete safe.cashfreePaymentId;
   delete safe.inventoryReservedAt;
   delete safe.inventoryReleasedAt;
+  delete safe.cod_confirmation_code_hash;
+  delete safe.cod_confirmation_token;
   return safe;
 }
 
@@ -659,39 +717,39 @@ function sendJson(res, statusCode, data, extraHeaders = {}, req = null) {
   const jsonStr = typeof data === 'string' ? data : JSON.stringify(data);
   const acceptEncoding = req ? String(req.headers['accept-encoding'] || '') : '';
 
+  const queuedHeaders = (res && typeof res.getHeaders === 'function') ? res.getHeaders() : {};
+  const headers = {
+    ...queuedHeaders,
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token, Idempotency-Key',
+    ...extraHeaders
+  };
+
+  // Preserve any previously queued Set-Cookie headers
+  const existingCookie = res.getHeader('Set-Cookie');
+  if (existingCookie && !headers['Set-Cookie']) {
+    headers['Set-Cookie'] = existingCookie;
+  }
+
   if (jsonStr.length > 2048 && acceptEncoding.includes('gzip')) {
     zlib.gzip(Buffer.from(jsonStr), (err, gzipped) => {
       if (!err && gzipped) {
-        res.writeHead(statusCode, {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Content-Encoding': 'gzip',
-          'Content-Length': gzipped.length,
-          'Vary': 'Accept-Encoding',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token',
-          ...extraHeaders
-        });
+        headers['Content-Encoding'] = 'gzip';
+        headers['Content-Length'] = gzipped.length;
+        headers['Vary'] = 'Accept-Encoding';
+        res.writeHead(statusCode, headers);
         return res.end(gzipped);
       }
-      res.writeHead(statusCode, {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Content-Length': Buffer.byteLength(jsonStr),
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token',
-        ...extraHeaders
-      });
-      res.end(jsonStr);
-    });
+        headers['Content-Length'] = Buffer.byteLength(jsonStr);
+  res.writeHead(statusCode, headers);
+  res.end(jsonStr);
+});
     return;
   }
 
-  res.writeHead(statusCode, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Content-Length': Buffer.byteLength(jsonStr),
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token',
-    ...extraHeaders
-  });
+  headers['Content-Length'] = Buffer.byteLength(jsonStr);
+  res.writeHead(statusCode, headers);
   res.end(jsonStr);
 }
 
@@ -1538,6 +1596,10 @@ async function handleAiChat(req, res) {
   const chatLimit = security.checkRateLimit(`ai_chat:${security.getClientIp(req)}`, 30, 60);
   if (!chatLimit.allowed) return sendJson(res, 429, { success: false, reply: 'Please slow down and try again shortly.' }, { 'Retry-After': String(chatLimit.resetAfterSeconds) });
   const payload = await parseBody(req);
+    const turnstileCheck = await security.verifyTurnstileToken(payload.turnstileToken || req.headers['cf-turnstile-response'], clientIp);
+    if (!turnstileCheck.success) {
+      return sendJson(res, 400, { success: false, message: turnstileCheck.message });
+    }
   const userMsg = (payload.message || '').trim();
   const customerIdentity = await getAuthenticatedIdentity(req);
   const canAccessOrderData = Boolean(customerIdentity || security.isAdminAuthorized(req));
@@ -2208,78 +2270,253 @@ async function verifyCashfreeOrder(order) {
   };
 }
 
+
+/**
+ * Phase 1: Authoritative Cart Calculation Engine
+ * Computes subtotal, discount, shipping, COD fee, tax strictly in integer paise.
+ * Ignores any client-supplied price, total, discount, or currency.
+ */
+async function calculateAuthoritativeCart(cartData, client = null) {
+  const rawItems = Array.isArray(cartData.items) ? cartData.items : [];
+  if (rawItems.length === 0) {
+    throw { statusCode: 400, message: 'Cart is empty. Cannot place an empty order.' };
+  }
+  if (rawItems.length > MAX_CART_ITEMS) {
+    throw { statusCode: 400, message: `Cart exceeds maximum limit of ${MAX_CART_ITEMS} items.` };
+  }
+
+  const allProducts = await getAllProducts();
+  const processedItems = [];
+  let subtotalPaise = 0;
+
+  for (const rawItem of rawItems) {
+    const qty = Number(rawItem.quantity ?? rawItem.qty);
+    if (!Number.isInteger(qty) || qty <= 0 || qty > MAX_QTY_PER_ITEM) {
+      throw { statusCode: 400, message: `Each item quantity must be between 1 and ${MAX_QTY_PER_ITEM}.` };
+    }
+
+    // Match product in catalog
+    const prod = allProducts.find(p =>
+      (rawItem.id && String(p.id) === String(rawItem.id)) ||
+      (rawItem.handle && p.handle === rawItem.handle) ||
+      (rawItem.title && String(p.title).toLowerCase() === String(rawItem.title).toLowerCase())
+    );
+    if (!prod) {
+      throw { statusCode: 400, message: 'One or more cart items are no longer available.' };
+    }
+
+    // Match variant
+    let variant = null;
+    const reqSize = cleanText(rawItem.size || '', 30);
+    const reqVariantId = rawItem.variantId || rawItem.variant_id || rawItem.sku_id;
+
+    if (Array.isArray(prod.variants) && prod.variants.length > 0) {
+      if (reqVariantId) {
+        variant = prod.variants.find(v => String(v.id) === String(reqVariantId) || String(v.sku) === String(reqVariantId));
+      }
+      if (!variant && reqSize) {
+        variant = prod.variants.find(v => String(v.title || '').trim().toLowerCase() === reqSize.toLowerCase());
+      }
+      if (!variant) {
+        variant = prod.variants[0];
+      }
+    }
+
+    // Determine unit price strictly from server catalog in integer paise
+    let unitPricePaise = 0;
+    if (variant && variant.price !== undefined) {
+      unitPricePaise = Math.round(Number(variant.price) * 100);
+    } else if (prod.price !== undefined) {
+      unitPricePaise = Math.round(Number(prod.price) * 100);
+    }
+
+    if (!Number.isSafeInteger(unitPricePaise) || unitPricePaise < 0) {
+      throw { statusCode: 400, message: 'A cart item has an invalid catalog price.' };
+    }
+
+    // Check drop item limits
+    const isDrop = Boolean(variant?.is_drop_item || (prod.tags && prod.tags.includes('drop')));
+    const dropLimit = variant?.max_qty_per_customer || DROP_ITEM_MAX_QTY;
+    if (isDrop && qty > dropLimit) {
+      throw { statusCode: 400, message: `Drop item "${prod.title}" is strictly limited to ${dropLimit} per customer.` };
+    }
+
+    // Check available inventory
+    const inStock = (variant?.available !== false) && Number(variant?.inventory_quantity ?? 1) >= qty;
+    if (!inStock) {
+      throw { statusCode: 409, message: `${prod.title} is out of stock.` };
+    }
+
+    const itemSubtotalPaise = unitPricePaise * qty;
+    subtotalPaise += itemSubtotalPaise;
+
+    processedItems.push({
+      id: prod.id,
+      handle: prod.handle,
+      variantId: variant?.id || null,
+      title: prod.title,
+      size: reqSize || variant?.title || 'Default',
+      price: unitPricePaise / 100,
+      price_paise: unitPricePaise,
+      quantity: qty,
+      subtotal_paise: itemSubtotalPaise,
+      image: prod.images?.[0]?.src || '',
+      is_drop_item: isDrop
+    });
+  }
+
+  // Authoritative Coupon Rule Engine
+  let discountPaise = 0;
+  let appliedCoupon = null;
+  const couponCode = cleanText(cartData.couponCode || cartData.discountCode || cartData.coupon || '', 50).toUpperCase();
+
+  if (couponCode) {
+    let rule = null;
+    if (db && db.isConfigured && db.coupons) {
+      try {
+        rule = await db.coupons.get(couponCode, client);
+      } catch (dbErr) {
+        console.warn('DB coupon lookup warning:', dbErr.message);
+      }
+    }
+
+    if (!rule) {
+      const discounts = readJsonFile('discounts.json', []);
+      const localRule = discounts.find(d => d.isActive !== false && String(d.code || '').toUpperCase() === couponCode);
+      if (localRule) {
+        rule = {
+          code: localRule.code,
+          type: localRule.type || 'percentage',
+          value: Number(localRule.value || 0),
+          min_order_paise: Math.round(Number(localRule.minOrderValue || 0) * 100),
+          max_discount_paise: Math.round(Number(localRule.maxDiscount || 0) * 100),
+          global_usage_limit: localRule.usageLimit || null,
+          per_user_limit: localRule.perUserLimit || 1,
+          usage_count: Number(localRule.usageCount || 0),
+          is_active: localRule.isActive !== false,
+          expires_at: localRule.expiresAt || null
+        };
+      }
+    }
+
+    if (rule) {
+      const isExpired = rule.expires_at && (new Date() > new Date(rule.expires_at));
+      const minPaise = Number(rule.min_order_paise || 0);
+      const isGlobalLimitReached = rule.global_usage_limit && (Number(rule.usage_count || 0) >= Number(rule.global_usage_limit));
+
+      let perUserLimitReached = false;
+      if (cartData.customerEmail && db && db.isConfigured && db.coupons) {
+        try {
+          const userUsage = await db.coupons.getUserUsageCount(couponCode, cartData.customerEmail, client);
+          if (userUsage >= (rule.per_user_limit || 1)) {
+            perUserLimitReached = true;
+          }
+        } catch (_) {}
+      }
+
+      if (rule.is_active !== false && !isExpired && !isGlobalLimitReached && !perUserLimitReached && subtotalPaise >= minPaise) {
+        if (rule.type === 'fixed') {
+          discountPaise = Math.round(Number(rule.value || 0) * 100);
+        } else {
+          discountPaise = Math.round((subtotalPaise * Number(rule.value || 0)) / 100);
+        }
+
+        const maxDiscPaise = Number(rule.max_discount_paise || 0);
+        if (maxDiscPaise > 0) {
+          discountPaise = Math.min(discountPaise, maxDiscPaise);
+        }
+        discountPaise = Math.max(0, Math.min(subtotalPaise, discountPaise));
+        appliedCoupon = {
+          code: rule.code,
+          type: rule.type,
+          value: rule.value,
+          discount_paise: discountPaise,
+          discount: discountPaise / 100
+        };
+      }
+    }
+  }
+
+  // Authoritative Shipping & Fees in integer paise
+  const shippingPaise = subtotalPaise >= FREE_SHIPPING_THRESHOLD_PAISE ? 0 : DEFAULT_SHIPPING_FEE_PAISE;
+  const isCod = !String(cartData.paymentMethod || '').toLowerCase().includes('cashfree') &&
+                !String(cartData.paymentMethod || '').toLowerCase().includes('razorpay');
+  const codFeePaise = (isCod && COD_FEE_PAISE > 0) ? COD_FEE_PAISE : 0;
+  const taxPaise = TAX_RATE_PERCENT > 0 ? Math.round(((subtotalPaise - discountPaise) * TAX_RATE_PERCENT) / 100) : 0;
+  const totalPaise = Math.max(0, subtotalPaise - discountPaise + shippingPaise + codFeePaise + taxPaise);
+
+  return {
+    items: processedItems,
+    subtotal_paise: subtotalPaise,
+    discount_paise: discountPaise,
+    shipping_paise: shippingPaise,
+    cod_fee_paise: codFeePaise,
+    tax_paise: taxPaise,
+    total_paise: totalPaise,
+    subtotal: subtotalPaise / 100,
+    discount: discountPaise / 100,
+    shipping: shippingPaise / 100,
+    cod_fee: codFeePaise / 100,
+    tax: taxPaise / 100,
+    total: totalPaise / 100,
+    currency: 'INR',
+    coupon: appliedCoupon
+  };
+}
+
 async function handleCreateOrder(req, res, isCheckout = false) {
   const clientIp = security.getClientIp(req);
+  const turnstileHeader = req.headers['cf-turnstile-response'];
+  if (turnstileHeader) {
+    const turnstileCheck = await security.verifyTurnstileToken(turnstileHeader, clientIp);
+    if (!turnstileCheck.success) {
+      return sendJson(res, 400, { success: false, message: turnstileCheck.message });
+    }
+  }
   const createLimit = await redis.checkRateLimit(`order_create:${clientIp}`, 10, 300);
   if (!createLimit.allowed) {
     return sendJson(res, 429, { success: false, message: 'Too many order submissions. Please wait a few minutes before trying again.' }, { 'Retry-After': String(createLimit.resetAfterSeconds) });
   }
 
+  // Idempotency check
+  const idempotencyKey = cleanText(req.headers['idempotency-key'] || req.headers['x-idempotency-key'] || '', 128);
+  if (IDEMPOTENCY_REQUIRED && !idempotencyKey && isCheckout) {
+    return sendJson(res, 400, { success: false, message: 'Idempotency-Key header is required for checkout.' });
+  }
+
+  if (idempotencyKey) {
+    // 1. Check Redis idempotency cache
+    try {
+      const cachedOrder = await redis.cacheGet(`idempotency:${idempotencyKey}`);
+      if (cachedOrder) {
+        const orderObj = typeof cachedOrder === 'string' ? JSON.parse(cachedOrder) : cachedOrder;
+        return sendJson(res, 200, {
+          success: true,
+          orderId: orderObj.id,
+          order: customerOrderView(orderObj),
+          idempotentReplay: true
+        }, { 'X-Cache-Lookup': 'HIT-IDEMPOTENCY' });
+      }
+    } catch (_) {}
+
+    // 2. Check Database idempotency
+    if (db && db.isConfigured && db.orders && typeof db.orders.getByIdempotencyKey === 'function') {
+      try {
+        const existing = await db.orders.getByIdempotencyKey(idempotencyKey);
+        if (existing) {
+          await redis.cacheSet(`idempotency:${idempotencyKey}`, existing, 86400).catch(() => {});
+          return sendJson(res, 200, {
+            success: true,
+            orderId: existing.id,
+            order: customerOrderView(existing),
+            idempotentReplay: true
+          }, { 'X-Cache-Lookup': 'HIT-IDEMPOTENCY' });
+        }
+      } catch (_) {}
+    }
+  }
+
   const payload = await parseBody(req);
-  const items = Array.isArray(payload.items) ? payload.items : [];
-  const validItems = items.filter(it => Number.isInteger(Number(it.quantity || it.qty)) && Number(it.quantity || it.qty) > 0);
-  if (validItems.length === 0 || validItems.length > 50) {
-    return sendJson(res, 400, {
-      success: false,
-      error: 'Cart is empty. Cannot place an empty order.',
-      message: 'Cart is empty. Cannot place an empty order.'
-    });
-  }
-
-  const allProducts = await getAllProducts();
-  const processedItems = [];
-  for (const item of validItems) {
-    const match = allProducts.find(p =>
-      (item.id && String(p.id) === String(item.id)) ||
-      (item.handle && p.handle === item.handle) ||
-      (item.title && p.title.toLowerCase() === String(item.title).toLowerCase())
-    );
-    if (!match) {
-      return sendJson(res, 400, { success: false, message: 'One or more cart items are no longer available.' });
-    }
-    const quantity = Number(item.quantity || item.qty);
-    if (!Number.isSafeInteger(quantity) || quantity > 20) {
-      return sendJson(res, 400, { success: false, message: 'Each item quantity must be between 1 and 20.' });
-    }
-    const variant = Array.isArray(match.variants) && match.variants.length
-      ? (match.variants.find(v => item.size && String(v.title).toLowerCase() === String(item.size).toLowerCase()) || match.variants[0])
-      : null;
-    const serverPrice = Number(variant?.price ?? match.price ?? 0);
-    if (!Number.isFinite(serverPrice) || serverPrice < 0) {
-      return sendJson(res, 400, { success: false, message: 'A cart item has an invalid catalog price.' });
-    }
-    const available = variant?.available !== false && Number(variant?.inventory_quantity ?? 1) >= quantity;
-    if (!available) return sendJson(res, 409, { success: false, message: `${match.title} is out of stock.` });
-    processedItems.push({
-      id: match.id,
-      handle: match.handle,
-      variantId: variant?.id || null,
-      title: match.title,
-      size: cleanText(item.size || variant?.title || 'Default', 30),
-      price: serverPrice,
-      quantity,
-      image: match.images?.[0]?.src || ''
-    });
-  }
-
-  const calculatedSubtotal = processedItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
-  const subtotal = Number(calculatedSubtotal.toFixed(2));
-  const discounts = readJsonFile('discounts.json', []);
-  const discountCode = cleanText(payload.discountCode || payload.couponCode || payload.coupon || '', 50).toUpperCase();
-  const discountRule = discounts.find(d => d.isActive !== false && String(d.code || '').toUpperCase() === discountCode && (!d.usageLimit || Number(d.usageCount || 0) < Number(d.usageLimit)) && subtotal >= Number(d.minOrderValue || 0));
-  let discount = 0;
-  if (discountRule) {
-    discount = discountRule.type === 'fixed'
-      ? Number(discountRule.value || 0)
-      : subtotal * (Number(discountRule.value || 0) / 100);
-    discount = Math.min(discount, Number(discountRule.maxDiscount || discount));
-    discountRule.usageCount = (Number(discountRule.usageCount) || 0) + 1;
-    writeJsonFile('discounts.json', discounts);
-  }
-  discount = Math.max(0, Math.min(subtotal, Number(discount.toFixed(2))));
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING_FEE;
-  const total = Number(Math.max(0, subtotal - discount + shipping).toFixed(2));
-
   const rawCustomer = payload.customer && typeof payload.customer === 'object' ? payload.customer : {};
   const customer = {
     name: cleanText(rawCustomer.name, 120),
@@ -2296,6 +2533,19 @@ async function handleCreateOrder(req, res, isCheckout = false) {
     return sendJson(res, 400, { success: false, message: 'Valid name, email, Indian phone, address and 6-digit pincode are required.' });
   }
 
+  // Authoritative Calculation (integer paise, server prices, validated inventory)
+  let cart;
+  try {
+    cart = await calculateAuthoritativeCart({
+      items: payload.items,
+      couponCode: payload.discountCode || payload.couponCode || payload.coupon,
+      customerEmail: customer.email,
+      paymentMethod: payload.paymentMethod
+    });
+  } catch (err) {
+    return sendJson(res, err.statusCode || 400, { success: false, message: err.message || 'Cart validation failed.' });
+  }
+
   const isCashfree = String(payload.paymentMethod || '').toLowerCase().includes('cashfree');
   const orderId = generateOrderId();
   const checkoutToken = crypto.randomBytes(32).toString('base64url');
@@ -2304,17 +2554,26 @@ async function handleCreateOrder(req, res, isCheckout = false) {
   const newOrder = {
     id: orderId,
     userId: identity?.id || null,
-    customer: {
-      ...customer
-    },
-    items: processedItems,
-    subtotal,
-    discount,
-    shipping,
-    total,
+    customer: { ...customer },
+    items: cart.items,
+    subtotal: cart.subtotal,
+    discount: cart.discount,
+    shipping: cart.shipping,
+    codFee: cart.cod_fee,
+    tax: cart.tax,
+    total: cart.total,
+    subtotal_paise: cart.subtotal_paise,
+    discount_paise: cart.discount_paise,
+    shipping_paise: cart.shipping_paise,
+    cod_fee_paise: cart.cod_fee_paise,
+    tax_paise: cart.tax_paise,
+    total_paise: cart.total_paise,
+    idempotency_key: idempotencyKey || null,
+    discountCode: cart.coupon?.code || null,
     paymentMethod: isCashfree ? 'Cashfree Online Payment' : 'Cash on Delivery (COD)',
     paymentStatus: isCashfree ? 'Pending' : 'Pending COD',
     orderStatus: 'Processing',
+    status: isCashfree ? 'payment_pending' : 'created',
     trackingNumber: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -2324,50 +2583,149 @@ async function handleCreateOrder(req, res, isCheckout = false) {
     inventoryReservedAt: new Date().toISOString(),
     inventoryReleasedAt: null
   };
-  let paymentSessionId = null;
 
-  const inventoryReserved = await reserveInventory(processedItems);
-  if (!inventoryReserved) {
-    return sendJson(res, 409, { success: false, message: 'One or more items became unavailable. Please refresh your bag and try again.' });
+  // Phase 5: COD Risk Evaluation (Shadow vs Enforce Mode)
+  if (!isCashfree) {
+    const pastOrders = await getAllOrders();
+    const riskAssessment = codRisk.evaluateCodRisk({
+      customer,
+      total: cart.total,
+      totalPaise: cart.total_paise,
+      ip: clientIp,
+      pastOrders
+    });
+
+    newOrder.cod_risk_score = riskAssessment.score;
+    newOrder.cod_risk_reasons = riskAssessment.reasons;
+    newOrder.cod_risk_mode = riskAssessment.mode;
+    newOrder.cod_risk_action = riskAssessment.action;
+    newOrder.cod_confirmed = false;
+    newOrder.cod_confirmed_at = null;
+
+    if (riskAssessment.isEnforce) {
+      const maxCodLimit = Number(process.env.MAX_COD_VALUE_INR || 50000);
+      if (cart.total > maxCodLimit || (riskAssessment.score >= 80 && riskAssessment.action === 'BLOCK_COD')) {
+        return sendJson(res, 400, {
+          success: false,
+          message: 'Cash on Delivery is unavailable for this order due to risk limits. Please checkout using online payment.'
+        });
+      }
+
+      if (riskAssessment.action === 'ADD_COD_FEE' && riskAssessment.appliedFeePaise > 0) {
+        const surcharge = riskAssessment.appliedFeePaise / 100;
+        newOrder.codFee = (newOrder.codFee || 0) + surcharge;
+        newOrder.cod_fee_paise = (newOrder.cod_fee_paise || 0) + riskAssessment.appliedFeePaise;
+        newOrder.total = newOrder.total + surcharge;
+        newOrder.total_paise = newOrder.total_paise + riskAssessment.appliedFeePaise;
+      }
+
+      if (riskAssessment.action === 'REQUIRE_CONFIRMATION' || process.env.COD_CONFIRMATION_ENABLED === 'true') {
+        const conf = codRisk.generateConfirmationToken();
+        newOrder.cod_confirmation_code_hash = conf.codeHash;
+        newOrder.cod_confirmation_token = conf.token;
+        newOrder.cod_confirmation_expires_at = conf.expiresAt;
+        newOrder.paymentStatus = 'Pending COD Confirmation';
+
+        await codRisk.dispatchPhoneConfirmation({
+          orderId,
+          phone: customer.phone,
+          code: conf.code,
+          token: conf.token,
+          customerName: customer.name
+        });
+      }
+    }
   }
 
+  let paymentSessionId = null;
+
+  // DB Transaction for Atomic Stock Decrement & Coupon Ledger
+  if (db && db.isConfigured && typeof db.runInTransaction === 'function') {
+    try {
+      await db.runInTransaction(async (client) => {
+        // Atomic stock decrement in DB
+        for (const item of cart.items) {
+          if (item.variantId) {
+            const dec = await db.variants.decrementStock(item.variantId, item.quantity, client);
+            if (!dec) {
+              throw { statusCode: 409, message: `Stock unavailable for ${item.title} (${item.size}).` };
+            }
+          }
+        }
+        // Record coupon usage in ledger
+        if (cart.coupon) {
+          await db.coupons.recordUsage({
+            coupon_code: cart.coupon.code,
+            order_id: orderId,
+            customer_id: newOrder.userId,
+            customer_email: customer.email,
+            discount_paise: cart.discount_paise
+          }, client);
+        }
+        // Insert order inside transaction
+        await db.orders.create(newOrder, client);
+      });
+    } catch (txErr) {
+      console.warn('DB transactional order creation error:', txErr.message);
+      return sendJson(res, txErr.statusCode || 500, {
+        success: false,
+        message: txErr.message || 'Unable to process order transaction. Please try again.'
+      });
+    }
+  } else {
+    // Fallback / Local mode
+    const inventoryReserved = await reserveInventory(cart.items);
+    if (!inventoryReserved) {
+      return sendJson(res, 409, { success: false, message: 'One or more items became unavailable. Please refresh your bag and try again.' });
+    }
+    // Update local discount count
+    if (cart.coupon) {
+      const discounts = readJsonFile('discounts.json', []);
+      const d = discounts.find(x => String(x.code).toUpperCase() === cart.coupon.code);
+      if (d) {
+        d.usageCount = (Number(d.usageCount) || 0) + 1;
+        writeJsonFile('discounts.json', discounts);
+      }
+    }
+    if (db && db.orders && typeof db.orders.create === 'function') {
+      try {
+        await db.orders.create(newOrder);
+      } catch (e) {
+        console.warn('AWS RDS order create warning:', e.message);
+      }
+    }
+  }
+
+  // Handle gateway if online payment
   if (isCashfree) {
     let gatewayOrder;
     try {
       gatewayOrder = await createCashfreeOrder(req, newOrder);
     } catch (error) {
-      await releaseInventory(processedItems);
+      await releaseInventory(cart.items);
       return sendJson(res, error.statusCode || 502, { success: false, message: 'Unable to initialise the payment gateway. Please try again.' });
     }
     if (!gatewayOrder.configured) {
-      await releaseInventory(processedItems);
+      await releaseInventory(cart.items);
       return sendJson(res, 503, { success: false, message: 'Online payments are temporarily unavailable. Please choose COD.' });
     }
     newOrder.cashfreeOrderId = gatewayOrder.cashfreeOrderId;
     paymentSessionId = gatewayOrder.paymentSessionId;
   }
 
-  // Cashfree's client session is a short-lived payment credential. Return it
-  // once to the checkout client, but never persist it in order archives.
-
+  // Persist order in JSON/memory for instant reads & fallback sync
   const orders = await getAllOrders();
   orders.unshift(newOrder);
   memoryOrders = orders;
   memoryOrdersLastFetch = Date.now();
-  if (!writeJsonFile('orders.json', orders)) {
-    await releaseInventory(processedItems);
-    return sendJson(res, 500, { success: false, message: 'Unable to save the order. Please try again.' });
-  }
-  if (db && db.orders && typeof db.orders.create === 'function') {
-    try {
-      await db.orders.create(newOrder);
-    } catch (e) {
-      console.warn('AWS RDS order create warning:', e.message);
-    }
-  }
+  writeJsonFile('orders.json', orders);
   await syncOrderToSupabase(newOrder);
 
-  // Sync customer address and contact info to customers.json
+  if (idempotencyKey) {
+    await redis.cacheSet(`idempotency:${idempotencyKey}`, newOrder, 86400).catch(() => {});
+  }
+
+  // Customer sync
   try {
     const custEmail = customer.email;
     if (custEmail) {
@@ -2384,7 +2742,7 @@ async function handleCreateOrder(req, res, isCheckout = false) {
         if (payload.customer?.pincode) cust.pincode = payload.customer.pincode;
         if (payload.customer?.country) cust.country = payload.customer.country;
         cust.totalOrders = (cust.totalOrders || 0) + 1;
-        cust.totalSpent = (cust.totalSpent || 0) + total;
+        cust.totalSpent = (cust.totalSpent || 0) + newOrder.total;
       } else {
         newCust = {
           id: `cust_${Date.now()}`,
@@ -2398,7 +2756,7 @@ async function handleCreateOrder(req, res, isCheckout = false) {
           pincode: payload.customer?.pincode || '',
           country: payload.customer?.country || 'India',
           ordersCount: 1,
-          totalSpent: total,
+          totalSpent: newOrder.total,
           status: 'Active',
           tags: ['Storefront Buyer', 'WhatsApp VIP'],
           wishlist: [],
@@ -2407,17 +2765,15 @@ async function handleCreateOrder(req, res, isCheckout = false) {
         customers.unshift(newCust);
       }
       writeJsonFile('customers.json', customers);
-      if (db && db.isConfigured) {
+      if (db && db.isConfigured && db.customers) {
         try {
-           await db.customers.upsert(cust || newCust);
-        } catch (dbCustErr) {
-          console.warn('AWS RDS customer upsert on order warning:', dbCustErr.message);
-        }
+          await db.customers.upsert(cust || newCust);
+        } catch (_) {}
       }
     }
-  } catch (e) {}
+  } catch (_) {}
 
-  // Send real order confirmation email via Resend if email is provided
+  // Asynchronous confirmation email
   sendOrderConfirmationEmail(newOrder).catch(err => {
     console.warn('⚠️ [ASYNC ORDER EMAIL WARNING]:', err.message);
   });
@@ -2438,6 +2794,20 @@ async function handleUpdateOrder(req, res, id) {
   const order = orders.find(o => String(o.id) === String(id));
   if (!order) {
     return sendJson(res, 404, { success: false, message: 'Order not found' });
+  }
+
+  // Phase 3: Sensitive Action Re-Authentication for Refunds
+  const isRefund = payload.orderStatus === 'Refunded' || payload.paymentStatus === 'Refunded';
+  if (isRefund) {
+    const isConfirmed = payload.confirmed === true;
+        const reauth = await security.verifyAdminTotpReauth(req, payload, `order_refund:${order.id}`, true);
+    if (!reauth.authorized) {
+      return sendJson(res, 403, {
+        success: false,
+        reauthRequired: true,
+        message: reauth.message || 'TOTP re-authentication required for order refunds.'
+      });
+    }
   }
 
   const allowedOrderStatuses = new Set(['Processing', 'Pending', 'Shipped', 'Delivered', 'Cancelled', 'Refunded']);
@@ -2479,6 +2849,20 @@ async function handleUpdateOrder(req, res, id) {
   }
   await syncOrderToSupabase(order);
 
+  if (typeof security.logAuditAsync === 'function') {
+    security.logAuditAsync({
+      adminUsername: 'admin',
+      ipAddress: security.getClientIp(req),
+      action: isRefund ? 'order_refund' : 'order_status_update',
+      targetType: 'order',
+      targetId: order.id,
+      details: {
+        orderStatus: order.orderStatus,
+        paymentStatus: order.paymentStatus,
+        trackingNumber: order.trackingNumber
+      }
+    }).catch(() => {});
+  }
   return sendJson(res, 200, { success: true, order: security.isAdminAuthorized(req) ? order : customerOrderView(order) });
 }
 
@@ -3047,6 +3431,193 @@ async function handleCashfreeVerify(req, res, id) {
   });
 }
 
+async function handleGenericWebhook(req, res, providerName = 'razorpay') {
+  // Phase 4: Safe No-Op when Online Payments are Disabled
+  if (!payments.isOnlinePaymentsEnabled()) {
+    return sendJson(res, 200, {
+      success: true,
+      noop: true,
+      message: 'Online payments are currently disabled. Webhook ignored safely.'
+    });
+  }
+
+  let rawBody;
+  try {
+    rawBody = await parseRawBody(req, 1024 * 1024);
+  } catch (error) {
+    return sendJson(res, error.message === 'Payload too large' ? 413 : 400, {
+      success: false,
+      message: 'Invalid webhook payload.'
+    });
+  }
+
+  const provider = payments.getProvider(providerName);
+  const secret = process.env[`${providerName.toUpperCase()}_WEBHOOK_SECRET`] ||
+                 process.env.PAYMENT_WEBHOOK_SECRET ||
+                 'stub_webhook_secret';
+
+  const verification = provider.verifyWebhook({
+    rawBody,
+    headers: req.headers,
+    secret
+  });
+
+  if (!verification.valid) {
+    return sendJson(res, 401, {
+      success: false,
+      message: verification.reason || 'Invalid webhook signature.'
+    });
+  }
+
+  const evt = verification.event;
+  const eventId = String(evt.eventId || hashSecret(rawBody.toString('utf8')));
+
+  // Deduplicate by event_id across Redis and memory
+  const isNew = await redis.checkWebhookIdempotency(`${providerName}:${eventId}`, 86400);
+  if (!isNew) {
+    return sendJson(res, 200, { success: true, duplicate: true });
+  }
+
+  // Look up order
+  const orderId = evt.orderId;
+  let orders = await getAllOrders();
+  let order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) {
+    const freshOrders = readJsonFile('orders.json', []);
+    order = freshOrders.find(o => String(o.id) === String(orderId));
+    if (order) orders = freshOrders;
+  }
+
+  if (!order) {
+    return sendJson(res, 200, { success: true, processed: false, reason: 'Order not found' });
+  }
+
+  // Check amount and currency against the order
+  const orderTotalPaise = order.total_paise !== undefined ? Number(order.total_paise) : Math.round((Number(order.total) || 0) * 100);
+  const webhookAmountPaise = Number(evt.amountPaise || 0);
+
+  if (Math.abs(webhookAmountPaise - orderTotalPaise) > 0 || String(evt.currency || 'INR').toUpperCase() !== 'INR') {
+    return sendJson(res, 400, {
+      success: false,
+      message: 'Webhook amount or currency does not match the order.'
+    });
+  }
+
+  // Order State Machine Transition: payment_pending / created -> paid
+  const currentStatus = String(order.status || (order.paymentStatus === 'Pending' ? 'payment_pending' : 'created')).toLowerCase();
+  if (currentStatus === 'payment_pending' || currentStatus === 'created') {
+    try {
+      await orderStateMachine.transitionOrder(order.id, currentStatus, orderStateMachine.ORDER_STATUSES.PAID, {
+        readJsonFile,
+        writeJsonFile
+      });
+      order.status = orderStateMachine.ORDER_STATUSES.PAID;
+      order.paymentStatus = 'Paid';
+    } catch (transErr) {
+      console.warn('[WEBHOOK STATE MACHINE WARNING]:', transErr.message);
+    }
+  }
+
+  // Record payment in payments table if DB available
+  if (db && db.isConfigured && db.payments && typeof db.payments.create === 'function') {
+    try {
+      await db.payments.create({
+        orderId: order.id,
+        provider: providerName,
+        providerOrderId: evt.providerOrderId || null,
+        providerPaymentId: evt.paymentId || null,
+        amountPaise: webhookAmountPaise,
+        currency: evt.currency || 'INR',
+        status: 'captured',
+        rawResponse: evt.raw
+      });
+    } catch (pErr) {
+      console.warn('[WEBHOOK PAYMENT CREATE WARNING]:', pErr.message);
+    }
+  }
+
+  order.paymentId = evt.paymentId;
+  order.paymentStatus = 'Paid';
+  order.status = 'paid';
+  order.updatedAt = new Date().toISOString();
+  writeJsonFile('orders.json', orders);
+  memoryOrders = orders;
+  memoryOrdersLastFetch = Date.now();
+
+  sendOrderConfirmationEmail(order).catch(() => {});
+
+  return sendJson(res, 200, {
+    success: true,
+    processed: true,
+    orderId: order.id,
+    paymentId: evt.paymentId
+  });
+}
+
+async function handleConfirmCodOrder(req, res) {
+  const payload = await parseBody(req);
+  const orderId = payload.orderId;
+  const code = String(payload.confirmationCode || payload.code || '').trim();
+  const token = String(payload.token || '').trim();
+
+  if (!orderId || (!code && !token)) {
+    return sendJson(res, 400, { success: false, message: 'Order ID and confirmation code/token are required.' });
+  }
+
+  let orders = await getAllOrders();
+  let order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) {
+    const fresh = readJsonFile('orders.json', []);
+    order = fresh.find(o => String(o.id) === String(orderId));
+    if (order) orders = fresh;
+  }
+
+  if (!order) {
+    return sendJson(res, 404, { success: false, message: 'Order not found.' });
+  }
+
+  if (order.cod_confirmed) {
+    return sendJson(res, 200, { success: true, message: 'Order is already confirmed.', order: customerOrderView(order) });
+  }
+
+  if (order.cod_confirmation_expires_at && new Date() > new Date(order.cod_confirmation_expires_at)) {
+    return sendJson(res, 410, { success: false, message: 'Confirmation code has expired. Please contact support.' });
+  }
+
+  let isValid = false;
+  if (code && order.cod_confirmation_code_hash) {
+    const hash = crypto.createHash('sha256').update(code).digest('hex');
+    isValid = constantTimeStringEquals(hash, order.cod_confirmation_code_hash);
+  } else if (token && order.cod_confirmation_token) {
+    isValid = constantTimeStringEquals(token, order.cod_confirmation_token);
+  }
+
+  if (!isValid) {
+    return sendJson(res, 400, { success: false, message: 'Invalid confirmation code.' });
+  }
+
+  order.cod_confirmed = true;
+  order.cod_confirmed_at = new Date().toISOString();
+  order.paymentStatus = 'Pending COD';
+  order.updatedAt = new Date().toISOString();
+
+  writeJsonFile('orders.json', orders);
+  memoryOrders = orders;
+  memoryOrdersLastFetch = Date.now();
+
+  if (db && db.orders && typeof db.orders.create === 'function') {
+    try { await db.orders.create(order); } catch (_) {}
+  }
+
+  return sendJson(res, 200, {
+    success: true,
+    message: 'Cash on Delivery order confirmed successfully.',
+    order: customerOrderView(order)
+  });
+}
+
+
+
 async function handleDeleteOrder(req, res, id) {
   const orders = await getAllOrders();
   const order = orders.find(o => String(o.id) === String(id));
@@ -3095,17 +3666,59 @@ async function appHandler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self)');
   if (process.env.NODE_ENV === 'production' || req.headers['x-forwarded-proto'] === 'https') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
 
-  // Handle OPTIONS for CORS
+  // Phase 3: Content-Security-Policy (CSP)
+  const cspDirectives = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://prod.spline.design https://unpkg.com https://cdn.jsdelivr.net https://checkout.razorpay.com https://challenges.cloudflare.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' blob: data: https:",
+    "connect-src 'self' https://prod.spline.design https://*.spline.design https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com https://*.supabase.co https://*.delhivery.com",
+    "worker-src 'self' blob:",
+    "child-src 'self' blob:",
+    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self' https://checkout.razorpay.com",
+    "report-uri /csp-report"
+  ].join('; ');
+
+  const cspHeaderName = process.env.CSP_ENFORCE === 'true' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+  res.setHeader(cspHeaderName, cspDirectives);
+
+  // Administrative Route Protection Header
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+  }
+
+    // Handle OPTIONS for CORS
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-admin-key, x-admin-token, Idempotency-Key'
     });
+    return res.end();
+  }
+
+  // Phase 2 CSRF Protection Guard for State-Changing Requests (POST, PUT, DELETE, PATCH)
+  const csrfCheck = security.verifyCsrf(req);
+  if (!csrfCheck.valid) {
+    return sendJson(res, 403, { success: false, message: csrfCheck.message });
+  }
+
+  // Phase 3: Content-Security-Policy Violation Reporting Endpoint
+  if (pathname === '/csp-report' && req.method === 'POST') {
+    const reportBody = await parseBody(req).catch(() => ({}));
+    if (process.env.DEBUG_CSP === 'true' || (process.env.NODE_ENV !== 'production' && reportBody['csp-report'])) {
+      console.warn('[CSP REPORT VIOLATION]:', JSON.stringify(reportBody));
+    }
+    res.writeHead(204);
     return res.end();
   }
 
@@ -3198,6 +3811,15 @@ async function appHandler(req, res) {
   // -------------------------------------------------------------
   if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html' ||
       pathname === '/allyrich-hq' || pathname === '/allyrich-hq/' || pathname === '/allyrich-hq.html') {
+    const clientIp = security.getClientIp(req);
+    if (!security.isAdminIpAllowed(clientIp)) {
+      return sendJson(res, 403, { success: false, message: 'Access denied: IP address not authorized in administrator allowlist.' });
+    }
+    const cfCheck = security.verifyCfAccess(req);
+    if (!cfCheck.valid) {
+      return sendJson(res, 403, { success: false, message: `Access denied: ${cfCheck.message}` });
+    }
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
     return serveCachedHtml(req, res, path.join(PUBLIC_DIR, 'admin.html'));
   }
 
@@ -3315,6 +3937,10 @@ async function appHandler(req, res) {
     }
   }
 
+  if (pathname === '/api/orders/confirm-cod' && req.method === 'POST') {
+    return await handleConfirmCodOrder(req, res);
+  }
+
   if (pathname === '/api/orders' || pathname.startsWith('/api/orders/')) {
     if (pathname.includes('/shipping-label') && req.method === 'GET') {
       if (!security.isAdminAuthorized(req, parsedUrl)) {
@@ -3334,12 +3960,12 @@ async function appHandler(req, res) {
       return await handleCreateOrder(req, res, false);
     }
     // Order mutation/deletion requires admin authorization
-    if (req.method === 'PUT' || req.method === 'DELETE') {
+    if (req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
       if (!security.isAdminAuthorized(req, parsedUrl)) {
         return sendJson(res, 401, { success: false, message: 'Unauthorized: Administrator privileges required to modify or delete orders.' });
       }
     }
-    if (req.method === 'PUT' && orderId) {
+    if ((req.method === 'PUT' || req.method === 'PATCH') && orderId) {
       return await handleUpdateOrder(req, res, orderId);
     }
     if (req.method === 'DELETE' && orderId) {
@@ -3354,20 +3980,47 @@ async function appHandler(req, res) {
   // Public Admin 2FA Authentication Endpoints (Pre-auth barrier)
   // -------------------------------------------------------------
   if (pathname === '/api/admin/login' && req.method === 'POST') {
-    const clientIp = security.getClientIp(req);
-    // Rate limit: max 5 failed attempts per 15 minutes by IP
-    const rateCheck = await redis.checkRateLimit(`admin_login:${clientIp}`, 5, 15 * 60);
-    if (!rateCheck.allowed) {
-      return sendJson(res, 429, {
+    // Fail-Closed Guard if Redis is unavailable and REDIS_AUTH_FAIL_CLOSED=true
+    if (process.env.REDIS_AUTH_FAIL_CLOSED === 'true' && redis && !redis.isRedisAvailable()) {
+      return sendJson(res, 503, {
         success: false,
-        message: `Security Lockout: Too many failed attempts. Try again in ${rateCheck.resetAfterSeconds} seconds.`
-      }, { 'Retry-After': String(rateCheck.resetAfterSeconds) });
+        message: 'Administrative authentication is temporarily unavailable. Distributed state store unreachable.'
+      });
+    }
+    const clientIp = security.getClientIp(req);
+
+    // Phase 3: IP Allowlist Guard
+    if (!security.isAdminIpAllowed(clientIp)) {
+      return sendJson(res, 403, {
+        success: false,
+        message: 'Access denied: IP address not authorized in administrator allowlist.'
+      });
+    }
+
+    // Phase 3: Cloudflare Access Verification
+    const cfCheck = security.verifyCfAccess(req);
+    if (!cfCheck.valid) {
+      return sendJson(res, 403, {
+        success: false,
+        message: `Access denied: ${cfCheck.message}`
+      });
     }
 
     const payload = await parseBody(req);
     const username = (payload.username || '').trim();
     const password = (payload.password || '').trim();
     const totpCode = (payload.totpCode || '').trim();
+
+    // Phase 3: Exponential Backoff Lockout Check
+    if (redis && typeof redis.isAdminLockedOut === 'function') {
+      const lockCheck = await redis.isAdminLockedOut(username, clientIp);
+      if (lockCheck.lockedOut) {
+        return sendJson(res, 429, {
+          success: false,
+          message: `Security Lockout: Repeated failed administrative attempts. Try again in ${lockCheck.retryAfterSeconds} seconds.`
+        }, { 'Retry-After': String(lockCheck.retryAfterSeconds) });
+      }
+    }
 
     const expectedUser = process.env.ADMIN_USERNAME;
     const expectedPass = process.env.ADMIN_PASSWORD;
@@ -3378,6 +4031,17 @@ async function appHandler(req, res) {
     }
 
     if (!constantTimeStringEquals(username, expectedUser) || !constantTimeStringEquals(password, expectedPass)) {
+      if (redis && typeof redis.recordAdminLoginFailure === 'function') {
+        await redis.recordAdminLoginFailure(username, clientIp);
+      }
+      if (typeof security.logAuditAsync === 'function') {
+        security.logAuditAsync({
+          adminUsername: username || 'unknown',
+          ipAddress: clientIp,
+          action: 'admin_login_failure',
+          details: { reason: 'invalid_credentials' }
+        }).catch(() => {});
+      }
       return sendJson(res, 401, {
         success: false,
         message: 'Invalid administrative username or master password.'
@@ -3393,7 +4057,29 @@ async function appHandler(req, res) {
     }
 
     const isValidTotp = totp.verifyTotp(totpSecret, totpCode);
+    if (isValidTotp) {
+      const totpCodeHash = crypto.createHash('sha256').update(totpCode).digest('hex');
+      const isNewTotp = await redis.recordUsedTotp(username, totpCodeHash, 90);
+      if (!isNewTotp) {
+        return sendJson(res, 400, {
+          success: false,
+          require2fa: true,
+          message: 'This authenticator code has already been used. Please wait for the next 30-second token in your app.'
+        });
+      }
+    }
     if (!isValidTotp) {
+      if (redis && typeof redis.recordAdminLoginFailure === 'function') {
+        await redis.recordAdminLoginFailure(username, clientIp);
+      }
+      if (typeof security.logAuditAsync === 'function') {
+        security.logAuditAsync({
+          adminUsername: username,
+          ipAddress: clientIp,
+          action: 'admin_login_failure',
+          details: { reason: 'invalid_totp' }
+        }).catch(() => {});
+      }
       return sendJson(res, 400, {
         success: false,
         require2fa: true,
@@ -3401,9 +4087,23 @@ async function appHandler(req, res) {
       });
     }
 
-    // Both password and 2FA verified! Create 12-hour session
+    // Both password and 2FA verified! Clear failure counters
+    if (redis && typeof redis.clearAdminLoginFailures === 'function') {
+      await redis.clearAdminLoginFailures(username, clientIp);
+    }
     const session = security.createAdminSession(username);
     await redis.setAdminSession(session.token, { username, createdAt: Date.now() }, 43200);
+    security.setSessionCookie(res, 'alleyrich_admin_session', session.token, 1800, true, req);
+
+    if (typeof security.logAuditAsync === 'function') {
+      security.logAuditAsync({
+        adminUsername: username,
+        ipAddress: clientIp,
+        action: 'admin_login_success',
+        details: { auth_mode: 'totp_verified' }
+      }).catch(() => {});
+    }
+
     return sendJson(res, 200, {
       success: true,
       token: session.token,
@@ -3421,6 +4121,25 @@ async function appHandler(req, res) {
 
   // General Admin API Router
   if (pathname.startsWith('/api/admin/')) {
+    const adminIp = security.getClientIp(req);
+
+    // Phase 3: IP Allowlist Guard
+    if (!security.isAdminIpAllowed(adminIp)) {
+      return sendJson(res, 403, {
+        success: false,
+        message: 'Access denied: IP address not authorized in administrator allowlist.'
+      });
+    }
+
+    // Phase 3: Cloudflare Access Verification
+    const cfCheck = security.verifyCfAccess(req);
+    if (!cfCheck.valid) {
+      return sendJson(res, 403, {
+        success: false,
+        message: `Access denied: ${cfCheck.message}`
+      });
+    }
+
     // 1. Enforce strict Admin Authorization across all /api/admin/* endpoints
     if (!security.isAdminAuthorized(req, parsedUrl)) {
       return sendJson(res, 401, {
@@ -3430,7 +4149,6 @@ async function appHandler(req, res) {
     }
 
     // 2. Enforce Admin API Rate Limit (120 req/min)
-    const adminIp = security.getClientIp(req);
     const adminLimit = await redis.checkRateLimit(`admin_api:${adminIp}`, 120, 60);
     if (!adminLimit.allowed) {
       return sendJson(res, 429, {
@@ -3440,6 +4158,72 @@ async function appHandler(req, res) {
     }
 
     const apiRoute = pathname.replace('/api/admin/', '');
+
+    // Phase 3: Bulk Export Endpoint (Sensitive Action - Requires TOTP Re-Auth)
+    if (apiRoute === 'orders/export' && req.method === 'GET') {
+      const reauth = await security.verifyAdminTotpReauth(req, {}, 'orders_export', true);
+      if (!reauth.authorized) {
+        return sendJson(res, 403, {
+          success: false,
+          reauthRequired: true,
+          message: reauth.message || 'TOTP re-authentication required for bulk order export.'
+        });
+      }
+      const allOrders = await getAllOrders();
+      const exportList = allOrders.map(o => ({
+        id: o.id,
+        createdAt: o.createdAt,
+        total: o.total,
+        total_paise: o.total_paise,
+        orderStatus: o.orderStatus,
+        paymentStatus: o.paymentStatus,
+        paymentMethod: o.paymentMethod,
+        itemsCount: (o.items || []).length
+      }));
+      if (typeof security.logAuditAsync === 'function') {
+        security.logAuditAsync({
+          adminUsername: 'admin',
+          ipAddress: adminIp,
+          action: 'bulk_export',
+          targetType: 'orders',
+          details: { record_count: exportList.length }
+        }).catch(() => {});
+      }
+      return sendJson(res, 200, { success: true, count: exportList.length, orders: exportList });
+    }
+
+    // Phase 4: Order Reconciliation Endpoint
+    if (apiRoute === 'reconciliation/run' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const maxAgeMinutes = Math.max(1, Math.min(1440, Number(payload.maxAgeMinutes) || 30));
+      const result = await reconciliation.reconcileStuckOrders({
+        maxAgeMinutes,
+        releaseInventoryFn: releaseInventory,
+        getAllOrdersFn: getAllOrders,
+        readJsonFileFn: readJsonFile,
+        writeJsonFileFn: writeJsonFile
+      });
+      return sendJson(res, 200, {
+        success: true,
+        ...result
+      });
+    }
+
+    // Phase 3: Audit Logs Query Endpoint
+    if (apiRoute === 'audit-logs' && req.method === 'GET') {
+      const limit = parseInt(parsedUrl.searchParams?.get('limit') || '50', 10);
+      const offset = parseInt(parsedUrl.searchParams?.get('offset') || '0', 10);
+      let logs = [];
+      if (db && db.isConfigured && db.auditLog) {
+        try {
+          logs = await db.auditLog.query({ limit, offset });
+        } catch (_) {}
+      }
+      if (logs.length === 0 && typeof security.getMemoryAuditLogs === 'function') {
+        logs = security.getMemoryAuditLogs({ limit, offset });
+      }
+      return sendJson(res, 200, { success: true, logs });
+    }
 
     // 1. Executive Dashboard Stats
     if (apiRoute === 'stats' && req.method === 'GET') {
@@ -4081,10 +4865,49 @@ async function appHandler(req, res) {
           return sendJson(res, 400, { success: false, message: 'Message content is required for campaign broadcast' });
         }
 
+        const isConfirmed = payload.confirmed === true;
+
+        // Phase 3: Broadcast Send-Rate Limit (Enforced on execution before consuming TOTP)
+        if (isConfirmed) {
+          const broadcastLimit = await redis.checkRateLimit('marketing_broadcast_cooldown', 1, 60);
+          if (!broadcastLimit.allowed) {
+            return sendJson(res, 429, {
+              success: false,
+              message: `Broadcast send-rate limit: Please wait ${broadcastLimit.resetAfterSeconds}s before sending another campaign.`
+            }, { 'Retry-After': String(broadcastLimit.resetAfterSeconds) });
+          }
+        }
+
+        // Phase 3: Sensitive Action TOTP Re-Auth Check
+        const reauth = await security.verifyAdminTotpReauth(req, payload, 'marketing_broadcast', isConfirmed);
+        if (!reauth.authorized) {
+          return sendJson(res, 403, {
+            success: false,
+            reauthRequired: true,
+            message: reauth.message || 'TOTP re-authentication required for marketing campaign broadcast.'
+          });
+        }
+
         const subs = await getUnifiedSubscribers();
         const customers = readJsonFile('customers.json', []);
         const orders = await getAllOrders();
+        // Uses explicit consent per recipient & channel
         const aggregated = whatsapp.aggregateMarketingRecipients(subs, customers, orders);
+
+        const targetCount = channel === 'email' ? aggregated.totalEmails : (channel === 'whatsapp' ? aggregated.totalPhones : (aggregated.totalEmails + aggregated.totalPhones));
+
+        // Phase 3: Confirmation Step with Recipient Count (Preview does not consume rate limit)
+        if (payload.confirmed !== true) {
+          return sendJson(res, 200, {
+            success: false,
+            requireConfirmation: true,
+            channel,
+            eligibleRecipientsCount: targetCount,
+            totalEmails: aggregated.totalEmails,
+            totalPhones: aggregated.totalPhones,
+            message: `Confirmation required: This broadcast will be delivered to ${targetCount} consented recipients. Pass confirmed: true to dispatch.`
+          });
+        }
 
         let emailSentCount = 0;
         let whatsappSentCount = 0;
@@ -4158,6 +4981,21 @@ async function appHandler(req, res) {
         }
 
         console.log(`📢 [OMNICHANNEL BROADCAST] Dispatched Channel: ${channel} (Emails: ${emailSentCount}/${aggregated.totalEmails}, WhatsApp: ${whatsappSentCount}/${aggregated.totalPhones})`);
+
+        if (typeof security.logAuditAsync === 'function') {
+          security.logAuditAsync({
+            adminUsername: 'admin',
+            ipAddress: security.getClientIp(req),
+            action: 'broadcast_send',
+            targetType: 'marketing_campaign',
+            details: {
+              channel,
+              emailSentCount,
+              whatsappSentCount,
+              subject: cleanText(subject || headline, 100)
+            }
+          }).catch(() => {});
+        }
 
         return sendJson(res, 200, {
           success: true,
@@ -4290,6 +5128,7 @@ async function appHandler(req, res) {
       delete safeUser.passwordHash;
       delete safeUser.password_hash;
 
+      security.setSessionCookie(res, 'alleyrich_session', authToken, 7 * 24 * 3600, false, req);
       return sendJson(res, 201, { success: true, user: safeUser, token: authToken });
     }
 
@@ -4443,75 +5282,76 @@ async function appHandler(req, res) {
       delete safeUser.passwordHash;
       delete safeUser.password_hash;
 
-      return sendJson(res, 200, { success: true, user: safeUser, token: authToken });
+      const sess = await security.createCustomerSessionAsync(authedUser.id, authedUser.email || email, req);
+      security.setSessionCookie(res, 'alleyrich_session', sess.token, 7 * 24 * 3600, false, req);
+      return sendJson(res, 200, { success: true, user: safeUser, token: sess.token });
     }
 
-    // POST /api/auth/send-otp and /api/auth/magic-link (100% Free 6-Digit Numeric OTP)
+    // POST /api/auth/send-otp and /api/auth/magic-link
     if ((authRoute === 'send-otp' || authRoute === 'magic-link') && req.method === 'POST') {
+      const clientIp = security.getClientIp(req);
+
+      // Fail-Closed Check if Redis is unavailable
+      if (process.env.REDIS_AUTH_FAIL_CLOSED === 'true' && redis && !redis.isRedisAvailable()) {
+        return sendJson(res, 503, {
+          success: false,
+          message: 'Authentication service is temporarily unavailable. Distributed state store unreachable.'
+        });
+      }
+
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
-       if (!isValidEmail(email)) {
+      if (!isValidEmail(email)) {
         return sendJson(res, 400, { success: false, message: 'A valid email address is required' });
       }
 
-      // 1. Enforce strict OTP dispatch cooldown & rate limits (60s cooldown, max 5/hr per email, max 15/hr per IP)
-      const clientIp = security.getClientIp(req);
-      const cooldownCheck = (typeof security.checkOtpSendCooldownAsync === 'function')
-        ? (await security.checkOtpSendCooldownAsync(email, clientIp))
-        : security.checkOtpSendCooldown(email, clientIp);
+      // Turnstile verification
+      const turnstileCheck = await security.verifyTurnstileToken(payload.turnstileToken || req.headers['cf-turnstile-response'], clientIp);
+      if (!turnstileCheck.success) {
+        return sendJson(res, 400, { success: false, message: turnstileCheck.message });
+      }
+
+      // Enforce strict OTP dispatch cooldown & rate limits
+      const cooldownCheck = await security.checkOtpSendCooldownAsync(email, clientIp);
       if (!cooldownCheck.allowed) {
         return sendJson(res, 429, { success: false, message: cooldownCheck.message }, { 'Retry-After': String(cooldownCheck.retryAfterSeconds || 60) });
       }
 
-      // Generate secure 6-digit numeric OTP
+      // Generate secure 6-digit numeric OTP & hash at rest
       const otpCode = crypto.randomInt(100000, 1000000).toString();
+      const codeHash = security.hashOtpCode(otpCode);
       const expiresAt = Date.now() + 10 * 60 * 1000;
+
       otpCache.set(email, {
-        code: otpCode,
+        codeHash,
+        code: otpCode, // Memory cache for immediate worker lookup
         expiresAt,
         attempts: 0
       });
-      await redis.cacheSet(`otp:${email}`, { code: otpCode, expiresAt, attempts: 0 }, 600);
-
-      // Record dispatch timestamp to enforce cooldown
+      await redis.cacheSet(`otp:${email}`, { codeHash, expiresAt, attempts: 0 }, 600);
       security.recordOtpSent(email);
 
-      // Persist to local PostgreSQL Database (webhook_events)
       if (db && db.events && typeof db.events.setOtp === 'function') {
         try {
-          await db.events.setOtp(email, otpCode, 10 * 60 * 1000);
-        } catch (e) {
-          console.warn('DB OTP save error:', e.message);
-        }
+          await db.events.setOtp(email, codeHash, 10 * 60 * 1000);
+        } catch (_) {}
       }
 
-      // Persist to Supabase PostgreSQL (webhook_events) for serverless multi-instance persistence
-      if (supabase.isConfigured && supabase.otp) {
-        try {
-          await supabase.otp.save({ email, code: otpCode, expiresAt });
-        } catch (e) {
-          console.warn('Supabase OTP save error:', e.message);
-        }
-      }
-
-      // Send real email via Brevo / Resend / Supabase custom SMTP
       const dispatched = await sendOtpEmail(email, otpCode);
 
-      // Return clean, secure customer response without exposing the OTP code in prod when delivered,
-      // but providing devCode when email dispatch failed or in non-production so users are never locked out
       if (!dispatched && process.env.NODE_ENV === 'production') {
         otpCache.delete(email);
+        await redis.cacheDel(`otp:${email}`);
         if (db && db.events && typeof db.events.deleteOtp === 'function') await db.events.deleteOtp(email).catch(() => {});
-        if (supabase.isConfigured && supabase.otp) await supabase.otp.delete(email).catch(() => {});
         return sendJson(res, 503, { success: false, message: 'Verification email service is temporarily unavailable. Please try again later.' });
       }
+
+      // Uniform response prevents email enumeration
       return sendJson(res, 200, {
         success: true,
         emailSent: dispatched,
         ...(!dispatched || process.env.NODE_ENV !== 'production' ? { devCode: otpCode } : {}),
-        message: dispatched
-          ? `A 6-digit verification code has been dispatched to ${email}. Please check your Gmail (including Spam and Promotions folders).`
-          : `A 6-digit verification code for ${email} has been generated. ${!dispatched ? `(Testing Code: ${otpCode})` : 'Please check your email.'}`
+        message: 'A 6-digit verification code has been dispatched to your email address.'
       });
     }
 
@@ -4691,11 +5531,13 @@ async function appHandler(req, res) {
         delete safeUser.password;
         delete safeUser.passwordHash;
         delete safeUser.password_hash;
+        const sess = await security.createCustomerSessionAsync(localCust.id, localCust.email, req);
+        security.setSessionCookie(res, 'alleyrich_session', sess.token, 7 * 24 * 3600, false, req);
         return sendJson(res, 200, {
           success: true,
           message: 'Successfully verified & logged in!',
           user: safeUser,
-          token: security.createCustomerSession(localCust.id, localCust.email)
+          token: sess.token
         });
       }
 
@@ -4758,6 +5600,27 @@ async function appHandler(req, res) {
             if (!customer.country) customer.country = latestOrder.customer.country || 'India';
           }
         } catch (oe) {}
+      }
+
+            if (!customer && (userId || emailQuery)) {
+        customer = {
+          id: userId || `CUST-${Date.now()}`,
+          name: emailQuery ? emailQuery.split('@')[0] : 'Storefront Member',
+          email: emailQuery || '',
+          phone: '',
+          city: '',
+          state: '',
+          address: '',
+          locality: '',
+          pincode: '',
+          country: 'India',
+          ordersCount: 0,
+          totalSpent: 0,
+          tags: ['Storefront Member'],
+          status: 'Active',
+          wishlist: [],
+          cart: []
+        };
       }
 
       if (!customer) {
@@ -4949,12 +5812,58 @@ async function appHandler(req, res) {
     });
   }
 
-  if (pathname === '/api/webhooks/cashfree' && req.method === 'POST') {
-    return await handleCashfreeWebhook(req, res);
+  // Phase 4: Generic Provider Webhook Router (/api/webhooks/:provider or /webhooks/:provider)
+  const webhookMatch = pathname.match(/^\/(?:api\/)?webhooks\/([a-zA-Z0-9_-]+)$/);
+  if (webhookMatch && req.method === 'POST') {
+    const providerName = webhookMatch[1].toLowerCase();
+    if (providerName === 'cashfree') {
+      return await handleCashfreeWebhook(req, res);
+    }
+    return await handleGenericWebhook(req, res, providerName);
   }
 
   if (pathname.startsWith('/api/checkout/')) {
     const checkoutRoute = pathname.replace('/api/checkout/', '');
+
+    // POST /api/checkout/create-payment (Phase 4: Gateway Scaffolding - Disabled)
+    if (checkoutRoute === 'create-payment' && req.method === 'POST') {
+      if (!payments.isOnlinePaymentsEnabled()) {
+        return sendJson(res, 200, {
+          disabled: true,
+          success: false,
+          message: 'Online payments are currently disabled. Please checkout using Cash on Delivery (COD).'
+        });
+      }
+      const payload = await parseBody(req);
+      const provider = payments.getProvider(payload.provider || 'razorpay');
+      try {
+        const orderResult = await provider.createOrder({
+          orderId: payload.orderId,
+          amountPaise: payload.amountPaise,
+          currency: payload.currency || 'INR',
+          customer: payload.customer || {}
+        });
+        return sendJson(res, 200, { success: true, ...orderResult });
+      } catch (err) {
+        return sendJson(res, 400, { success: false, message: err.message });
+      }
+    }
+
+    // POST /api/checkout/calculate
+    if (checkoutRoute === 'calculate' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      try {
+        const calc = await calculateAuthoritativeCart({
+          items: payload.items,
+          couponCode: payload.discountCode || payload.couponCode || payload.code,
+          customerEmail: payload.customer?.email || payload.email,
+          paymentMethod: payload.paymentMethod
+        });
+        return sendJson(res, 200, { success: true, ...calc });
+      } catch (err) {
+        return sendJson(res, err.statusCode || 400, { success: false, message: err.message || 'Cart calculation failed.' });
+      }
+    }
 
     // POST /api/checkout/validate-discount or /api/discounts/validate
     if ((checkoutRoute === 'validate-discount' || checkoutRoute === 'validate-coupon') && req.method === 'POST') {
