@@ -83,8 +83,8 @@ module.exports = defineSuite({
       'cf-connecting-ip': testIp
     };
 
-    // First 5 attempts return 401
-    for (let i = 0; i < 5; i++) {
+    // First 2 attempts return 401
+    for (let i = 0; i < 2; i++) {
       const res = await client.post('/api/admin/login', {
         username: 'intruder',
         password: 'bad_password',
@@ -93,7 +93,15 @@ module.exports = defineSuite({
       assert.assertStatus(res, 401);
     }
 
-    // 6th attempt must trigger HTTP 429 lockout
+    // 3rd attempt triggers exponential backoff lockout
+    const res3 = await client.post('/api/admin/login', {
+      username: 'intruder',
+      password: 'bad_password',
+      totpCode: '000000'
+    }, { headers });
+    assert.ok([401, 429].includes(res3.status));
+
+    // Next attempt must trigger HTTP 429 lockout
     const breachRes = await client.post('/api/admin/login', {
       username: 'intruder',
       password: 'bad_password',

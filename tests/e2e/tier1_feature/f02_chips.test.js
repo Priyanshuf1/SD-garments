@@ -38,7 +38,10 @@ module.exports = defineSuite({
 
     for (const chip of expectedChips) {
       assert.assertHtmlContains(pageRes, `cat: '${chip.cat}'`, `Chip category '${chip.cat}' must be defined in taxonomy`);
-      assert.assertHtmlContains(pageRes, `label: '${chip.label}'`, `Chip label '${chip.label}' must be defined`);
+      const hasLabel = pageRes.data.includes(`label: '${chip.label}'`) ||
+                       pageRes.data.includes(`label: "${chip.label}"`) ||
+                       pageRes.data.includes(`label: '${chip.label.replace(/'/g, "\\'")}'`);
+      assert.ok(hasLabel, `Chip label '${chip.label}' must be defined`);
     }
 
     // Check active class logic on 'all'

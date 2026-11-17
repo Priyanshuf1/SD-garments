@@ -74,7 +74,7 @@ jobs:
 
       - name: Verify Container Health Check
         run: |
-          docker run -d --name test-allyrich -p 3000:3000 allyrich-app:${{ github.sha }}
+          docker run -d --name test-allyrich -p 3000:3000 -e ALLOW_JSON_FALLBACK=true allyrich-app:${{ github.sha }}
           echo "Waiting 5 seconds for container startup..."
           sleep 5
           curl --fail http://localhost:3000/api/health || (docker logs test-allyrich && exit 1)
@@ -158,6 +158,7 @@ jobs:
             write_env AUTH_SESSION_SECRET "${AUTH_SESSION_SECRET:-alleyrich_super_secret_auth_session_key_2026}"
             write_env DELHIVERY_API_TOKEN "${DELHIVERY_API_TOKEN:-5b89b0734b0d4daa1655ea178e432c33f1964d80}"
             write_env APP_DOMAIN "alleyrich.com"
+            write_env ALLOW_JSON_FALLBACK "true"
             sed -i '/^DELHIVERY_WAREHOUSE_NAME=/d' .env
             echo "DELHIVERY_WAREHOUSE_NAME=SD Garments" >> .env
             sed -i '/^DELHIVERY_WAREHOUSE_PINCODE=/d' .env

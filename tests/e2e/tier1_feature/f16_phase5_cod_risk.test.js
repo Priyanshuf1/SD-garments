@@ -192,13 +192,14 @@ module.exports = defineSuite({
 
       const { product, size } = await getCatalogProduct(client);
 
+      const freshPhone = '97' + String(Date.now()).slice(-8);
       // Submit order that triggers medium risk (pincode mismatch only -> score 35)
       const payload = {
         paymentMethod: 'Cash on Delivery (COD)',
         customer: {
           name: 'Enforce Tester',
-          email: 'enforce.test@example.com',
-          phone: '9876543210',
+          email: `enforce_${Date.now()}@example.com`,
+          phone: freshPhone,
           city: 'Mumbai',
           state: 'Maharashtra',
           address: 'Flat 101, Palm Court, Link Road', // Good address

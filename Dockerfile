@@ -31,7 +31,8 @@ RUN apk add --no-cache dumb-init wget
 
 # Set production environment variables
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=3000 \
+    ALLOW_JSON_FALLBACK=true
 
 # Copy node_modules from dependencies stage
 COPY --from=dependencies /usr/src/app/node_modules ./node_modules

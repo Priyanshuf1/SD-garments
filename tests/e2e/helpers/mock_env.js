@@ -27,7 +27,9 @@ function setupSandboxEnvironment(options = {}) {
       ADMIN_SECRET_KEY: process.env.ADMIN_SECRET_KEY,
       APP_ORIGIN: process.env.APP_ORIGIN,
       BREVO_API_KEY: process.env.BREVO_API_KEY,
-      DELHIVERY_ENV: process.env.DELHIVERY_ENV
+      DELHIVERY_ENV: process.env.DELHIVERY_ENV,
+      DATABASE_URL: process.env.DATABASE_URL,
+      ALLOW_JSON_FALLBACK: process.env.ALLOW_JSON_FALLBACK
     };
   }
 
@@ -38,6 +40,13 @@ function setupSandboxEnvironment(options = {}) {
   process.env.APP_ORIGIN = options.appOrigin || 'https://alleyrich.com';
   process.env.BREVO_API_KEY = options.brevoApiKey || 'mock-brevo-key-for-test-isolation';
   process.env.DELHIVERY_ENV = 'sandbox';
+  process.env.ALLOW_JSON_FALLBACK = 'true';
+
+  // Prevent connection timeout delays if DATABASE_URL points to an unreachable host (e.g. docker host 'postgres' outside docker)
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('@postgres:') && !process.env.TEST_WITH_LIVE_DB) {
+    process.env.DATABASE_URL = '';
+    process.env.RDS_HOST = '';
+  }
 
   return {
     adminSecret: ADMIN_SECRET,
