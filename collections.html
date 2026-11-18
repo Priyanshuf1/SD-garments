@@ -78,7 +78,7 @@
         right: 0 !important;
       }
       .site-header__inner {
-        gap: 0.35rem !important;
+        gap: 0.25rem !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -86,13 +86,17 @@
       .site-header__nav {
         display: none !important;
       }
+      .header-account-name,
+      .header-account-link .sm-max\:hidden {
+        display: none !important;
+      }
       .site-header__brand-group {
-        gap: 0.35rem !important;
+        gap: 0.25rem !important;
         min-width: 0 !important;
         flex-shrink: 1 !important;
       }
       .allyrich-header-brand {
-        gap: 0.35rem !important;
+        gap: 0.25rem !important;
         min-width: 0 !important;
         flex-shrink: 1 !important;
       }
@@ -102,7 +106,7 @@
         flex-shrink: 0 !important;
       }
       .allyrich-header-brand-name {
-        font-size: 0.74rem !important;
+        font-size: 0.72rem !important;
         letter-spacing: 0.02em !important;
         white-space: nowrap !important;
         color: #ffffff !important;
@@ -116,14 +120,14 @@
         flex-shrink: 0 !important;
       }
       .mobile-nav-toggle svg {
-        width: 19px !important;
-        height: 19px !important;
+        width: 18px !important;
+        height: 18px !important;
       }
       .header-actions-group {
-        gap: 0.2rem !important;
+        gap: 0.25rem !important;
         min-width: 0 !important;
         flex-shrink: 0 !important;
-        margin-right: 4px !important;
+        margin-right: 0 !important;
       }
       .header-actions-group .action-touch-btn {
         min-width: 32px !important;
@@ -133,6 +137,10 @@
         padding: 3px !important;
         box-sizing: border-box !important;
         flex-shrink: 0 !important;
+      }
+      .cart-trigger {
+        flex-shrink: 0 !important;
+        min-width: 32px !important;
       }
       .header-actions-group .action-touch-btn svg {
         width: 18px !important;
@@ -1352,7 +1360,7 @@
     <div class="site-header__inner">
       
       <!-- Left: Brand Logo -->
-      <div class="site-header__brand-group" style="display:flex; align-items:center; gap: 0.75rem; flex-shrink: 0; min-width: max-content;">
+      <div class="site-header__brand-group" style="display:flex; align-items:center; gap: 0.5rem; flex-shrink: 1; min-width: 0;">
         <button type="button" class="mobile-nav-toggle" onclick="CollectionEngine.toggleMobileDrawer(true)" aria-label="Open Navigation Menu" style="background:none; border:none; color:#fff; padding:6px; cursor:pointer;">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -1360,7 +1368,7 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <a href="/" class="allyrich-header-brand" aria-label="ALLEYRICH Home" style="flex-shrink: 0; min-width: max-content;">
+        <a href="/" class="allyrich-header-brand" aria-label="ALLEYRICH Home" style="flex-shrink: 1; min-width: 0;">
           <img src="/assets/ar-logo.png" alt="AR" class="allyrich-header-logo-img" width="52" height="52">
           <span class="allyrich-header-brand-name">ALLEYRICH</span>
         </a>
@@ -1477,7 +1485,7 @@
       </nav>
 
       <!-- Right: User Account, Wishlist, Search, Cart -->
-      <div class="header-actions-group" style="display:flex; align-items:center; flex-shrink:0;">
+      <div class="header-actions-group" style="display:flex; align-items:center; flex-shrink:0; gap:0.25rem;">
         
         <!-- User Account Icon / Profile link -->
         <a href="/account" class="header-account-link action-touch-btn" data-account-trigger title="Account" style="color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">

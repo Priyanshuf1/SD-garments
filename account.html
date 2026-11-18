@@ -703,7 +703,7 @@
             alertSuccess.style.display = 'block';
           }
         } else {
-          throw new Error(result?.error || 'Failed to save profile');
+          throw new Error(result?.message || result?.error || 'Failed to save profile');
         }
       } catch (err) {
         if (alertError) {

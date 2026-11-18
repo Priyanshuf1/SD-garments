@@ -3836,10 +3836,11 @@ async function appHandler(req, res) {
   // Admin Portal Page Route
   // -------------------------------------------------------------
   // -------------------------------------------------------------
-  // Admin Portal Page Route (/admin, /admin.html, /allyrich-hq)
+  // Admin Portal Page Route (/admin, /admin/*, /allyrich-hq, /admin-panel, etc.)
   // -------------------------------------------------------------
-  if (pathname === '/admin' || pathname === '/admin/' || pathname === '/admin.html' ||
-      pathname === '/allyrich-hq' || pathname === '/allyrich-hq/' || pathname === '/allyrich-hq.html') {
+  if ((pathname.startsWith('/admin') && !pathname.startsWith('/api/admin')) ||
+      (pathname.startsWith('/allyrich-hq') && !pathname.startsWith('/api/allyrich-hq')) ||
+      pathname === '/admin.html' || pathname === '/admin-panel' || pathname === '/admin-login' || pathname === '/admin-portal') {
     const clientIp = security.getClientIp(req);
     if (!security.isAdminIpAllowed(clientIp)) {
       return sendJson(res, 403, { success: false, message: 'Access denied: IP address not authorized in administrator allowlist.' });
@@ -5535,6 +5536,37 @@ async function appHandler(req, res) {
           } catch (oe) {}
         }
 
+        // Full profile, wishlist, and cart hydration from AWS RDS PostgreSQL
+        if (db && db.isConfigured) {
+          try {
+            const rdsProfile = await db.customers.getByEmail(email) || await db.customers.getById(localCust.id);
+            if (rdsProfile) {
+              if (rdsProfile.name && (localCust.name === 'Storefront Member' || !localCust.name)) localCust.name = rdsProfile.name;
+              if (rdsProfile.phone) localCust.phone = rdsProfile.phone;
+              if (rdsProfile.address) localCust.address = rdsProfile.address;
+              if (rdsProfile.locality) localCust.locality = rdsProfile.locality;
+              if (rdsProfile.city) localCust.city = rdsProfile.city;
+              if (rdsProfile.state) localCust.state = rdsProfile.state;
+              if (rdsProfile.pincode) localCust.pincode = rdsProfile.pincode;
+              if (rdsProfile.country) localCust.country = rdsProfile.country;
+              if (Array.isArray(rdsProfile.wishlist) && rdsProfile.wishlist.length > 0) {
+                localCust.wishlist = Array.from(new Set([...(localCust.wishlist || []), ...rdsProfile.wishlist]));
+              }
+              if (Array.isArray(rdsProfile.cart) && rdsProfile.cart.length > 0) {
+                localCust.cart = rdsProfile.cart;
+              }
+            }
+          } catch (e) {}
+        }
+
+        // Hydrate cart from Redis distributed cache if available
+        try {
+          const redisCart = await redis.getUserCart(email) || await redis.getUserCart(localCust.id);
+          if (Array.isArray(redisCart) && redisCart.length > 0) {
+            localCust.cart = redisCart;
+          }
+        } catch (e) {}
+
         // Full profile hydration from Supabase PostgreSQL
         if (supabase.isConfigured) {
           try {
@@ -5550,7 +5582,7 @@ async function appHandler(req, res) {
               if (supaProfile.pincode) localCust.pincode = supaProfile.pincode;
               if (supaProfile.country) localCust.country = supaProfile.country;
               localCust.wishlist = Array.from(new Set([...(localCust.wishlist || []), ...(supaProfile.wishlist || [])]));
-              if (Array.isArray(supaProfile.cart)) localCust.cart = supaProfile.cart;
+              if (Array.isArray(supaProfile.cart) && supaProfile.cart.length > 0) localCust.cart = supaProfile.cart;
             }
           } catch (e) {}
         }
@@ -5656,6 +5688,37 @@ async function appHandler(req, res) {
         return sendJson(res, 401, { success: false, message: 'Not authenticated' });
       }
 
+      // Merge latest cloud wishlist, address, locality, country & cart from AWS RDS PostgreSQL
+      if (db && db.isConfigured && (customer.email || customer.id)) {
+        try {
+          const rdsProfile = await db.customers.getByEmail(customer.email) || (customer.id ? await db.customers.getById(customer.id) : null);
+          if (rdsProfile) {
+            if (rdsProfile.name && (customer.name === 'Storefront Member' || !customer.name)) customer.name = rdsProfile.name;
+            if (rdsProfile.phone) customer.phone = rdsProfile.phone;
+            if (rdsProfile.address) customer.address = rdsProfile.address;
+            if (rdsProfile.locality) customer.locality = rdsProfile.locality;
+            if (rdsProfile.city) customer.city = rdsProfile.city;
+            if (rdsProfile.state) customer.state = rdsProfile.state;
+            if (rdsProfile.pincode) customer.pincode = rdsProfile.pincode;
+            if (rdsProfile.country) customer.country = rdsProfile.country;
+            if (Array.isArray(rdsProfile.wishlist) && rdsProfile.wishlist.length > 0) {
+              customer.wishlist = Array.from(new Set([...(customer.wishlist || []), ...rdsProfile.wishlist]));
+            }
+            if (Array.isArray(rdsProfile.cart) && rdsProfile.cart.length > 0) {
+              customer.cart = rdsProfile.cart;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Merge latest cart from Redis cache
+      try {
+        const redisCart = await redis.getUserCart(customer.email) || (customer.id ? await redis.getUserCart(customer.id) : null);
+        if (Array.isArray(redisCart) && redisCart.length > 0) {
+          customer.cart = redisCart;
+        }
+      } catch (e) {}
+
       // Merge latest cloud wishlist, address, locality, country & cart from Supabase
       if (supabase.isConfigured && (customer.id || customer.email)) {
         try {
@@ -5694,7 +5757,27 @@ async function appHandler(req, res) {
       if (!customer && supabase.isConfigured) {
         try { customer = await supabase.profiles.get(identity.id, identity.email); } catch (e) {}
       }
-      if (!customer) return sendJson(res, 404, { success: false, message: 'Customer not found' });
+      if (!customer) {
+        customer = {
+          id: identity.id || `CUST-${Date.now()}`,
+          email: identity.email || '',
+          name: payload.name || 'Storefront Member',
+          phone: payload.phone || '',
+          city: payload.city || '',
+          state: payload.state || '',
+          address: payload.address || '',
+          locality: payload.locality || '',
+          pincode: payload.pincode || '',
+          country: payload.country || 'India',
+          ordersCount: 0,
+          totalSpent: 0,
+          tags: ['Storefront Member'],
+          status: 'Active',
+          wishlist: [],
+          cart: []
+        };
+        customers.unshift(customer);
+      }
 
       if (payload.name) customer.name = payload.name;
       if (payload.phone) customer.phone = payload.phone;
@@ -5706,6 +5789,12 @@ async function appHandler(req, res) {
       if (payload.country !== undefined) customer.country = payload.country || 'India';
       if (payload.wishlist !== undefined) customer.wishlist = Array.isArray(payload.wishlist) ? payload.wishlist.slice(0, 500) : customer.wishlist;
 
+      const existingCustIdx = customers.findIndex(c => String(c.id) === String(customer.id) || (customer.email && c.email && c.email.toLowerCase() === customer.email.toLowerCase()));
+      if (existingCustIdx >= 0) {
+        customers[existingCustIdx] = customer;
+      } else {
+        customers.unshift(customer);
+      }
       writeJsonFile('customers.json', customers);
 
       // Persist directly to AWS RDS / PostgreSQL database
@@ -5745,7 +5834,7 @@ async function appHandler(req, res) {
       delete safeUser.password;
       delete safeUser.passwordHash;
       delete safeUser.password_hash;
-      return sendJson(res, 200, { success: true, user: safeUser });
+      return sendJson(res, 200, { success: true, message: 'Profile updated successfully', user: safeUser });
     }
 
     // GET /api/auth/wishlist
@@ -6361,6 +6450,15 @@ async function appHandler(req, res) {
       const cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email.toLowerCase()));
       if (cust && Array.isArray(cust.wishlist)) list = cust.wishlist;
 
+      if (db && db.isConfigured) {
+        try {
+          const rdsCust = await db.customers.getByEmail(email) || await db.customers.getById(lookupId);
+          if (rdsCust && Array.isArray(rdsCust.wishlist) && rdsCust.wishlist.length > 0) {
+            list = Array.from(new Set([...list, ...rdsCust.wishlist]));
+          }
+        } catch (e) {}
+      }
+
       if (supabase.isConfigured) {
         try {
           const cloudList = await supabase.wishlists.getByUserId(lookupId, email || cust?.email);
@@ -6435,6 +6533,15 @@ async function appHandler(req, res) {
         let customers = readJsonFile('customers.json', []);
         const cust = customers.find(c => String(c.id) === String(lookupId) || (email && c.email && c.email.toLowerCase() === email.toLowerCase()));
         if (cust && Array.isArray(cust.cart)) cart = cust.cart;
+
+        if (db && db.isConfigured && (!cart || cart.length === 0)) {
+          try {
+            const rdsCust = await db.customers.getByEmail(email) || await db.customers.getById(lookupId);
+            if (rdsCust && Array.isArray(rdsCust.cart) && rdsCust.cart.length > 0) {
+              cart = rdsCust.cart;
+            }
+          } catch (e) {}
+        }
 
         if (supabase.isConfigured) {
           try {

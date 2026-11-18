@@ -111,10 +111,10 @@
         const identifier = user.id || user.email;
 
         // If local cart is empty and user has cart, check cloud cart
-        const localCart = this.getCart();
+        let localCart = this.getCart();
         if (localCart.length === 0 && Array.isArray(user.cart) && user.cart.length > 0) {
           this.saveCart(user.cart);
-          return;
+          localCart = user.cart;
         }
 
         const token = localStorage.getItem('genrage_token');
@@ -126,6 +126,20 @@
           if (data && data.success && Array.isArray(data.cart) && data.cart.length > 0) {
             if (localCart.length === 0) {
               this.saveCart(data.cart);
+            } else {
+              const mergedMap = new Map();
+              [...data.cart, ...localCart].forEach(item => {
+                const key = `${item.id || item.handle}_${item.size || ''}`;
+                if (mergedMap.has(key)) {
+                  const existing = mergedMap.get(key);
+                  existing.quantity = Math.max(existing.quantity || 1, item.quantity || 1);
+                } else {
+                  mergedMap.set(key, { ...item });
+                }
+              });
+              const mergedCart = Array.from(mergedMap.values());
+              this.saveCart(mergedCart);
+              this.syncWithServer(mergedCart);
             }
           }
         }

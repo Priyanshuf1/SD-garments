@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS customer_sessions (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
+  email TEXT,
   token_hash TEXT UNIQUE NOT NULL,
   ip TEXT,
   user_agent TEXT,
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS customer_sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_customer_sessions_token ON customer_sessions(token_hash);
 CREATE INDEX IF NOT EXISTS idx_customer_sessions_user ON customer_sessions(user_id);
+ALTER TABLE customer_sessions ADD COLUMN IF NOT EXISTS email TEXT;
 
 -- 2. Admin Sessions Table (Hashed Tokens, Short-Lived)
 CREATE TABLE IF NOT EXISTS admin_sessions (

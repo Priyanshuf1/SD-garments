@@ -80,6 +80,32 @@ const AuthEngine = {
     } catch (e) {}
 
     // Immediately persist user cart from cloud into localStorage across devices
+    let localCart = [];
+    try {
+      const raw = localStorage.getItem('genrage_cart') || localStorage.getItem('genrage_cart_v1');
+      if (raw) localCart = JSON.parse(raw);
+    } catch (e) {}
+
+    const cloudCart = Array.isArray(user.cart) ? user.cart : [];
+    // Merge local guest cart and cloud cart so user never loses items
+    if (localCart.length > 0 && cloudCart.length > 0) {
+      const mergedMap = new Map();
+      [...cloudCart, ...localCart].forEach(item => {
+        const key = `${item.id || item.handle}_${item.size || ''}`;
+        if (mergedMap.has(key)) {
+          const existing = mergedMap.get(key);
+          existing.quantity = Math.max(existing.quantity || 1, item.quantity || 1);
+        } else {
+          mergedMap.set(key, { ...item });
+        }
+      });
+      user.cart = Array.from(mergedMap.values());
+    } else if (cloudCart.length > 0) {
+      user.cart = cloudCart;
+    } else if (localCart.length > 0) {
+      user.cart = localCart;
+    }
+
     if (Array.isArray(user.cart) && user.cart.length > 0) {
       try {
         localStorage.setItem('genrage_cart', JSON.stringify(user.cart));
@@ -87,6 +113,7 @@ const AuthEngine = {
         if (window.QuickBuyEngine) {
           if (typeof window.QuickBuyEngine.updateAllBadges === 'function') window.QuickBuyEngine.updateAllBadges();
           if (typeof window.QuickBuyEngine.renderGlobalCart === 'function') window.QuickBuyEngine.renderGlobalCart();
+          if (typeof window.QuickBuyEngine.syncWithServer === 'function') window.QuickBuyEngine.syncWithServer(user.cart);
         }
       } catch (e) {}
     }
@@ -221,7 +248,7 @@ const AuthEngine = {
             <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#111; color:#fff; font-size:0.75rem; font-weight:800; flex-shrink:0;">
                ${this.escapeHtml(firstName.charAt(0).toUpperCase())}
             </span>
-             <span class="sm-max:hidden" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; display:inline-block;">${this.escapeHtml(firstName)}</span>
+             <span class="header-account-name sm-max:hidden" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px;">${this.escapeHtml(firstName)}</span>
           </div>
         `;
         el.onclick = (e) => {

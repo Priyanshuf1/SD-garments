@@ -275,14 +275,20 @@
     @media (max-width: 900px) {
       html, body {
         overflow-x: hidden !important;
-        max-width: 100vw !important;
+        overflow-x: clip !important;
+        width: 100% !important;
+        max-width: 100% !important;
       }
       .site-header {
-        padding: 0.5rem 0.55rem !important;
+        padding: 0.5rem 0.5rem !important;
         width: 100% !important;
-        max-width: 100vw !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
         background: #000000 !important;
+      }
+      .header-account-name,
+      .header-account-link .sm-max\:hidden {
+        display: none !important;
       }
       .header-inner {
         padding: 0 !important;
