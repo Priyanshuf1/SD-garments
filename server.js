@@ -1342,6 +1342,45 @@ async function sendOtpEmail(email, otpCode) {
   return emailDispatched;
 }
 
+// Transactional Email Service for Password Reset
+async function sendPasswordResetEmail(email, resetCode) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const resetSubject = `Reset Your ALLEYRICH Password - Verification Code: ${resetCode}`;
+  const resetHtml = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; max-width:560px; margin:0 auto; background:#0a0a0a; color:#f5f5f5; border:1px solid #222222; border-radius:8px; overflow:hidden;">
+      <div style="background:#000000; padding:28px 24px; text-align:center; border-bottom:1px solid #1a1a1a;">
+        <h1 style="font-size:24px; font-weight:900; letter-spacing:0.25em; text-transform:uppercase; margin:0; color:#ffffff;">ALLEYRICH</h1>
+        <p style="font-size:11px; letter-spacing:0.15em; color:#888888; margin:6px 0 0; text-transform:uppercase;">Account Security &bull; Official Atelier</p>
+      </div>
+      <div style="padding:36px 24px; text-align:center;">
+        <div style="display:inline-block; font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#ff9800; background:rgba(255,152,0,0.12); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,152,0,0.3); margin-bottom:22px;">
+          Password Reset Authorization
+        </div>
+        <p style="font-size:14px; color:#cccccc; margin:0 0 24px; line-height:1.5;">We received a request to reset the password for your ALLEYRICH account. Enter this 6-digit verification code to set your new password:</p>
+        <div style="display:inline-block; font-size:38px; font-weight:900; letter-spacing:0.35em; color:#ffffff; background:#141414; padding:18px 32px 18px 40px; border-radius:6px; font-family:'Courier New',Courier,monospace; border:1px solid #333333; box-shadow:0 8px 24px rgba(0,0,0,0.6);">
+          ${resetCode}
+        </div>
+        <p style="font-size:12px; color:#888888; margin:24px 0 0;">Valid for <strong>15 minutes</strong>. If you did not request a password reset, you can safely ignore this email; your account remains secure.</p>
+      </div>
+      <div style="background:#000000; border-top:1px solid #1a1a1a; padding:20px 24px; text-align:center; font-size:11px; color:#666666; line-height:1.6;">
+        If you did not initiate this request, please contact atelier support immediately.<br>
+        &copy; ${new Date().getFullYear()} ALLEYRICH India. All rights reserved.
+      </div>
+    </div>
+  `;
+
+  const dispatched = await sendTransactionalEmail({
+    to: cleanEmail,
+    subject: resetSubject,
+    htmlContent: resetHtml,
+    textContent: `Your ALLEYRICH password reset code is: ${resetCode}. Valid for 15 minutes.`,
+    tags: ['password-reset']
+  });
+
+  console.log(`[PASSWORD RESET DISPATCH] email=${cleanEmail} delivered=${dispatched}`);
+  return dispatched;
+}
+
 
 
 // Order Confirmation & Tax Invoice Email Service (Brevo + Resend)
@@ -5158,8 +5197,9 @@ async function appHandler(req, res) {
       delete safeUser.passwordHash;
       delete safeUser.password_hash;
 
-      security.setSessionCookie(res, 'alleyrich_session', authToken, 7 * 24 * 3600, false, req);
-      return sendJson(res, 201, { success: true, user: safeUser, token: authToken });
+      const sess = await security.createCustomerSessionAsync(customerRecord.id, customerRecord.email || email, req);
+      security.setSessionCookie(res, 'alleyrich_session', sess.token, 7 * 24 * 3600, false, req);
+      return sendJson(res, 201, { success: true, user: safeUser, token: sess.token });
     }
 
     // POST /api/auth/login
@@ -5184,7 +5224,7 @@ async function appHandler(req, res) {
       let authedUser = null;
       let authToken = null;
 
-      // 1. Try Supabase Auth First
+      // 1. Try Supabase Auth First (if configured)
       if (supabase.isConfigured && password) {
         try {
           const supaLogin = await supabase.auth.signInWithPassword({ email, password });
@@ -5197,50 +5237,77 @@ async function appHandler(req, res) {
         }
       }
 
-      // 2. Check Local Database / Fallback
+      // 2. Authoritative Customer Lookup across AWS RDS PostgreSQL, customers.json, and Supabase
+      let rdsCustomer = null;
+      if (db && db.isConfigured) {
+        try {
+          rdsCustomer = await db.customers.getByEmail(email);
+        } catch (e) {
+          console.warn('RDS customer lookup warning:', e.message);
+        }
+      }
+
       let localCustomer = customers.find(c => (c.email || '').toLowerCase() === email);
 
+      let cloudProfile = null;
+      if (supabase.isConfigured) {
+        try {
+          cloudProfile = await supabase.profiles.getByEmail(email);
+        } catch (e) {}
+      }
+
+      const existingAccount = rdsCustomer || localCustomer || cloudProfile;
+
+      if (!existingAccount && !authedUser) {
+        return sendJson(res, 401, {
+          success: false,
+          message: 'No account found with this email address. Please register or sign in with Instant OTP.'
+        });
+      }
+
       if (!authedUser) {
-        let cloudProfile = null;
-        if (supabase.isConfigured) {
-          try {
-            cloudProfile = await supabase.profiles.getByEmail(email);
-          } catch (e) {}
-        }
-
-        if (!localCustomer && !cloudProfile) {
-          return sendJson(res, 401, { success: false, message: 'Invalid email address or password. Please verify your credentials.' });
-        }
-
-        const candidateHash = localCustomer?.passwordHash || localCustomer?.password_hash || cloudProfile?.passwordHash || cloudProfile?.password_hash;
+        const candidateHash = rdsCustomer?.password_hash || rdsCustomer?.passwordHash ||
+                              localCustomer?.passwordHash || localCustomer?.password_hash ||
+                              cloudProfile?.passwordHash || cloudProfile?.password_hash;
         const legacyPassword = localCustomer?.password;
+
+        if (!candidateHash && !legacyPassword) {
+          return sendJson(res, 400, {
+            success: false,
+            noPasswordSet: true,
+            message: 'This account was created via Instant OTP and does not have a password set yet. Please sign in using Instant OTP or click "Forgot password?" to set one.'
+          });
+        }
+
         const passwordValid = candidateHash
           ? await security.verifyPassword(password, candidateHash)
           : (process.env.NODE_ENV !== 'production' && Boolean(legacyPassword && legacyPassword === password));
+
         if (!passwordValid) {
-          return sendJson(res, 401, { success: false, message: 'Invalid email address or password. Please verify your credentials.' });
+          return sendJson(res, 401, {
+            success: false,
+            message: 'Incorrect password. Please verify your credentials or click "Forgot password?" to reset it.'
+          });
         }
 
-        // One-time migration for old local records that stored plaintext
-        // passwords. Never write the plaintext back to disk.
-        if (localCustomer && legacyPassword && !candidateHash) {
-          localCustomer.passwordHash = await security.hashPassword(password);
-          delete localCustomer.password;
-          writeJsonFile('customers.json', customers);
-        }
-
-        authedUser = localCustomer ? { ...localCustomer } : {
-          id: cloudProfile?.id || `CUST-${Date.now()}`,
-          name: cloudProfile?.name || email.split('@')[0],
+        // Customer verified! Construct authoritative user profile
+        authedUser = {
+          id: rdsCustomer?.id || localCustomer?.id || cloudProfile?.id || `CUST-${Date.now()}`,
+          name: rdsCustomer?.name || localCustomer?.name || cloudProfile?.name || email.split('@')[0],
           email: email,
-          phone: cloudProfile?.phone || '',
-          ordersCount: 0,
-          totalSpent: 0,
+          phone: rdsCustomer?.phone || localCustomer?.phone || cloudProfile?.phone || '',
+          address: rdsCustomer?.address || localCustomer?.address || '',
+          locality: rdsCustomer?.locality || localCustomer?.locality || '',
+          city: rdsCustomer?.city || localCustomer?.city || 'Mumbai',
+          state: rdsCustomer?.state || localCustomer?.state || 'Maharashtra',
+          pincode: rdsCustomer?.pincode || localCustomer?.pincode || '',
+          country: rdsCustomer?.country || localCustomer?.country || 'India',
+          ordersCount: rdsCustomer?.ordersCount || localCustomer?.ordersCount || 0,
+          totalSpent: rdsCustomer?.totalSpent || localCustomer?.totalSpent || 0,
           status: 'Active',
-          wishlist: cloudProfile?.wishlist || [],
-          cart: cloudProfile?.cart || []
+          wishlist: rdsCustomer?.wishlist || localCustomer?.wishlist || cloudProfile?.wishlist || [],
+          cart: rdsCustomer?.cart || localCustomer?.cart || cloudProfile?.cart || []
         };
-        authToken = security.createCustomerSession(authedUser.id, authedUser.email || email);
       } else {
         // Sync authed user with local customer
         if (!localCustomer) {
@@ -5263,7 +5330,7 @@ async function appHandler(req, res) {
         authedUser = { ...localCustomer, ...authedUser };
       }
 
-      // Merge profile from AWS RDS PostgreSQL first
+      // Merge profile from AWS RDS PostgreSQL
       if (db && db.isConfigured && (authedUser.email || authedUser.id)) {
         try {
           const rdsProfile = await db.customers.getByEmail(email) || await db.customers.getById(authedUser.id);
@@ -5278,26 +5345,6 @@ async function appHandler(req, res) {
             if (rdsProfile.country) authedUser.country = rdsProfile.country;
             if (Array.isArray(rdsProfile.wishlist)) authedUser.wishlist = Array.from(new Set([...(authedUser.wishlist || []), ...rdsProfile.wishlist]));
             if (Array.isArray(rdsProfile.cart)) authedUser.cart = rdsProfile.cart;
-          }
-        } catch (e) {}
-      }
-
-      // Merge full cloud profile (address, locality, city, state, pincode, country, wishlist, cart)
-      if (supabase.isConfigured && (authedUser.id || authedUser.email)) {
-        try {
-          const supaProfile = await supabase.profiles.getByEmail(email) || await supabase.profiles.get(authedUser.id, email);
-          if (supaProfile) {
-            if (supaProfile.id && supaProfile.id.includes('-')) authedUser.id = supaProfile.id;
-            if (supaProfile.name) authedUser.name = supaProfile.name;
-            if (supaProfile.phone) authedUser.phone = supaProfile.phone;
-            if (supaProfile.address) authedUser.address = supaProfile.address;
-            if (supaProfile.locality) authedUser.locality = supaProfile.locality;
-            if (supaProfile.city) authedUser.city = supaProfile.city;
-            if (supaProfile.state) authedUser.state = supaProfile.state;
-            if (supaProfile.pincode) authedUser.pincode = supaProfile.pincode;
-            if (supaProfile.country) authedUser.country = supaProfile.country;
-            authedUser.wishlist = Array.from(new Set([...(authedUser.wishlist || []), ...(supaProfile.wishlist || [])]));
-            if (Array.isArray(supaProfile.cart)) authedUser.cart = supaProfile.cart;
           }
         } catch (e) {}
       }
@@ -5358,7 +5405,8 @@ async function appHandler(req, res) {
         expiresAt,
         attempts: 0
       });
-      await redis.cacheSet(`otp:${email}`, { codeHash, expiresAt, attempts: 0 }, 600);
+      await redis.cacheSet(`otp:${email}`, { code: otpCode, codeHash, expiresAt, attempts: 0 }, 600);
+      security.recordOtpDisk(email, codeHash, expiresAt);
       security.recordOtpSent(email);
 
       if (db && db.events && typeof db.events.setOtp === 'function') {
@@ -5372,6 +5420,7 @@ async function appHandler(req, res) {
       if (!dispatched && process.env.NODE_ENV === 'production') {
         otpCache.delete(email);
         await redis.cacheDel(`otp:${email}`);
+        security.deleteOtpDisk(email);
         if (db && db.events && typeof db.events.deleteOtp === 'function') await db.events.deleteOtp(email).catch(() => {});
         return sendJson(res, 503, { success: false, message: 'Verification email service is temporarily unavailable. Please try again later.' });
       }
@@ -5390,7 +5439,7 @@ async function appHandler(req, res) {
       const clientIp = security.getClientIp(req);
       const payload = await parseBody(req);
       const email = (payload.email || '').toLowerCase().trim();
-      const token = String(payload.token || payload.otp || payload.code || '').trim();
+      const token = String(payload.token || payload.otp || payload.code || '').replace(/\D/g, '').trim();
 
       if (!email || !token) {
         return sendJson(res, 400, { success: false, message: 'Email and 6-digit verification code are required' });
@@ -5398,39 +5447,57 @@ async function appHandler(req, res) {
 
       let verified = false;
       const now = Date.now();
+
+      // 1. In-memory check
       const cached = otpCache.get(email);
-      let dbOtp = null;
-      if (db && db.events && typeof db.events.getOtp === 'function') {
-        try {
-          dbOtp = await db.events.getOtp(email);
-        } catch (e) {}
+      if (cached && now <= cached.expiresAt) {
+        if (cached.code === token || security.compareOtpCode(token, cached.codeHash)) {
+          verified = true;
+        }
       }
-      let cloudOtp = null;
-      if (supabase.isConfigured && supabase.otp) {
+
+      // 2. Redis check
+      if (!verified && redis) {
         try {
-          cloudOtp = await supabase.otp.get(email);
+          const redisOtp = await redis.cacheGet(`otp:${email}`);
+          if (redisOtp && now <= redisOtp.expiresAt) {
+            if ((redisOtp.code && String(redisOtp.code) === token) || security.compareOtpCode(token, redisOtp.codeHash)) {
+              verified = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 3. PostgreSQL RDS check
+      if (!verified && db && db.events && typeof db.events.getOtp === 'function') {
+        try {
+          const dbOtp = await db.events.getOtp(email);
+          if (dbOtp && now <= dbOtp.expiresAt) {
+            if (security.compareOtpCode(token, dbOtp.code) || String(dbOtp.code) === token) {
+              verified = true;
+            }
+          }
         } catch (e) {}
       }
 
-      // Check for expired OTP
-      if ((cached && now > cached.expiresAt) || (dbOtp && now > dbOtp.expiresAt) || (cloudOtp && now > cloudOtp.expiresAt)) {
-        otpCache.delete(email);
-        if (db && db.events && typeof db.events.deleteOtp === 'function') {
-          await db.events.deleteOtp(email).catch(() => {});
+      // 4. Shared cross-worker disk check
+      if (!verified) {
+        const diskOtp = security.getOtpDisk(email);
+        if (diskOtp && now <= diskOtp.expiresAt) {
+          if (security.compareOtpCode(token, diskOtp.codeHash)) {
+            verified = true;
+          }
         }
-        if (supabase.isConfigured && supabase.otp) {
-          await supabase.otp.delete(email).catch(() => {});
-        }
-        return sendJson(res, 400, { success: false, message: 'Verification code has expired. Please request a new one.' });
       }
 
-      // STRICT VALIDATION: Genuine OTP delivered to user's email only (NO backdoor)
-      if (cached && cached.code === token && now <= cached.expiresAt) {
-        verified = true;
-      } else if (dbOtp && String(dbOtp.code) === token && now <= dbOtp.expiresAt) {
-        verified = true;
-      } else if (cloudOtp && String(cloudOtp.code) === token && now <= cloudOtp.expiresAt) {
-        verified = true;
+      // 5. Supabase OTP check fallback
+      if (!verified && supabase.isConfigured && supabase.otp) {
+        try {
+          const cloudOtp = await supabase.otp.get(email);
+          if (cloudOtp && now <= cloudOtp.expiresAt && (String(cloudOtp.code) === token || security.compareOtpCode(token, cloudOtp.code))) {
+            verified = true;
+          }
+        } catch (e) {}
       }
 
       if (!verified && supabase.isConfigured && supabase.auth) {
@@ -5446,9 +5513,10 @@ async function appHandler(req, res) {
         // Record successful verification to clear failure counters
         security.recordOtpVerifyAttempt(email, clientIp, true);
 
-        // Cleanup verified OTP so it cannot be reused
+        // Cleanup verified OTP across all stores so it cannot be reused
         otpCache.delete(email);
-        await redis.cacheDel(`otp:${email}`);
+        await redis.cacheDel(`otp:${email}`).catch(() => {});
+        security.deleteOtpDisk(email);
         if (db && db.events && typeof db.events.deleteOtp === 'function') {
           await db.events.deleteOtp(email).catch(() => {});
         }
@@ -5618,6 +5686,284 @@ async function appHandler(req, res) {
       }
 
       return sendJson(res, 400, { success: false, message: attemptRes.message });
+    }
+
+    // POST /api/auth/forgot-password or /api/auth/send-reset-otp
+    if ((authRoute === 'forgot-password' || authRoute === 'send-reset-otp') && req.method === 'POST') {
+      const clientIp = security.getClientIp(req);
+      const payload = await parseBody(req);
+      const email = (payload.email || '').toLowerCase().trim();
+
+      if (!isValidEmail(email)) {
+        return sendJson(res, 400, { success: false, message: 'A valid email address is required' });
+      }
+
+      const resetLimit = await redis.checkRateLimit(`reset_pwd:${clientIp}`, 5, 3600);
+      if (!resetLimit.allowed) {
+        return sendJson(res, 429, {
+          success: false,
+          message: 'Too many password reset requests. Please wait a few minutes before trying again.'
+        }, { 'Retry-After': String(resetLimit.resetAfterSeconds || 60) });
+      }
+
+      // Check if user exists across PostgreSQL, customers.json, or Supabase
+      let userFound = false;
+      if (db && db.isConfigured) {
+        try {
+          const rdsCust = await db.customers.getByEmail(email);
+          if (rdsCust) userFound = true;
+        } catch (_) {}
+      }
+      if (!userFound) {
+        const localCust = customers.find(c => (c.email || '').toLowerCase() === email);
+        if (localCust) userFound = true;
+      }
+      if (!userFound && supabase.isConfigured) {
+        try {
+          const cloudCust = await supabase.profiles.getByEmail(email);
+          if (cloudCust) userFound = true;
+        } catch (_) {}
+      }
+
+      if (!userFound) {
+        return sendJson(res, 404, {
+          success: false,
+          message: 'No account found with this email address. Please verify your email or sign up.'
+        });
+      }
+
+      // Generate secure 6-digit numeric reset code
+      const resetCode = crypto.randomInt(100000, 1000000).toString();
+      const codeHash = security.hashOtpCode(resetCode);
+      const expiresAt = Date.now() + 15 * 60 * 1000; // 15 min TTL
+      const resetKey = `reset:${email}`;
+
+      otpCache.set(resetKey, { codeHash, code: resetCode, expiresAt, attempts: 0 });
+      await redis.cacheSet(`otp:${resetKey}`, { code: resetCode, codeHash, expiresAt, attempts: 0 }, 900);
+      security.recordOtpDisk(resetKey, codeHash, expiresAt);
+
+      if (db && db.events && typeof db.events.setOtp === 'function') {
+        try {
+          await db.events.setOtp(resetKey, codeHash, 15 * 60 * 1000);
+        } catch (_) {}
+      }
+
+      const dispatched = await sendPasswordResetEmail(email, resetCode);
+
+      return sendJson(res, 200, {
+        success: true,
+        emailSent: dispatched,
+        ...(!dispatched || process.env.NODE_ENV !== 'production' ? { devCode: resetCode } : {}),
+        message: 'A 6-digit password reset code has been dispatched to your email address.'
+      });
+    }
+
+    // POST /api/auth/reset-password
+    if (authRoute === 'reset-password' && req.method === 'POST') {
+      const payload = await parseBody(req);
+      const email = (payload.email || '').toLowerCase().trim();
+      const token = String(payload.token || payload.otp || payload.code || '').replace(/\D/g, '').trim();
+      const newPassword = String(payload.newPassword || payload.password || '');
+
+      if (!isValidEmail(email) || !token) {
+        return sendJson(res, 400, { success: false, message: 'Email and 6-digit verification code are required' });
+      }
+
+      if (newPassword.length < 8 || newPassword.length > 128) {
+        return sendJson(res, 400, { success: false, message: 'Password must be between 8 and 128 characters' });
+      }
+
+      let verified = false;
+      const now = Date.now();
+      const resetKey = `reset:${email}`;
+
+      // 1. In-memory check
+      const cached = otpCache.get(resetKey) || otpCache.get(email);
+      if (cached && now <= cached.expiresAt) {
+        if (cached.code === token || security.compareOtpCode(token, cached.codeHash)) {
+          verified = true;
+        }
+      }
+
+      // 2. Redis check
+      if (!verified && redis) {
+        try {
+          const redisOtp = await redis.cacheGet(`otp:${resetKey}`) || await redis.cacheGet(`otp:${email}`);
+          if (redisOtp && now <= redisOtp.expiresAt) {
+            if ((redisOtp.code && String(redisOtp.code) === token) || security.compareOtpCode(token, redisOtp.codeHash)) {
+              verified = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 3. PostgreSQL RDS check
+      if (!verified && db && db.events && typeof db.events.getOtp === 'function') {
+        try {
+          const dbOtp = await db.events.getOtp(resetKey) || await db.events.getOtp(email);
+          if (dbOtp && now <= dbOtp.expiresAt) {
+            if (security.compareOtpCode(token, dbOtp.code) || String(dbOtp.code) === token) {
+              verified = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 4. Disk check
+      if (!verified) {
+        const diskOtp = security.getOtpDisk(resetKey) || security.getOtpDisk(email);
+        if (diskOtp && now <= diskOtp.expiresAt) {
+          if (security.compareOtpCode(token, diskOtp.codeHash)) {
+            verified = true;
+          }
+        }
+      }
+
+      if (!verified) {
+        return sendJson(res, 400, {
+          success: false,
+          message: 'Invalid or expired password reset code. Please request a new code.'
+        });
+      }
+
+      // Cleanup reset code across all stores
+      otpCache.delete(resetKey);
+      otpCache.delete(email);
+      await redis.cacheDel(`otp:${resetKey}`).catch(() => {});
+      await redis.cacheDel(`otp:${email}`).catch(() => {});
+      security.deleteOtpDisk(resetKey);
+      security.deleteOtpDisk(email);
+      if (db && db.events && typeof db.events.deleteOtp === 'function') {
+        await db.events.deleteOtp(resetKey).catch(() => {});
+        await db.events.deleteOtp(email).catch(() => {});
+      }
+
+      // Hash the new password
+      const newHash = await security.hashPassword(newPassword);
+
+      // Update in PostgreSQL RDS
+      let targetUser = null;
+      if (db && db.isConfigured) {
+        try {
+          if (typeof db.customers.updatePassword === 'function') {
+            targetUser = await db.customers.updatePassword(email, newHash);
+          } else {
+            const existing = await db.customers.getByEmail(email);
+            if (existing) {
+              existing.password_hash = newHash;
+              targetUser = await db.customers.upsert(existing);
+            }
+          }
+        } catch (dbErr) {
+          console.warn('RDS password reset warning:', dbErr.message);
+        }
+      }
+
+      // Update in local customers.json
+      let localCust = customers.find(c => (c.email || '').toLowerCase() === email);
+      if (localCust) {
+        localCust.passwordHash = newHash;
+        localCust.password_hash = newHash;
+        delete localCust.password;
+        writeJsonFile('customers.json', customers);
+        if (!targetUser) targetUser = { ...localCust };
+      }
+
+      if (!targetUser) {
+        targetUser = {
+          id: `CUST-${Date.now()}`,
+          name: email.split('@')[0],
+          email: email,
+          phone: '',
+          status: 'Active',
+          wishlist: [],
+          cart: []
+        };
+      }
+
+      const safeUser = { ...targetUser };
+      delete safeUser.password;
+      delete safeUser.passwordHash;
+      delete safeUser.password_hash;
+
+      // Automatically log the customer in
+      const sess = await security.createCustomerSessionAsync(targetUser.id, targetUser.email || email, req);
+      security.setSessionCookie(res, 'alleyrich_session', sess.token, 7 * 24 * 3600, false, req);
+
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Your password has been reset successfully. You are now logged in.',
+        user: safeUser,
+        token: sess.token
+      });
+    }
+
+    // POST /api/auth/change-password (Authenticated endpoint for /account)
+    if (authRoute === 'change-password' && req.method === 'POST') {
+      let session = await security.validateCustomerSessionAsync(req);
+      if (!session) {
+        const id = await getAuthenticatedIdentity(req);
+        if (id) {
+          session = { userId: id.id, email: id.email };
+        }
+      }
+      if (!session) {
+        return sendJson(res, 401, { success: false, message: 'Unauthorized. Please sign in to update your password.' });
+      }
+
+      const payload = await parseBody(req);
+      const email = (session.email || '').toLowerCase().trim();
+      const currentPassword = String(payload.currentPassword || '');
+      const newPassword = String(payload.newPassword || '');
+
+      if (!newPassword || newPassword.length < 8 || newPassword.length > 128) {
+        return sendJson(res, 400, { success: false, message: 'New password must be between 8 and 128 characters' });
+      }
+
+      // Check current customer in RDS / customers.json
+      let rdsUser = null;
+      if (db && db.isConfigured) {
+        try { rdsUser = await db.customers.getByEmail(email) || await db.customers.getById(session.userId); } catch (_) {}
+      }
+      let localCust = customers.find(c => (c.email || '').toLowerCase() === email || String(c.id) === String(session.userId));
+
+      const existingHash = rdsUser?.password_hash || localCust?.passwordHash || localCust?.password_hash;
+
+      // If existing password was set, verify current password
+      if (existingHash) {
+        if (!currentPassword) {
+          return sendJson(res, 400, { success: false, message: 'Current password is required to change password' });
+        }
+        const isValid = await security.verifyPassword(currentPassword, existingHash);
+        if (!isValid) {
+          return sendJson(res, 401, { success: false, message: 'Current password is incorrect' });
+        }
+      }
+
+      const newHash = await security.hashPassword(newPassword);
+
+      if (db && db.isConfigured) {
+        try {
+          if (typeof db.customers.updatePassword === 'function') {
+            await db.customers.updatePassword(email, newHash);
+          } else if (rdsUser) {
+            rdsUser.password_hash = newHash;
+            await db.customers.upsert(rdsUser);
+          }
+        } catch (_) {}
+      }
+
+      if (localCust) {
+        localCust.passwordHash = newHash;
+        localCust.password_hash = newHash;
+        delete localCust.password;
+        writeJsonFile('customers.json', customers);
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Password updated successfully'
+      });
     }
 
     // GET /api/auth/me

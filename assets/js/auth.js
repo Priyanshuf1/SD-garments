@@ -177,6 +177,53 @@ const AuthEngine = {
     return this.sendOtp(email);
   },
 
+  async sendForgotPasswordCode(email) {
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: 'Network error sending password reset code' };
+    }
+  },
+
+  async resetPassword(email, token, newPassword) {
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, token, newPassword })
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        this._saveUserSession(data.user, data.token);
+        return { success: true, user: data.user, message: data.message };
+      }
+      return { success: false, message: data.message || 'Password reset failed' };
+    } catch (err) {
+      return { success: false, message: 'Network error resetting password' };
+    }
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.getToken() || ''}`
+        },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: 'Network error updating password' };
+    }
+  },
+
   async updateProfile(profileData) {
     try {
       const user = this.getUser();
@@ -295,6 +342,7 @@ const AuthEngine = {
     const loginForm = document.getElementById('auth-form-login');
     const otpForm = document.getElementById('auth-form-otp');
     const signupForm = document.getElementById('auth-form-signup');
+    const forgotForm = document.getElementById('auth-form-forgot');
     const tabLogin = document.getElementById('auth-tab-login');
     const tabOtp = document.getElementById('auth-tab-otp');
     const tabSignup = document.getElementById('auth-tab-signup');
@@ -306,6 +354,7 @@ const AuthEngine = {
     if (loginForm) loginForm.style.display = tab === 'login' ? 'block' : 'none';
     if (otpForm) otpForm.style.display = tab === 'otp' ? 'block' : 'none';
     if (signupForm) signupForm.style.display = tab === 'signup' ? 'block' : 'none';
+    if (forgotForm) forgotForm.style.display = tab === 'forgot' ? 'block' : 'none';
 
     if (tabLogin) tabLogin.style.borderBottom = tab === 'login' ? '2px solid #000' : '2px solid transparent';
     if (tabLogin) tabLogin.style.color = tab === 'login' ? '#000' : '#888';
@@ -354,12 +403,41 @@ const AuthEngine = {
           <div style="margin-bottom:1.25rem;">
             <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Password</label>
             <input type="password" id="login-password" required placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
-            <div style="display:flex; justify-content:space-between; margin-top:4px;">
-              <span style="font-size:0.72rem; color:#888;">(Default: password123)</span>
-              <a href="#" onclick="event.preventDefault(); AuthEngine.switchTab('otp')" style="font-size:0.72rem; color:#000; font-weight:700; text-decoration:none;">Forgot password?</a>
+            <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+              <a href="#" onclick="event.preventDefault(); AuthEngine.switchTab('forgot')" style="font-size:0.72rem; color:#000; font-weight:700; text-decoration:underline;">Forgot password?</a>
             </div>
           </div>
           <button type="submit" id="btn-login-submit" style="width:100%; background:#000; color:#fff; border:none; padding:12px; font-weight:800; font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; border-radius:2px; cursor:pointer;">SIGN IN</button>
+        </form>
+
+        <!-- Forgot Password Form -->
+        <form id="auth-form-forgot" style="display:none;" onsubmit="AuthEngine.handleForgotSubmit(event)">
+          <div style="margin-bottom:0.75rem; text-align:left;">
+            <div style="font-size:0.85rem; font-weight:800; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.04em;">Reset Password</div>
+            <div style="font-size:0.75rem; color:#666;">Enter your account email to receive a 6-digit security code.</div>
+          </div>
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Email Address</label>
+            <input type="email" id="forgot-email" required placeholder="name@example.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
+          </div>
+          <div id="forgot-reset-fields" style="display:none;">
+            <div style="margin-bottom:0.75rem;">
+              <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">6-Digit Security Code</label>
+              <input type="text" id="forgot-code" placeholder="123456" maxlength="8" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:1.1rem; letter-spacing:0.2em; text-align:center; font-weight:800; outline:none;">
+            </div>
+            <div style="margin-bottom:0.75rem;">
+              <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">New Password (Min 8 Characters)</label>
+              <input type="password" id="forgot-password" placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Confirm New Password</label>
+              <input type="password" id="forgot-confirm-password" placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
+            </div>
+          </div>
+          <button type="submit" id="btn-forgot-submit" style="width:100%; background:#000; color:#fff; border:none; padding:12px; font-weight:800; font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; border-radius:2px; cursor:pointer;">SEND RESET CODE</button>
+          <div style="text-align:center; margin-top:12px;">
+            <a href="#" onclick="event.preventDefault(); AuthEngine.switchTab('login')" style="font-size:0.75rem; color:#666; font-weight:700; text-decoration:underline;">&larr; Return to Sign In</a>
+          </div>
         </form>
 
         <!-- OTP / Magic Link Form -->
@@ -390,8 +468,8 @@ const AuthEngine = {
             <input type="tel" id="signup-phone" placeholder="+91 98200 00000" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
           </div>
           <div style="margin-bottom:1.15rem;">
-            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Password</label>
-            <input type="password" id="signup-password" required placeholder="Choose a password" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
+            <label style="display:block; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:4px; color:#444;">Password (Min 8 Characters)</label>
+            <input type="password" id="signup-password" required placeholder="Choose a password (min 8 chars)" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #ccc; border-radius:2px; font-size:0.9rem; outline:none;">
           </div>
           <button type="submit" id="btn-signup-submit" style="width:100%; background:#000; color:#fff; border:none; padding:12px; font-weight:800; font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; border-radius:2px; cursor:pointer;">CREATE ACCOUNT</button>
         </form>
@@ -426,6 +504,86 @@ const AuthEngine = {
     } else {
       errBox.textContent = res.message || 'Login failed';
       errBox.style.display = 'block';
+    }
+  },
+
+  async handleForgotSubmit(e) {
+    e.preventDefault();
+    const emailInput = document.getElementById('forgot-email');
+    const codeInput = document.getElementById('forgot-code');
+    const pwdInput = document.getElementById('forgot-password');
+    const confirmInput = document.getElementById('forgot-confirm-password');
+    const resetFields = document.getElementById('forgot-reset-fields');
+    const submitBtn = document.getElementById('btn-forgot-submit');
+    const errBox = document.getElementById('auth-error-msg');
+    const successBox = document.getElementById('auth-success-msg');
+
+    errBox.style.display = 'none';
+    successBox.style.display = 'none';
+
+    // Step 1: Send Reset Code
+    if (resetFields.style.display === 'none') {
+      submitBtn.textContent = 'SENDING RESET CODE...';
+      submitBtn.disabled = true;
+
+      const res = await this.sendForgotPasswordCode(emailInput.value);
+      submitBtn.disabled = false;
+
+      if (res.success) {
+        successBox.textContent = res.message || 'A 6-digit password reset code has been sent to your email.';
+        successBox.style.display = 'block';
+        resetFields.style.display = 'block';
+        emailInput.readOnly = true;
+        if (res.devCode) {
+          codeInput.value = res.devCode;
+        }
+        submitBtn.textContent = 'RESET PASSWORD & SIGN IN';
+        codeInput.focus();
+      } else {
+        errBox.textContent = res.message || 'Failed to dispatch reset code';
+        errBox.style.display = 'block';
+        submitBtn.textContent = 'SEND RESET CODE';
+      }
+    } else {
+      // Step 2: Verify & Reset
+      const code = (codeInput.value || '').trim();
+      const newPwd = pwdInput.value || '';
+      const confirmPwd = confirmInput.value || '';
+
+      if (!code) {
+        errBox.textContent = 'Please enter the 6-digit verification code';
+        errBox.style.display = 'block';
+        return;
+      }
+      if (newPwd.length < 8) {
+        errBox.textContent = 'Password must be at least 8 characters long';
+        errBox.style.display = 'block';
+        return;
+      }
+      if (newPwd !== confirmPwd) {
+        errBox.textContent = 'Passwords do not match';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      submitBtn.textContent = 'RESETTING PASSWORD...';
+      submitBtn.disabled = true;
+
+      const res = await this.resetPassword(emailInput.value, code, newPwd);
+      submitBtn.textContent = 'RESET PASSWORD & SIGN IN';
+      submitBtn.disabled = false;
+
+      if (res.success) {
+        this.closeAuthModal();
+        if (window.location.pathname.includes('/login') || window.location.pathname.includes('/account')) {
+          window.location.href = '/account';
+        } else {
+          window.location.reload();
+        }
+      } else {
+        errBox.textContent = res.message || 'Password reset failed';
+        errBox.style.display = 'block';
+      }
     }
   },
 

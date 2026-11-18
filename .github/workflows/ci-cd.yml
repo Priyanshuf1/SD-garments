@@ -46,6 +46,12 @@ jobs:
       - name: Test Product Page Rendering & Customer Detail Persistence
         run: node test_product_and_account_fixes.js
 
+      - name: Test Profile & Cross-Device Sync
+        run: node tests/test_profile_and_cross_device_sync.js
+
+      - name: Test Password & Multi-Worker OTP Engine
+        run: node tests/test_password_and_otp_auth.js
+
   # ============================================================================
   # STAGE 2: Multi-Stage Docker Container Build & Health Verification
   # ============================================================================
