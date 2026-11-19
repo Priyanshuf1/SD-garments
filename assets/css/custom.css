@@ -352,6 +352,33 @@ x-header.is-solid:hover {
   color: #ff4d4f;
 }
 
+/* Header Action Icons - Bulletproof White Styling */
+.header-actions a,
+.header-actions button,
+.header-actions-group a,
+.header-actions-group button,
+.action-btn,
+.action-touch-btn {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+.header-actions svg,
+.header-actions-group svg,
+.action-btn svg,
+.action-touch-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  display: block !important;
+}
+
 /* Header Action Icons */
 .header-actions,
 .header-actions-group {

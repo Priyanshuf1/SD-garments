@@ -304,9 +304,9 @@ const AuthEngine = {
       } else {
         el.setAttribute('href', '/login');
         el.innerHTML = `
-          <svg aria-hidden="true" fill="none" focusable="false" width="22" height="22" class="header__nav-icon icon icon-account" viewBox="0 0 24 24">
-            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke="currentColor" stroke-width="2" stroke-miterlimit="10"/>
+          <svg aria-hidden="true" fill="none" focusable="false" width="22" height="22" class="header__nav-icon icon icon-account" viewBox="0 0 24 24" stroke="#ffffff" style="color:#ffffff !important; stroke:#ffffff !important; display:block;">
+            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke="#ffffff" stroke-width="2" stroke-miterlimit="10"/>
           </svg>
         `;
         el.onclick = (e) => {

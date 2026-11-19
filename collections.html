@@ -60,6 +60,21 @@
       width: 100%;
       box-sizing: border-box;
     }
+        .header-actions-group a,
+    .header-actions-group button,
+    .header-actions-group .action-touch-btn {
+      color: #ffffff !important;
+      stroke: #ffffff !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    .header-actions-group svg,
+    .header-actions-group .action-touch-btn svg {
+      color: #ffffff !important;
+      stroke: #ffffff !important;
+      display: block !important;
+    }
     .header-actions-group {
       display: flex;
       align-items: center;
@@ -1516,43 +1531,43 @@
       </nav>
 
       <!-- Right: User Account, Wishlist, Search, Cart -->
-      <div class="header-actions-group">
+      <div class="header-actions-group" style="display:flex; align-items:center; flex-shrink:0; gap:clamp(0.5rem, 1.2vw, 0.85rem);">
         
         <!-- User Account Icon / Profile link -->
-        <a href="/account" class="header-account-link action-touch-btn" data-account-trigger title="Account">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke-miterlimit="10"/>
+        <a href="/account" class="header-account-link action-touch-btn" data-account-trigger title="Account" style="color:#ffffff !important; text-decoration:none; background:none; border:none; display:inline-flex; align-items:center; justify-content:center; min-width:36px; min-height:36px; width:36px; height:36px; padding:0; border-radius:50%; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="color:#ffffff !important; stroke:#ffffff !important; display:block;">
+            <path d="M16.125 8.75c-.184 2.478-2.063 4.5-4.125 4.5s-3.944-2.021-4.125-4.5c-.187-2.578 1.64-4.5 4.125-4.5 2.484 0 4.313 1.969 4.125 4.5Z" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.017 20.747C3.783 16.5 7.922 14.25 12 14.25s8.217 2.25 8.984 6.497" stroke="#ffffff" stroke-miterlimit="10"/>
           </svg>
         </a>
 
         <!-- Search Icon Trigger -->
-        <button type="button" class="search-trigger action-touch-btn" onclick="CollectionEngine.toggleFilterDrawer(true); return false;" title="Search & Filter">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-miterlimit="10">
-            <path d="M10.364 3a7.364 7.364 0 1 0 0 14.727 7.364 7.364 0 0 0 0-14.727Z"/>
-            <path d="M15.857 15.858 21 21.001" stroke-linecap="round"/>
+        <button type="button" class="search-trigger action-touch-btn" onclick="CollectionEngine.toggleFilterDrawer(true); return false;" title="Search & Filter" style="background:none; border:none; color:#ffffff !important; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; min-width:36px; min-height:36px; width:36px; height:36px; padding:0; border-radius:50%; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-miterlimit="10" style="color:#ffffff !important; stroke:#ffffff !important; display:block;">
+            <path d="M10.364 3a7.364 7.364 0 1 0 0 14.727 7.364 7.364 0 0 0 0-14.727Z" stroke="#ffffff"/>
+            <path d="M15.857 15.858 21 21.001" stroke="#ffffff" stroke-linecap="round"/>
           </svg>
         </button>
 
         <!-- Wishlist Icon with Counter Badge -->
-        <a href="/collections/shop?view=wishlist" class="action-touch-btn" onclick="if(window.CollectionEngine){event.preventDefault(); CollectionEngine.setCategory('wishlist');}" title="Saved Wishlist">
-          <span class="nav-icon-wrapper">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        <a href="/collections/shop?view=wishlist" class="action-touch-btn" onclick="if(window.CollectionEngine){event.preventDefault(); CollectionEngine.setCategory('wishlist');}" title="Saved Wishlist" style="color:#ffffff !important; text-decoration:none; background:none; border:none; cursor:pointer; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:36px; min-height:36px; width:36px; height:36px; padding:0; border-radius:50%; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <span class="nav-icon-wrapper" style="position:relative; display:inline-flex; align-items:center; justify-content:center; line-height:0;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ffffff !important; stroke:#ffffff !important; display:block;">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#ffffff"></path>
             </svg>
-            <span class="wishlist-count-badge" style="display:none;">0</span>
+            <span class="wishlist-count-badge" style="display:none; position:absolute; top:-4px; right:-5px; background:#e50914; color:#fff; font-size:0.58rem; font-weight:800; border-radius:999px; min-width:15px; height:15px; padding:0 3px; align-items:center; justify-content:center; line-height:15px; text-align:center; box-sizing:border-box; border:1.5px solid #000000;">0</span>
           </span>
         </a>
 
         <!-- Cart Bag Trigger -->
-        <button type="button" class="cart-trigger action-touch-btn" data-open-cart="true" onclick="if(window.CollectionEngine){CollectionEngine.openCartDrawer();}else if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer();} return false;" aria-label="Open Shopping Bag">
-          <span class="nav-icon-wrapper">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <path d="M16 10a4 4 0 0 1-8 0"></path>
+        <button type="button" class="cart-trigger action-touch-btn" data-open-cart="true" onclick="if(window.CollectionEngine){CollectionEngine.openCartDrawer();}else if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer();} return false;" aria-label="Open Shopping Bag" style="background:none; border:none; color:#ffffff !important; cursor:pointer; position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:36px; min-height:36px; width:36px; height:36px; padding:0; border-radius:50%; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
+          <span class="nav-icon-wrapper" style="position:relative; display:inline-flex; align-items:center; justify-content:center; line-height:0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="color:#ffffff !important; stroke:#ffffff !important; display:block;">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="#ffffff"></path>
+              <line x1="3" y1="6" x2="21" y2="6" stroke="#ffffff"></line>
+              <path d="M16 10a4 4 0 0 1-8 0" stroke="#ffffff"></path>
             </svg>
-            <span id="header-cart-badge" style="display:none;">0</span>
+            <span id="header-cart-badge" style="display:none; position:absolute; top:-4px; right:-5px; background:#e50914; color:#fff; font-size:0.58rem; font-weight:800; border-radius:999px; min-width:15px; height:15px; padding:0 3px; align-items:center; justify-content:center; line-height:15px; text-align:center; box-sizing:border-box; border:1.5px solid #000000;">0</span>
           </span>
         </button>
 
