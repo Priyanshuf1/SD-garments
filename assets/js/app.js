@@ -212,7 +212,7 @@ const GenrageApp = {
     const countEl = document.getElementById('wishlist-count');
     if (countEl) {
       countEl.textContent = this.wishlist.length;
-      countEl.style.display = this.wishlist.length > 0 ? 'flex' : 'none';
+      countEl.style.display = this.wishlist.length > 0 ? 'inline-flex' : 'none';
     }
   },
 

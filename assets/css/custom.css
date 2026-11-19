@@ -375,20 +375,39 @@ x-header.is-solid:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.badge-count {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background-color: #ffffff;
-  color: #000000;
-  font-size: 0.65rem;
-  font-weight: 800;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: flex;
+.nav-icon-wrapper {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 0;
+}
+
+.badge-count,
+.wishlist-count-badge,
+#header-wishlist-badge,
+#wishlist-count,
+#header-cart-badge,
+.cart-badge-count {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  background-color: #e50914 !important;
+  color: #ffffff !important;
+  font-size: 0.62rem !important;
+  font-weight: 800 !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  padding: 0 3px !important;
+  border-radius: 999px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box !important;
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* ==========================================================================

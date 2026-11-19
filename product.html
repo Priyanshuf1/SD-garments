@@ -755,18 +755,22 @@
           </svg>
         </button>
         <button class="action-btn" id="wishlist-header-btn" onclick="window.location.href='/collections/shop?view=wishlist'" aria-label="Wishlist" style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-          <span class="badge-count" id="wishlist-count" style="display: none;">0</span>
+          <span class="nav-icon-wrapper" style="position:relative; display:inline-flex; align-items:center; justify-content:center; line-height:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span class="badge-count wishlist-count-badge" id="wishlist-count" style="display: none; position:absolute; top:-5px; right:-7px; background:#e50914; color:#fff; font-size:0.62rem; font-weight:800; border-radius:999px; min-width:16px; height:16px; padding:0 3px; align-items:center; justify-content:center; line-height:16px; text-align:center; box-sizing:border-box;">0</span>
+          </span>
         </button>
         <button class="action-btn cart-trigger" data-open-cart="true" onclick="if(window.QuickBuyEngine){QuickBuyEngine.openCartDrawer();}else if(window.GenrageApp){GenrageApp.openCart();}else{window.location.href='/cart';} return false;" aria-label="Cart" style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <path d="M16 10a4 4 0 0 1-8 0"></path>
-          </svg>
-          <span class="badge-count cart-badge-count" style="display: none;">0</span>
+          <span class="nav-icon-wrapper" style="position:relative; display:inline-flex; align-items:center; justify-content:center; line-height:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span class="badge-count cart-badge-count" style="display: none; position:absolute; top:-5px; right:-7px; background:#e50914; color:#fff; font-size:0.62rem; font-weight:800; border-radius:999px; min-width:16px; height:16px; padding:0 3px; align-items:center; justify-content:center; line-height:16px; text-align:center; box-sizing:border-box;">0</span>
+          </span>
         </button>
       </div>
     </div>
